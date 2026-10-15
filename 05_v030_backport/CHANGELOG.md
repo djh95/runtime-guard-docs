@@ -1,0 +1,68 @@
+# v0.30 Runtime Guard backport — CHANGELOG
+
+格式：新版本写在最上方。每条必须写清：**版本号、BASE、SOURCE/PR、怎么得到、含哪些功能**。
+
+## v0.30-rg.2 — 2026-10-14
+
+### 版本与来源
+
+| 项 | 值 |
+|----|-----|
+| **包版本** | `v0.30-rg.2` |
+| **适用基线 BASE** | `6d25ba2b3`（`releases/v0.30.0` 上 Guard 合入前一 commit） |
+| **SOURCE tip** | `59ea3890d` |
+| **上游 PR（推荐来源）** | https://github.com/vllm-project/vllm-ascend/pull/18450 |
+| **PR 分支** | `cherry-pick/pr-16849-to-releases-v0.30.0` |
+| **Patch 文件** | `patches/0001-runtime-guard-from-pr18450-6d25ba2b3-to-59ea3890d-20261014.patch` |
+
+### 怎么得到
+
+```text
+git diff 6d25ba2b3..59ea3890d
+# 等价：generate_patch_bundle.sh --from-pr 18450
+```
+
+即 **PR #18450 在 releases/v0.30.0 上的完整提交区间**（已冲突消解），**不是**从 `main` tip 白名单硬导出。
+
+区间内 commits：
+
+1. `60c99586c` — `[Feature] Add runtime_guard control plane … (#16849)`（cherry-pick）  
+2. `59ea3890d` — `[Perf] Skip runtime_guard hot shells when static idle`
+
+### 对应功能
+
+| 功能 | 说明 |
+|------|------|
+| Runtime Guard 控制面 | detect / report / `dump_kv`；MRV2 接线 |
+| Detectors | `token_repeat` / `logits_finite` / `spec_acceptance`（默认关） |
+| Hot-reload / manual dump | 启动参数 + live JSON |
+| Static idle 性能 | 无热更/无 detector/无 dump 时跳过 wave/sample/eow 壳 |
+
+### 冒烟
+
+在干净 `6d25ba2b3` worktree 上 `apply_patch.sh` 一次通过。
+
+### 已知限制
+
+- Analysis 离线包不在此 patch 内。  
+- 若你的树不是 `6d25ba2b3`（例如更早的 `v0.30.0rc1`），可能有冲突，需维护者按该 BASE 重导或手工消解。
+
+---
+
+## v0.30-rg.1 — 2026-10-14（已废弃，勿再分发）
+
+| 项 | 值 |
+|----|-----|
+| **BASE** | `v0.30.0rc1` (`5f828ad63`) |
+| **SOURCE** | main 侧 tip `fc283a9d6`（白名单路径 diff） |
+| **问题** | 非 release cherry-pick 产物；与 PR #18450 不对齐，易夹带 main 语境 |
+
+已被 **v0.30-rg.2** 替换。
+
+---
+
+## 版本号约定
+
+`v0.30-rg.<N>`：面向 ≤0.30.0 / 未合入 Guard 树的第 N 次 backport 包。
+
+必填字段：`BASE`、`SOURCE`/`PR`、`怎么得到`、`对应功能`、冒烟结果。
