@@ -9,6 +9,13 @@
 | 实现 | https://github.com/vllm-project/vllm-ascend/blob/main/vllm_ascend/observability/runtime_guard/detector/spec_acceptance.py |
 | 功能说明 | https://github.com/vllm-project/vllm-ascend/blob/main/docs/source/user_guide/feature_guide/runtime_guard.md |
 
+相关 PR：
+
+| 说明 | URL |
+|------|-----|
+| 检测器基础框架合入 PR | https://github.com/vllm-project/vllm-ascend/pull/16849 |
+| None accepted / 空 step 截断鲁棒修复 PR | https://github.com/vllm-project/vllm-ascend/pull/18644 |
+
 ## 解决什么问题
 
 - Spec 路径上 **接受率过低/过高** 且伴随长度比异常，提示 draft/verify 或统计链路异常。  
@@ -22,7 +29,7 @@
 2. 每 req 维护滑动窗口：`(accepted_draft, draft_len, sampled_ids, accepted_ids)`。  
 3. 窗口内估计接受率与长度比；低于 `low_threshold` 且长度比异常，或高于 `high_threshold` 且长度比异常 → 告警。  
 4. `accepted_token_nums` 等为 `None` / 短 batch 时安全跳过或截断，避免崩溃。  
-5. 短日志在 TP0 做节流，避免刷屏。
+5. 告警事件日志在 TP0 做输出节流，避免日志刷屏。
 
 ## 主要参数（默认）
 
@@ -40,7 +47,7 @@
 
 - **Stage：** `after_spec`  
 - 无 `speculative_config` / 无 stash 统计 → 检测跳过（不崩）。  
-- 报告窗口可能含空 step `[]`；截断逻辑已覆盖。
+- 报告滚动窗口内可能存在空 step `[]`，内部已做安全截断处理，不会引发异常。
 
 ## 误报 / 漏报提示
 
@@ -58,6 +65,7 @@
 ## 最小配置
 
 ```json
+// 仅用于临时问题排查，不建议业务环境长期启用
 {
   "detector": {
     "spec_acceptance": {
