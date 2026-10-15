@@ -1,16 +1,18 @@
 ---
 name: runtime-guard-analysis
 description: >-
-  Analyze runtime_guard anomaly reports and per-request KV .pt dumps. Use when
-  the user mentions runtime_guard report JSON, kv_cache dumps, dump_kv,
-  correlate req_id, nan/inf in KV, or post-mortem of token_repeat /
-  logits_finite / spec_acceptance / manual_trigger captures.
+  Offline-only analysis of runtime_guard report JSON and native kv_cache .pt
+  dumps: summarize_reports, correlate_incident, verify_request_kv,
+  inspect_kv_dump. Emit verify PASS/FAIL as the gate for ref-kv-dump. Never
+  emit runtime_config JSON or start a server / force-feed.
 ---
 
-# runtime_guard analysis（抓现场后）
+# runtime_guard analysis（离线读盘）
 
-离线读盘：不改 `runtime_config`、不重跑服务。  
-脚本仓：[runtime-guard-test](https://github.com/djh95/runtime-guard-test)。人读定界见手册 [02](../../02_problem_localization.md)。
+**类型：原子 · 离线。** 只读磁盘；不改 live config、不起服、不 force-feed。
+
+脚本仓：[runtime-guard-test](https://github.com/djh95/runtime-guard-test) · 定界人读：[02](../../02_problem_localization.md)  
+契约：[SKILLS_METADATA.md](../SKILLS_METADATA.md)
 
 ```bash
 export RG_TEST=/path/to/runtime-guard-test
@@ -23,15 +25,13 @@ alias rgpy='PYTHONPATH="$RG_TEST" python -m analysis.scripts'
 
 ### Step 0 — 确认 report 根目录
 
-用户路径或默认 `./runtime/report` → 后续统一 `--report-dir`。
-
-### Step 1 — 汇总报告
+### Step 1 — 汇总
 
 ```bash
 rgpy.summarize_reports --report-dir ./runtime/report --limit 20
 ```
 
-有行继续；空目录 → 停。
+空目录 → 停。
 
 ### Step 2 — 按 req 关联
 
@@ -41,7 +41,7 @@ rgpy.correlate_incident --report-dir ./runtime/report --req-id <req_id>
 
 关注 `dump_attempted` / `block_ids` / `kv_cache/.../<req_id>/wave_*/<rank_tag>/`。
 
-### Step 3 — report ↔ KV 对账
+### Step 3 — report ↔ KV 对账（ref 硬门闩）
 
 ```bash
 rgpy.verify_request_kv \
@@ -49,7 +49,8 @@ rgpy.verify_request_kv \
   --report-dir ./runtime/report
 ```
 
-`--kv-dir` 语义是 **rank 目录**（直接含 `.pt`）。`PASS` 再深入；`FAIL` 先修路径/配额/`on_trigger`。
+`--kv-dir` 语义是 **rank 目录**（直接含 `.pt`）。明确输出 **PASS / FAIL**（及失败原因）。  
+`PASS` 才允许进入 `runtime-guard-ref-kv-dump`。
 
 ### Step 4 — 抽查单个 `.pt`（按需）
 
@@ -57,18 +58,16 @@ rgpy.verify_request_kv \
 rgpy.inspect_kv_dump --path ./runtime/report/kv_cache/<type>/<req_id>/wave_N/<rank_tag>/<file>.pt
 ```
 
-跨 TP 对比前核对 payload 的 `tp_rank` / `num_kv_heads`。层名 natural sort（`layer_2` < `layer_10`）。
+跨 TP 前核对 `tp_rank` / `num_kv_heads`；层名 natural sort。
 
-### Step 5 — 对账级结论
+### Step 5 — 交付摘要
 
-1. `incident_type`、`req_id`、`dump_attempted` / `dump_arm_wave`  
-2. `block_ids` 与 verify 结论  
-3. 关键层 nan/inf / 范围（若跑了 Step 4）  
-4. 缺口（无 dump、缺 token ids 等）
+1. `incident_type`、`req_id`、dump 是否尝试/成功  
+2. `verify_result` + `block_ids`  
+3. 可提取的 `prompt_token_ids` / `output_token_ids`（需 report 含敏感字段）  
+4. 缺口说明  
 
-### Step 6 — 有 buggy+ref 时定界
-
-交给 `runtime-guard-investigation` 的 **Q1–Q5** + `runtime-guard-ref-kv-dump`。
+有 buggy+ref 定界 → 用户/总控再开 `ref-kv-dump` + investigation Q1–Q5（本 skill 不跑对比）。
 
 ## 落盘约定
 
@@ -80,11 +79,15 @@ runtime/report/
     <rank_tag>/*.pt                      # last-PP × 各 TP
 ```
 
-默认是本请求 `block_ids` 快照，不是全 cache、不是 op 级 dump。
+本请求 `block_ids` 快照，不是全 cache、不是 op 级 dump。
 
-## Do not
+## forbidden
 
-- 不改 live config / 不重启（除非用户明确要求）  
-- 不假设全量 KV；不在 NPU 上 `load` `.pt`（脚本用 CPU `map_location`）  
-- 不用 msprobe 布局工具对 native `kv_cache/*.pt`  
-- 勿把 `output_substring` / `slot_*` 当已合入 detector
+- 输出任何 `runtime_config` / 热更 JSON  
+- 拉起推理服务、force-feed、KV buggy↔ref 对比  
+- 在 NPU 上 `load` `.pt`；用 msprobe 工具读 native dump  
+- 把未合入 detector 当已合入
+
+## Related
+
+`ref-kv-dump`（需本 skill 的 verify PASS）· `investigation` · `config-recommender`

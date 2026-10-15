@@ -1,23 +1,29 @@
 ---
 name: runtime-guard-ref-kv-dump
 description: >-
-  Capture a reference KV dump via runtime_guard dump_kv (same token IDs as the
-  buggy report) and compare against the buggy kv_cache dir for precision
-  localization: first-divergence tables + interpret Q1–Q5. Use after
-  verify_request_kv PASS. Native dump_kv only; no msprobe.
+  After verify_request_kv PASS, force-feed report token ids into a clean
+  same-model/topology/MODE server, capture native dump_kv ref, and compare
+  buggy vs ref (first divergence / per-layer). Requires PASS evidence; do not
+  reimplement verify or emit runtime_config JSON. No msprobe.
 ---
 
 # Reference KV via native dump_kv
 
-前置：`verify_request_kv` PASS；report 含 `prompt_token_ids` / `output_token_ids`（需 `report.save_sensitive_info: true`）。  
-脚本：`PYTHONPATH=$RG_TEST python -m analysis.scripts.<name>`（见 [../README.md](../README.md)）。  
-定界口径对齐手册 [02 §5](../../02_problem_localization.md)。
+**类型：原子 · 标杆抓取 + 对比。**
+
+**硬门闩：** 已有 `verify_request_kv` **PASS**（本轮先跑 `runtime-guard-analysis`，或用户出示 PASS 证据）。无 PASS → 停止，勿抓 ref。  
+勿在本 skill 重复实现 verify。勿输出 `runtime_config`（起服/arm dump 配置来自 `config-recommender` 或用户已有 live JSON）。
+
+契约：[SKILLS_METADATA.md](../SKILLS_METADATA.md) · 定界：[02 §5](../../02_problem_localization.md)  
+脚本：`PYTHONPATH=$RG_TEST python -m analysis.scripts.<name>`
+
+Report 须含 `prompt_token_ids` / `output_token_ids`（`save_sensitive_info: true`）。
 
 ## 为何 force-feed token ids
 
 1. Prefill / decode 路径不同 — 标杆尽量同路径类。  
 2. 字符串重 tokenize ≠ report token ids。  
-3. 禁止让标杆自行 greedy 生成。
+3. 禁止标杆自行 greedy 生成。
 
 ## 抓 ref
 
@@ -26,8 +32,8 @@ PYTHONPATH="$RG_TEST" python -m analysis.scripts.prepare_ref_inputs \
   --report <report_*.json> --out ref_inputs.json
 ```
 
-1. 起 **清洁** 服务：同模型 / 同拓扑 / **同 MODE**（勿 eager↔graph 当对照）。  
-2. `runtime_config_hot_reload=true`；arm `manual_trigger` 的 `dump_kv`，或 `dump.manual_dump` 水位。  
+1. **清洁**服务：同模型 / 同拓扑 / **同 MODE**（勿 eager↔graph 对照）。  
+2. 热更已开；用 recommender/用户配置 arm `dump_kv`（manual 或 auto）。  
 3. Force-feed：
 
 ```bash
@@ -38,8 +44,8 @@ PYTHONPATH="$RG_TEST" python -m analysis.scripts.request_from_report \
 # 默认 --feed=history → prompt + output[:-1]
 ```
 
-也可用 `ref_inputs.json` 的 `force_feed_token_ids` 走 Python token-id API。  
-4. 可选三趟：`--feed history` / 再喂最后一 token / `--feed full`。  
+也可用 `ref_inputs.json` 的 `force_feed_token_ids`。  
+4. 可选：`--feed history` / 末 token / `--feed full`。  
 5. 收集：`runtime/report/kv_cache/<type>/<ref_req_id>/wave_N/<rank_tag>/`。
 
 ## 对比（两表）
@@ -59,15 +65,13 @@ PYTHONPATH="$RG_TEST" python -m analysis.scripts.compare_per_layer \
 ```
 
 - **Table 1**：per-token min-cos → 首坏 token  
-- **Table 2**：该 token 的 per-layer cos/maxdiff → 首坏层  
+- **Table 2**：该 token 的 per-layer → 首坏层  
 
-按 investigation **Q1–Q5** 解读；交付用手册定界模板。
-
-### 读表要点
+解读交 investigation **Q1–Q5** / 手册定界模板。
 
 | 信号 | 含义 |
 |------|------|
-| 无首分歧 / 全程高相似 | 非 KV 内容 → 模型/后采样 |
+| 无首分歧 / 全程高相似 | 非 KV → 模型/后采样 |
 | prompt 段首坏 | 偏 prefill |
 | output 段首坏 | 偏 decode |
 | 全层齐坏 | 整包写/传 |
@@ -75,10 +79,15 @@ PYTHONPATH="$RG_TEST" python -m analysis.scripts.compare_per_layer \
 | cos 断崖→0 | 污染/串 block |
 | 平台 ~0.8–0.9 | 偏计算误差 |
 
-**TP>1**：先对齐 `tp_rank` / `num_kv_heads`；必要时 `stitch_kv`。  
-对比结束后删除临时全量 `kv_cache`（保留 `.pt` 小样证据即可）。
+**TP>1：** 对齐 `tp_rank` / `num_kv_heads`；必要时 `stitch_kv`。  
+对比后删临时全量 `kv_cache`（可留 `.pt` 小样）。
+
+## forbidden
+
+- 无 verify PASS 仍执行  
+- 重复实现 `verify_request_kv`  
+- 输出 runtime_config JSON；使用 msprobe
 
 ## Related
 
-- `runtime-guard-investigation` — 端到端编排  
-- `runtime-guard-analysis` — verify / inspect
+`analysis`（门闩）· `investigation`（Q1–Q5 交付）· `config-recommender`（arm dump 配置）
