@@ -13,12 +13,16 @@
 | 使用 / 运维启服 | [01 如何启动 Guard](./01_enable_and_start.md) | [03 检测算法](./03_detectors/README.md) 按需 |
 | 一线维护 / 排障 | [01](./01_enable_and_start.md) → [02 问题定位分析](./02_problem_localization.md) | [04 实例](./04_case_studies/README.md)（持续补充） |
 | 开发 / 算法理解 | [03 检测算法](./03_detectors/README.md) | 源码链接（文内 GitHub） |
+| 测试 / 验收 | [任务流程](./GUARD_TASK_FLOW.md) → [脱敏环境](./GUARD_ENVIRONMENT.md) | [执行边界](./GUARD_EXECUTION_BOUNDARIES.md) |
 | `≤0.30.0` 或不支持 Guard 的版本 | [05 版本 patch](./05_v030_backport/README.md) | 先查文档链接，再打 patch |
 
 ## 文档树
 
 ```text
 README.md                          ← 本页（总目录）
+GUARD_TASK_FLOW.md                 ← 验证顺序、证据门禁与三版本矩阵
+GUARD_ENVIRONMENT.md               ← 脱敏拓扑、版本与环境核验清单
+GUARD_EXECUTION_BOUNDARIES.md      ← 操作授权、禁止项与逐项确认规则
 01_enable_and_start.md             ← ① 如何启动 Guard
 02_problem_localization.md         ← ② 问题定位分析（能力边界 + 流程）
 03_detectors/                      ← ③ 检测算法（分文件）
