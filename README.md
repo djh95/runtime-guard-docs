@@ -12,6 +12,7 @@
 |------|------|------|
 | 使用 / 运维启服 | [01 如何启动 Guard](./01_enable_and_start.md) | [03 检测算法](./03_detectors/README.md) 按需 |
 | 一线维护 / 排障 | [01](./01_enable_and_start.md) → [02 问题定位分析](./02_problem_localization.md) | [04 实例](./04_case_studies/README.md)（持续补充） |
+| Agent / 自动化排障 | [06 Agent Skills](./06_agent_skills/README.md) | [02](./02_problem_localization.md) + [runtime-guard-test](https://github.com/djh95/runtime-guard-test) 脚本 |
 | 开发 / 算法理解 | [03 检测算法](./03_detectors/README.md) | 源码链接（文内 GitHub） |
 | `≤0.30.0` 或不支持 Guard 的版本 | [05 版本 patch](./05_v030_backport/README.md) | 先查文档链接，再打 patch |
 
@@ -24,6 +25,7 @@ README.md                          ← 本页（总目录）
 03_detectors/                      ← ③ 检测算法（分文件）
 04_case_studies/                   ← ④ 实例分析（占位，后续补充）
 05_v030_backport/                  ← ⑤ ≤0.30.0 / 未合入版本的 patch（持续更新）
+06_agent_skills/                   ← ⑥ Agent Skills（排障编排；脚本在 runtime-guard-test）
 ```
 
 ## 相对原思路的完善点
@@ -32,7 +34,8 @@ README.md                          ← 本页（总目录）
 2. **② 先讲清「能做什么 / 停在哪」**：定界 ≠ 定位；偶发抓现场 vs 必现但无标杆；输出交付模板。  
 3. **③ 算法一文一 detector**：参数、阶段、误报/漏报、与 dump 的关系分开维护。  
 4. **④ 实例与流程解耦**：流程稳定在 ②，案例可持续追加，不堵文档发布。  
-5. **⑤ patch 可迭代**：`≤0.30.0` 版本若需使用 Runtime Guard，须打对应 patch；更高版本优先确认原生是否已支持，不支持再使用 patch。脚本 + CHANGELOG 持续更新。
+5. **⑤ patch 可迭代**：`≤0.30.0` 版本若需使用 Runtime Guard，须打对应 patch；更高版本优先确认原生是否已支持，不支持再使用 patch。脚本 + CHANGELOG 持续更新。  
+6. **⑥ Agent Skills**：与产品 detector / 热更 / 脚本仓对齐的可执行排障编排；人读仍以 ② 为准。
 
 ## 上游产品文档（GitHub）
 
