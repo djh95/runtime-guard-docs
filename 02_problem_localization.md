@@ -16,6 +16,7 @@
 | runtime_config | https://github.com/vllm-project/vllm-ascend/blob/main/docs/source/user_guide/configuration/runtime_config.md |
 | 检测实现目录 | https://github.com/vllm-project/vllm-ascend/tree/main/vllm_ascend/observability/runtime_guard/detector |
 | 控制面 PR | https://github.com/vllm-project/vllm-ascend/pull/16849 |
+| 性能与鲁棒增强 PR | https://github.com/vllm-project/vllm-ascend/pull/18644 |
 
 ---
 
@@ -60,7 +61,7 @@
 
 | 现象 | 原因 |
 |------|------|
-| Hang / 死锁 | Guard 自身用集体通信，不能诊 hang |
+| Hang / 死锁 | Guard 自身依赖集体通信，无法对 hang / 死锁做根因定界 |
 | 启动 crash / import | 服务起来之后才工作 |
 | OOM / 显存泄漏 | 不监控内存 |
 | 纯吞吐下降 | profiling / bench |
@@ -117,7 +118,7 @@
 ### Step 2 — Dump 管线冒烟（再压测）
 
 1. 先 `auto_max_times: 0`，只 `report`，确认 JSON 写出。  
-2. 再开 `dump_kv` + 合理 `auto_max_times`（按磁盘：约 `disk_free×0.7 / per_req_size`）。  
+2. 再开 `dump_kv` + 合理 `auto_max_times`（按磁盘空间粗估：`auto_max_times ≈ 磁盘剩余空间×0.7 / per_req_size`，其中 `per_req_size` 为单请求 KV 快照预估大小）。  
 3. 确认 last-PP 各 `tp*` 的 `.pt` 齐全。
 
 ### Step 3 — 压测抓真命中
@@ -128,7 +129,7 @@
 
 ### Step 4 — 对账（有 analysis 脚本时）
 
-在带 analysis 包的工作区执行（产品树若无 analysis，用 analysis 分支树）。脚本入口形如：
+在具备 analysis 分析脚本模块的工作区执行；正式产品树未内置该模块时，可拉取 analysis 分支获取脚本，**仅用于离线分析，不要将该分支代码合并到业务运行环境**。脚本入口形如：
 
 ```bash
 python -m vllm_ascend.runtime_guard.analysis.scripts.summarize_reports --report-dir {REPORT}
@@ -145,7 +146,7 @@ python -m vllm_ascend.runtime_guard.analysis.scripts.verify_request_kv --report 
 
 ### Step 6 — 首分歧与 Q1–Q5
 
-见 §5。完成后删除临时全量 `kv_cache`（保留小样即可）。
+见 §5。完成后删除服务运行产生的临时全量 `kv_cache`（dump 输出的 `.pt` 小样证据保留即可）。
 
 ### 无标杆时的停点
 
