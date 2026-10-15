@@ -18,23 +18,12 @@
 ## 文档树
 
 ```text
-runtime_guard/
-  README.md                          ← 本页（总目录）
-  01_enable_and_start.md             ← ① 如何启动 Guard
-  02_problem_localization.md         ← ② 问题定位分析（能力边界 + 流程）
-  03_detectors/                      ← ③ 检测算法（分文件）
-    README.md
-    token_repeat.md
-    logits_finite.md
-    spec_acceptance.md
-  04_case_studies/                   ← ④ 实例分析（占位，后续补充）
-    README.md
-  05_v030_backport/                  ← ⑤ ≤0.30.0 / 未合入版本的 patch（持续更新）
-    README.md
-    CHANGELOG.md
-    apply_patch.sh
-    generate_patch_bundle.sh
-    patches/
+README.md                          ← 本页（总目录）
+01_enable_and_start.md             ← ① 如何启动 Guard
+02_problem_localization.md         ← ② 问题定位分析（能力边界 + 流程）
+03_detectors/                      ← ③ 检测算法（分文件）
+04_case_studies/                   ← ④ 实例分析（占位，后续补充）
+05_v030_backport/                  ← ⑤ ≤0.30.0 / 未合入版本的 patch（持续更新）
 ```
 
 ## 相对原思路的完善点
