@@ -32,7 +32,7 @@ README.md                          ← 本页（总目录）
 2. **② 先讲清「能做什么 / 停在哪」**：定界 ≠ 定位；偶发抓现场 vs 必现但无标杆；输出交付模板。  
 3. **③ 算法一文一 detector**：参数、阶段、误报/漏报、与 dump 的关系分开维护。  
 4. **④ 实例与流程解耦**：流程稳定在 ②，案例可持续追加，不堵文档发布。  
-5. **⑤ patch 可迭代**：`≤0.30.0` 必打；更新版本先查链接，不支持再打。脚本 + CHANGELOG 持续更新。
+5. **⑤ patch 可迭代**：`≤0.30.0` 版本若需使用 Runtime Guard，须打对应 patch；更高版本优先确认原生是否已支持，不支持再使用 patch。脚本 + CHANGELOG 持续更新。
 
 ## 上游产品文档（GitHub）
 
@@ -42,9 +42,10 @@ README.md                          ← 本页（总目录）
 | runtime_config 字段参考 | https://github.com/vllm-project/vllm-ascend/blob/main/docs/source/user_guide/configuration/runtime_config.md |
 | additional_config · runtime_guard | https://github.com/vllm-project/vllm-ascend/blob/main/docs/source/user_guide/configuration/additional_config.md#runtime_guard |
 | 功能合入 PR | https://github.com/vllm-project/vllm-ascend/pull/16849 |
+| 性能与鲁棒增强 PR | https://github.com/vllm-project/vllm-ascend/pull/18644 |
 | v0.30.0rc1 标签 | https://github.com/vllm-project/vllm-ascend/releases/tag/v0.30.0rc1 |
 
 ## 一句话能力边界
 
 Runtime Guard **能**：在线检出异常类、落 JSON 报告、可选 dump KV、在有标杆时做 KV 首分歧定界。  
-Runtime Guard **不能**：替代调试器定位到具体算子/提交；在**无清洁标杆**时无法完成「buggy vs ref」层/token 定界；不诊 hang/OOM/拓扑错误。
+Runtime Guard **不能**：替代调试器定位到具体算子、代码提交点；在**无清洁标杆**时无法完成「buggy vs ref」层/token 细粒度定界；无法对 hang/OOM/拓扑错误做根因定界。

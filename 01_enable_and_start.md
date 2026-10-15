@@ -1,7 +1,7 @@
 # ① 如何启动 Runtime Guard
 
 适用：开发联调、业务启服、一线临时开观测。  
-前置：**Model Runner v2**（v1 未接线）。默认 detector / hot-reload / dump **全关**，接近无开销。
+前置：**Model Runner v2**（v1 未接线）。默认 detector / hot-reload / dump **全关**，开销可忽略；此时 Runtime Guard 走 **static idle** 热路径旁路（[#18644](https://github.com/vllm-project/vllm-ascend/pull/18644)），几乎无性能损耗。开启 detector 或 dump 后会引入额外 CPU 开销，对性能敏感业务建议评估后再开。
 
 ## 相关上游文档
 
