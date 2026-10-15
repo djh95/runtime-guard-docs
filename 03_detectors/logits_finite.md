@@ -9,18 +9,25 @@
 | 实现 | https://github.com/vllm-project/vllm-ascend/blob/main/vllm_ascend/observability/runtime_guard/detector/logits_finite.py |
 | 功能说明 | https://github.com/vllm-project/vllm-ascend/blob/main/docs/source/user_guide/feature_guide/runtime_guard.md |
 
+相关 PR：
+
+| 说明 | URL |
+|------|-----|
+| 检测器基础框架合入 PR | https://github.com/vllm-project/vllm-ascend/pull/16849 |
+| QSL边界鲁棒修复 PR | https://github.com/vllm-project/vllm-ascend/pull/18644 |
+
 ## 解决什么问题
 
 - 采样前出现 **非有限 logits**（数值爆炸、污染）。  
 - 给「乱码 / 异常输出是否已在 logits 阶段坏掉」的强信号。
 
-**不能：** 指出是哪一层算坏；不能替代 KV 对比。无法归属到具体 `req_id` 的行 **只打 warning，不写猜测/空 req 报告**。
+**不能：** 指出是哪一层算坏；不能替代 KV 对比。无法归属到具体 `req_id` 的数据行仅输出 warning 日志，不会生成猜测信息或无有效请求信息的空报告。
 
 ## 算法要点
 
 1. 在 **grammar 之前** 的 pre-sample 路径对 logits 做 device `isfinite` → all-finite gate。  
 2. **默认 `item_sync=false`：** 非阻塞 D2H gate，在 after-sample 的 deferred 路径再 `.item()`；期间 grammar 等可能改写 logits（如 bitmask → `-inf`）。gate 用的 `row_finite` 仍基于预计算；命中时的 `finite_kind` 可能看到改写后数值。  
-3. **`item_sync=true`：** pre-sample 阻塞 `.item()` 并解析 kind，与 grammar 前一致，但每步多同步开销。  
+3. **`item_sync=true`：** pre-sample 阻塞 `.item()` 并解析 kind，与 grammar 前一致，但每步引入额外 NPU‑CPU（D2H）设备同步开销。  
 4. 命中 → 解析坏行 / kind / req；enqueue；after-sample drain。
 
 ## 主要参数
@@ -54,6 +61,7 @@
 ## 最小配置
 
 ```json
+// 仅用于临时问题排查，不建议业务环境长期启用
 {
   "detector": {
     "logits_finite": {
