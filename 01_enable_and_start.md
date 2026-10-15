@@ -1,7 +1,8 @@
 # ① 如何启动 Runtime Guard
 
 适用：开发联调、业务启服、一线临时开观测。  
-前置：**Model Runner v2**（v1 未接线）。默认 detector / hot-reload / dump **全关**，开销可忽略；此时 Runtime Guard 走 **static idle** 热路径旁路（[#18644](https://github.com/vllm-project/vllm-ascend/pull/18644)），几乎无性能损耗。开启 detector 或 dump 后会引入额外 CPU 开销，对性能敏感业务建议评估后再开。
+前置：**Model Runner v2**（v1 未接线）。  
+默认 detector / hot-reload / dump **全关**，进入 **static idle** 热路径旁路（[#18644](https://github.com/vllm-project/vllm-ascend/pull/18644) 优化），开销可忽略；开启 detector、dump、热更能力后会引入额外 CPU 开销（功能来自 [#16849](https://github.com/vllm-project/vllm-ascend/pull/16849)），性能敏感业务建议评估后启用。
 
 ## 相关上游文档
 
@@ -109,7 +110,7 @@ runtime/
 
 | 场景 | 注意 |
 |------|------|
-| 单卡 | 绝对路径；默认关时为 static idle |
+| 单卡 | 绝对路径；默认关时为 static idle（见开篇） |
 | TP>1 | 检测/报告只在 last-PP TP0；dump 要凑齐各 `tp*` |
 | PP>1 | sync/dump 只在 last PP；别在早期 PP 找报告 |
 | DP>1 | 各副本独立报告/dump；共享 JSON 时 `manual_dump` 的 `done` 每进程独立 |
