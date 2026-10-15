@@ -9,6 +9,12 @@
 | 实现 | https://github.com/vllm-project/vllm-ascend/blob/main/vllm_ascend/observability/runtime_guard/detector/token_repeat.py |
 | 功能说明中的 detectors 表 | https://github.com/vllm-project/vllm-ascend/blob/main/docs/source/user_guide/feature_guide/runtime_guard.md |
 
+相关 PR：
+
+| 说明 | URL |
+|------|-----|
+| 检测器基础框架合入 PR | https://github.com/vllm-project/vllm-ascend/pull/16849 |
+
 ## 解决什么问题
 
 - 输出在局部窗口内反复出现相同 token（卡词、复读）。  
@@ -35,7 +41,7 @@
 | `ignore_token_ids` | `[]` | 不计入窗口的 id（如特殊 pad） |
 | `on_trigger` | 含 `report` | 可加 `dump_kv` |
 
-改 `window` 时实现会清空 per-req 状态与已告警集合，避免旧窗口结论锁死。
+热更新修改 `window` 参数时，实现会清空 per‑req 状态与已告警集合，避免旧窗口配置的历史状态锁死判定结果。
 
 ## 阶段与接线
 
@@ -60,6 +66,7 @@
 ## 最小配置
 
 ```json
+// 仅用于临时问题排查，不建议业务环境长期启用
 {
   "detector": {
     "token_repeat": {
