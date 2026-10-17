@@ -1,7 +1,7 @@
 # Anomaly × Skills 能力边界（活文档）— 2026-10-17
 
 > **用途：** 对每一个已落地 / 在册异常场景，如实记录现象、复现与对照配置、skills 能分析到哪一步、有用度，以及还缺什么。  
-> **Skills：** `runtime-guard-test` `analysis/skill/` **v5.5**（investigation / detector-sweep / config-recommender / analysis / ref-kv-dump）。  
+> **Skills：** `runtime-guard-test` `analysis/skill/` **v5.6**（investigation / detector-sweep / config-recommender / analysis / ref-kv-dump）。  
 > **Guard pin：** G2 `f2aefd068`。三层率 = trigger / precision / detect。  
 > **诚实上限：** skills **定界**（detect / 现象类 / 可选 KV 首分歧），**不承诺**定位到算子、权重元素或具体 commit。
 
@@ -169,6 +169,9 @@
 | S141 | query-ones | **是** `token_repeat` | 否 | **L2 class-hint**（≠S60/S52/S114/S117/S130） | **高** | unit Q；`,`/`one of`；precision 36 |
 | S142 | key-ones | **是** `token_repeat` | 否 | **L2 class-hint**（≠S54/S59/S111/S118/S132） | **高** | unit K；`,`/`and the`；precision 28 |
 | S143 | SwiGLU-out-ones | **是** `token_repeat` | 否 | **L2 class-hint**（≠S67/S72/S115/S131） | **高** | unit SwiGLU out；`造假` |
+| S144 | residual-post-ones | **是** `token_repeat` | 否 | **L2 class-hint**（≠S88/S90/S91/S106/S135） | **高** | unit post-residual；`[code` |
+| S145 | RMSNorm-out-ones | **是** `token_repeat` | 否 | **L2 class-hint**（≠S86/S87/S89/S102/S136） | **高** | unit post-norm x；`pl` |
+| S146 | SwiGLU-input-ones | **是** `token_repeat` | 否 | **L2 class-hint**（≠S56/S76/S81/S121/S133） | **高** | unit SwiGLU input；`造假` |
 
 > **S20 说明：** detector **能检出**（`token_repeat` 对 `!!!!`/token0）；skills 额外给出 **溢出/softcap class-hint（L2）**，不是「只能 detect、无类提示」。仍 **不能** 定位到具体 softcap 实现行或权重。
 
@@ -1606,6 +1609,36 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 | **有用度** | **高** |
 | **待改进** | 无 |
 
+### S144 — Residual-post-ones（≠ S88/S90/S91/S106/S135）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **100 / 48 / 48**；`token_repeat`×48；identical `[code` |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2**（unit post-residual）；≠ S88/S90/S91/S106/S135 |
+| **有用度** | **高** |
+| **待改进** | 无 |
+
+### S145 — RMSNorm-out-ones（≠ S86/S87/S89/S102/S136）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **100 / 48 / 48**；`token_repeat`×48；identical `pl` |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2**（unit post-norm x）；≠ S86/S87/S89/S102/S136 |
+| **有用度** | **高** |
+| **待改进** | 无 |
+
+### S146 — SwiGLU-input-ones（≠ S56/S76/S81/S121/S133）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **58 / 48 / 48**；`token_repeat`×48；identical `造假` |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2**（unit SwiGLU input）；≠ S56/S76/S81/S121/S133 |
+| **有用度** | **高** |
+| **待改进** | 无 |
+
 ---
 
 ## Verify-loop deltas（2026-10-17）
@@ -1736,6 +1769,9 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 | **S141** | 无 query-ones class → **L2**；≠ S60/S52/S114/S117/S130 | **是** |
 | **S142** | 无 key-ones class → **L2**；≠ S54/S59/S111/S118/S132 | **是** |
 | **S143** | 无 SwiGLU-out-ones class → **L2**；≠ S67/S72/S115/S131 | **是** |
+| **S144** | 无 residual-post-ones class → **L2**；≠ S88/S90/S91/S106/S135 | **是** |
+| **S145** | 无 RMSNorm-out-ones class → **L2**；≠ S86/S87/S89/S102/S136 | **是** |
+| **S146** | 无 SwiGLU-input-ones class → **L2**；≠ S56/S76/S81/S121/S133 | **是** |
 
 详见 [anomaly-skills-verify-loop-20261017.md](./anomaly-skills-verify-loop-20261017.md)。
 
@@ -1746,7 +1782,7 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 3. Spec 分布性：summarize 突出 `acceptance_rate`  
 4. ~~Weight/Quant always-on 场景落地~~ → **S23/S24 PASS L1**（仍不可定位张量）  
 5. KV PASS（S10′/S12/S30/S47）：标准 ref-kv 流水线模板 + 容器 dump_dir 重映射  
-6. Soft-inv / cast / residual / graph-pad / softcap / attn / temp / pos / norm / act / rope / embed / penalty / kv-swap / **query-ones / key-ones / SwiGLU-out-ones**：**S25–S143 L2**（除 S44 INVALID / S45 FAIL+GAP）
+6. Soft-inv / cast / residual / graph-pad / softcap / attn / temp / pos / norm / act / rope / embed / penalty / kv-swap / **residual-post-ones / RMSNorm-out-ones / SwiGLU-input-ones**：**S25–S146 L2**（除 S44 INVALID / S45 FAIL+GAP）
 
 ---
 

@@ -148,3 +148,5 @@ description: >-
 **Hidden-ones / positions-ones / residual-pre-ones（S138/S139/S140）：** 开 `token_repeat`。S138≠S61/S75/S108/S126；S139≠S37/S57/S84；S140≠S48/S55/S64/S119/S129。
 
 **Query-ones / key-ones / SwiGLU-out-ones（S141/S142/S143）：** 开 `token_repeat`。S141≠S60/S52/S114/S117/S130；S142≠S54/S59/S111/S118/S132；S143≠S67/S72/S115/S131。
+
+**Residual-post-ones / RMSNorm-out-ones / SwiGLU-input-ones（S144/S145/S146）：** 开 `token_repeat`。S144≠S88/S90/S91/S106/S135；S145≠S86/S87/S89/S102/S136；S146≠S56/S76/S81/S121/S133。

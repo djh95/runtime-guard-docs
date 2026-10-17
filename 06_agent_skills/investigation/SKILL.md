@@ -177,6 +177,9 @@ description: >-
 | Query-ones（S141，`ones_like(query)` before FA） | `,`/`one of`/空格复读；precision 可 <n_req | **`token_repeat`** | **L2**（unit Q）；≠ S60 ×50 ≠ S52 neg ≠ S114 abs ≠ S117 ÷50 ≠ S130 zeros |
 | Key-ones（S142，`ones_like(key)` before FA） | `,`/`and the` 短语复读；precision 可 <n_req | **`token_repeat`** | **L2**（unit K）；≠ S54 neg ≠ S59 ×50 ≠ S111 abs ≠ S118 ÷50 ≠ S132 zeros |
 | SwiGLU-out-ones（S143，`ones_like(out)` after npu_swiglu） | identical `造假` 短语复读 | **`token_repeat`** | **L2**（unit SwiGLU out）；≠ S67 neg ≠ S72 ×50 ≠ S115 abs ≠ S131 zeros |
+| Residual-post-ones（S144，`ones_like(residual)` after add-RMSNorm） | identical `[code` 短语复读 | **`token_repeat`** | **L2**（unit post-residual）；≠ S88 post-neg ≠ S90/S91 mag ≠ S106 post-abs ≠ S135 zeros |
+| RMSNorm-out-ones（S145，`ones_like(x)` after add-RMSNorm） | identical `pl` 复读 | **`token_repeat`** | **L2**（unit post-norm x）；≠ S86 out-neg ≠ S87 out× ≠ S89 out÷ ≠ S102 out-abs ≠ S136 zeros |
+| SwiGLU-input-ones（S146，`ones_like(x)` before npu_swiglu） | identical `造假` 短语复读 | **`token_repeat`** | **L2**（unit SwiGLU input）；≠ S56 neg ≠ S76 ×50 ≠ S81 ÷50 ≠ S121 abs ≠ S133 zeros |
 | RoPE 第二半写丢（S25，soft-inv #7082） | digit/`1.1.1…` 复读塌缩 | **`token_repeat`** | **L2 class-hint**（RoPE half）；≠ S11 pad；勿宣称定位到 Triton store 行 |
 | RMSNorm fp32 weight-mul（S26，soft-inv #42379） | 同上类复读；dtype/cast | **`token_repeat`** | **L2**（norm dtype）；与 S25 症状可重叠，靠 overlay/场景区分 |
 | RoPE neox→interleaved 风格错（S28，#7341/#7082 class） | 句/短语级复读（score=`phrase_repeat`） | **`token_repeat`** | **L2**；≠ S25 half-drop ≠ S11；samples 可能看似「正常英文」 |

@@ -794,6 +794,26 @@ python -c "import json;d=json.load(open('tests/build-anomaly-env/fail-evidence/S
 python -c "import json;d=json.load(open('tests/build-anomaly-env/fail-evidence/S143/layers.json'));print(d['precision'], d['detect_by'])"
 ```
 
+
+## S144 / S145 / S146 — residual-post-ones + RMSNorm-out-ones + SwiGLU-input-ones (v5.6)
+
+| | Before (pre-v5.6) | After (re-verify) |
+|--|-------------------|-------------------|
+| **S144** layers | 100/48/48 `token_repeat` | same ✓ (slim) |
+| **S144** skills | risk conflate S88/S90/S91/S106/S135 | **L2** residual-post-ones ✓ |
+| **S144** score | phrase_repeat+repeat (`[code`) | same ✓ |
+| **S145** layers | 100/48/48 `token_repeat` | same ✓ |
+| **S145** skills | risk conflate S86/S87/S89/S102/S136 | **L2** RMSNorm-out-ones ✓ |
+| **S145** score | repeat+phrase_repeat (`pl`) | same ✓ |
+| **S146** layers | 58/48/48 `token_repeat` | same ✓ |
+| **S146** skills | risk conflate S56/S76/S81/S121/S133 | **L2** SwiGLU-input-ones ✓ |
+| **S146** score | repeat+phrase_repeat (`造假`) | same ✓ |
+| Expected? | — | **Yes** — three L2 |
+
+```bash
+python -c "import json;d=json.load(open('tests/build-anomaly-env/fail-evidence/S146/layers.json'));print(d['precision'], d['detect_by'])"
+```
+
 ## Remaining gaps (not closed by this loop)
 
 - S22: summarize does not yet print `acceptance_rate` column — optional next script tweak.
