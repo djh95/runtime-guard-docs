@@ -128,3 +128,5 @@ description: >-
 **Hidden-abs / value-abs / RMSNorm-weight-abs（S108/S109/S110）：** 开 `token_repeat`。S108≠S61/S75；S109≠S58/S51；S110≠S66/S71/S74/S96/S100。S109 identical precision=0 仍可 PASS。
 
 **Key-abs / embed-abs / cos/sin-abs（S111/S112/S113）：** 开 `token_repeat`。S111≠S54/S59/S109；S112≠S69/S43/S80；S113≠S42/S79–S82/S101/S40。S113 identical precision=0 仍可 PASS。
+
+**Query-abs / SwiGLU-out-abs / RMSNorm-x-abs（S114/S115/S116）：** 开 `token_repeat`。S114≠S52/S60/S109/S111；S115≠S67/S72/S103/S107；S116≠S73/S62/S78/S102。

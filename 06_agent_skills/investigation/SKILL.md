@@ -147,6 +147,9 @@ description: >-
 | Key-abs（S111，`key=abs(key)` before FA） | 空格/`,` 复读混杂；precision 可 <n_req | **`token_repeat`** | **L2**（unsigned K）；≠ S54 key-neg ≠ S59 key× ≠ S109 value-abs |
 | Embed-abs（S112，`embedding.abs_()` after lookup） | 换行塌缩；detect 可 <n_req | **`token_repeat`** | **L2**（unsigned embed）；≠ S69 embed-neg ≠ S43 ×100 ≠ S80 ÷50 |
 | Cos/sin-abs（S113，`abs(cos_sin_cache)` into RoPE） | unique-ish Nile 散文；**identical precision=0** | **`token_repeat`** | **L2**（unsigned rope phase）；≠ S42 negate ≠ S79–S82 scale ≠ S101 half-swap ≠ S40 skip；**detect≈n_req 仍 PASS** |
+| Query-abs（S114，`query=abs(query)` before FA） | `for`/`one of` 复读；completes Q/K/V abs | **`token_repeat`** | **L2**（unsigned Q）；≠ S52 query-neg ≠ S60 query× ≠ S109 value-abs ≠ S111 key-abs |
+| SwiGLU-out-abs（S115，`out=abs(out)` after npu_swiglu） | 中文/换行复读混杂；precision 可 <n_req | **`token_repeat`** | **L2**（unsigned SwiGLU out）；≠ S67 out-neg ≠ S72 out× ≠ S103 gate-only ≠ S107 up-only |
+| RMSNorm-x-abs（S116，`x=abs(x)` before add-RMSNorm） | identical `pl` 复读 | **`token_repeat`** | **L2**（unsigned pre-norm x）；≠ S73 x-neg ≠ S62 ×50 ≠ S78 ÷50 ≠ S102 out-abs |
 | RoPE 第二半写丢（S25，soft-inv #7082） | digit/`1.1.1…` 复读塌缩 | **`token_repeat`** | **L2 class-hint**（RoPE half）；≠ S11 pad；勿宣称定位到 Triton store 行 |
 | RMSNorm fp32 weight-mul（S26，soft-inv #42379） | 同上类复读；dtype/cast | **`token_repeat`** | **L2**（norm dtype）；与 S25 症状可重叠，靠 overlay/场景区分 |
 | RoPE neox→interleaved 风格错（S28，#7341/#7082 class） | 句/短语级复读（score=`phrase_repeat`） | **`token_repeat`** | **L2**；≠ S25 half-drop ≠ S11；samples 可能看似「正常英文」 |

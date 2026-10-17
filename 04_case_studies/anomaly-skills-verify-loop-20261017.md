@@ -599,6 +599,22 @@ python -c "import json;d=json.load(open('tests/build-anomaly-env/fail-evidence/S
 python -c "import json;d=json.load(open('tests/build-anomaly-env/fail-evidence/S113/layers.json'));print(d['precision'], d['detect_by'])"
 ```
 
+## S114 / S115 / S116 — query-abs + SwiGLU-out-abs + RMSNorm-x-abs (v4.6)
+
+| | Before (pre-v4.6) | After (re-verify) |
+|--|-------------------|-------------------|
+| **S114** layers | 58/47/48 `token_repeat` | same ✓ (slim) |
+| **S114** skills | risk conflate S52/S60/S109/S111 | **L2** query-abs ✓ |
+| **S115** layers | 58/29/48 `token_repeat` | same ✓ |
+| **S115** skills | risk conflate S67/S72/S103/S107 | **L2** SwiGLU-out-abs ✓ |
+| **S116** layers | 100/48/48 `token_repeat` | same ✓ |
+| **S116** skills | risk conflate S73/S62/S78/S102 | **L2** RMSNorm-x-abs ✓ |
+| Expected? | — | **Yes** — three L2 |
+
+```bash
+python -c "import json;d=json.load(open('tests/build-anomaly-env/fail-evidence/S116/layers.json'));print(d['precision'], d['detect_by'])"
+```
+
 ## Remaining gaps (not closed by this loop)
 
 - S22: summarize does not yet print `acceptance_rate` column — optional next script tweak.

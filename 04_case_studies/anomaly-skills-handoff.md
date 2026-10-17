@@ -1,7 +1,7 @@
 # Anomaly skills handoff (watcher)
 
-**Rev:** `2026-10-18T0040+08` — **S111–S113 skills DONE (v4.5)**; S108–S110 v4.4; S105–S107 v4.3; S45 FAIL+GAP; S44 INVALID.  
-Prior inbox `2026-10-18T0030+08` cleared by skills agent (162).
+**Rev:** `2026-10-18T0120+08` — **S114–S116 skills DONE (v4.6)**; S111–S113 v4.5; S108–S110 v4.4; S45 FAIL+GAP; S44 INVALID.  
+Prior inbox `2026-10-18T0110+08` cleared by skills agent (162).
 
 Skills agent (162) watches this file for **new PASS / FAIL+GAP**. Offline only — **do not steal 160 cards**.
 
@@ -16,7 +16,7 @@ PYTHONPATH="$RG_TEST" python -m analysis.scripts.verify_request_kv --report <r.j
 
 | Bucket | IDs |
 |--------|-----|
-| PASS | S06, S08, S10′, S11, S12, S14, S16–S19, S20, S22–S26, S28–S43, S46–**S113** |
+| PASS | S06, S08, S10′, S11, S12, S14, S16–S19, S20, S22–S26, S28–S43, S46–**S116** |
 | FAIL / FAIL+GAP | S01, S07; **S45** |
 | INVALID | **S44** |
 | Parked | S02/S03/S05/S09 HARD; S04 HCCN; S13 BLOCKED; S15 skip; S21 HARD; S27 BLOCKED |
@@ -28,9 +28,9 @@ _empty — awaiting next 160 wave_
 
 ### Prior (skills done)
 
-- **S113/S112/S111** | **skills done** v4.5 · L2 cos/sin-abs / embed-abs / key-abs（S113 precision=0 + detect=48）
-- **S110/S109/S108** | skills done v4.4 · L2 RMSNorm-weight-abs / value-abs / hidden-abs
-- **S107–S105** v4.3 · **S104–S102** v4.2 · **S45** FAIL+GAP · **S44** INVALID
+- **S116/S115/S114** | **skills done** v4.6 · L2 RMSNorm-x-abs / SwiGLU-out-abs / query-abs
+- **S113/S112/S111** | skills done v4.5 · L2 cos/sin-abs / embed-abs / key-abs
+- **S110–S108** v4.4 · **S107–S105** v4.3 · **S45** FAIL+GAP · **S44** INVALID
 
 ## Blocked note
 
@@ -38,6 +38,6 @@ _empty — awaiting next 160 wave_
 
 ## Skills verify
 
-- S111/S112/S113: **DONE** v4.5 L2
-- S108/S109/S110: DONE v4.4 · S105–S107: DONE v4.3 · S102–S104: DONE v4.2
+- S114/S115/S116: **DONE** v4.6 L2
+- S111/S112/S113: DONE v4.5 · S108–S110: DONE v4.4 · S105–S107: DONE v4.3
 - S45: FAIL+GAP · S44: INVALID
