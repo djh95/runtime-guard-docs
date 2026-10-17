@@ -1,8 +1,9 @@
 # Runtime-Guard Skills Metadata
 
-版本：v3.7  
+版本：v3.8  
 Skill 列表（**不改名**）：`investigation` · `detector-sweep` · `config-recommender` · `analysis` · `ref-kv-dump`
 
+> **v3.8：** S90 residual-post×50 → **`logits_finite`** + **L2**；≠ S55/S64/S88。S91 residual-post÷50 → `token_repeat` + **L2**；≠ S90/S64/S88。S92 temp-skip → `token_repeat` + **L2**；≠ S36/S85；**precision=0 OK**（unique rambling；detect 仍可 PASS）。  
 > **v3.7：** S87 RMSNorm-out×50 → **`logits_finite`** + **L2**；≠ S62/S86。S88 residual-post negate → **`logits_finite`** + **L2**；≠ S48/S86。S89 RMSNorm-out÷50 → `token_repeat` + **L2**；≠ S87/S78。  
 > **v3.6：** S84 positions÷2 → `token_repeat` + **L2**；≠ S37/S57。S85 temp÷50（post-temp×50）→ `token_repeat` + **L2**；≠ S36。S86 RMSNorm-out negate → **`logits_finite`** + **L2**；≠ S73/S66。  
 > **v3.5：** S81 SwiGLU input÷50 → `token_repeat` + **L2**；≠ S39/S50/S56/S76。S82 cos_sin÷50 → `token_repeat` + **L2**；≠ S37/S40/S42/S79。S83 attn-out×50 → `token_repeat` + **L2**；≠ S41/S63。  
