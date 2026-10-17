@@ -654,6 +654,26 @@ python -c "import json;d=json.load(open('tests/build-anomaly-env/fail-evidence/S
 python -c "import json;d=json.load(open('tests/build-anomaly-env/fail-evidence/S121/layers.json'));print(d['precision'], d['detect_by'])"
 ```
 
+
+## S123 / S124 / S125 — RMSNorm-bias=-weight + penalty-skip + residual-leak-sub (v4.9)
+
+| | Before (pre-v4.9) | After (re-verify) |
+|--|-------------------|-------------------|
+| **S123** layers | 100/33/48 `token_repeat` | same ✓ (slim) |
+| **S123** skills | risk conflate S100/S66/S120 | **L2** bias=-weight ✓ |
+| **S123** score | mixed_script+repeat | same ✓ |
+| **S124** layers | 132/0/48 `token_repeat` | same ✓ |
+| **S124** skills | risk conflate S46/S98/S99 or false GAP | **L2** penalty-skip；**precision=0 OK** ✓ |
+| **S124** score | id_echo+unique_garbage | same ✓（detect>0 → not GAP） |
+| **S125** layers | 100/48/48 `logits_finite` | same ✓ |
+| **S125** skills | risk conflate S97/S93/S94/S31 | **L2** residual-leak-sub via **logits_finite** ✓ |
+| **S125** score | repeat+token0_collapse | same ✓ |
+| Expected? | — | **Yes** — three L2 |
+
+```bash
+python -c "import json;d=json.load(open('tests/build-anomaly-env/fail-evidence/S124/layers.json'));print(d['precision'], d['detect_by'])"
+```
+
 ## Remaining gaps (not closed by this loop)
 
 - S22: summarize does not yet print `acceptance_rate` column — optional next script tweak.

@@ -1,8 +1,9 @@
 # Runtime-Guard Skills Metadata
 
-版本：v4.8  
+版本：v4.9  
 Skill 列表（**不改名**）：`investigation` · `detector-sweep` · `config-recommender` · `analysis` · `ref-kv-dump`
 
+> **v4.9：** S123 RMSNorm-bias=-weight → `token_repeat` + **L2**；≠ S100/S66/S120。S124 penalty-skip → `token_repeat` + **L2**；≠ S46/S98/S99；**precision=0 OK**。S125 residual-leak-sub → **`logits_finite`** + **L2**；≠ S97/S93/S94/S31。  
 > **v4.8：** S120 RMSNorm-weight=zeros → `token_repeat` + **L2**；≠ S96/S66/S71/S74/S110。S121 SwiGLU-input-abs → `token_repeat` + **L2**；≠ S56/S76/S81/S115；**precision=0 OK**。S122 logits-abs → `token_repeat` + **L2**；≠ S53/S65/S108。  
 > **v4.7：** S117 query÷50 → `token_repeat` + **L2**；≠ S60/S52/S114。S118 key÷50 → `token_repeat` + **L2**；≠ S59/S54/S111。S119 residual-pre-abs → `token_repeat` + **L2**；≠ S48/S55/S64/S106。  
 > **v4.6：** S114 query-abs → `token_repeat` + **L2**；≠ S52/S60/S109/S111。S115 SwiGLU-out-abs → `token_repeat` + **L2**；≠ S67/S72/S103/S107。S116 RMSNorm-x-abs → `token_repeat` + **L2**；≠ S73/S62/S78/S102。  

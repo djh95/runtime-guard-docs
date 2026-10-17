@@ -1,7 +1,7 @@
 # Anomaly × Skills 能力边界（活文档）— 2026-10-17
 
 > **用途：** 对每一个已落地 / 在册异常场景，如实记录现象、复现与对照配置、skills 能分析到哪一步、有用度，以及还缺什么。  
-> **Skills：** `runtime-guard-test` `analysis/skill/` **v4.8**（investigation / detector-sweep / config-recommender / analysis / ref-kv-dump）。  
+> **Skills：** `runtime-guard-test` `analysis/skill/` **v4.9**（investigation / detector-sweep / config-recommender / analysis / ref-kv-dump）。  
 > **Guard pin：** G2 `f2aefd068`。三层率 = trigger / precision / detect。  
 > **诚实上限：** skills **定界**（detect / 现象类 / 可选 KV 首分歧），**不承诺**定位到算子、权重元素或具体 commit。
 
@@ -148,6 +148,9 @@
 | S120 | RMSNorm-weight=zeros | **是** `token_repeat` | 否 | **L2 class-hint**（≠S96/S66/S71/S74/S110） | **高** | collapsed norm weight；`!!!!` |
 | S121 | SwiGLU-input-abs | **是** `token_repeat` | 否 | **L2 class-hint**（≠S56/S76/S81/S115） | **高** | unsigned SwiGLU in；**precision=0 OK** |
 | S122 | logits-abs | **是** `token_repeat` | 否 | **L2 class-hint**（≠S53/S65/S108） | **高** | unsigned logits；digit repeat |
+| S123 | RMSNorm-bias=-weight | **是** `token_repeat` | 否 | **L2 class-hint**（≠S100/S66/S120） | **高** | wrong bias polarity；`.ON` |
+| S124 | penalty-skip | **是** `token_repeat` | 否 | **L2 class-hint**（≠S46/S98/S99） | **高** | ignored penalties；**precision=0 OK** |
+| S125 | residual-leak-sub | **是** `logits_finite` | 否 | **L2 class-hint**（≠S97/S93/S94/S31） | **高** | x=x-residual；`!!!!` |
 
 > **S20 说明：** detector **能检出**（`token_repeat` 对 `!!!!`/token0）；skills 额外给出 **溢出/softcap class-hint（L2）**，不是「只能 detect、无类提示」。仍 **不能** 定位到具体 softcap 实现行或权重。
 
@@ -1369,6 +1372,38 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 | **待改进** | 无 |
 
 
+
+### S123 — RMSNorm-bias=-weight（≠ S100/S66/S120）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **100 / 33 / 48**；`token_repeat`×48 |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2**（wrong norm bias polarity）；≠ S100/S66/S120 |
+| **有用度** | **高** |
+| **待改进** | 无 |
+
+### S124 — Penalty-skip（≠ S46/S98/S99；precision=0 OK）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **132 / 0 / 48**；`token_repeat`×48；unique id-echo；T>0 |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2**（ignored penalties）；≠ S46/S98/S99；**identical precision=0 expected** — not GAP |
+| **有用度** | **高** |
+| **待改进** | 无 |
+
+### S125 — Residual-leak-sub（≠ S97/S93/S94/S31）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **100 / 48 / 48**；`logits_finite`×48；identical `!!!!` |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2**（wrong residual recombine：sub）；≠ S97/S93/S94/S31 |
+| **有用度** | **高** |
+| **待改进** | 无 |
+
+
 ---
 
 ## Verify-loop deltas（2026-10-17）
@@ -1478,6 +1513,9 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 | **S120** | 无 RMSNorm-weight=zeros class → **L2**；≠ S96/S66/S71/S74/S110 | **是** |
 | **S121** | 无 SwiGLU-input-abs class → **L2**；≠ S56/S76/S81/S115；precision=0 + detect=48 PASS | **是** |
 | **S122** | 无 logits-abs class → **L2**；≠ S53/S65/S108 | **是** |
+| **S123** | 无 RMSNorm-bias=-weight class → **L2**；≠ S100/S66/S120 | **是** |
+| **S124** | 无 penalty-skip class → **L2**；≠ S46/S98/S99；precision=0 + detect=48 PASS | **是** |
+| **S125** | 无 residual-leak-sub class → **L2** via **`logits_finite`**；≠ S97/S93/S94/S31 | **是** |
 
 详见 [anomaly-skills-verify-loop-20261017.md](./anomaly-skills-verify-loop-20261017.md)。
 
@@ -1488,7 +1526,7 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 3. Spec 分布性：summarize 突出 `acceptance_rate`  
 4. ~~Weight/Quant always-on 场景落地~~ → **S23/S24 PASS L1**（仍不可定位张量）  
 5. KV PASS（S10′/S12/S30/S47）：标准 ref-kv 流水线模板 + 容器 dump_dir 重映射  
-6. Soft-inv / cast / residual / graph-pad / softcap / attn / temp / pos / norm / act / rope / embed / penalty / kv-swap / **rmsnorm-weight-zeros / swiglu-input-abs / logits-abs**：**S25–S122 L2**（除 S44 INVALID / S45 FAIL+GAP）
+6. Soft-inv / cast / residual / graph-pad / softcap / attn / temp / pos / norm / act / rope / embed / penalty / kv-swap / **rmsnorm-bias-neg / penalty-skip / residual-leak-sub**：**S25–S125 L2**（除 S44 INVALID / S45 FAIL+GAP）
 
 ---
 

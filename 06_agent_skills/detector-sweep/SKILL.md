@@ -134,3 +134,5 @@ description: >-
 **Query÷50 / key÷50 / residual-pre-abs（S117/S118/S119）：** 开 `token_repeat`。S117≠S60/S52/S114；S118≠S59/S54/S111；S119≠S48/S55/S64/S106。
 
 **RMSNorm-weight=zeros / SwiGLU-input-abs / logits-abs（S120/S121/S122）：** 开 `token_repeat`。S120≠S96/S66/S71/S74/S110；S121≠S56/S76/S81/S115；S122≠S53/S65/S108。S121 identical precision=0 仍可 PASS。
+
+**RMSNorm-bias=-weight / penalty-skip / residual-leak-sub（S123/S124/S125）：** S123/S124 开 `token_repeat`（S124 需 T>0）。S125 **开 `logits_finite`**（主）。S123≠S100/S66/S120；S124≠S46/S98/S99；S125≠S97/S93/S94/S31。S124 identical precision=0 仍可 PASS。
