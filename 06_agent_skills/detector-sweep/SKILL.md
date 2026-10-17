@@ -124,3 +124,5 @@ description: >-
 **RMSNorm-out-abs / SwiGLU-gate-only / rope-skip-key（S102/S103/S104）：** 开 `token_repeat`。S102≠S86/S87–S89；S103≠S39/S50/S56–S81；S104≠S40/S25/S28/S101。S103 identical precision=0 仍可 PASS。
 
 **Rope-skip-query / residual-post-abs / SwiGLU-up-only（S105/S106/S107）：** 开 `token_repeat`。S105≠S104/S40/S25/S28/S101；S106≠S88/S90–S91/S102；S107≠S103/S39/S50。
+
+**Hidden-abs / value-abs / RMSNorm-weight-abs（S108/S109/S110）：** 开 `token_repeat`。S108≠S61/S75；S109≠S58/S51；S110≠S66/S71/S74/S96/S100。S109 identical precision=0 仍可 PASS。

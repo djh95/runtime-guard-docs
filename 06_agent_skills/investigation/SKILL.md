@@ -141,6 +141,9 @@ description: >-
 | Rope-skip-query（S105，rotate K only；Q unrotated） | phrase-repeat 垃圾 | **`token_repeat`** | **L2**（Q/K RoPE phase mismatch，对偶于 S104）；≠ S104 skip-K ≠ S40/S25/S28/S101 |
 | Residual-post-abs（S106，`residual=abs(residual)` after add-RMSNorm） | 混杂 servlet 复读；precision 可 <n_req | **`token_repeat`** | **L2**（unsigned post-residual）；≠ S88 post-neg ≠ S90–S91 mag ≠ S102 out-abs |
 | SwiGLU-up-only（S107，return up half；drop silu(gate)*up） | identical 短语复读 | **`token_repeat`** | **L2**（incomplete SwiGLU：up only）；≠ S103 gate-only ≠ S39 skip-silu ≠ S50 half-swap |
+| Hidden-abs（S108，`hidden=abs(hidden)` before lm-head） | 混杂 cyrillic/`индив` 复读 | **`token_repeat`** | **L2**（unsigned pre-head hidden）；≠ S61 hidden×50 ≠ S75 hidden÷50 |
+| Value-abs（S109，`value=abs(value)` before FA） | unique garbage；**identical precision=0**；detect 可 <n_req | **`token_repeat`** | **L2**（unsigned V）；≠ S58 value-neg ≠ S51 value×；**detect>0 仍 PASS**（勿因 precision=0 判 GAP） |
+| RMSNorm-weight-abs（S110，`abs(weight)` into add-RMSNorm） | digit/`1.1.1…` 复读；precision 可 <n_req | **`token_repeat`** | **L2**（unsigned norm weight）；≠ S66 neg ≠ S71 ×50 ≠ S74 ÷50 ≠ S96 ones ≠ S100 bias=weight |
 | RoPE 第二半写丢（S25，soft-inv #7082） | digit/`1.1.1…` 复读塌缩 | **`token_repeat`** | **L2 class-hint**（RoPE half）；≠ S11 pad；勿宣称定位到 Triton store 行 |
 | RMSNorm fp32 weight-mul（S26，soft-inv #42379） | 同上类复读；dtype/cast | **`token_repeat`** | **L2**（norm dtype）；与 S25 症状可重叠，靠 overlay/场景区分 |
 | RoPE neox→interleaved 风格错（S28，#7341/#7082 class） | 句/短语级复读（score=`phrase_repeat`） | **`token_repeat`** | **L2**；≠ S25 half-drop ≠ S11；samples 可能看似「正常英文」 |

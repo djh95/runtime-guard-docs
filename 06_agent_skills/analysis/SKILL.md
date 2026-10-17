@@ -127,6 +127,9 @@ rgpy.score_completion_samples --sample-dir ./samples --json-out samples_score.js
 - Rope-skip-query（S105）→ `token_repeat` + **L2**；≠ S104/S40/S25/S28/S101。  
 - Residual-post-abs（S106）→ `token_repeat` + **L2**；≠ S88/S90–S91/S102。  
 - SwiGLU-up-only（S107）→ `token_repeat` + **L2**；≠ S103/S39/S50。  
+- Hidden-abs（S108）→ `token_repeat` + **L2**；≠ S61/S75。  
+- Value-abs（S109）→ `token_repeat` + **L2**；≠ S58/S51；**identical-mode precision=0 仍可 PASS**（detect=24）。  
+- RMSNorm-weight-abs（S110）→ `token_repeat` + **L2**；≠ S66/S71/S74/S96/S100。  
 - `garbage_mixed_script` + detect=0 → **FAIL+GAP**（S01/S07/S45）。若已有 `token_repeat` report，勿因 samples 里偶发 garbage 标签宣称 GAP。  
 有 precision 且 detect=0 → 交付 **FAIL+GAP**（勿伪造 detector PASS）。
 

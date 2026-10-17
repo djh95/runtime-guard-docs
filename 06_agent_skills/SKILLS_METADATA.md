@@ -1,8 +1,9 @@
 # Runtime-Guard Skills Metadata
 
-版本：v4.3  
+版本：v4.4  
 Skill 列表（**不改名**）：`investigation` · `detector-sweep` · `config-recommender` · `analysis` · `ref-kv-dump`
 
+> **v4.4：** S108 hidden-abs → `token_repeat` + **L2**；≠ S61/S75。S109 value-abs → `token_repeat` + **L2**；≠ S58/S51；**precision=0 OK**（detect=24）。S110 RMSNorm-weight-abs → `token_repeat` + **L2**；≠ S66/S71/S74/S96/S100。  
 > **v4.3：** S105 rope-skip-query → `token_repeat` + **L2**；≠ S104/S40/S25/S28/S101。S106 residual-post-abs → `token_repeat` + **L2**；≠ S88/S90–S91/S102。S107 SwiGLU-up-only → `token_repeat` + **L2**；≠ S103/S39/S50。  
 > **v4.2：** S102 RMSNorm-out-abs → `token_repeat` + **L2**；≠ S86/S87–S89。S103 SwiGLU-gate-only → `token_repeat` + **L2**；≠ S39/S50/S56–S81；**precision=0 OK**。S104 rope-skip-key → `token_repeat` + **L2**；≠ S40/S25/S28/S101。  
 > **v4.1：** S99 top_p-skip → `token_repeat` + **L2**；≠ S45/S98/temp；**precision=0 OK**。S100 RMSNorm-bias=weight → `token_repeat` + **L2**；≠ S66/S71/S74/S96。S101 cos/sin-half-swap → `token_repeat` + **L2**；≠ S42/S79–S82/S40/S25/S28。  
