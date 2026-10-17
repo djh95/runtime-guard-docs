@@ -51,6 +51,8 @@ rgpy.score_completion_samples --sample-dir ./samples --json-out samples_score.js
 - 权重/量化 always-on（S23/S24）→ **停在 detect**：`token_repeat` report 即够；**禁止**从 dump/ref 推断「哪条 weight/scale」。  
 - Soft-inv RoPE/RMSNorm（S25/S26/S28）→ `token_repeat` + **L2 class-hint**（half-drop / fp32-mul / neox→interleaved）；句级复读看 `phrase_repeat`；≠ S11 pad。有 report 时勿因短标签空而宣称「无 precision」。  
 - Logits fp16 demote（S29）→ `token_repeat` + **L2 cast**；≠ S20/S26。Null-block KV dirt（S30）→ `token_repeat` + **L2 KV**（可 verify/ref）；≠ S01/S10。Residual drop（S31）→ 强 `phrase_repeat`/identical；**L2** ≠ S26。  
+- FIA FULL-graph pad（S32 #7144）→ `token_repeat` + **L2**；precision 常为 **unique** `pad_echo`（`wN_M` / `_0_0_0`），identical-mode 会低估；≠ S14。  
+- Incomplete softcap（S33）→ `token_repeat` + **L2**（÷cap+tanh skip *cap）；≠ S20 overflow/`!!!!`。  
 - `garbage_mixed_script` + detect=0 → **FAIL+GAP**（S01/S07）。若已有 `token_repeat` report，勿因 samples 里偶发 garbage 标签宣称 GAP。  
 有 precision 且 detect=0 → 交付 **FAIL+GAP**（勿伪造 detector PASS）。
 

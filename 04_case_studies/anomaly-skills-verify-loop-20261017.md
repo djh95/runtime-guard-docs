@@ -155,6 +155,24 @@ PYTHONPATH=. python -m analysis.scripts.score_completion_samples --sample-dir te
 # likewise S30 S31
 ```
 
+## S32 / S33 — FIA FULL-graph pad + incomplete softcap (v1.8)
+
+| | Before (pre-v1.8) | After (re-verify) |
+|--|-------------------|-------------------|
+| **S32** layers | 132/47/48 `token_repeat` | same ✓ |
+| **S32** score | precision_hits=**4**（漏 `wN_M` unique pad） | **`pad_echo`×45** + hits=**48**; gap=`None` ✓ |
+| **S32** skills | risk conflate S14 / undercount precision | **L2** #7144; ≠ S14; unique-pad guidance ✓ |
+| **S33** layers | 132/15/48 `token_repeat` | same ✓ |
+| **S33** score | `repeat`+`phrase_repeat`; gap=`None` | same ✓ |
+| **S33** skills | risk conflate S20 overflow | **L2** incomplete softcap ≠ S20 ✓ |
+| Expected? | — | **Yes** — score pad_echo + two L2 class-hints |
+
+```bash
+PYTHONPATH=. python -m analysis.scripts.summarize_reports --report-dir tests/build-anomaly-env/fail-evidence/S32/reports
+PYTHONPATH=. python -m analysis.scripts.score_completion_samples --sample-dir tests/build-anomaly-env/fail-evidence/S32/samples
+# likewise S33
+```
+
 ## Remaining gaps (not closed by this loop)
 
 - S22: summarize does not yet print `acceptance_rate` column — optional next script tweak.

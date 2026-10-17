@@ -39,6 +39,8 @@ description: >-
 
 **Sampling cast / null-block KV / residual drop（S29/S30/S31）：** 开 `token_repeat`。S29≠S20；S30≠S01/S10；S31≠S26。S30 可兼 dump 供后续 L3。
 
+**FIA FULL-graph pad / incomplete softcap（S32/S33）：** 开 `token_repeat`。S32 精度看 unique garbage（score `pad_echo`），勿因 identical-mode 低判「无 precision」。S33≠S20。
+
 ## 输出模板（可热更）
 
 启动须已开 `runtime_config_hot_reload=true`（见 01）。Grep 确认 reload；失败会保留旧配置。
