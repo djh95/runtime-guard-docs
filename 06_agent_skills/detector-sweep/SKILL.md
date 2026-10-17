@@ -102,3 +102,5 @@ description: >-
 **Embed-negate / variance-eps×1000 / RMSNorm-weight×50（S69/S70/S71）：** S69/S71 **开 `logits_finite`**（主）。S70 开 `token_repeat`。S69≠S43；S70≠S26/S38/S66；S71≠S66。
 
 **SwiGLU-out×50 / RMSNorm-x-negate / RMSNorm-weight÷50（S72/S73/S74）：** S72/S73 **开 `logits_finite`**（主）。S74 开 `token_repeat`。S72≠S39/S50/S56/S67；S73≠S48/S62；S74≠S66/S71。
+
+**Hidden÷50 / SwiGLU-input×50 / variance-eps÷1000（S75/S76/S77）：** S75/S77 开 `token_repeat`。S76 **开 `logits_finite`**（主）。S75≠S61/S53/S65；S76≠S39/S50/S56/S67/S72；S77≠S70。

@@ -94,6 +94,9 @@ rgpy.score_completion_samples --sample-dir ./samples --json-out samples_score.js
 - SwiGLU out ×50（S72）→ **`logits_finite`** + **L2**；≠ S39/S50/S56/S67。  
 - RMSNorm x negate（S73）→ **`logits_finite`** + **L2**；≠ S48/S62。  
 - RMSNorm weight ÷50（S74）→ `token_repeat` + **L2**；≠ S66/S71。  
+- Hidden ÷50（S75）→ `token_repeat` + **L2**；≠ S61/S53/S65。  
+- SwiGLU input ×50（S76）→ **`logits_finite`** + **L2**；≠ S39/S50/S56/S67/S72。  
+- Variance eps ÷1000（S77）→ `token_repeat` + **L2**；≠ S70。  
 - `garbage_mixed_script` + detect=0 → **FAIL+GAP**（S01/S07/S45）。若已有 `token_repeat` report，勿因 samples 里偶发 garbage 标签宣称 GAP。  
 有 precision 且 detect=0 → 交付 **FAIL+GAP**（勿伪造 detector PASS）。
 

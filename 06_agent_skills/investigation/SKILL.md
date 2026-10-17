@@ -108,6 +108,9 @@ description: >-
 | SwiGLU out ×50（S72，`out*=50` after npu_swiglu） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（wrong SwiGLU out mag）；≠ S39 skip ≠ S50 swap ≠ S56 in-neg ≠ S67 out-neg |
 | RMSNorm x negate（S73，`x=-x` before add-RMSNorm） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（wrong pre-norm act polarity）；≠ S48 residual-neg ≠ S62 pre-norm×50 |
 | RMSNorm weight ÷50（S74） | 短语/`numpy` 复读塌缩 | **`token_repeat`** | **L2**（wrong norm-weight mag low）；≠ S66 negate ≠ S71 ×50 |
+| Hidden ÷50 before lm-head（S75） | digit/`1.1.1…` 复读 | **`token_repeat`** | **L2**（wrong pre-head hidden mag low）；≠ S61 ×50 ≠ S53 logits÷50 ≠ S65 logits×50 |
+| SwiGLU input ×50（S76，`x*=50` before npu_swiglu） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（wrong SwiGLU input mag）；≠ S39/S50/S56/S67/S72 |
+| Variance eps ÷1000（S77） | digit/`1.1.1…` 复读混杂 | **`token_repeat`** | **L2**（wrong norm eps low）；≠ S70 eps×1000 |
 | RoPE 第二半写丢（S25，soft-inv #7082） | digit/`1.1.1…` 复读塌缩 | **`token_repeat`** | **L2 class-hint**（RoPE half）；≠ S11 pad；勿宣称定位到 Triton store 行 |
 | RMSNorm fp32 weight-mul（S26，soft-inv #42379） | 同上类复读；dtype/cast | **`token_repeat`** | **L2**（norm dtype）；与 S25 症状可重叠，靠 overlay/场景区分 |
 | RoPE neox→interleaved 风格错（S28，#7341/#7082 class） | 句/短语级复读（score=`phrase_repeat`） | **`token_repeat`** | **L2**；≠ S25 half-drop ≠ S11；samples 可能看似「正常英文」 |
