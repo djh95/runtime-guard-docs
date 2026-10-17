@@ -7,6 +7,8 @@
 
 **维护：** 160 builder 往 `docs/anomaly-skills-handoff.md` 塞新 PASS/FAIL+GAP → skills 方（162）补本节 + `docs/anomaly-skills-runs/`；skills 变更推 `main`。
 
+**强制闭环：** 每次改 skills 后必须对 **同一 fail-evidence** 再跑 analyze/verify，并在 [anomaly-skills-verify-loop-20261017.md](./anomaly-skills-verify-loop-20261017.md) 记 **before→after**。禁止「只改文档/技能就收工」。
+
 **Skills 到达层级（全文复用）**
 
 | 层级 | 含义 |
@@ -289,6 +291,15 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 | **负对照** | 同 W8A8 无 scale 腐蚀；bf16 |
 
 ---
+
+## Verify-loop deltas（S20 / S22，2026-10-17 补跑）
+
+| ID | Before → After | 是否达到预期 |
+|----|----------------|--------------|
+| **S20** | score 误标 GAP → **无 GAP** + `token0_collapse`；叙事升为 **L2 class-hint**（仍能 `token_repeat` 检测） | **是** |
+| **S22** | 无 RNG/SALT class 指引 → skills 表 + sweep 要求看 `spec_acceptance`；samples 空标签视为正常分布性 | **是** |
+
+详见 [anomaly-skills-verify-loop-20261017.md](./anomaly-skills-verify-loop-20261017.md)。
 
 ## Skills 全局缺口（优先序）
 
