@@ -171,6 +171,9 @@ description: >-
 | Residual-post-zeros（S135，`residual.zero_()` after add-RMSNorm） | identical `FieldType` 短语复读 | **`token_repeat`** | **L2**（collapsed post-residual）；≠ S88 post-neg ≠ S90/S91 mag ≠ S106 post-abs ≠ S129 pre-zeros |
 | RMSNorm-out-zeros（S136，`x.zero_()` after add-RMSNorm） | 全请求 `!!!!…` 塌缩 | **`token_repeat`** | **L2**（collapsed post-norm x）；≠ S86 out-neg ≠ S87 out× ≠ S89 out÷ ≠ S102 out-abs |
 | Embed-ones（S137，`ones_like(embedding)` after lookup） | identical `××…` 复读 | **`token_repeat`** | **L2**（unit embed）；≠ S69 neg ≠ S43 ×100 ≠ S80 ÷50 ≠ S112 abs ≠ S127 zeros |
+| Hidden-ones（S138，`ones_like(hidden)` before lm-head） | identical `pl` 复读 | **`token_repeat`** | **L2**（unit pre-head hidden）；≠ S61 ×50 ≠ S75 ÷50 ≠ S108 abs ≠ S126 zeros |
+| Positions-ones（S139，`ones_like(positions)` before update_cos_sin） | digit/`Friday` 复读；precision 可 <n_req | **`token_repeat`** | **L2**（pos collapse to 1）；≠ S37 pos→0 ≠ S57 ×2 ≠ S84 ÷2 |
+| Residual-pre-ones（S140，`ones_like(residual)` before add-RMSNorm） | identical `[code` 短语复读 | **`token_repeat`** | **L2**（unit pre-residual）；≠ S48 neg ≠ S55/S64 mag ≠ S119 abs ≠ S129 zeros |
 | RoPE 第二半写丢（S25，soft-inv #7082） | digit/`1.1.1…` 复读塌缩 | **`token_repeat`** | **L2 class-hint**（RoPE half）；≠ S11 pad；勿宣称定位到 Triton store 行 |
 | RMSNorm fp32 weight-mul（S26，soft-inv #42379） | 同上类复读；dtype/cast | **`token_repeat`** | **L2**（norm dtype）；与 S25 症状可重叠，靠 overlay/场景区分 |
 | RoPE neox→interleaved 风格错（S28，#7341/#7082 class） | 句/短语级复读（score=`phrase_repeat`） | **`token_repeat`** | **L2**；≠ S25 half-drop ≠ S11；samples 可能看似「正常英文」 |

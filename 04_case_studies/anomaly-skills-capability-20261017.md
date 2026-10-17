@@ -1,7 +1,7 @@
 # Anomaly × Skills 能力边界（活文档）— 2026-10-17
 
 > **用途：** 对每一个已落地 / 在册异常场景，如实记录现象、复现与对照配置、skills 能分析到哪一步、有用度，以及还缺什么。  
-> **Skills：** `runtime-guard-test` `analysis/skill/` **v5.3**（investigation / detector-sweep / config-recommender / analysis / ref-kv-dump）。  
+> **Skills：** `runtime-guard-test` `analysis/skill/` **v5.4**（investigation / detector-sweep / config-recommender / analysis / ref-kv-dump）。  
 > **Guard pin：** G2 `f2aefd068`。三层率 = trigger / precision / detect。  
 > **诚实上限：** skills **定界**（detect / 现象类 / 可选 KV 首分歧），**不承诺**定位到算子、权重元素或具体 commit。
 
@@ -163,6 +163,9 @@
 | S135 | residual-post-zeros | **是** `token_repeat` | 否 | **L2 class-hint**（≠S88/S90/S91/S106/S129） | **高** | collapsed post-residual；FieldType |
 | S136 | RMSNorm-out-zeros | **是** `token_repeat` | 否 | **L2 class-hint**（≠S86/S87/S89/S102） | **高** | collapsed post-norm x；`!!!!` |
 | S137 | embed-ones | **是** `token_repeat` | 否 | **L2 class-hint**（≠S69/S43/S80/S112/S127） | **高** | unit embed；`××` |
+| S138 | hidden-ones | **是** `token_repeat` | 否 | **L2 class-hint**（≠S61/S75/S108/S126） | **高** | unit pre-head hidden；`pl` |
+| S139 | positions-ones | **是** `token_repeat` | 否 | **L2 class-hint**（≠S37/S57/S84） | **高** | pos→1；digits/`Friday`；precision 37 |
+| S140 | residual-pre-ones | **是** `token_repeat` | 否 | **L2 class-hint**（≠S48/S55/S64/S119/S129） | **高** | unit pre-residual；`[code` |
 
 > **S20 说明：** detector **能检出**（`token_repeat` 对 `!!!!`/token0）；skills 额外给出 **溢出/softcap class-hint（L2）**，不是「只能 detect、无类提示」。仍 **不能** 定位到具体 softcap 实现行或权重。
 
@@ -1540,6 +1543,36 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 | **有用度** | **高** |
 | **待改进** | 无 |
 
+### S138 — Hidden-ones（≠ S61/S75/S108/S126）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **16 / 48 / 48**；`token_repeat`×48；identical `pl` |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2**（unit pre-head hidden）；≠ S61/S75/S108/S126 |
+| **有用度** | **高** |
+| **待改进** | 无 |
+
+### S139 — Positions-ones（≠ S37/S57/S84）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **132 / 37 / 48**；`token_repeat`×48；digits/`Friday`；precision 37 OK |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2**（pos collapse to 1）；≠ S37/S57/S84 |
+| **有用度** | **高** |
+| **待改进** | 无 |
+
+### S140 — Residual-pre-ones（≠ S48/S55/S64/S119/S129）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **102 / 48 / 48**；`token_repeat`×48；identical `[code` |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2**（unit pre-residual）；≠ S48/S55/S64/S119/S129 |
+| **有用度** | **高** |
+| **待改进** | 无 |
+
 ---
 
 ## Verify-loop deltas（2026-10-17）
@@ -1664,6 +1697,9 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 | **S135** | 无 residual-post-zeros class → **L2**；≠ S88/S90/S91/S106/S129 | **是** |
 | **S136** | 无 RMSNorm-out-zeros class → **L2**；≠ S86/S87/S89/S102 | **是** |
 | **S137** | 无 embed-ones class → **L2**；≠ S69/S43/S80/S112/S127 | **是** |
+| **S138** | 无 hidden-ones class → **L2**；≠ S61/S75/S108/S126 | **是** |
+| **S139** | 无 positions-ones class → **L2**；≠ S37/S57/S84 | **是** |
+| **S140** | 无 residual-pre-ones class → **L2**；≠ S48/S55/S64/S119/S129 | **是** |
 
 详见 [anomaly-skills-verify-loop-20261017.md](./anomaly-skills-verify-loop-20261017.md)。
 
@@ -1674,7 +1710,7 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 3. Spec 分布性：summarize 突出 `acceptance_rate`  
 4. ~~Weight/Quant always-on 场景落地~~ → **S23/S24 PASS L1**（仍不可定位张量）  
 5. KV PASS（S10′/S12/S30/S47）：标准 ref-kv 流水线模板 + 容器 dump_dir 重映射  
-6. Soft-inv / cast / residual / graph-pad / softcap / attn / temp / pos / norm / act / rope / embed / penalty / kv-swap / **residual-post-zeros / rmsnorm-out-zeros / embed-ones**：**S25–S137 L2**（除 S44 INVALID / S45 FAIL+GAP）
+6. Soft-inv / cast / residual / graph-pad / softcap / attn / temp / pos / norm / act / rope / embed / penalty / kv-swap / **hidden-ones / positions-ones / residual-pre-ones**：**S25–S140 L2**（除 S44 INVALID / S45 FAIL+GAP）
 
 ---
 
