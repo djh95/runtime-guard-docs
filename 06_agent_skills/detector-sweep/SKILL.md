@@ -49,6 +49,8 @@ description: >-
 
 **RoPE phase / embed scale（S42/S43）：** 开 `token_repeat`。S42≠S37/S40/S25/S28；S43 看 newline collapse。**S44 logits.zero_** 勿当 PASS（synthetic amplifier）。
 
+**Penalty flip / K/V swap（S46/S47）：** 开 `token_repeat`。S46≠S45/S44；S47≠S34/S35/S41。**S45 top-k on -logits** → unique garbage **FAIL+GAP**（同 S01/S07）；勿放大器硬凑。
+
 ## 输出模板（可热更）
 
 启动须已开 `runtime_config_hot_reload=true`（见 01）。Grep 确认 reload；失败会保留旧配置。

@@ -1,8 +1,9 @@
 # Runtime-Guard Skills Metadata
 
-版本：v2.2  
+版本：v2.3  
 Skill 列表（**不改名**）：`investigation` · `detector-sweep` · `config-recommender` · `analysis` · `ref-kv-dump`
 
+> **v2.3：** S46 penalty sign flip（1/rep + neg freq/pres）→ `token_repeat` + **L2**；≠ S45/S44。S47 K/V swap before FA → `token_repeat` + **L2**；≠ S34/S35/S41。**S45** top-k on `-logits` → **FAIL+GAP**（unique garbage；同 S01/S07）；**S44** 仍 **INVALID** vacated。  
 > **v2.2：** S42 `-cos_sin` wrong RoPE phase → `token_repeat` + **L2**；≠ S37/S40/S25/S28。S43 embed ×100 → `token_repeat` + **L2**；score `newline_collapse`；≠ S23/S41。**S44** `logits.zero_()` → **BLOCKED / invalid-synthetic**（PRINCIPLES §2 amplifier；非 skills win）。  
 > **v2.1：** S39 SwiGLU skip-silu → **`logits_finite`** + **L2**；≠ S26/S31/S38。S40 RoPE skip（unrotated Q/K）→ `token_repeat` + **L2**；≠ S25/S28/S37。S41 post-FA attn `mul_(1000)` → **`logits_finite`** + **L2**；≠ S34/S14/S35。  
 > **v2.0：** S36 temp-scale blowup（÷50）→ `token_repeat` + **L2**；score `id_echo`/`unique_garbage`（identical-mode 低估）。S37 positions→0 before RoPE → `token_repeat` + **L2**；≠ S25/S28/S11。S38 RMSNorm identity skip → **`logits_finite`**（`!!!!`）+ **L2**；≠ S26/S31/S20（S20 主靠 `token_repeat`）。  

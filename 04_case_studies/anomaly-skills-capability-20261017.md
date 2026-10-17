@@ -1,7 +1,7 @@
 # Anomaly × Skills 能力边界（活文档）— 2026-10-17
 
 > **用途：** 对每一个已落地 / 在册异常场景，如实记录现象、复现与对照配置、skills 能分析到哪一步、有用度，以及还缺什么。  
-> **Skills：** `runtime-guard-test` `analysis/skill/` **v2.2**（investigation / detector-sweep / config-recommender / analysis / ref-kv-dump）。  
+> **Skills：** `runtime-guard-test` `analysis/skill/` **v2.3**（investigation / detector-sweep / config-recommender / analysis / ref-kv-dump）。  
 > **Guard pin：** G2 `f2aefd068`。三层率 = trigger / precision / detect。  
 > **诚实上限：** skills **定界**（detect / 现象类 / 可选 KV 首分歧），**不承诺**定位到算子、权重元素或具体 commit。
 
@@ -70,6 +70,9 @@
 | S42 | RoPE phase negate | **是** `token_repeat` | 否 | **L2 class-hint**（≠S37/S40/S25/S28） | **高** | `-cos_sin` wrong phase |
 | S43 | embed ×100 | **是** `token_repeat` | 否 | **L2 class-hint**（≠S23/S41） | **高** | vocab embed mul_(100)；`newline_collapse` |
 | S44 | logits.zero_() | — | — | **BLOCKED** invalid-synthetic | **低** | PRINCIPLES §2 amplifier；非 PASS |
+| S45 | top-k on `-logits` | **否** GAP | 否 | samples unique-garbage（弱 L2） | **中** | origin-faithful；detect=0；同 S01/S07 |
+| S46 | penalty sign flip | **是** `token_repeat` | 否 | **L2 class-hint**（≠S45/S44） | **高** | 1/rep + neg freq/pres；digit collapse |
+| S47 | K/V swap before FA | **是** `token_repeat` | 否 | **L2 class-hint**（≠S34/S35/S41） | **高** | swap K/V into attn；短语塌缩 |
 
 > **S20 说明：** detector **能检出**（`token_repeat` 对 `!!!!`/token0）；skills 额外给出 **溢出/softcap class-hint（L2）**，不是「只能 detect、无类提示」。仍 **不能** 定位到具体 softcap 实现行或权重。
 
@@ -504,6 +507,36 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 | **有用度** | **低** |
 | **待改进** | 若有真实「logits 丢弃/未写」bug 路径再 origin 重做；否则保持 BLOCKED |
 
+### S45 — Top-k on `-logits`（unique garbage）— **FAIL+GAP**
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **16 / unique / 0**；score `precision_hits=47`（`garbage_mixed_script`×44）；identical-mode 低估 |
+| **能否检测** | **否** GAP（`token_repeat`/`logits_finite` miss） |
+| **Skills 最远** | 弱 L2：归档 samples + `WHY_UNDETECTED`；**无 online report** |
+| **有用度** | **中** — 诚实 FAIL+GAP（同 S01/S07）；勿放大器硬凑 |
+| **待改进** | garbled / unique-garbage detector；对比 S46 已 detect 的 sampling soft-inv |
+
+### S46 — Penalty sign flip（≠ S45/S44）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **16 / 48 / 48**；`token_repeat`×48 |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2**（penalty polarity invert → digit/`1.1.1…`）；≠ S45 GAP ≠ S44 amplifier |
+| **有用度** | **高** |
+| **待改进** | 无 |
+
+### S47 — K/V swap before FA（≠ S34/S35/S41）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **58 / 37 / 48**；`token_repeat`×48 |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2**（K/V swapped into attn）；短语/单字塌缩；≠ S34 scale ≠ S35 causal ≠ S41 attn-out |
+| **有用度** | **高** |
+| **待改进** | 有 dump 时可冲 L3；本轮 offline 停在 L2 |
+
 ---
 
 ## Verify-loop deltas（2026-10-17）
@@ -535,17 +568,20 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 | **S42** | 无 RoPE-phase class → **L2**；≠ S37/S40/S25/S28 | **是** |
 | **S43** | score hits=0（纯换行漏标）→ **`newline_collapse`×40**；**L2** ≠ S23/S41 | **是** |
 | **S44** | amplifier `zero_()` → **BLOCKED**（非 skills win） | **是**（诚实拒收） |
+| **S45** | unique garbage detect=0 → **FAIL+GAP**（同 S01/S07）；≥3 samples + `WHY_UNDETECTED` | **是**（诚实 GAP） |
+| **S46** | 无 penalty-polarity class → **L2**；≠ S45/S44 | **是** |
+| **S47** | 无 K/V-swap class → **L2**；≠ S34/S35/S41 | **是** |
 
 详见 [anomaly-skills-verify-loop-20261017.md](./anomaly-skills-verify-loop-20261017.md)。
 
 ## Skills 全局缺口（优先序）
 
-1. **Garbled / identical-across detector**（解锁 S01/S07 → 可升「高」有用度的 online 段）  
+1. **Garbled / identical-across / unique-garbage detector**（解锁 S01/S07/**S45** → 可升「高」有用度的 online 段）  
 2. MoE/溢出类：**明确 L3 不可达**（避免空跑 ref）  
 3. Spec 分布性：summarize 突出 `acceptance_rate`  
 4. ~~Weight/Quant always-on 场景落地~~ → **S23/S24 PASS L1**（仍不可定位张量）  
-5. KV PASS（S10′/S12/S30）：标准 ref-kv 流水线模板 + 容器 dump_dir 重映射  
-6. Soft-inv / cast / residual / graph-pad / softcap / attn / temp / pos / norm / act / rope / embed：**S25–S43 L2**（仍不可定位算子行）；**S44 BLOCKED**
+5. KV PASS（S10′/S12/S30/S47）：标准 ref-kv 流水线模板 + 容器 dump_dir 重映射  
+6. Soft-inv / cast / residual / graph-pad / softcap / attn / temp / pos / norm / act / rope / embed / **penalty / kv-swap**：**S25–S43 + S46/S47 L2**（仍不可定位算子行）；**S44 INVALID**；**S45 FAIL+GAP**
 
 ---
 

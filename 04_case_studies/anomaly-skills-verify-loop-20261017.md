@@ -253,10 +253,31 @@ PYTHONPATH=. python -m analysis.scripts.score_completion_samples --sample-dir te
 # likewise S43; S44 archived as BLOCKED only
 ```
 
+## S45 / S46 / S47 — top-k flip GAP + penalty flip + K/V swap (v2.3)
+
+| | Before (pre-v2.3) | After (re-verify) |
+|--|-------------------|-------------------|
+| **S45** layers | 16 / unique / 0 | same ✓ |
+| **S45** score | `garbage_mixed_script`×44; hits=47; gap | same; **WHY_UNDETECTED** + ≥3 samples ✓ |
+| **S45** skills | risk call INVALID / amplifier-retune | **FAIL+GAP** honest（同 S01/S07）；≠ S46 ✓ |
+| **S46** layers | 16/48/48 `token_repeat` | same ✓ |
+| **S46** score | digit/`1.1.1…` phrase_repeat×47; gap=`None` | same ✓ |
+| **S46** skills | no penalty-polarity class | **L2** sign flip；≠ S45/S44 ✓ |
+| **S47** layers | 58/37/48 `token_repeat` | same ✓ |
+| **S47** score | mixed_script+phrase_repeat×48; gap=`None` | same ✓ |
+| **S47** skills | risk conflate S34/S35/S41 | **L2** K/V swap ≠ those ✓ |
+| Expected? | — | **Yes** — S46/S47 L2; S45 honest FAIL+GAP |
+
+```bash
+PYTHONPATH=. python -m analysis.scripts.summarize_reports --report-dir tests/build-anomaly-env/fail-evidence/S46/reports
+PYTHONPATH=. python -m analysis.scripts.score_completion_samples --sample-dir tests/build-anomaly-env/fail-evidence/S45/samples
+# likewise S46 S47; S45 reports empty (detect=0)
+```
+
 ## Remaining gaps (not closed by this loop)
 
 - S22: summarize does not yet print `acceptance_rate` column — optional next script tweak.
-- S01/S07: still detector GAP; skills only offline score.
+- S01/S07/**S45**: still detector GAP; skills only offline score.
 - Weight/quant: still **cannot** localize which tensor/scale (by design).
 - Soft-inv RoPE/RMSNorm: **cannot** localize Triton store / exact mul line (by design).
 - S08/S10′: PASS report trees not fully mirrored in fail-evidence (status/WHY only for S10′; S08 local = pre-PASS attempts).

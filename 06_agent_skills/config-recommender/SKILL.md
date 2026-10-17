@@ -46,11 +46,14 @@ description: >-
 | RoPE phase negate（S42） | `token_repeat` | 标准 repeat 窗 | **L2** wrong phase；≠ S37/S40/S25/S28 |
 | Embed scale ×100（S43） | `token_repeat` | 标准 repeat 窗 | **L2**；newline collapse OK；≠ S23/S41 |
 | Logits `zero_()`（S44） | — | — | **勿排障当 PASS**；invalid-synthetic / BLOCKED |
+| Top-k on `-logits` / unique garbage（S45） | **无已合入强检出** | 仍可开 `token_repeat`+`logits_finite` 对照 | **FAIL+GAP**（同 S01/S07）；归档 samples；勿调阈值硬凑 |
+| Penalty sign flip（S46） | `token_repeat` | 标准 repeat 窗 | **L2**；digit/`1.1.1…`；≠ S45/S44 |
+| K/V swap before FA（S47） | `token_repeat` | 标准 repeat 窗 | **L2**；≠ S34/S35/S41 |
 | Null-block KV dirt（S30） | `token_repeat`（主） | + `dump_kv` 若要定界 | **L2**（+可选 L3）；≠ S01/S10/S23/S24 |
 | 权重 / 量化 always-on 故障（S23/S24） | `token_repeat`（主） | 可兼开 `logits_finite` 对照 | **detect-only**：报告即交付；勿输出「定位到 layer/scale」；S24≠S07 GAP |
 | Spec 接受异常 / residual resample 偏置 | `spec_acceptance` | `window:5–10`, `low_threshold:0.3–0.5`, `high_threshold:0.96–0.99`, … | **仅 MTP/eagle3**；S22 类（无 `RESAMPLE_NOISE_SALT`）以低 acceptance_rate 命中；可兼开 `token_repeat` |
 | KV 可疑无 detector | — | `manual_dump` / `dump_kv` + 后续 ref | 无 slot detector |
-| mixed-script / 跨请求全同垃圾 | **无已合入** | 仍可临时开 `token_repeat`+`logits_finite` 对照 | **已知 GAP**（S01/S07）；归档 samples，勿调阈值「硬凑」PASS |
+| mixed-script / 跨请求全同 / unique garbage | **无已合入** | 仍可临时开 `token_repeat`+`logits_finite` 对照 | **已知 GAP**（S01/S07/S45）；归档 samples，勿调阈值「硬凑」PASS |
 
 **勿推荐：** `output_substring` / `token_logprob` / `slot_*` / `kv_state`。  
 `on_trigger`：默认 `["report"]`；抓现场加 `"dump_kv"`。  

@@ -64,7 +64,10 @@ rgpy.score_completion_samples --sample-dir ./samples --json-out samples_score.js
 - RoPE phase negate（S42）→ `token_repeat` + **L2**；≠ S37/S40/S25/S28。  
 - Embed ×100（S43）→ `token_repeat` + **L2**；precision 常 **`newline_collapse`**；≠ S23/S41。  
 - Logits `zero_()`（S44）→ **invalid-synthetic / BLOCKED**（放大器）；归档勿当 skills win。  
-- `garbage_mixed_script` + detect=0 → **FAIL+GAP**（S01/S07）。若已有 `token_repeat` report，勿因 samples 里偶发 garbage 标签宣称 GAP。  
+- Top-k on `-logits`（S45）→ **FAIL+GAP**：unique `garbage_mixed_script` + detect=0（同 S01/S07）；identical-mode 低估勿判「无 precision」。  
+- Penalty sign flip（S46）→ `token_repeat` + **L2**；digit/`1.1.1…`；≠ S45/S44。  
+- K/V swap（S47）→ `token_repeat` + **L2**；短语/单字塌缩；≠ S34/S35/S41。  
+- `garbage_mixed_script` + detect=0 → **FAIL+GAP**（S01/S07/S45）。若已有 `token_repeat` report，勿因 samples 里偶发 garbage 标签宣称 GAP。  
 有 precision 且 detect=0 → 交付 **FAIL+GAP**（勿伪造 detector PASS）。
 
 ### Step 2 — 按 req 关联
