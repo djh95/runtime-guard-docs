@@ -56,4 +56,4 @@
 | A4 | [anomaly-skills-analysis-20261017.md](./anomaly-skills-analysis-20261017.md) | 分析纪要 |
 | A5 | [anomaly-skills-runs/](./anomaly-skills-runs/) | 逐场景 + batch-pass-wave |
 
-Skill 手册副本：[06_agent_skills/](../06_agent_skills/)（对齐 `runtime-guard-test/analysis/skill/` **v1.6**；含 S25/S26/S28 soft-inv）。
+Skill 手册副本：[06_agent_skills/](../06_agent_skills/)（对齐 `runtime-guard-test/analysis/skill/` **v1.7**；含 S25/S26/S28 soft-inv）。

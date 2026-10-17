@@ -50,6 +50,7 @@ rgpy.score_completion_samples --sample-dir ./samples --json-out samples_score.js
 - Spec 接受率异常（S22）→ 看 `spec_acceptance` report 的 rate 字段；samples 可能无 garbage 标签（分布性 precision）。  
 - 权重/量化 always-on（S23/S24）→ **停在 detect**：`token_repeat` report 即够；**禁止**从 dump/ref 推断「哪条 weight/scale」。  
 - Soft-inv RoPE/RMSNorm（S25/S26/S28）→ `token_repeat` + **L2 class-hint**（half-drop / fp32-mul / neox→interleaved）；句级复读看 `phrase_repeat`；≠ S11 pad。有 report 时勿因短标签空而宣称「无 precision」。  
+- Logits fp16 demote（S29）→ `token_repeat` + **L2 cast**；≠ S20/S26。Null-block KV dirt（S30）→ `token_repeat` + **L2 KV**（可 verify/ref）；≠ S01/S10。Residual drop（S31）→ 强 `phrase_repeat`/identical；**L2** ≠ S26。  
 - `garbage_mixed_script` + detect=0 → **FAIL+GAP**（S01/S07）。若已有 `token_repeat` report，勿因 samples 里偶发 garbage 标签宣称 GAP。  
 有 precision 且 detect=0 → 交付 **FAIL+GAP**（勿伪造 detector PASS）。
 

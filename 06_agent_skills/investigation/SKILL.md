@@ -69,6 +69,9 @@ description: >-
 | RMSNorm fp32 weight-mul（S26，soft-inv #42379） | 同上类复读；dtype/cast | **`token_repeat`** | **L2**（norm dtype）；与 S25 症状可重叠，靠 overlay/场景区分 |
 | RoPE neox→interleaved 风格错（S28，#7341/#7082 class） | 句/短语级复读（score=`phrase_repeat`） | **`token_repeat`** | **L2**；≠ S25 half-drop ≠ S11；samples 可能看似「正常英文」 |
 | Softcap / 不稳定 softmax 数值溢出（S20，constructed） | 全请求 `!!!!…` / token0 塌缩；temp≪1 放大 | **`token_repeat` 为主**；兼开 `logits_finite` | Inf/NaN 可能在采样内被吃掉 → 未必亮 `logits_finite`；MRV2 须打 **V2 Sampler**（非仅 AscendTopKTopPSampler） |
+| Logits fp16 demote（S29，sampling/cast） | digit/`1.1.1…` 复读；低 temp 放大 | **`token_repeat`** | **L2**（cast）；≠ S20 softcap ≠ S26 RMSNorm mul；打 **V2 Sampler** |
+| Null-block KV dirt（S30，soft-inv #39444） | 复读塌缩；block0 脏 | **`token_repeat`** | **L2**（+可选 L3 KV）；≠ S01 skip-zero ≠ S10 recycle ≠ S23/S24 |
+| Residual stream drop（S31） | 强 identical 短语复读（如 `FieldType`×N） | **`token_repeat`** | **L2**（add-rms 丢 residual）；≠ S26（fp32-mul 仍 accumulate） |
 | Spec residual resample RNG 无 SALT（S22，#18657） | 接受率异常偏低（如 0–0.27）；文本可看似正常 | **`spec_acceptance` 为主**；辅 `token_repeat` | ≠ S05（NaN argmax）；≠ S20；需 MTP/eagle3 + `temperature>0`；precision 常为 **分布性**（勿只靠 samples 垃圾启发式） |
 | 权重腐蚀 always-on（S23，constructed） | 启动后恒定复读/塌缩 | **`token_repeat`** | **仅 L1 detect**；禁止宣称哪一层/哪个 weight；负对照=干净 ckpt |
 | 量化 scale always-on（S24，constructed） | W8A8 启动后恒定 `token_repeat` | **`token_repeat`** | **仅 L1**；≠ S07（路径触发+GAP）；**不能**指出哪条 scale |

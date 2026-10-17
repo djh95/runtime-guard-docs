@@ -37,6 +37,8 @@ description: >-
 
 **RoPE / RMSNorm soft-inv（S25/S26/S28）：** 同样开 `token_repeat`。命中后交 analysis 做 **L2 class-hint**（half-drop / fp32-mul / neox→interleaved）；勿与 S11 MLA pad 混谈。
 
+**Sampling cast / null-block KV / residual drop（S29/S30/S31）：** 开 `token_repeat`。S29≠S20；S30≠S01/S10；S31≠S26。S30 可兼 dump 供后续 L3。
+
 ## 输出模板（可热更）
 
 启动须已开 `runtime_config_hot_reload=true`（见 01）。Grep 确认 reload；失败会保留旧配置。

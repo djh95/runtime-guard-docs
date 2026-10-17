@@ -132,6 +132,29 @@ PYTHONPATH=. python -m analysis.scripts.score_completion_samples --sample-dir te
 
 S27 BLOCKED — skipped (pe-presliced no-op + dirty clean).
 
+## S29 / S30 / S31 — cast / null-block KV / residual drop (older-PR wave-2)
+
+Evidence @ `9b59072` fail-evidence; skills **v1.7**. Offline / 162 — **no 160**.
+
+| ID | Before (pre-v1.7) | After (re-verify) |
+|----|-------------------|-------------------|
+| **S29** layers | 132/14/48 `token_repeat` | same ✓ |
+| **S29** score | `repeat`+`phrase_repeat`+`digits`; gap=`None` | same ✓ |
+| **S29** skills | no cast class (risk conflate S20/S26) | **L2** logits fp16 demote; ≠ S20/S26 ✓ |
+| **S30** layers | 2/14/48 | same ✓ |
+| **S30** score | `repeat`+`phrase_repeat`×16; gap=`None` | same ✓ |
+| **S30** skills | no null-block class | **L2** (#39444); ≠ S01/S10/S23/S24 ✓ |
+| **S31** layers | 470/48/48 | same ✓ |
+| **S31** score | identical `FieldType` `phrase_repeat`×48; gap=`None` | same ✓ |
+| **S31** skills | risk conflate S26 | **L2** residual drop ≠ S26 ✓ |
+| Expected? | — | **Yes** — three L2 class-hints; score already adequate |
+
+```bash
+PYTHONPATH=. python -m analysis.scripts.summarize_reports --report-dir tests/build-anomaly-env/fail-evidence/S29/reports
+PYTHONPATH=. python -m analysis.scripts.score_completion_samples --sample-dir tests/build-anomaly-env/fail-evidence/S29/samples
+# likewise S30 S31
+```
+
 ## Remaining gaps (not closed by this loop)
 
 - S22: summarize does not yet print `acceptance_rate` column — optional next script tweak.

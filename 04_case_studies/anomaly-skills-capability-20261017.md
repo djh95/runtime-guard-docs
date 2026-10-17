@@ -1,7 +1,7 @@
 # Anomaly × Skills 能力边界（活文档）— 2026-10-17
 
 > **用途：** 对每一个已落地 / 在册异常场景，如实记录现象、复现与对照配置、skills 能分析到哪一步、有用度，以及还缺什么。  
-> **Skills：** `runtime-guard-test` `analysis/skill/` **v1.6**（investigation / detector-sweep / config-recommender / analysis / ref-kv-dump）。  
+> **Skills：** `runtime-guard-test` `analysis/skill/` **v1.7**（investigation / detector-sweep / config-recommender / analysis / ref-kv-dump）。  
 > **Guard pin：** G2 `f2aefd068`。三层率 = trigger / precision / detect。  
 > **诚实上限：** skills **定界**（detect / 现象类 / 可选 KV 首分歧），**不承诺**定位到算子、权重元素或具体 commit。
 
@@ -54,6 +54,9 @@
 | S26 | RMSNorm fp32-mul | **是** `token_repeat` | 否 | **L2 class-hint**（norm dtype） | **高** | soft-inv #42379；正确 dtype mul 对照 |
 | S27 | MLA pe pre-sliced | — | — | — | **低** | **BLOCKED**（trig=0 + dirty clean） |
 | S28 | RoPE neox→interleaved | **是** `token_repeat` | 否 | **L2 class-hint**（style flip） | **高** | soft-inv #7341/#7082；≠S25/S11 |
+| S29 | logits fp16 demote | **是** `token_repeat` | 否 | **L2 class-hint**（cast；≠S20/S26） | **高** | V2 Sampler post-temp fp16 RT |
+| S30 | null-block KV dirt | **是** `token_repeat` | 否 | **L2**（+可选 L3；≠S01/S10） | **高** | soft-inv #39444 block0 ones |
+| S31 | residual stream drop | **是** `token_repeat` | 否 | **L2 class-hint**（≠S26） | **高** | add-rms 丢 residual accumulate |
 
 > **S20 说明：** detector **能检出**（`token_repeat` 对 `!!!!`/token0）；skills 额外给出 **溢出/softcap class-hint（L2）**，不是「只能 detect、无类提示」。仍 **不能** 定位到具体 softcap 实现行或权重。
 
@@ -328,6 +331,36 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 | **有用度** | **高** |
 | **待改进** | score **v1.6** 补 `phrase_repeat`（句级复读） |
 
+### S29 — Logits fp16 demote（sampling/cast）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **132 / 14 / 48**；`token_repeat`×48 |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2 class-hint**（cast）；≠ S20 softcap ≠ S26 |
+| **有用度** | **高** |
+| **待改进** | 无（不定位 Sampler 行） |
+
+### S30 — Null-block KV dirt（soft-inv #39444）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **2 / 14 / 48**；`token_repeat`×48 |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2**（+可选 L3）；≠ S01/S10/S23/S24 |
+| **有用度** | **高** |
+| **待改进** | 可选标准 ref-kv 流水线 |
+
+### S31 — Residual stream drop（≠ S26）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **470 / 48 / 48**；`token_repeat`×48；identical `FieldType` 复读 |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2 class-hint**（丢 residual accumulate）；≠ S26 fp32-mul |
+| **有用度** | **高** |
+| **待改进** | 无 |
+
 ---
 
 ## Verify-loop deltas（2026-10-17）
@@ -343,6 +376,9 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 | **S25** | 无 RoPE half class → **L2** + `token_repeat`；score 已有 `repeat` | **是** |
 | **S26** | 无 RMSNorm dtype class → **L2** + `token_repeat` | **是** |
 | **S28** | score **precision_hits=0**（句级复读漏标）→ **`phrase_repeat`×8**；skills **L2** style flip | **是** |
+| **S29** | 无 cast class → **L2** logits fp16 demote；≠ S20/S26 | **是** |
+| **S30** | 无 null-block class → **L2** KV dirt；≠ S01/S10 | **是** |
+| **S31** | 无 residual-drop class → **L2**；≠ S26；score identical phrase OK | **是** |
 
 详见 [anomaly-skills-verify-loop-20261017.md](./anomaly-skills-verify-loop-20261017.md)。
 
@@ -352,8 +388,8 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 2. MoE/溢出类：**明确 L3 不可达**（避免空跑 ref）  
 3. Spec 分布性：summarize 突出 `acceptance_rate`  
 4. ~~Weight/Quant always-on 场景落地~~ → **S23/S24 PASS L1**（仍不可定位张量）  
-5. KV PASS（S10′/S12）：标准 ref-kv 流水线模板 + 容器 dump_dir 重映射  
-6. Soft-inv RoPE/RMSNorm：**S25/S26/S28 L2**（仍不可定位算子行）
+5. KV PASS（S10′/S12/S30）：标准 ref-kv 流水线模板 + 容器 dump_dir 重映射  
+6. Soft-inv / cast / residual：**S25–S31 L2**（仍不可定位算子行）
 
 ---
 
