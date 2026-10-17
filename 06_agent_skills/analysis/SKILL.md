@@ -3,27 +3,31 @@ name: runtime-guard-analysis
 description: >-
   Offline-only analysis of runtime_guard report JSON and native kv_cache .pt
   dumps: summarize_reports, correlate_incident, verify_request_kv,
-  inspect_kv_dump. Emit verify PASS/FAIL as the gate for ref-kv-dump. Never
-  emit runtime_config JSON or start a server / force-feed.
+  inspect_kv_dump, score_completion_samples. Emit verify PASS/FAIL as the
+  gate for ref-kv-dump. Never emit runtime_config JSON or start a server /
+  force-feed.
 ---
 
 # runtime_guard analysis（离线读盘）
 
 **类型：原子 · 离线。** 只读磁盘；不改 live config、不起服、不 force-feed。
 
-脚本仓：[runtime-guard-test](https://github.com/djh95/runtime-guard-test) · 定界人读：[02](../../02_problem_localization.md)  
-契约：[SKILLS_METADATA.md](../SKILLS_METADATA.md)
+脚本仓：[runtime-guard-test](https://github.com/djh95/runtime-guard-test) · 定界人读：[02](https://github.com/djh95/runtime-guard-docs/blob/main/02_problem_localization.md)  
+契约：[SKILLS_METADATA.md](./SKILLS_METADATA.md)
 
 ```bash
 export RG_TEST=/path/to/runtime-guard-test
 alias rgpy='PYTHONPATH="$RG_TEST" python -m analysis.scripts'
 ```
 
-默认 `--report-dir`：`./runtime/report`（可问用户确认）。
+默认 `--report-dir`：`./runtime/report`（可问用户确认）。  
+Anomaly 证据树：`tests/build-anomaly-env/fail-evidence/Sxx/`（`status.json` / `layers.json` / `WHY_*.md` / reports|samples）。
 
 ## 流程
 
 ### Step 0 — 确认 report 根目录
+
+若只有 fail-evidence：同时记下 `samples/` 与 `status.json` 的三层率（trigger/precision/detect）。
 
 ### Step 1 — 汇总
 
@@ -31,7 +35,22 @@ alias rgpy='PYTHONPATH="$RG_TEST" python -m analysis.scripts'
 rgpy.summarize_reports --report-dir ./runtime/report --limit 20
 ```
 
-空目录 → 停。
+也接受扁平 `report_*.json`，以及归档别名 `sample_report.json` / `report_sample.json`。
+
+**空 report 目录 ≠ 停：** 若有 completion samples（S01/S07 FAIL+GAP），改走 Step 1b。
+
+### Step 1b — 无 report 时的 precision / GAP 评分
+
+```bash
+rgpy.score_completion_samples --sample-dir ./samples --json-out samples_score.json
+```
+
+关注：`identical_across_requests`、`garbage_mixed_script`、`token0_collapse` / `repeat`、`detector_gap_hint`。  
+- 纯 `!!!!…` / token0 塌缩（S20 overflow class）→ 期望已有 `token_repeat` report；**不是** GAP。  
+- Spec 接受率异常（S22）→ 看 `spec_acceptance` report 的 rate 字段；samples 可能无 garbage 标签（分布性 precision）。  
+- 权重/量化 always-on（S23/S24）→ **停在 detect**：`token_repeat` report 即够；**禁止**从 dump/ref 推断「哪条 weight/scale」。  
+- `garbage_mixed_script` + detect=0 → **FAIL+GAP**（S01/S07）。若已有 `token_repeat` report，勿因 samples 里偶发 garbage 标签宣称 GAP。  
+有 precision 且 detect=0 → 交付 **FAIL+GAP**（勿伪造 detector PASS）。
 
 ### Step 2 — 按 req 关联
 
@@ -39,7 +58,8 @@ rgpy.summarize_reports --report-dir ./runtime/report --limit 20
 rgpy.correlate_incident --report-dir ./runtime/report --req-id <req_id>
 ```
 
-关注 `dump_attempted` / `block_ids` / `kv_cache/.../<req_id>/wave_*/<rank_tag>/`。
+关注 `dump_attempted` / `block_ids` / `kv_cache/.../<req_id>/wave_*/<rank_tag>/`。  
+容器内 `dump_dir` 与宿主机路径不一致时：把 dump 拉到本地，用 `--kv-dir <rank_dir>` 直指含 `.pt` 的 rank 目录。
 
 ### Step 3 — report ↔ KV 对账（ref 硬门闩）
 
@@ -47,10 +67,14 @@ rgpy.correlate_incident --report-dir ./runtime/report --req-id <req_id>
 rgpy.verify_request_kv \
   --report ./runtime/report/<type>/report_....json \
   --report-dir ./runtime/report
+# 或：
+rgpy.verify_request_kv --report <report.json> --kv-dir <wave_N>/<rank_tag>
 ```
 
 `--kv-dir` 语义是 **rank 目录**（直接含 `.pt`）。明确输出 **PASS / FAIL**（及失败原因）。  
 `PASS` 才允许进入 `runtime-guard-ref-kv-dump`。
+
+`dump_attempted=true` 但本地无 `.pt` → FAIL（路径/配额/`on_trigger`），不是「KV 正常」。
 
 ### Step 4 — 抽查单个 `.pt`（按需）
 
@@ -58,14 +82,15 @@ rgpy.verify_request_kv \
 rgpy.inspect_kv_dump --path ./runtime/report/kv_cache/<type>/<req_id>/wave_N/<rank_tag>/<file>.pt
 ```
 
-跨 TP 前核对 `tp_rank` / `num_kv_heads`；层名 natural sort。
+跨 TP 前核对 `tp_rank` / `num_kv_heads`；层名 natural sort。  
+MoE 路由类（S06/S16–S19）KV 可能全程 finite —— **finite ≠ 无精度问题**；定界仍靠 token 复读 + 可选 ref。
 
 ### Step 5 — 交付摘要
 
-1. `incident_type`、`req_id`、dump 是否尝试/成功  
-2. `verify_result` + `block_ids`  
+1. `incident_type`、`req_id`、dump 是否尝试/成功；或 GAP 评分摘要  
+2. `verify_result` + `block_ids`（有 dump 时）  
 3. 可提取的 `prompt_token_ids` / `output_token_ids`（需 report 含敏感字段）  
-4. 缺口说明  
+4. 三层率（若 anomaly）与缺口说明  
 
 有 buggy+ref 定界 → 用户/总控再开 `ref-kv-dump` + investigation Q1–Q5（本 skill 不跑对比）。
 

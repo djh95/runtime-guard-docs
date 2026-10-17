@@ -11,8 +11,8 @@ description: >-
 
 **类型：原子 · 在线配置。** 排障 JSON / 业务默认全关 **只从此 skill 产出**（sweep 仅极简临时模板）。
 
-人读：[runtime_config.md](https://github.com/vllm-project/vllm-ascend/blob/main/docs/source/user_guide/configuration/runtime_config.md) · 手册 [01](../../01_enable_and_start.md) / [03](../../03_detectors/README.md)  
-契约：[SKILLS_METADATA.md](../SKILLS_METADATA.md)
+人读：[runtime_config.md](https://github.com/vllm-project/vllm-ascend/blob/main/docs/source/user_guide/configuration/runtime_config.md) · 手册 [01](https://github.com/djh95/runtime-guard-docs/blob/main/01_enable_and_start.md) / [03](https://github.com/djh95/runtime-guard-docs/blob/main/03_detectors/README.md)  
+契约：[SKILLS_METADATA.md](./SKILLS_METADATA.md)
 
 ## Step 1 — 模式
 
@@ -28,13 +28,17 @@ description: >-
 
 | 现象类 | Detector | 关键参数 | 备注 |
 |--------|----------|----------|------|
-| 复读 / 卡词 | `token_repeat` | `window:32`, `repeat_sum_threshold:64`, `min_tokens:32`, `consecutive_hits:1` | 最轻；热更改 `window` 会清空 per-req 状态 |
-| NaN/Inf / 数值炸 | `logits_finite` | `item_sync:false`（默认）；要 grammar 前精确 kind 才 `true` | #18644 qsl 边界 |
-| Spec 接受异常 | `spec_acceptance` | `window:10`, `low_threshold:0.3`, `high_threshold:0.96`, … | 仅 MTP |
+| 复读 / 卡词 / digit·`***`·ctx echo / `!!!!` token0 塌缩 | `token_repeat` | `window:32`, `repeat_sum_threshold:64`, `min_tokens:32`, `consecutive_hits:1` | MoE / KV recycle / MLA pad / **S20 softcap·softmax 溢出塌缩**；热更改 `window` 清 per-req 状态 |
+| NaN/Inf / 数值炸（logits 仍 non-finite） | `logits_finite` | `item_sync:false`（默认）；要 grammar 前精确 kind 才 `true` | #18644 qsl 边界；**抓不到有限垃圾**；溢出若已塌成 token0 可能 **miss** → 仍靠 `token_repeat` |
+| Softcap / 不稳定 exp-softmax 溢出嫌疑 | **两者都开** | `token_repeat` + `logits_finite`，只 report 先 | 低 temperature 放大；勿只信 `logits_finite` |
+| 权重 / 量化 always-on 故障（S23/S24） | `token_repeat`（主） | 可兼开 `logits_finite` 对照 | **detect-only**：报告即交付；勿输出「定位到 layer/scale」；S24≠S07 GAP |
+| Spec 接受异常 / residual resample 偏置 | `spec_acceptance` | `window:5–10`, `low_threshold:0.3–0.5`, `high_threshold:0.96–0.99`, … | **仅 MTP/eagle3**；S22 类（无 `RESAMPLE_NOISE_SALT`）以低 acceptance_rate 命中；可兼开 `token_repeat` |
 | KV 可疑无 detector | — | `manual_dump` / `dump_kv` + 后续 ref | 无 slot detector |
+| mixed-script / 跨请求全同垃圾 | **无已合入** | 仍可临时开 `token_repeat`+`logits_finite` 对照 | **已知 GAP**（S01/S07）；归档 samples，勿调阈值「硬凑」PASS |
 
 **勿推荐：** `output_substring` / `token_logprob` / `slot_*` / `kv_state`。  
-`on_trigger`：默认 `["report"]`；抓现场加 `"dump_kv"`。
+`on_trigger`：默认 `["report"]`；抓现场加 `"dump_kv"`。  
+Anomaly 压测：优先 `token_repeat` + `save_sensitive_info:true`；预期有限垃圾场景在 recommender 输出里写明 **detect 可能为 0（GAP）**。
 
 ## Step 3 — 配额与停检
 

@@ -1,7 +1,12 @@
 # Runtime-Guard Skills Metadata
 
-版本：v1.1  
+版本：v1.5  
 Skill 列表（**不改名**）：`investigation` · `detector-sweep` · `config-recommender` · `analysis` · `ref-kv-dump`
+
+> **v1.5：** S23/S24 权重·量化 always-on → **detect-only**（`token_repeat`）；score 勿因混有 garbage 标签误报 GAP；≠ S07。  
+> **v1.4：** S22 spec resample 无 SALT → `spec_acceptance`；≠ S05/S20。  
+> **v1.3：** S20 softcap/softmax 溢出 → `token_repeat`；score 不把纯 bang 塌缩标 GAP。  
+> **v1.2：** 三层率、根因 class 表、finite-garbage GAP、`score_completion_samples`。
 
 > 本文是职责契约（给人 / Agent 对齐用），**不是** RPC schema。  
 > 输入输出用「逻辑字段」描述即可；对话里用自然语言收集，勿伪造 JSON 信封。
@@ -94,21 +99,23 @@ Skill 列表（**不改名**）：`investigation` · `detector-sweep` · `config
 
 ## 4. analysis
 
-**触发：** 本地已有 report（±dump），要汇总 / 关联 / verify / 抽查。
+**触发：** 本地已有 report（±dump），或仅有 completion samples（FAIL+GAP / precision 层）。
 
 **can_do**
 
 - `summarize_reports` / `correlate_incident` / `verify_request_kv` / `inspect_kv_dump`（按需）  
+- `score_completion_samples`（无 report 时的 garbage / identical 评分）  
 - 提取 prompt/output token ids、incident 类型等现场字段  
-- `verify_result=PASS|FAIL`（ref 的硬门闩）
+- `verify_result=PASS|FAIL`（ref 的硬门闩）；GAP 时输出 `detector_gap_hint` 而非伪 PASS
 
 **forbidden**
 
 - 输出 runtime_config / 热更 JSON  
-- 拉起推理服务、force-feed、标杆对比（→ ref-kv-dump）
+- 拉起推理服务、force-feed、标杆对比（→ ref-kv-dump）  
+- 把 empty report 直接当成「无异常」而不看 samples
 
-**逻辑输入：** report_dir, optional_dump_dir?  
-**逻辑输出：** verify_result, request_list 摘要, artifact_check_note
+**逻辑输入：** report_dir, optional_dump_dir?, optional_sample_dir?  
+**逻辑输出：** verify_result, request_list 摘要, artifact_check_note, optional gap_score
 
 ---
 

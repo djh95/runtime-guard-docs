@@ -13,8 +13,8 @@ description: >-
 **类型：编排。** 只做 triage、收集输入、委派原子 skill、汇总定界交付。  
 底层配置 / 读盘 / force-feed / KV 对比 **委派**，不在本 skill 重写一遍。
 
-手册：[02](../../02_problem_localization.md) · [01](../../01_enable_and_start.md) · [03](../../03_detectors/README.md)  
-契约：[SKILLS_METADATA.md](../SKILLS_METADATA.md)  
+手册：[02](https://github.com/djh95/runtime-guard-docs/blob/main/02_problem_localization.md) · [01](https://github.com/djh95/runtime-guard-docs/blob/main/01_enable_and_start.md) · [03](https://github.com/djh95/runtime-guard-docs/blob/main/03_detectors/README.md)  
+契约：[SKILLS_METADATA.md](./SKILLS_METADATA.md)  
 脚本仓：[runtime-guard-test](https://github.com/djh95/runtime-guard-test)  
 产品：`vllm_ascend/observability/runtime_guard/`（[#16849](https://github.com/vllm-project/vllm-ascend/pull/16849)/[#18644](https://github.com/vllm-project/vllm-ascend/pull/18644)）
 
@@ -48,6 +48,32 @@ description: >-
 **适合：** `token_repeat` / `logits_finite` / `spec_acceptance`（MTP）；KV 可疑靠 dump+标杆。  
 **勿启用未合入：** `output_substring` / `token_logprob` / `slot_*` / `kv_state`。
 
+### 三层率（anomaly / 压测必记）
+
+| Layer | 含义 | 证据 |
+|-------|------|------|
+| **trigger** | overlay / 故障路径真正打到 | `ANOMALY_TRIGGER` 计数、overlay 日志 |
+| **precision** | 输出/数值已坏（可无 report） | samples 垃圾文、temp=0 发散、`score_completion_samples` |
+| **detect** | 已合入 detector 出 report | `report/<type>/report_*.json` 计数 |
+
+**trigger ≠ precision ≠ detect。** 有 trigger+precision 但 detect=0 → **FAIL+GAP**（记缺口，勿造 NaN/填 token 伪装 PASS）。
+
+### 根因 class → 已合入 detector（来自 easy wave）
+
+| Class（示例 Sxx） | 典型症状 | 主 detector | 备注 |
+|------------------|----------|-------------|------|
+| MoE 路由/合成/renorm（S06,S16–S19） | 复读、digit/`***`/`ctx` echo、ZWSP | `token_repeat` | 无 MoE 专用 detector |
+| KV recycle / packed stride / slot→0（S08,S10′,S12） | 复读、xxxx collapse | `token_repeat` | KV 类；verify+ref 可定界 |
+| MLA pad / o_proj empty（S11,S14） | digit/junk、graph pad | `token_repeat` | 间接 KV；dump 路径常有 |
+| Softcap / 不稳定 softmax 数值溢出（S20，constructed） | 全请求 `!!!!…` / token0 塌缩；temp≪1 放大 | **`token_repeat` 为主**；兼开 `logits_finite` | Inf/NaN 可能在采样内被吃掉 → 未必亮 `logits_finite`；MRV2 须打 **V2 Sampler**（非仅 AscendTopKTopPSampler） |
+| Spec residual resample RNG 无 SALT（S22，#18657） | 接受率异常偏低（如 0–0.27）；文本可看似正常 | **`spec_acceptance` 为主**；辅 `token_repeat` | ≠ S05（NaN argmax）；≠ S20；需 MTP/eagle3 + `temperature>0`；precision 常为 **分布性**（勿只靠 samples 垃圾启发式） |
+| 权重腐蚀 always-on（S23，constructed） | 启动后恒定复读/塌缩 | **`token_repeat`** | **仅 L1 detect**；禁止宣称哪一层/哪个 weight；负对照=干净 ckpt |
+| 量化 scale always-on（S24，constructed） | W8A8 启动后恒定 `token_repeat` | **`token_repeat`** | **仅 L1**；≠ S07（路径触发+GAP）；**不能**指出哪条 scale |
+| 有限垃圾 / 跨请求全同（S01,S07） | mixed-script、48/48 identical | **当前均弱** | **GAP**：见 `DETECTOR_GAPS.md`；S24 能 detect 时勿与 S07 混谈 |
+| NaN/Inf 数值炸（logits 仍可见） | non-finite logits | `logits_finite` | 有限垃圾 **不会** 命中；与 S20 塌缩路径区分 |
+
+有限垃圾 / identical-across-requests：**不要**宣称「未复现」；归档 samples + `score_completion_samples`，标 **GAP**，等未来 garbled / cross-req detector。
+
 ## Step 2 — 委派（禁止自创配置参数）
 
 | 现状 | 调用 |
@@ -56,11 +82,12 @@ description: >-
 | 现象已定类 / 要抓 dump | `runtime-guard-config-recommender`（`troubleshoot`） |
 | 业务要恢复默认全关 | `config-recommender`（`business_default`） |
 | 已有 report（±dump） | `runtime-guard-analysis` |
+| report 空但有 completion samples / FAIL+GAP | `analysis` → `score_completion_samples`（勿 skip） |
 | analysis 得 verify=PASS 且可起清洁标杆 | `runtime-guard-ref-kv-dump` |
 
 可**复述**下游给出的 JSON；**禁止**自己编造 window / 阈值 / `auto_max_times` / cooldown / `on_trigger`。
 
-启服与热更细节见手册 01；源码路径须含 `observability/runtime_guard/`（MRV2）。≤0.30 无 Guard 时先看 [05](../../05_v030_backport/README.md)（**不含** #18644 鲁棒集合）。
+启服与热更细节见手册 01；源码路径须含 `observability/runtime_guard/`（MRV2）。≤0.30 无 Guard 时先看 [05](https://github.com/djh95/runtime-guard-docs/blob/main/05_v030_backport/README.md)（**不含** #18644 鲁棒集合）。
 
 ## 目标（定界，非定位）
 
@@ -95,4 +122,4 @@ description: >-
 
 ## Related
 
-`detector-sweep` · `config-recommender` · `analysis` · `ref-kv-dump` · [SKILLS_METADATA.md](../SKILLS_METADATA.md)
+`detector-sweep` · `config-recommender` · `analysis` · `ref-kv-dump` · [SKILLS_METADATA.md](./SKILLS_METADATA.md)

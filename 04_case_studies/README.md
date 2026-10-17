@@ -44,12 +44,16 @@
 | C2 | 必现乱码但无清洁标杆：仅 logits/report 定界 | 强调 §2.3 |
 | C3 | Spec 接受率骤降 | 需 MTP 环境 |
 | C4 | PP/TP 找错 rank 导致「无报告」误判 | 运维向 |
-| A1 | [Anomaly × Skills 能力边界 2026-10-17](./anomaly-skills-capability-20261017.md) | PASS/FAIL+GAP 矩阵；skills 定界深度 |
-
-
 有真实案例时，在本表加链接到同目录新文件即可。
 
-## 已补充
+## 已补充（与 `runtime-guard-test` 同步）
 
-| A1 | [Anomaly × Skills 能力边界 2026-10-17](./anomaly-skills-capability-20261017.md) | PASS/FAIL+GAP 矩阵；skills 定界深度 |
-| A2 | [Skills verify-loop 2026-10-17](./anomaly-skills-verify-loop-20261017.md) | S20/S22 before→after re-verify |
+| 编号 | 文档 | 备注 |
+|------|------|------|
+| A1 | [anomaly-skills-capability-20261017.md](./anomaly-skills-capability-20261017.md) | PASS/FAIL+GAP 能力矩阵 |
+| A2 | [anomaly-skills-verify-loop-20261017.md](./anomaly-skills-verify-loop-20261017.md) | analyze→edit→re-verify before→after |
+| A3 | [anomaly-skills-handoff.md](./anomaly-skills-handoff.md) | 160→skills inbox / IDLE |
+| A4 | [anomaly-skills-analysis-20261017.md](./anomaly-skills-analysis-20261017.md) | 分析纪要 |
+| A5 | [anomaly-skills-runs/](./anomaly-skills-runs/) | 逐场景 + batch-pass-wave |
+
+Skill 手册副本：[06_agent_skills/](../06_agent_skills/)（对齐 `runtime-guard-test/analysis/skill/` **v1.5**）。

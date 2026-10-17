@@ -3,10 +3,10 @@
 面向 Cursor / Agent：按现象启用 detectors、抓现场、离线对账、有标杆时做 KV 定界。
 
 > 本目录是 **手册仓内的 skill 副本**（与代码对齐后的可分发版）。  
-> 职责契约：[SKILLS_METADATA.md](./SKILLS_METADATA.md)（v1.1）。  
+> 职责契约：[SKILLS_METADATA.md](./SKILLS_METADATA.md)（v1.5）。  
 > 离线脚本实现仓：[runtime-guard-test](https://github.com/djh95/runtime-guard-test)（`analysis/scripts/`）。  
 > 产品实现：`vllm_ascend/observability/runtime_guard/`（[#16849](https://github.com/vllm-project/vllm-ascend/pull/16849) + [#18644](https://github.com/vllm-project/vllm-ascend/pull/18644)）。  
-> 人读流程仍以 [02 问题定位](../02_problem_localization.md) 为准；skill 负责可执行编排。
+> 人读流程仍以 [02 问题定位](https://github.com/djh95/runtime-guard-docs/blob/main/02_problem_localization.md) 为准；skill 负责可执行编排。
 
 ## Skills
 
@@ -31,8 +31,11 @@ PYTHONPATH="$RG_TEST" python -m analysis.scripts.<name> --help
 ```
 
 常用：`summarize_reports` / `correlate_incident` / `verify_request_kv` / `inspect_kv_dump` /  
+`score_completion_samples`（无 report 的 precision/GAP）/  
 `prepare_ref_inputs` / `request_from_report` / `locate_first_divergence` / `compare_kv_similarity` /  
 `compare_per_layer` / `stitch_kv`。
+
+Anomaly 定界：先读 `tests/build-anomaly-env/fail-evidence/Sxx/` 与三层率；契约见 [SKILLS_METADATA.md](./SKILLS_METADATA.md) v1.5。
 
 ## 与产品对齐的硬事实（2026-10）
 
@@ -45,9 +48,9 @@ PYTHONPATH="$RG_TEST" python -m analysis.scripts.<name> --help
 | 停检 | `report.max_per_req`（**不是** `stop_after_alert`） |
 | Dump | 仅 native `dump_kv`；无 msprobe |
 | 默认全关 | `is_fully_off` 热路径旁路（#18644 / backport 的 #18450 Perf） |
-| ≤0.30 backport | 见 [05](../05_v030_backport/README.md)；**不含** #18644 鲁棒修复集合 |
+| ≤0.30 backport | 见 [05](https://github.com/djh95/runtime-guard-docs/blob/main/05_v030_backport/README.md)；**不含** #18644 鲁棒修复集合 |
 
 ## 维护
 
-- 产品 detector / 配置字段变更 → 同步改本目录 + [03_detectors](../03_detectors/README.md) + [SKILLS_METADATA.md](./SKILLS_METADATA.md)。  
+- 产品 detector / 配置字段变更 → 同步改本目录 + [03_detectors](https://github.com/djh95/runtime-guard-docs/blob/main/03_detectors/README.md) + [SKILLS_METADATA.md](./SKILLS_METADATA.md)。  
 - 脚本 CLI 变更 → 同步改本目录 + 回写 [runtime-guard-test](https://github.com/djh95/runtime-guard-test) 的 `analysis/skill/`（若仍维护）。
