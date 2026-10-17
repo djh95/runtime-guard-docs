@@ -130,3 +130,5 @@ description: >-
 **Key-abs / embed-abs / cos/sin-abs（S111/S112/S113）：** 开 `token_repeat`。S111≠S54/S59/S109；S112≠S69/S43/S80；S113≠S42/S79–S82/S101/S40。S113 identical precision=0 仍可 PASS。
 
 **Query-abs / SwiGLU-out-abs / RMSNorm-x-abs（S114/S115/S116）：** 开 `token_repeat`。S114≠S52/S60/S109/S111；S115≠S67/S72/S103/S107；S116≠S73/S62/S78/S102。
+
+**Query÷50 / key÷50 / residual-pre-abs（S117/S118/S119）：** 开 `token_repeat`。S117≠S60/S52/S114；S118≠S59/S54/S111；S119≠S48/S55/S64/S106。

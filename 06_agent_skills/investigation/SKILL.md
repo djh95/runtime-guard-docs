@@ -150,6 +150,9 @@ description: >-
 | Query-abs（S114，`query=abs(query)` before FA） | `for`/`one of` 复读；completes Q/K/V abs | **`token_repeat`** | **L2**（unsigned Q）；≠ S52 query-neg ≠ S60 query× ≠ S109 value-abs ≠ S111 key-abs |
 | SwiGLU-out-abs（S115，`out=abs(out)` after npu_swiglu） | 中文/换行复读混杂；precision 可 <n_req | **`token_repeat`** | **L2**（unsigned SwiGLU out）；≠ S67 out-neg ≠ S72 out× ≠ S103 gate-only ≠ S107 up-only |
 | RMSNorm-x-abs（S116，`x=abs(x)` before add-RMSNorm） | identical `pl` 复读 | **`token_repeat`** | **L2**（unsigned pre-norm x）；≠ S73 x-neg ≠ S62 ×50 ≠ S78 ÷50 ≠ S102 out-abs |
+| Query-scale-down（S117，`query/=50` before FA） | digit/`1.1.1…` 复读；precision 可 <n_req | **`token_repeat`** | **L2**（wrong Q magnitude low）；≠ S60 query×50 ≠ S52 query-neg ≠ S114 query-abs |
+| Key-scale-down（S118，`key/=50` before FA） | digit/`1.1.1…` 复读；precision 可 <n_req | **`token_repeat`** | **L2**（wrong K magnitude low）；≠ S59 key×50 ≠ S54 key-neg ≠ S111 key-abs |
+| Residual-pre-abs（S119，`residual=abs(residual)` before add-RMSNorm） | 混杂 servlet/mixed-script 复读；precision 可 <n_req | **`token_repeat`** | **L2**（unsigned pre-residual）；≠ S48 pre-neg ≠ S55/S64 mag ≠ S106 post-abs |
 | RoPE 第二半写丢（S25，soft-inv #7082） | digit/`1.1.1…` 复读塌缩 | **`token_repeat`** | **L2 class-hint**（RoPE half）；≠ S11 pad；勿宣称定位到 Triton store 行 |
 | RMSNorm fp32 weight-mul（S26，soft-inv #42379） | 同上类复读；dtype/cast | **`token_repeat`** | **L2**（norm dtype）；与 S25 症状可重叠，靠 overlay/场景区分 |
 | RoPE neox→interleaved 风格错（S28，#7341/#7082 class） | 句/短语级复读（score=`phrase_repeat`） | **`token_repeat`** | **L2**；≠ S25 half-drop ≠ S11；samples 可能看似「正常英文」 |

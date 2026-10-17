@@ -118,6 +118,9 @@ description: >-
 | Query-abs（S114） | `token_repeat` | 标准 repeat 窗 | **L2**；≠ S52/S60/S109/S111 |
 | SwiGLU-out-abs（S115） | `token_repeat` | 标准 repeat 窗 | **L2**；≠ S67/S72/S103/S107 |
 | RMSNorm-x-abs（S116） | `token_repeat` | 标准 repeat 窗 | **L2**；≠ S73/S62/S78/S102 |
+| Query-scale-down（S117） | `token_repeat` | 标准 repeat 窗 | **L2**；≠ S60/S52/S114 |
+| Key-scale-down（S118） | `token_repeat` | 标准 repeat 窗 | **L2**；≠ S59/S54/S111 |
+| Residual-pre-abs（S119） | `token_repeat` | 标准 repeat 窗 | **L2**；≠ S48/S55/S64/S106 |
 | Null-block KV dirt（S30） | `token_repeat`（主） | + `dump_kv` 若要定界 | **L2**（+可选 L3）；≠ S01/S10/S23/S24 |
 | 权重 / 量化 always-on 故障（S23/S24） | `token_repeat`（主） | 可兼开 `logits_finite` 对照 | **detect-only**：报告即交付；勿输出「定位到 layer/scale」；S24≠S07 GAP |
 | Spec 接受异常 / residual resample 偏置 | `spec_acceptance` | `window:5–10`, `low_threshold:0.3–0.5`, `high_threshold:0.96–0.99`, … | **仅 MTP/eagle3**；S22 类（无 `RESAMPLE_NOISE_SALT`）以低 acceptance_rate 命中；可兼开 `token_repeat` |
