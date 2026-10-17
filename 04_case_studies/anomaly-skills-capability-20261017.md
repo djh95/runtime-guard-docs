@@ -1,7 +1,7 @@
 # Anomaly × Skills 能力边界（活文档）— 2026-10-17
 
 > **用途：** 对每一个已落地 / 在册异常场景，如实记录现象、复现与对照配置、skills 能分析到哪一步、有用度，以及还缺什么。  
-> **Skills：** `runtime-guard-test` `analysis/skill/` **v3.0**（investigation / detector-sweep / config-recommender / analysis / ref-kv-dump）。  
+> **Skills：** `runtime-guard-test` `analysis/skill/` **v3.1**（investigation / detector-sweep / config-recommender / analysis / ref-kv-dump）。  
 > **Guard pin：** G2 `f2aefd068`。三层率 = trigger / precision / detect。  
 > **诚实上限：** skills **定界**（detect / 现象类 / 可选 KV 首分歧），**不承诺**定位到算子、权重元素或具体 commit。
 
@@ -94,6 +94,9 @@
 | S66 | RMSNorm weight negate | **是** `logits_finite` | 否 | **L2 class-hint**（≠S26/S38/S48/S55/S62） | **高** | `-weight` into add-RMSNorm；`!!!!` |
 | S67 | SwiGLU out negate | **是** `logits_finite` | 否 | **L2 class-hint**（≠S39/S50/S56） | **高** | `-out` after npu_swiglu；`!!!!` |
 | S68 | attn scale ÷50 | **是** `token_repeat` | 否 | **L2 class-hint**（≠S34/S49） | **高** | scale/50 wrong attn temp low |
+| S69 | embed negate | **是** `logits_finite` | 否 | **L2 class-hint**（≠S43） | **高** | embed polarity flip；`!!!!` |
+| S70 | variance eps ×1000 | **是** `token_repeat` | 否 | **L2 class-hint**（≠S26/S38/S66） | **高** | wrong norm eps；`1.1.1…` |
+| S71 | RMSNorm weight ×50 | **是** `logits_finite` | 否 | **L2 class-hint**（≠S66） | **高** | weight mag blowup；`!!!!` |
 
 > **S20 说明：** detector **能检出**（`token_repeat` 对 `!!!!`/token0）；skills 额外给出 **溢出/softcap class-hint（L2）**，不是「只能 detect、无类提示」。仍 **不能** 定位到具体 softcap 实现行或权重。
 
@@ -773,6 +776,36 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 | **有用度** | **高** |
 | **待改进** | 无 |
 
+### S69 — Embed negate（≠ S43）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **16 / 26 / 48**；**`logits_finite`×48**；identical `!!!!` |
+| **能否检测** | **是**（主=`logits_finite`） |
+| **Skills 最远** | **L2**（wrong embed polarity）；≠ S43 ×100 |
+| **有用度** | **高** |
+| **待改进** | 无 |
+
+### S70 — Variance eps ×1000（≠ S26/S38/S66）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **100 / 17 / 48**；`token_repeat`×48（slim） |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2**（wrong norm eps）；≠ S26/S38/S66 |
+| **有用度** | **高** |
+| **待改进** | 无 |
+
+### S71 — RMSNorm weight ×50（≠ S66）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **102 / 48 / 48**；**`logits_finite`×48**；identical `!!!!` |
+| **能否检测** | **是**（主=`logits_finite`） |
+| **Skills 最远** | **L2**（wrong norm-weight mag）；≠ S66 negate |
+| **有用度** | **高** |
+| **待改进** | 无 |
+
 ---
 
 ## Verify-loop deltas（2026-10-17）
@@ -828,6 +861,9 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 | **S66** | 无 RMSNorm-weight-negate class → **L2** via **`logits_finite`**；≠ S26/S38/S48/S55/S62 | **是** |
 | **S67** | 无 SwiGLU-out-negate class → **L2** via **`logits_finite`**；≠ S39/S50/S56 | **是** |
 | **S68** | 无 attn-scale÷50 class → **L2**；≠ S34/S49 | **是** |
+| **S69** | 无 embed-negate class → **L2** via **`logits_finite`**；≠ S43 | **是** |
+| **S70** | 无 variance-eps class → **L2**；≠ S26/S38/S66 | **是** |
+| **S71** | 无 RMSNorm-weight×50 class → **L2** via **`logits_finite`**；≠ S66 | **是** |
 
 详见 [anomaly-skills-verify-loop-20261017.md](./anomaly-skills-verify-loop-20261017.md)。
 
@@ -838,7 +874,7 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 3. Spec 分布性：summarize 突出 `acceptance_rate`  
 4. ~~Weight/Quant always-on 场景落地~~ → **S23/S24 PASS L1**（仍不可定位张量）  
 5. KV PASS（S10′/S12/S30/S47）：标准 ref-kv 流水线模板 + 容器 dump_dir 重映射  
-6. Soft-inv / cast / residual / graph-pad / softcap / attn / temp / pos / norm / act / rope / embed / penalty / kv-swap / **residual-negate / attn×50 / swiglu-swap / norm-weight-negate / swiglu-out-negate / attn÷50**：**S25–S68 L2**（除 S44 INVALID / S45 FAIL+GAP）
+6. Soft-inv / cast / residual / graph-pad / softcap / attn / temp / pos / norm / act / rope / embed / penalty / kv-swap / **norm-weight-negate / swiglu-out-negate / attn÷50 / embed-negate / variance-eps / weight×50**：**S25–S71 L2**（除 S44 INVALID / S45 FAIL+GAP）
 
 ---
 

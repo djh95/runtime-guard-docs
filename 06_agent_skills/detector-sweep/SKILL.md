@@ -98,3 +98,5 @@ description: >-
 **Attn-out-negate / residual÷50 / logits×50（S63/S64/S65）：** S63 **开 `logits_finite`**（主）。S64/S65 开 `token_repeat`。S63≠S41；S64≠S48/S55；S65≠S53/S36。
 
 **RMSNorm-weight-negate / SwiGLU-out-negate / attn-scale÷50（S66/S67/S68）：** S66/S67 **开 `logits_finite`**（主）。S68 开 `token_repeat`。S66≠S26/S38/S48/S55/S62；S67≠S39/S50/S56；S68≠S34/S49。
+
+**Embed-negate / variance-eps×1000 / RMSNorm-weight×50（S69/S70/S71）：** S69/S71 **开 `logits_finite`**（主）。S70 开 `token_repeat`。S69≠S43；S70≠S26/S38/S66；S71≠S66。

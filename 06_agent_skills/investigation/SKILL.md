@@ -102,6 +102,9 @@ description: >-
 | RMSNorm weight negate（S66，`-weight` into add-RMSNorm） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（wrong norm-weight sign）；≠ S26 fp32-mul ≠ S38 skip ≠ S48/S55 residual ≠ S62 pre-norm x |
 | SwiGLU out negate（S67，`-out` after npu_swiglu） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（wrong SwiGLU out polarity）；≠ S39 skip-silu ≠ S50 half-swap ≠ S56 input-negate |
 | Attn scale ÷50（S68） | unique digit/`1.1.1…` 混杂；identical-mode 低估 | **`token_repeat`** | **L2**（attn temp too cold）；≠ S34 scale→1.0 ≠ S49 scale×50 |
+| Embed negate（S69，`mul_(-1)` after lookup） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（wrong embed polarity）；≠ S43 embed×100 |
+| Variance eps ×1000（S70，eps into add-RMSNorm） | digit/`1.1.1…` 复读混杂 | **`token_repeat`** | **L2**（wrong norm eps）；≠ S26 fp32-mul ≠ S38 skip ≠ S66 weight-negate |
+| RMSNorm weight ×50（S71） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（wrong norm-weight mag）；≠ S66 weight-negate |
 | RoPE 第二半写丢（S25，soft-inv #7082） | digit/`1.1.1…` 复读塌缩 | **`token_repeat`** | **L2 class-hint**（RoPE half）；≠ S11 pad；勿宣称定位到 Triton store 行 |
 | RMSNorm fp32 weight-mul（S26，soft-inv #42379） | 同上类复读；dtype/cast | **`token_repeat`** | **L2**（norm dtype）；与 S25 症状可重叠，靠 overlay/场景区分 |
 | RoPE neox→interleaved 风格错（S28，#7341/#7082 class） | 句/短语级复读（score=`phrase_repeat`） | **`token_repeat`** | **L2**；≠ S25 half-drop ≠ S11；samples 可能看似「正常英文」 |
