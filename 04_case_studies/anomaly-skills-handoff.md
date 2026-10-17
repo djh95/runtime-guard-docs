@@ -1,7 +1,7 @@
 # Anomaly skills handoff (watcher)
 
-**Rev:** `2026-10-18T0330+08` — **Inbox empty**; S126–S128 skills DONE (v5.0); S123–S125 v4.9; S120–S122 v4.8; S117–S119 v4.7; S114–S116 v4.6; S111–S113 v4.5; S108–S110 v4.4; S45 FAIL+GAP; S44 INVALID.  
-Prior PENDING cleared at `2026-10-18T0315+08` → this rev marks S126–S128 DONE.
+**Rev:** `2026-10-18T0400+08` — **Inbox empty**; S129–S131 skills DONE (v5.1); S126–S128 v5.0; S123–S125 v4.9; S120–S122 v4.8; S117–S119 v4.7; S114–S116 v4.6; S111–S113 v4.5; S108–S110 v4.4; S45 FAIL+GAP; S44 INVALID.  
+Prior PENDING cleared at `2026-10-18T0345+08` → this rev marks S129–S131 DONE.
 
 Skills agent (162) watches this file for **new PASS / FAIL+GAP**. Offline only — **do not steal 160 cards**.
 
@@ -16,7 +16,7 @@ PYTHONPATH="$RG_TEST" python -m analysis.scripts.verify_request_kv --report <r.j
 
 | Bucket | IDs |
 |--------|-----|
-| PASS | S06, S08, S10′, S11, S12, S14, S16–S19, S20, S22–S26, S28–S43, S46–**S128** |
+| PASS | S06, S08, S10′, S11, S12, S14, S16–S19, S20, S22–S26, S28–S43, S46–**S131** |
 | FAIL / FAIL+GAP | S01, S07; **S45** |
 | INVALID | **S44** |
 | Parked | S02/S03/S05/S09 HARD; S04 HCCN; S13 BLOCKED; S15 skip; S21 HARD; S27 BLOCKED |
@@ -30,10 +30,10 @@ _(empty)_
 
 ### Prior (skills done)
 
-- **S128/S127/S126** | **skills done** v5.0 · L2 cos/sin-zeros / embed-zeros / hidden-zeros
+- **S131/S130/S129** | **skills done** v5.1 · L2 SwiGLU-out-zeros / query-zeros / residual-pre-zeros
+- **S128/S127/S126** | skills done v5.0 · L2 cos/sin-zeros / embed-zeros / hidden-zeros
 - **S125/S124/S123** | skills done v4.9 · L2 residual-leak-sub / penalty-skip / RMSNorm-bias=-weight（S124 precision=0 OK）
-- **S122/S121/S120** | skills done v4.8 · L2 logits-abs / SwiGLU-input-abs / RMSNorm-weight=zeros
-- **S119–S117** v4.7 · **S116–S114** v4.6 · **S45** FAIL+GAP · **S44** INVALID
+- **S122–S120** v4.8 · **S119–S117** v4.7 · **S45** FAIL+GAP · **S44** INVALID
 
 ## Blocked note
 
@@ -41,7 +41,8 @@ _(empty)_
 
 ## Skills verify
 
-- S126/S127/S128: **DONE** v5.0 L2
+- S129/S130/S131: **DONE** v5.1 L2
+- S126/S127/S128: DONE v5.0 L2
 - S123/S124/S125: DONE v4.9 L2
 - S120/S121/S122: DONE v4.8 L2
 - S117/S118/S119: DONE v4.7 L2
