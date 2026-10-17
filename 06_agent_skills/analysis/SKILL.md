@@ -67,6 +67,9 @@ rgpy.score_completion_samples --sample-dir ./samples --json-out samples_score.js
 - Top-k on `-logits`（S45）→ **FAIL+GAP**：unique `garbage_mixed_script` + detect=0（同 S01/S07）；identical-mode 低估勿判「无 precision」。  
 - Penalty sign flip（S46）→ `token_repeat` + **L2**；digit/`1.1.1…`；≠ S45/S44。  
 - K/V swap（S47）→ `token_repeat` + **L2**；短语/单字塌缩；≠ S34/S35/S41。  
+- Residual negate（S48）→ **`logits_finite`** + **L2**；`!!!!`/`token0_collapse`；≠ S31 drop ≠ S38 skip。  
+- Attn scale ×50（S49）→ `token_repeat` + **L2**；precision 常 unique/`1.1.1…`；≠ S34(=1.0) ≠ S41 post-FA。  
+- SwiGLU half-swap（S50）→ **`logits_finite`** + **L2**；`!!!!`；≠ S39 skip-silu。  
 - `garbage_mixed_script` + detect=0 → **FAIL+GAP**（S01/S07/S45）。若已有 `token_repeat` report，勿因 samples 里偶发 garbage 标签宣称 GAP。  
 有 precision 且 detect=0 → 交付 **FAIL+GAP**（勿伪造 detector PASS）。
 

@@ -274,6 +274,27 @@ PYTHONPATH=. python -m analysis.scripts.score_completion_samples --sample-dir te
 # likewise S46 S47; S45 reports empty (detect=0)
 ```
 
+## S48 / S49 / S50 — residual negate + attn×50 + SwiGLU half-swap (v2.4)
+
+| | Before (pre-v2.4) | After (re-verify) |
+|--|-------------------|-------------------|
+| **S48** layers | 100/48/48 **`logits_finite`** | same ✓ |
+| **S48** score | `token0_collapse`×48; gap=`None` | same ✓ |
+| **S48** skills | risk conflate S31/S38 | **L2** residual negate ✓ |
+| **S49** layers | 18/22/48 `token_repeat` | same ✓ |
+| **S49** score | unique_garbage/repeat; gap=`None` | same ✓ |
+| **S49** skills | risk conflate S34/S41 | **L2** attn×50 ≠ those ✓ |
+| **S50** layers | 58/48/48 **`logits_finite`** | same ✓ |
+| **S50** score | `token0_collapse`×48; gap=`None` | same ✓ |
+| **S50** skills | risk conflate S39 skip-silu | **L2** half-swap ≠ S39 ✓ |
+| Expected? | — | **Yes** — three L2 class-hints |
+
+```bash
+PYTHONPATH=. python -m analysis.scripts.summarize_reports --report-dir tests/build-anomaly-env/fail-evidence/S48/reports
+PYTHONPATH=. python -m analysis.scripts.score_completion_samples --sample-dir tests/build-anomaly-env/fail-evidence/S48/samples
+# likewise S49 S50
+```
+
 ## Remaining gaps (not closed by this loop)
 
 - S22: summarize does not yet print `acceptance_rate` column — optional next script tweak.

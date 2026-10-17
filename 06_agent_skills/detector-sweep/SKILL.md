@@ -51,6 +51,8 @@ description: >-
 
 **Penalty flip / K/V swap（S46/S47）：** 开 `token_repeat`。S46≠S45/S44；S47≠S34/S35/S41。**S45 top-k on -logits** → unique garbage **FAIL+GAP**（同 S01/S07）；勿放大器硬凑。
 
+**Residual negate / attn×50 / SwiGLU half-swap（S48/S49/S50）：** S48/S50 **开 `logits_finite`**（主；`!!!!`）。S49 开 `token_repeat`（unique/`1.1.1…`）。S48≠S31/S38；S49≠S34/S41；S50≠S39。
+
 ## 输出模板（可热更）
 
 启动须已开 `runtime_config_hot_reload=true`（见 01）。Grep 确认 reload；失败会保留旧配置。
