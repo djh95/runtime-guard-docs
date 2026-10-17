@@ -90,6 +90,9 @@ description: >-
 | Key negate before FA（S54） | unique/garbage 复读混杂 | **`token_repeat`** | **L2**（wrong K polarity）；≠ S47 K/V ≠ S51 V-scale ≠ S52 Q-negate |
 | Residual ×50 before add-RMSNorm（S55） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（wrong residual magnitude）；≠ S31 drop ≠ S38 skip ≠ S48 sign-flip |
 | SwiGLU input negate（S56，`x=-x` before npu_swiglu） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（wrong SwiGLU input sign）；≠ S39 skip-silu ≠ S50 half-swap |
+| Positions ×2 before RoPE（S57） | 短语/`name.` 复读塌缩 | **`token_repeat`** | **L2**（wrong pos magnitude）；≠ S37 pos-zero（negate 会炸 NPU） |
+| Value negate before FA（S58） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（wrong V polarity）；≠ S51 V×50 ≠ S47 K/V ≠ S52/S54 Q/K-negate |
+| Key ×50 before FA（S59） | digit/`0.0.0…` 复读混杂 | **`token_repeat`** | **L2**（wrong K magnitude）；≠ S49 attn-scale ≠ S51 V×50 ≠ S54 K-negate |
 | RoPE 第二半写丢（S25，soft-inv #7082） | digit/`1.1.1…` 复读塌缩 | **`token_repeat`** | **L2 class-hint**（RoPE half）；≠ S11 pad；勿宣称定位到 Triton store 行 |
 | RMSNorm fp32 weight-mul（S26，soft-inv #42379） | 同上类复读；dtype/cast | **`token_repeat`** | **L2**（norm dtype）；与 S25 症状可重叠，靠 overlay/场景区分 |
 | RoPE neox→interleaved 风格错（S28，#7341/#7082 class） | 句/短语级复读（score=`phrase_repeat`） | **`token_repeat`** | **L2**；≠ S25 half-drop ≠ S11；samples 可能看似「正常英文」 |

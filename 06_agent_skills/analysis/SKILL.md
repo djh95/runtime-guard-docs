@@ -76,6 +76,9 @@ rgpy.score_completion_samples --sample-dir ./samples --json-out samples_score.js
 - Key negate（S54）→ `token_repeat` + **L2**；≠ S47/S51/S52。  
 - Residual ×50（S55）→ **`logits_finite`** + **L2**；≠ S31/S38/S48。  
 - SwiGLU input negate（S56）→ **`logits_finite`** + **L2**；≠ S39/S50。  
+- Positions ×2（S57）→ `token_repeat` + **L2**；≠ S37。  
+- Value negate（S58）→ **`logits_finite`** + **L2**；≠ S51/S47/S52/S54。  
+- Key ×50（S59）→ `token_repeat` + **L2**；≠ S49/S51/S54。  
 - `garbage_mixed_script` + detect=0 → **FAIL+GAP**（S01/S07/S45）。若已有 `token_repeat` report，勿因 samples 里偶发 garbage 标签宣称 GAP。  
 有 precision 且 detect=0 → 交付 **FAIL+GAP**（勿伪造 detector PASS）。
 
