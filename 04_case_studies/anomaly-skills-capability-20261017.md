@@ -1,7 +1,7 @@
 # Anomaly × Skills 能力边界（活文档）— 2026-10-17
 
 > **用途：** 对每一个已落地 / 在册异常场景，如实记录现象、复现与对照配置、skills 能分析到哪一步、有用度，以及还缺什么。  
-> **Skills：** `runtime-guard-test` `analysis/skill/` **v3.3**（investigation / detector-sweep / config-recommender / analysis / ref-kv-dump）。  
+> **Skills：** `runtime-guard-test` `analysis/skill/` **v3.4**（investigation / detector-sweep / config-recommender / analysis / ref-kv-dump）。  
 > **Guard pin：** G2 `f2aefd068`。三层率 = trigger / precision / detect。  
 > **诚实上限：** skills **定界**（detect / 现象类 / 可选 KV 首分歧），**不承诺**定位到算子、权重元素或具体 commit。
 
@@ -103,6 +103,9 @@
 | S75 | hidden ÷50 | **是** `token_repeat` | 否 | **L2 class-hint**（≠S61/S53/S65） | **高** | pre-head hidden mag low |
 | S76 | SwiGLU input ×50 | **是** `logits_finite` | 否 | **L2 class-hint**（≠S39/S50/S56/S67/S72） | **高** | input mag blowup；`!!!!` |
 | S77 | variance eps ÷1000 | **是** `token_repeat` | 否 | **L2 class-hint**（≠S70） | **高** | norm eps low |
+| S78 | RMSNorm x ÷50 | **是** `token_repeat` | 否 | **L2 class-hint**（≠S62/S73） | **高** | pre-norm act mag low |
+| S79 | cos_sin ×50 | **是** `token_repeat` | 否 | **L2 class-hint**（≠S37/S40/S42/S25/S28） | **高** | rope phase mag blowup |
+| S80 | embed ÷50 | **是** `token_repeat` | 否 | **L2 class-hint**（≠S43/S69） | **高** | embed mag low；detect 可 <n_req |
 
 > **S20 说明：** detector **能检出**（`token_repeat` 对 `!!!!`/token0）；skills 额外给出 **溢出/softcap class-hint（L2）**，不是「只能 detect、无类提示」。仍 **不能** 定位到具体 softcap 实现行或权重。
 
@@ -872,6 +875,36 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 | **有用度** | **高** |
 | **待改进** | 无 |
 
+### S78 — RMSNorm x ÷50（≠ S62/S73）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **100 / 38 / 48**；`token_repeat`×48（slim） |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2**（wrong pre-norm act mag low）；≠ S62 ×50 ≠ S73 negate |
+| **有用度** | **高** |
+| **待改进** | 无 |
+
+### S79 — Cos/sin ×50（≠ S37/S40/S42/S25/S28）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **58 / 22 / 48**；`token_repeat`×48（slim） |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2**（wrong rope phase mag）；≠ S37/S40/S42/S25/S28 |
+| **有用度** | **高** |
+| **待改进** | 无 |
+
+### S80 — Embed ÷50（≠ S43/S69）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **16 / 17 / 33**；`token_repeat`×33（slim；detect < n_req） |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2**（wrong embed mag low）；≠ S43 ×100 ≠ S69 negate |
+| **有用度** | **高** |
+| **待改进** | 无 |
+
 ---
 
 ## Verify-loop deltas（2026-10-17）
@@ -936,6 +969,9 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 | **S75** | 无 hidden÷50 class → **L2**；≠ S61/S53/S65 | **是** |
 | **S76** | 无 SwiGLU-input×50 class → **L2** via **`logits_finite`**；≠ S39/S50/S56/S67/S72 | **是** |
 | **S77** | 无 variance-eps÷1000 class → **L2**；≠ S70 | **是** |
+| **S78** | 无 RMSNorm-x÷50 class → **L2**；≠ S62/S73 | **是** |
+| **S79** | 无 cos_sin×50 class → **L2**；≠ S37/S40/S42/S25/S28 | **是** |
+| **S80** | 无 embed÷50 class → **L2**；≠ S43/S69 | **是** |
 
 详见 [anomaly-skills-verify-loop-20261017.md](./anomaly-skills-verify-loop-20261017.md)。
 
@@ -946,7 +982,7 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 3. Spec 分布性：summarize 突出 `acceptance_rate`  
 4. ~~Weight/Quant always-on 场景落地~~ → **S23/S24 PASS L1**（仍不可定位张量）  
 5. KV PASS（S10′/S12/S30/S47）：标准 ref-kv 流水线模板 + 容器 dump_dir 重映射  
-6. Soft-inv / cast / residual / graph-pad / softcap / attn / temp / pos / norm / act / rope / embed / penalty / kv-swap / **swiglu-out×50 / rmsnorm-x-neg / weight÷50 / hidden÷50 / swiglu-in×50 / eps÷1000**：**S25–S77 L2**（除 S44 INVALID / S45 FAIL+GAP）
+6. Soft-inv / cast / residual / graph-pad / softcap / attn / temp / pos / norm / act / rope / embed / penalty / kv-swap / **hidden÷50 / swiglu-in×50 / eps÷1000 / rmsnorm-x÷50 / cos_sin×50 / embed÷50**：**S25–S80 L2**（除 S44 INVALID / S45 FAIL+GAP）
 
 ---
 

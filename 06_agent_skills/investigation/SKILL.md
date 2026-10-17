@@ -111,6 +111,9 @@ description: >-
 | Hidden ÷50 before lm-head（S75） | digit/`1.1.1…` 复读 | **`token_repeat`** | **L2**（wrong pre-head hidden mag low）；≠ S61 ×50 ≠ S53 logits÷50 ≠ S65 logits×50 |
 | SwiGLU input ×50（S76，`x*=50` before npu_swiglu） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（wrong SwiGLU input mag）；≠ S39/S50/S56/S67/S72 |
 | Variance eps ÷1000（S77） | digit/`1.1.1…` 复读混杂 | **`token_repeat`** | **L2**（wrong norm eps low）；≠ S70 eps×1000 |
+| RMSNorm x ÷50（S78，`x/=50` before add-RMSNorm） | 换行/`sentence` 复读塌缩 | **`token_repeat`** | **L2**（wrong pre-norm act mag low）；≠ S62 ×50 ≠ S73 x-negate |
+| Cos/sin ×50 into RoPE（S79） | digit/`10.10…` + Nile phrase 混杂 | **`token_repeat`** | **L2**（wrong rope phase mag）；≠ S37 pos-zero ≠ S40 skip ≠ S42 phase-neg ≠ S25/S28 |
+| Embed ÷50（S80） | 短句/换行复读；detect 可 <n_req | **`token_repeat`** | **L2**（wrong embed mag low）；≠ S43 ×100 ≠ S69 negate |
 | RoPE 第二半写丢（S25，soft-inv #7082） | digit/`1.1.1…` 复读塌缩 | **`token_repeat`** | **L2 class-hint**（RoPE half）；≠ S11 pad；勿宣称定位到 Triton store 行 |
 | RMSNorm fp32 weight-mul（S26，soft-inv #42379） | 同上类复读；dtype/cast | **`token_repeat`** | **L2**（norm dtype）；与 S25 症状可重叠，靠 overlay/场景区分 |
 | RoPE neox→interleaved 风格错（S28，#7341/#7082 class） | 句/短语级复读（score=`phrase_repeat`） | **`token_repeat`** | **L2**；≠ S25 half-drop ≠ S11；samples 可能看似「正常英文」 |
