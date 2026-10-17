@@ -365,6 +365,24 @@ python -c "import json;print(json.load(open('tests/build-anomaly-env/fail-eviden
 | **S65** skills | risk conflate S53/S36 | **L2** logits×50 ✓ |
 | Expected? | — | **Yes** — three L2 |
 
+
+## S66 / S67 / S68 — RMSNorm-weight-negate + SwiGLU-out-negate + attn-scale÷50 (v3.0)
+
+| | Before (pre-v3.0) | After (re-verify) |
+|--|-------------------|-------------------|
+| **S66** layers | 100/48/48 **`logits_finite`** | same ✓ (slim) |
+| **S66** skills | risk conflate S26/S38/S48/S55/S62 | **L2** norm-weight negate ✓ |
+| **S67** layers | 58/48/48 **`logits_finite`** | same ✓ |
+| **S67** skills | risk conflate S39/S50/S56 | **L2** SwiGLU-out negate ✓ |
+| **S68** layers | 18/33/48 `token_repeat` | same ✓ |
+| **S68** skills | risk conflate S34/S49 | **L2** attn-scale÷50 ✓ |
+| Expected? | — | **Yes** — three L2 |
+
+```bash
+# slim evidence: layers.json + WHY_PASS.md (no reports/samples mirrors)
+python -c "import json;print(json.load(open('tests/build-anomaly-env/fail-evidence/S66/layers.json'))['detect_by'])"
+```
+
 ## Remaining gaps (not closed by this loop)
 
 - S22: summarize does not yet print `acceptance_rate` column — optional next script tweak.

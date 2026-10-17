@@ -1,8 +1,9 @@
 # Runtime-Guard Skills Metadata
 
-版本：v2.9  
+版本：v3.0  
 Skill 列表（**不改名**）：`investigation` · `detector-sweep` · `config-recommender` · `analysis` · `ref-kv-dump`
 
+> **v3.0：** S66 RMSNorm weight negate → **`logits_finite`** + **L2**；≠ S26/S38/S48/S55/S62。S67 SwiGLU out negate → **`logits_finite`** + **L2**；≠ S39/S50/S56。S68 attn scale÷50 → `token_repeat` + **L2**；≠ S34/S49。  
 > **v2.9：** S63 attn-out negate → **`logits_finite`** + **L2**；≠ S41。S64 residual÷50 → `token_repeat` + **L2**；≠ S48/S55。S65 logits×50 → `token_repeat` + **L2**；≠ S53/S36。  
 > **v2.8：** S60 query×50 → `token_repeat` + **L2**；≠ S52/S49/S51/S59。S61 hidden×50 before lm-head → `token_repeat` + **L2**；≠ S53/S43。S62 pre-RMSNorm x×50 → **`logits_finite`** + **L2**；≠ S26/S38/S48/S55。  
 > **v2.7：** S57 positions×2 before RoPE → `token_repeat` + **L2**；≠ S37。S58 value negate → **`logits_finite`** + **L2**；≠ S51/S47/S52/S54。S59 key×50 → `token_repeat` + **L2**；≠ S49/S51/S54。  

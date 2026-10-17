@@ -85,6 +85,9 @@ rgpy.score_completion_samples --sample-dir ./samples --json-out samples_score.js
 - Attn-out negate（S63）→ **`logits_finite`** + **L2**；≠ S41。  
 - Residual ÷50（S64）→ `token_repeat` + **L2**；≠ S48/S55。  
 - Logits ×50（S65）→ `token_repeat` + **L2**；≠ S53/S36。  
+- RMSNorm weight negate（S66）→ **`logits_finite`** + **L2**；≠ S26/S38/S48/S55/S62。  
+- SwiGLU out negate（S67）→ **`logits_finite`** + **L2**；≠ S39/S50/S56。  
+- Attn scale ÷50（S68）→ `token_repeat` + **L2**；≠ S34/S49。  
 - `garbage_mixed_script` + detect=0 → **FAIL+GAP**（S01/S07/S45）。若已有 `token_repeat` report，勿因 samples 里偶发 garbage 标签宣称 GAP。  
 有 precision 且 detect=0 → 交付 **FAIL+GAP**（勿伪造 detector PASS）。
 

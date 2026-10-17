@@ -96,3 +96,5 @@ description: >-
 **Query×50 / hidden×50 / pre-norm x×50（S60/S61/S62）：** S60/S61 开 `token_repeat`。S62 **开 `logits_finite`**（主）。S60≠S52/S49/S51/S59；S61≠S53/S43；S62≠S26/S38/S48/S55。
 
 **Attn-out-negate / residual÷50 / logits×50（S63/S64/S65）：** S63 **开 `logits_finite`**（主）。S64/S65 开 `token_repeat`。S63≠S41；S64≠S48/S55；S65≠S53/S36。
+
+**RMSNorm-weight-negate / SwiGLU-out-negate / attn-scale÷50（S66/S67/S68）：** S66/S67 **开 `logits_finite`**（主）。S68 开 `token_repeat`。S66≠S26/S38/S48/S55/S62；S67≠S39/S50/S56；S68≠S34/S49。
