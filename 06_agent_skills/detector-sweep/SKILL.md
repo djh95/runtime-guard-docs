@@ -43,6 +43,8 @@ description: >-
 
 **Attn scale drop / causal-off（S34/S35）：** 开 `token_repeat`。S34 unique digit/junk（wrong attn temp）；S35 强 phrase/prompt-echo（future leak）。S34≠S20/S32/S33；S35≠S34。
 
+**Temp blowup / pos-zero / RMSNorm skip（S36/S37/S38）：** S36/S37 开 `token_repeat`（S36 看 unique `id_echo`）。S38 **必须开 `logits_finite`**（主检出）；`!!!!` 可兼 `token_repeat` 对照。S36≠S29/S20；S37≠S25/S28；S38≠S26/S31/S20。
+
 ## 输出模板（可热更）
 
 启动须已开 `runtime_config_hot_reload=true`（见 01）。Grep 确认 reload；失败会保留旧配置。

@@ -1,7 +1,7 @@
 # Anomaly × Skills 能力边界（活文档）— 2026-10-17
 
 > **用途：** 对每一个已落地 / 在册异常场景，如实记录现象、复现与对照配置、skills 能分析到哪一步、有用度，以及还缺什么。  
-> **Skills：** `runtime-guard-test` `analysis/skill/` **v1.9**（investigation / detector-sweep / config-recommender / analysis / ref-kv-dump）。  
+> **Skills：** `runtime-guard-test` `analysis/skill/` **v2.0**（investigation / detector-sweep / config-recommender / analysis / ref-kv-dump）。  
 > **Guard pin：** G2 `f2aefd068`。三层率 = trigger / precision / detect。  
 > **诚实上限：** skills **定界**（detect / 现象类 / 可选 KV 首分歧），**不承诺**定位到算子、权重元素或具体 commit。
 
@@ -61,6 +61,9 @@
 | S33 | incomplete softcap | **是** `token_repeat` | 否 | **L2 class-hint**（≠S20） | **高** | ÷cap+tanh skip *cap；≠ overflow/`!!!!` |
 | S34 | attn scale drop | **是** `token_repeat` | 否 | **L2 class-hint**（≠S20/S32/S33） | **高** | 1/sqrt(d)→1.0 wrong attn temp；unique garbage |
 | S35 | causal-off / future leak | **是** `token_repeat` | 否 | **L2 class-hint**（≠S34） | **高** | causal=False + mask=None |
+| S36 | temp-scale blowup | **是** `token_repeat` | 否 | **L2 class-hint**（≠S29/S20） | **高** | post-temp ÷50；unique `id_echo`/`unique_garbage` |
+| S37 | positions→0 before RoPE | **是** `token_repeat` | 否 | **L2 class-hint**（≠S25/S28/S11） | **高** | pos-collapse all tokens share pos-0 |
+| S38 | RMSNorm identity skip | **是** `logits_finite` | 否 | **L2 class-hint**（≠S26/S31/S20） | **高** | skip npu_rms_norm → `!!!!` |
 
 > **S20 说明：** detector **能检出**（`token_repeat` 对 `!!!!`/token0）；skills 额外给出 **溢出/softcap class-hint（L2）**，不是「只能 detect、无类提示」。仍 **不能** 定位到具体 softcap 实现行或权重。
 
@@ -405,6 +408,36 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 | **有用度** | **高** |
 | **待改进** | 无 |
 
+### S36 — Temp-scale blowup（÷50；≠ S29/S20）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **132 / 10 / 19**；`token_repeat`×19；unique garbled / id-echo |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2**；score **`id_echo`/`unique_garbage`**（hits 4→33）；≠ S29/S20 |
+| **有用度** | **高** |
+| **待改进** | 无 |
+
+### S37 — Positions→0 before RoPE（≠ S25/S28/S11）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **132 / 35 / 48**；`token_repeat`×48 |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2 class-hint**（pos-collapse）；≠ S25/S28/S11 |
+| **有用度** | **高** |
+| **待改进** | 无 |
+
+### S38 — RMSNorm identity skip（≠ S26/S31/S20）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **188 / 48 / 48**；**`logits_finite`×48**；identical `!!!!` |
+| **能否检测** | **是**（主 detector=`logits_finite`） |
+| **Skills 最远** | **L2**；≠ S26 fp32-mul ≠ S31 residual ≠ S20 softcap path |
+| **有用度** | **高** |
+| **待改进** | 无 |
+
 ---
 
 ## Verify-loop deltas（2026-10-17）
@@ -427,6 +460,9 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 | **S33** | 无 incomplete-softcap class（易混 S20）→ **L2**；score 已有 repeat | **是** |
 | **S34** | 无 attn-scale class → **L2** wrong attn temp；≠ S20/S32/S33 | **是** |
 | **S35** | 无 causal-off class → **L2** future leak；≠ S34 | **是** |
+| **S36** | score hits=4（漏 unique id-echo）→ **`unique_garbage`/`id_echo` hits=33**；**L2** ≠ S29/S20 | **是** |
+| **S37** | 无 pos-collapse class → **L2**；≠ S25/S28/S11 | **是** |
+| **S38** | 无 RMSNorm-skip class；易混 S20 → **L2** via **`logits_finite`** | **是** |
 
 详见 [anomaly-skills-verify-loop-20261017.md](./anomaly-skills-verify-loop-20261017.md)。
 
@@ -437,7 +473,7 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 3. Spec 分布性：summarize 突出 `acceptance_rate`  
 4. ~~Weight/Quant always-on 场景落地~~ → **S23/S24 PASS L1**（仍不可定位张量）  
 5. KV PASS（S10′/S12/S30）：标准 ref-kv 流水线模板 + 容器 dump_dir 重映射  
-6. Soft-inv / cast / residual / graph-pad / softcap / attn：**S25–S35 L2**（仍不可定位算子行）
+6. Soft-inv / cast / residual / graph-pad / softcap / attn / temp / pos / norm-skip：**S25–S38 L2**（仍不可定位算子行）
 
 ---
 

@@ -191,6 +191,27 @@ PYTHONPATH=. python -m analysis.scripts.score_completion_samples --sample-dir te
 # likewise S35
 ```
 
+## S36 / S37 / S38 — temp blowup + pos-zero + RMSNorm skip (v2.0)
+
+| | Before (pre-v2.0) | After (re-verify) |
+|--|-------------------|-------------------|
+| **S36** layers | 132/10/19 `token_repeat` | same ✓ |
+| **S36** score | precision_hits=**4**（漏 unique id-echo） | **`unique_garbage`×30 / `id_echo`×9 / hits=33**; gap=`None` ✓ |
+| **S36** skills | no wrong-T class | **L2** temp-scale blowup ≠ S29/S20 ✓ |
+| **S37** layers | 132/35/48 `token_repeat` | same ✓ |
+| **S37** score | digit/phrase_repeat; gap=`None` | same (+dot-collapse) ✓ |
+| **S37** skills | risk conflate S25/S28 | **L2** pos-collapse ≠ S25/S28/S11 ✓ |
+| **S38** layers | 188/48/48 **`logits_finite`** | same ✓ |
+| **S38** score | `token0_collapse`×48; gap=`None` | same ✓ |
+| **S38** skills | risk conflate S20 softcap | **L2** via **`logits_finite`**; ≠ S26/S31/S20 ✓ |
+| Expected? | — | **Yes** — S36 score bump + three L2 class-hints |
+
+```bash
+PYTHONPATH=. python -m analysis.scripts.summarize_reports --report-dir tests/build-anomaly-env/fail-evidence/S36/reports
+PYTHONPATH=. python -m analysis.scripts.score_completion_samples --sample-dir tests/build-anomaly-env/fail-evidence/S36/samples
+# likewise S37 S38
+```
+
 ## Remaining gaps (not closed by this loop)
 
 - S22: summarize does not yet print `acceptance_rate` column — optional next script tweak.

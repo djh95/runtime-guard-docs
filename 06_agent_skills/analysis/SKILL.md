@@ -55,6 +55,9 @@ rgpy.score_completion_samples --sample-dir ./samples --json-out samples_score.js
 - Incomplete softcap（S33）→ `token_repeat` + **L2**（÷cap+tanh skip *cap）；≠ S20 overflow/`!!!!`。  
 - Attn scale drop（S34）→ `token_repeat` + **L2**（wrong attn temp）；precision 常 **unique** digit/junk；≠ S20/S32/S33。  
 - Causal-off（S35）→ `token_repeat` + **L2**（future leak）；强 `phrase_repeat`/prompt-echo；≠ S34。  
+- Temp-scale blowup（S36）→ `token_repeat` + **L2**；precision 常 **unique** `id_echo`/`unique_garbage`；勿因 identical_mode 低判「无 precision」。≠ S29/S20。  
+- Positions→0（S37）→ `token_repeat` + **L2**；≠ S25/S28/S11。  
+- RMSNorm identity skip（S38）→ **`logits_finite`**（`!!!!`/`token0_collapse`）；**L2** ≠ S26/S31；勿当成「仅 S20 softcap」。  
 - `garbage_mixed_script` + detect=0 → **FAIL+GAP**（S01/S07）。若已有 `token_repeat` report，勿因 samples 里偶发 garbage 标签宣称 GAP。  
 有 precision 且 detect=0 → 交付 **FAIL+GAP**（勿伪造 detector PASS）。
 

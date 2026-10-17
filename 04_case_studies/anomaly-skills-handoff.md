@@ -1,7 +1,7 @@
 # Anomaly skills handoff (watcher)
 
-**Rev:** `2026-10-17T1420+08` — **S34 + S35 skills done** (v1.9).  
-Prior: S32/S33 v1.8; S29–S31 v1.7.
+**Rev:** `2026-10-17T1500+08` — **S36 + S37 + S38 skills done** (v2.0).  
+Prior: S34/S35 v1.9; S32/S33 v1.8; S29–S31 v1.7.
 
 Skills agent (162) watches this file for **new PASS / FAIL+GAP**. Offline only — **do not steal 160 cards**.
 
@@ -16,20 +16,23 @@ PYTHONPATH="$RG_TEST" python -m analysis.scripts.verify_request_kv --report <r.j
 
 | Bucket | IDs |
 |--------|-----|
-| PASS | S06, S08, S10′, S11, S12, S14, S16–S19, S20, S22–S26, S28–**S35** |
+| PASS | S06, S08, S10′, S11, S12, S14, S16–S19, S20, S22–S26, S28–**S38** |
 | FAIL+GAP | S01, S07 |
 | Parked | S02/S03/S05/S09 HARD; S04 HCCN-blocked; S13 BLOCKED; S15 skip; S21 HARD (trig=0); **S27 BLOCKED** |
-| **Builder** | check open set (S21 / etc.) — skills on **162** |
+| **Builder** | check open set — skills on **162** |
 
 ## Inbox (160 → skills)
 
-- **S35 PASS** `136/46/48` token_repeat | evidence `fail-evidence/S35/` | causal-off future leak; ≠ S34
-  - **skills done** 2026-10-17: full loop; skills **v1.9** L2; note `docs/anomaly-skills-runs/S35-20261017.md`
-- **S34 PASS** `18/26/48` token_repeat | evidence `fail-evidence/S34/` | attn scale drop 1/sqrt(d)→1.0; ≠ S20/S32/S33
-  - **skills done** 2026-10-17: full loop; skills **v1.9** L2; note `docs/anomaly-skills-runs/S34-20261017.md`
+- **S38 PASS** `188/48/48` logits_finite | evidence `fail-evidence/S38/` | RMSNorm identity skip; ≠ S26/S31/S20
+  - **skills done** 2026-10-17: full loop; skills **v2.0** L2; note `docs/anomaly-skills-runs/S38-20261017.md`
+- **S37 PASS** `132/35/48` token_repeat | evidence `fail-evidence/S37/` | positions→0 before RoPE; ≠ S25/S28/S11
+  - **skills done** 2026-10-17: full loop; skills **v2.0** L2; note `docs/anomaly-skills-runs/S37-20261017.md`
+- **S36 PASS** `132/10/19` token_repeat | evidence `fail-evidence/S36/` | temp scale blowup ÷50; unique garbage; ≠ S29/S20
+  - **skills done** 2026-10-17: full loop; score `id_echo`/`unique_garbage`; skills **v2.0** L2; note `docs/anomaly-skills-runs/S36-20261017.md`
 
 ### Prior (skills done)
 
+- **S35/S34** | **skills done** v1.9
 - **S33/S32** | **skills done** v1.8
 - **S31/S30/S29** | **skills done** v1.7
 - **S28/S26/S25** | **skills done** v1.6
@@ -38,14 +41,15 @@ PYTHONPATH="$RG_TEST" python -m analysis.scripts.verify_request_kv --report <r.j
 ## Blocked note (not Inbox)
 
 - **S27 BLOCKED** — pe-presliced MLA no-op. Skills skipped.
+- **S21 HARD** — parked (trig=0).
 
 ## Requests → Build-on-160
 
 Living capability: [anomaly-skills-capability-20261017.md](anomaly-skills-capability-20261017.md).
 
-Skills: watching for next PENDING. Builder open set as available.
+Skills: watching for next PENDING.
 
 ## Skills verify (2026-10-17)
 
-- S32/S33: **v1.8**
-- S34/S35: **v1.9** — `docs/anomaly-skills-runs/S3{4,5}-20261017.md`
+- S34/S35: **v1.9**
+- S36/S37/S38: **v2.0** — `docs/anomaly-skills-runs/S3{6,7,8}-20261017.md`
