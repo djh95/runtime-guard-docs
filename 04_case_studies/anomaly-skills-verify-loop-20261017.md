@@ -82,8 +82,34 @@ PYTHONPATH=. python -m analysis.scripts.summarize_reports --report-dir tests/bui
 PYTHONPATH=. python -m analysis.scripts.score_completion_samples --sample-dir tests/build-anomaly-env/fail-evidence/S24/samples
 ```
 
+## Batch wave — other PASS + FAIL+GAP (2026-10-17, offline / 162)
+
+Scope: **S06, S08, S10′, S11, S12, S14, S16–S19** (+ re-check **S01/S07**). No 160 cards. Skills **v1.5** already covered these classes → **no skill edit** this wave; verify once and record.
+
+| ID | Evidence used | summarize / score | Skills adequate? | Before→After |
+|----|---------------|-------------------|------------------|--------------|
+| **S06** | 162 pull → `fail-evidence/S06/` (replaced outdated BLOCKED) | `token_repeat`×1; labels `mixed_script`+`repeat`; gap=`None` | **Yes** L2 MoE | archive only; **no skill change** |
+| **S08** | local dirs = early FAIL attempts only; PASS rates from status/docs | no PASS report archive locally | **Yes** L2 (+opt L3) slot class | **no change needed** (metadata) |
+| **S10′** | `fail-evidence/S10/` status+WHY_PASS (65/20/79) | no report files archived | **Yes** L2–L3 potential KV | **no change needed** (metadata) |
+| **S11** | `report_sample.json` | `token_repeat`×1 | **Yes** L2 MLA pad | **no change needed** |
+| **S12** | `report_sample.json` | `token_repeat`×1 | **Yes** L2–L3 packed KV | **no change needed** |
+| **S14** | reports×3 + samples×3 | `token_repeat`; labels digits/repeat/mixed; gap=`None` | **Yes** L2 | **no change needed** |
+| **S16** | reports×3 + samples×3 | `token_repeat`; digits/repeat/token0; gap=`None` | **Yes** L2 MoE | **no change needed** |
+| **S17** | report×1 + `c_000` | `token_repeat`; `repeat`; gap=`None` | **Yes** L2 MoE | **no change needed** |
+| **S18** | `sample_report` + `c_000` | `token_repeat`; digits+repeat; gap=`None` | **Yes** L2 MoE | **no change needed** |
+| **S19** | `sample_report` + `c_000` | `token_repeat`; `ctx_echo`; gap=`None` | **Yes** L2 MoE | **no change needed** |
+| **S01** | status FAIL+GAP + `sample_01` | detect=0; single sample `mixed_script` (weak); no online detect | **Yes** GAP path | **no change** — still detector GAP |
+| **S07** | 162 samples×48 + local exemplars | identical×48 `garbage_mixed_script`; **gap hint fires** | **Yes** GAP path | **no change** — still detector GAP |
+
+### Batch verdict
+
+- **PASS set:** detectors/`token_repeat` + skill class tables match evidence; **no false GAP** on scored PASS samples.
+- **FAIL+GAP:** S01/S07 correctly remain offline-score / GAP; do not amplify.
+- **Skills changed?** **No** (evidence hygiene only: S06 PASS archive).
+
 ## Remaining gaps (not closed by this loop)
 
 - S22: summarize does not yet print `acceptance_rate` column — optional next script tweak.
 - S01/S07: still detector GAP; skills only offline score.
 - Weight/quant: still **cannot** localize which tensor/scale (by design).
+- S08/S10′: PASS report trees not fully mirrored in fail-evidence (status/WHY only for S10′; S08 local = pre-PASS attempts).

@@ -294,16 +294,18 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 
 ---
 
-## Verify-loop deltas（S20 / S22 / S23 / S24，2026-10-17）
+## Verify-loop deltas（2026-10-17）
 
 | ID | Before → After | 是否达到预期 |
 |----|----------------|--------------|
-| **S20** | score 误标 GAP → **无 GAP** + `token0_collapse`；叙事升为 **L2 class-hint**（仍能 `token_repeat` 检测） | **是** |
-| **S22** | 无 RNG/SALT class 指引 → skills 表 + sweep 要求看 `spec_acceptance`；samples 空标签视为正常分布性 | **是** |
-| **S23** | stub SPEC → **PASS L1 detect-only**；skills 表禁止权重定位；score 已无假 GAP | **是** |
-| **S24** | score **假 GAP**（mixed digits/repeat+garbage）→ **无 GAP**；skills **L1** 且明确 ≠ S07 | **是** |
+| **S20** | score 误标 GAP → **无 GAP** + `token0_collapse`；叙事升为 **L2 class-hint** | **是** |
+| **S22** | 无 RNG/SALT class → **L2** via `spec_acceptance` | **是** |
+| **S23** | stub → **PASS L1 detect-only** | **是** |
+| **S24** | score **假 GAP** → **无 GAP**；≠ S07 | **是** |
+| **S06/S08/S10′/S11/S12/S14/S16–S19** | 补跑 verify：skills 表已够 → **无改 skill**；S06 补 PASS 归档 | **是**（no-edit） |
+| **S01/S07** | 复验仍 **FAIL+GAP**（score 正确给 gap hint / status detect=0） | **是**（GAP 诚实） |
 
-详见 [anomaly-skills-verify-loop-20261017.md](./anomaly-skills-verify-loop-20261017.md)。
+详见 [anomaly-skills-verify-loop-20261017.md](./anomaly-skills-verify-loop-20261017.md) batch wave。
 
 ## Skills 全局缺口（优先序）
 
