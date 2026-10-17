@@ -1,7 +1,7 @@
 # Anomaly × Skills 能力边界（活文档）— 2026-10-17
 
 > **用途：** 对每一个已落地 / 在册异常场景，如实记录现象、复现与对照配置、skills 能分析到哪一步、有用度，以及还缺什么。  
-> **Skills：** `runtime-guard-test` `analysis/skill/` **v2.0**（investigation / detector-sweep / config-recommender / analysis / ref-kv-dump）。  
+> **Skills：** `runtime-guard-test` `analysis/skill/` **v2.1**（investigation / detector-sweep / config-recommender / analysis / ref-kv-dump）。  
 > **Guard pin：** G2 `f2aefd068`。三层率 = trigger / precision / detect。  
 > **诚实上限：** skills **定界**（detect / 现象类 / 可选 KV 首分歧），**不承诺**定位到算子、权重元素或具体 commit。
 
@@ -64,6 +64,9 @@
 | S36 | temp-scale blowup | **是** `token_repeat` | 否 | **L2 class-hint**（≠S29/S20） | **高** | post-temp ÷50；unique `id_echo`/`unique_garbage` |
 | S37 | positions→0 before RoPE | **是** `token_repeat` | 否 | **L2 class-hint**（≠S25/S28/S11） | **高** | pos-collapse all tokens share pos-0 |
 | S38 | RMSNorm identity skip | **是** `logits_finite` | 否 | **L2 class-hint**（≠S26/S31/S20） | **高** | skip npu_rms_norm → `!!!!` |
+| S39 | SwiGLU skip-silu | **是** `logits_finite` | 否 | **L2 class-hint**（≠S26/S31/S38） | **高** | plain gate×up；skip npu_swiglu |
+| S40 | RoPE skip | **是** `token_repeat` | 否 | **L2 class-hint**（≠S25/S28/S37） | **高** | unrotated Q/K；Nile phrase loop |
+| S41 | post-FA attn ×1000 | **是** `logits_finite` | 否 | **L2 class-hint**（≠S34/S14/S35） | **高** | attn_out mul_(1000) after FA |
 
 > **S20 说明：** detector **能检出**（`token_repeat` 对 `!!!!`/token0）；skills 额外给出 **溢出/softcap class-hint（L2）**，不是「只能 detect、无类提示」。仍 **不能** 定位到具体 softcap 实现行或权重。
 
@@ -438,6 +441,36 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 | **有用度** | **高** |
 | **待改进** | 无 |
 
+### S39 — SwiGLU skip-silu（≠ S26/S31/S38）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **58 / 48 / 48**；**`logits_finite`×48**；identical `!!!!` |
+| **能否检测** | **是**（主=`logits_finite`） |
+| **Skills 最远** | **L2**（activation skip）；≠ S26/S31/S38 |
+| **有用度** | **高** |
+| **待改进** | 无 |
+
+### S40 — RoPE skip（unrotated Q/K；≠ S25/S28/S37）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **58 / 45 / 48**；`token_repeat`×48；强 Nile `phrase_repeat` |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2**（no rotary）；≠ S25 half ≠ S28 style ≠ S37 pos-zero |
+| **有用度** | **高** |
+| **待改进** | 无 |
+
+### S41 — Post-FA attn out ×1000（≠ S34/S14/S35）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **58 / 48 / 48**；**`logits_finite`×48**；identical `!!!!` |
+| **能否检测** | **是**（主=`logits_finite`） |
+| **Skills 最远** | **L2**（wrong attn-out scale）；≠ S34 softmax-scale ≠ S14/S35 |
+| **有用度** | **高** |
+| **待改进** | 无 |
+
 ---
 
 ## Verify-loop deltas（2026-10-17）
@@ -463,6 +496,9 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 | **S36** | score hits=4（漏 unique id-echo）→ **`unique_garbage`/`id_echo` hits=33**；**L2** ≠ S29/S20 | **是** |
 | **S37** | 无 pos-collapse class → **L2**；≠ S25/S28/S11 | **是** |
 | **S38** | 无 RMSNorm-skip class；易混 S20 → **L2** via **`logits_finite`** | **是** |
+| **S39** | 无 SwiGLU-skip class → **L2** via **`logits_finite`**；≠ S26/S31/S38 | **是** |
+| **S40** | 无 RoPE-skip class → **L2**；≠ S25/S28/S37 | **是** |
+| **S41** | 无 attn-out-scale class → **L2** via **`logits_finite`**；≠ S34/S14/S35 | **是** |
 
 详见 [anomaly-skills-verify-loop-20261017.md](./anomaly-skills-verify-loop-20261017.md)。
 
@@ -473,7 +509,7 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 3. Spec 分布性：summarize 突出 `acceptance_rate`  
 4. ~~Weight/Quant always-on 场景落地~~ → **S23/S24 PASS L1**（仍不可定位张量）  
 5. KV PASS（S10′/S12/S30）：标准 ref-kv 流水线模板 + 容器 dump_dir 重映射  
-6. Soft-inv / cast / residual / graph-pad / softcap / attn / temp / pos / norm-skip：**S25–S38 L2**（仍不可定位算子行）
+6. Soft-inv / cast / residual / graph-pad / softcap / attn / temp / pos / norm / act / rope：**S25–S41 L2**（仍不可定位算子行）
 
 ---
 

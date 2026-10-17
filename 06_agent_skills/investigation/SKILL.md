@@ -72,6 +72,9 @@ description: >-
 | Temp-scale blowup（S36，post-temp ÷50） | unique garbled prose / id-echo；identical-mode 低估 | **`token_repeat`** | **L2**（wrong T scale）；score=`id_echo`/`unique_garbage`；≠ S29/S20 |
 | Positions→0 before RoPE（S37） | digit/`333…`/`999…` 复读塌缩 | **`token_repeat`** | **L2**（pos-collapse）；≠ S25 half ≠ S28 style ≠ S11 pad |
 | RMSNorm identity skip（S38） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（norm skip）；≠ S26 fp32-mul ≠ S31 residual-drop；≠ S20（S20 常只亮 `token_repeat`） |
+| SwiGLU skip-silu（S39，plain gate×up） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（activation skip）；≠ S26/S31/S38 norm 族 |
+| RoPE skip（S40，unrotated Q/K） | Nile/`phrase_repeat` 句级复读 | **`token_repeat`** | **L2**（no rotary）；≠ S25 half ≠ S28 style ≠ S37 pos-zero |
+| Post-FA attn out `mul_(1000)`（S41） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（wrong attn-out scale）；≠ S34 softmax-scale ≠ S14/S35 |
 | RoPE 第二半写丢（S25，soft-inv #7082） | digit/`1.1.1…` 复读塌缩 | **`token_repeat`** | **L2 class-hint**（RoPE half）；≠ S11 pad；勿宣称定位到 Triton store 行 |
 | RMSNorm fp32 weight-mul（S26，soft-inv #42379） | 同上类复读；dtype/cast | **`token_repeat`** | **L2**（norm dtype）；与 S25 症状可重叠，靠 overlay/场景区分 |
 | RoPE neox→interleaved 风格错（S28，#7341/#7082 class） | 句/短语级复读（score=`phrase_repeat`） | **`token_repeat`** | **L2**；≠ S25 half-drop ≠ S11；samples 可能看似「正常英文」 |

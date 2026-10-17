@@ -58,6 +58,9 @@ rgpy.score_completion_samples --sample-dir ./samples --json-out samples_score.js
 - Temp-scale blowup（S36）→ `token_repeat` + **L2**；precision 常 **unique** `id_echo`/`unique_garbage`；勿因 identical_mode 低判「无 precision」。≠ S29/S20。  
 - Positions→0（S37）→ `token_repeat` + **L2**；≠ S25/S28/S11。  
 - RMSNorm identity skip（S38）→ **`logits_finite`**（`!!!!`/`token0_collapse`）；**L2** ≠ S26/S31；勿当成「仅 S20 softcap」。  
+- SwiGLU skip-silu（S39）→ **`logits_finite`** + **L2**；≠ S26/S31/S38。  
+- RoPE skip（S40）→ `token_repeat` + **L2**；强 `phrase_repeat`；≠ S25/S28/S37。  
+- Post-FA attn `mul_(1000)`（S41）→ **`logits_finite`** + **L2**；≠ S34（softmax scale）/S14/S35。  
 - `garbage_mixed_script` + detect=0 → **FAIL+GAP**（S01/S07）。若已有 `token_repeat` report，勿因 samples 里偶发 garbage 标签宣称 GAP。  
 有 precision 且 detect=0 → 交付 **FAIL+GAP**（勿伪造 detector PASS）。
 

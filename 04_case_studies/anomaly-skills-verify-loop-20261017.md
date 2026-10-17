@@ -212,6 +212,27 @@ PYTHONPATH=. python -m analysis.scripts.score_completion_samples --sample-dir te
 # likewise S37 S38
 ```
 
+## S39 / S40 / S41 — SwiGLU skip + RoPE skip + attn-out ×1000 (v2.1)
+
+| | Before (pre-v2.1) | After (re-verify) |
+|--|-------------------|-------------------|
+| **S39** layers | 58/48/48 **`logits_finite`** | same ✓ |
+| **S39** score | `token0_collapse`×48; gap=`None` | same ✓ |
+| **S39** skills | risk conflate S26/S31/S38 | **L2** SwiGLU skip-silu ✓ |
+| **S40** layers | 58/45/48 `token_repeat` | same ✓ |
+| **S40** score | `phrase_repeat`×47; gap=`None` | same ✓ |
+| **S40** skills | risk conflate S25/S28/S37 | **L2** RoPE skip (unrotated) ✓ |
+| **S41** layers | 58/48/48 **`logits_finite`** | same ✓ |
+| **S41** score | `token0_collapse`×48; gap=`None` | same ✓ |
+| **S41** skills | risk conflate S34 softmax-scale | **L2** post-FA attn-out ×1000 ≠ S34 ✓ |
+| Expected? | — | **Yes** — three L2 class-hints; score already adequate |
+
+```bash
+PYTHONPATH=. python -m analysis.scripts.summarize_reports --report-dir tests/build-anomaly-env/fail-evidence/S39/reports
+PYTHONPATH=. python -m analysis.scripts.score_completion_samples --sample-dir tests/build-anomaly-env/fail-evidence/S39/samples
+# likewise S40 S41
+```
+
 ## Remaining gaps (not closed by this loop)
 
 - S22: summarize does not yet print `acceptance_rate` column — optional next script tweak.

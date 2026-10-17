@@ -45,6 +45,8 @@ description: >-
 
 **Temp blowup / pos-zero / RMSNorm skip（S36/S37/S38）：** S36/S37 开 `token_repeat`（S36 看 unique `id_echo`）。S38 **必须开 `logits_finite`**（主检出）；`!!!!` 可兼 `token_repeat` 对照。S36≠S29/S20；S37≠S25/S28；S38≠S26/S31/S20。
 
+**SwiGLU skip / RoPE skip / attn-out ×1000（S39/S40/S41）：** S39/S41 **开 `logits_finite`**（主）；S40 开 `token_repeat`（phrase 复读）。S39≠S26/S31/S38；S40≠S25/S28/S37；S41≠S34/S14/S35。
+
 ## 输出模板（可热更）
 
 启动须已开 `runtime_config_hot_reload=true`（见 01）。Grep 确认 reload；失败会保留旧配置。

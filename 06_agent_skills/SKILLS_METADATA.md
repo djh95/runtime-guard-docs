@@ -1,8 +1,9 @@
 # Runtime-Guard Skills Metadata
 
-版本：v2.0  
+版本：v2.1  
 Skill 列表（**不改名**）：`investigation` · `detector-sweep` · `config-recommender` · `analysis` · `ref-kv-dump`
 
+> **v2.1：** S39 SwiGLU skip-silu → **`logits_finite`** + **L2**；≠ S26/S31/S38。S40 RoPE skip（unrotated Q/K）→ `token_repeat` + **L2**；≠ S25/S28/S37。S41 post-FA attn `mul_(1000)` → **`logits_finite`** + **L2**；≠ S34/S14/S35。  
 > **v2.0：** S36 temp-scale blowup（÷50）→ `token_repeat` + **L2**；score `id_echo`/`unique_garbage`（identical-mode 低估）。S37 positions→0 before RoPE → `token_repeat` + **L2**；≠ S25/S28/S11。S38 RMSNorm identity skip → **`logits_finite`**（`!!!!`）+ **L2**；≠ S26/S31/S20（S20 主靠 `token_repeat`）。  
 > **v1.9：** S34 attn scale drop（1/sqrt(d)→1.0）→ `token_repeat` + **L2**（wrong attn temp；unique garbage）；≠ S20/S32/S33。S35 causal-off（causal=False + mask=None）→ `token_repeat` + **L2**（future leak）；≠ S34。  
 > **v1.8：** S32 FIA FULL-graph pad（#7144）→ `token_repeat` + **L2**；score `pad_echo`（unique garbage，≠ identical-mode）；≠ S14。S33 incomplete softcap（÷cap+tanh skip *cap）→ `token_repeat` + **L2**；≠ S20 overflow。  
