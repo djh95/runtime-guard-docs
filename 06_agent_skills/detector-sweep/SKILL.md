@@ -136,3 +136,5 @@ description: >-
 **RMSNorm-weight=zeros / SwiGLU-input-abs / logits-abs（S120/S121/S122）：** 开 `token_repeat`。S120≠S96/S66/S71/S74/S110；S121≠S56/S76/S81/S115；S122≠S53/S65/S108。S121 identical precision=0 仍可 PASS。
 
 **RMSNorm-bias=-weight / penalty-skip / residual-leak-sub（S123/S124/S125）：** S123/S124 开 `token_repeat`（S124 需 T>0）。S125 **开 `logits_finite`**（主）。S123≠S100/S66/S120；S124≠S46/S98/S99；S125≠S97/S93/S94/S31。S124 identical precision=0 仍可 PASS。
+
+**Hidden-zeros / embed-zeros / cos/sin-zeros（S126/S127/S128）：** 开 `token_repeat`。S126≠S61/S75/S108/S122；S127≠S69/S43/S80/S112；S128≠S42/S79–S82/S101/S113。
