@@ -47,8 +47,43 @@ PYTHONPATH=. python -m analysis.scripts.summarize_reports --report-dir tests/bui
 PYTHONPATH=. python -m analysis.scripts.score_completion_samples --sample-dir tests/build-anomaly-env/fail-evidence/S22/samples
 ```
 
+## S23 — weight layer corrupt always-on (detect-only)
+
+| | Before (pre-v1.5 @ `1f6fc18` evidence) | After (re-verify skills+score v1.5) |
+|--|----------------------------------------|--------------------------------------|
+| layers | **2 / 17 / 48** `token_repeat` | same ✓ |
+| summarize | `token_repeat` ×2 (archived reports) | same ✓ |
+| score labels | `repeat`×1; gap=`None` | same ✓ |
+| skills narrative | stub「SPEC中 / 预期 L1」 | investigation/sweep/recommender/analysis: **L1 detect-only**; 禁止定位 weight ✓ |
+| Expected improvement? | — | **Yes** — class guidance locked to detect-only; score already correct |
+
+Re-run:
+
+```bash
+PYTHONPATH=. python -m analysis.scripts.summarize_reports --report-dir tests/build-anomaly-env/fail-evidence/S23/reports
+PYTHONPATH=. python -m analysis.scripts.score_completion_samples --sample-dir tests/build-anomaly-env/fail-evidence/S23/samples
+```
+
+## S24 — W8A8 weight_scale zero always-on (detect-only; ≠ S07)
+
+| | Before (pre-v1.5 @ `1f6fc18` evidence) | After (re-verify skills+score v1.5) |
+|--|----------------------------------------|--------------------------------------|
+| layers | **2 / 48 / 48** `token_repeat` | same ✓ |
+| summarize | `token_repeat` ×2 | same ✓ |
+| score labels | `digits`+`repeat`+`garbage_mixed_script` | same labels |
+| `detector_gap_hint` | **false GAP** (`finite_garbage_or_identical…`) | **`None`** ✓ |
+| skills narrative | stub「预期 L1/GAP」易与 S07 混谈 | **L1 detect-only**; mixed-sample ≠ wholesale GAP; ≠ S07 ✓ |
+| Expected improvement? | — | **Yes** — clear false GAP; detect-only language; ≠ S07 |
+
+Re-run:
+
+```bash
+PYTHONPATH=. python -m analysis.scripts.summarize_reports --report-dir tests/build-anomaly-env/fail-evidence/S24/reports
+PYTHONPATH=. python -m analysis.scripts.score_completion_samples --sample-dir tests/build-anomaly-env/fail-evidence/S24/samples
+```
+
 ## Remaining gaps (not closed by this loop)
 
 - S22: summarize does not yet print `acceptance_rate` column — optional next script tweak.
 - S01/S07: still detector GAP; skills only offline score.
-- S23/S24: wait for PASS/FAIL+GAP handoff, then full loop.
+- Weight/quant: still **cannot** localize which tensor/scale (by design).

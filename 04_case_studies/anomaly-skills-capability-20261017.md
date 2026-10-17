@@ -1,7 +1,7 @@
 # Anomaly × Skills 能力边界（活文档）— 2026-10-17
 
 > **用途：** 对每一个已落地 / 在册异常场景，如实记录现象、复现与对照配置、skills 能分析到哪一步、有用度，以及还缺什么。  
-> **Skills：** `runtime-guard-test` `analysis/skill/` **v1.4**（investigation / detector-sweep / config-recommender / analysis / ref-kv-dump）。  
+> **Skills：** `runtime-guard-test` `analysis/skill/` **v1.5**（investigation / detector-sweep / config-recommender / analysis / ref-kv-dump）。  
 > **Guard pin：** G2 `f2aefd068`。三层率 = trigger / precision / detect。  
 > **诚实上限：** skills **定界**（detect / 现象类 / 可选 KV 首分歧），**不承诺**定位到算子、权重元素或具体 commit。
 
@@ -48,8 +48,8 @@
 | S20 | softcap/softmax 溢出 | **是** `token_repeat` | 否 | **L2 class-hint**（溢出塌缩类；非「仅 detect」） | **高** | 低 temp+unstable softmax；打错 V1 sampler 假阳 |
 | S21 | dummy stale slot | 未跑 | — | — | **低** | SPEC / DP+spec |
 | S22 | spec resample 无 SALT | **是** `spec_acceptance` | 否 | **L2 class**（RNG/SALT；分布性） | **高** | eagle3+temp>0；无 draft / 有 SALT 则否 |
-| S23 | weight corrupt always-on | SPEC中 | 否（目标仅 detect） | 预期 **L1 only** | 覆盖 | 腐蚀一权重；干净 ckpt 对照 |
-| S24 | quant scale always-on | SPEC中 | 否（目标仅 detect） | 预期 **L1**/GAP | 覆盖 | 启动弄坏一条 scale；≠S07 路径触发 |
+| S23 | weight corrupt always-on | **是** `token_repeat` | 否 | **L1 only**（detect-only） | **中** | post-load 零一权重；干净 ckpt 对照 |
+| S24 | quant scale always-on | **是** `token_repeat` | 否 | **L1 only**（≠ S07 GAP） | **中** | post-load 零一条 W8A8 scale；≠S07 路径触发 |
 
 > **S20 说明：** detector **能检出**（`token_repeat` 对 `!!!!`/token0）；skills 额外给出 **溢出/softcap class-hint（L2）**，不是「只能 detect、无类提示」。仍 **不能** 定位到具体 softcap 实现行或权重。
 
@@ -268,36 +268,40 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 
 ---
 
-## 权重异常（Weight）— 覆盖目标
+### S23 — 权重层腐蚀 always-on（constructed）
 
 | 项 | 内容 |
 |----|------|
-| **意图** | always-on：腐蚀 **一个** 权重张量（如某层 `o_proj.weight` 乘 0 / 注入大噪声） |
-| **现象** | 恒定垃圾 / 复读 / 质量断崖；几乎每请求 precision |
-| **Skills 最远** | **仅 L1 detect**（`token_repeat` 或未来 garbled）；**不能**指出哪个参数 |
-| **有用度预期** | **中** — 验证「总能抓到」；禁止宣称权重定位 |
-| **状态** | 160 已开目录 `tests/build-anomaly-env/23_weight_layer_corrupt/`（handoff 仍请完成 PASS/FAIL+GAP） |
-| **负对照** | 同模型无腐蚀；或腐蚀后恢复 checkpoint |
+| **意图 / 现象** | post-`load_model` 零掉一层 `o_proj.weight`；启动后恒定复读/塌缩 |
+| **三层率** | **2 / 17 / 48**；detect = `token_repeat`×48（evidence @ `1f6fc18`） |
+| **能否检测** | **是** |
+| **能否定位** | **否** — 禁止从 dump/ref 推断「哪条 weight」 |
+| **Skills 最远** | **L1 detect-only** |
+| **有用度** | **中** — 验证 always-on 可捕；负对照=干净 ckpt |
+| **待改进** | 无（本 class 故意停在 L1） |
 
-## 量化异常（Quant always-on）— 覆盖目标
+### S24 — W8A8 weight_scale 置零 always-on（constructed；≠ S07）
 
 | 项 | 内容 |
 |----|------|
-| **意图** | always-on：启动时固定弄坏 **一条** deq_scale / weight_scale（≠ S07 路径触发计数） |
-| **现象** | 恒定 identical 或有限垃圾 |
-| **Skills 最远** | **仅 L1** 或 **GAP**（与 S07 同）；**不能**指出哪条 scale |
-| **有用度预期** | **中** — 与 S07 对比「always vs triggered」 |
-| **状态** | 160 已开目录 `tests/build-anomaly-env/24_quant_scale_zero/`（handoff 仍请完成落地） |
-| **负对照** | 同 W8A8 无 scale 腐蚀；bf16 |
+| **意图 / 现象** | post-load 零一条 `weight_scale`；每请求 `token_repeat`；samples 可混 digits/repeat + 偶发 garbage 标签 |
+| **三层率** | **2 / 48 / 48**；detect = `token_repeat`×48 |
+| **能否检测** | **是**（≠ S07 FAIL+GAP） |
+| **能否定位** | **否** — 不能指出哪条 scale |
+| **Skills 最远** | **L1 detect-only** |
+| **有用度** | **中** — 与 S07「路径触发+GAP」对照 |
+| **待改进** | score 已修：混有 `garbage_mixed_script` 时勿批发 GAP（v1.5） |
 
 ---
 
-## Verify-loop deltas（S20 / S22，2026-10-17 补跑）
+## Verify-loop deltas（S20 / S22 / S23 / S24，2026-10-17）
 
 | ID | Before → After | 是否达到预期 |
 |----|----------------|--------------|
 | **S20** | score 误标 GAP → **无 GAP** + `token0_collapse`；叙事升为 **L2 class-hint**（仍能 `token_repeat` 检测） | **是** |
 | **S22** | 无 RNG/SALT class 指引 → skills 表 + sweep 要求看 `spec_acceptance`；samples 空标签视为正常分布性 | **是** |
+| **S23** | stub SPEC → **PASS L1 detect-only**；skills 表禁止权重定位；score 已无假 GAP | **是** |
+| **S24** | score **假 GAP**（mixed digits/repeat+garbage）→ **无 GAP**；skills **L1** 且明确 ≠ S07 | **是** |
 
 详见 [anomaly-skills-verify-loop-20261017.md](./anomaly-skills-verify-loop-20261017.md)。
 
@@ -306,7 +310,7 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 1. **Garbled / identical-across detector**（解锁 S01/S07 → 可升「高」有用度的 online 段）  
 2. MoE/溢出类：**明确 L3 不可达**（避免空跑 ref）  
 3. Spec 分布性：summarize 突出 `acceptance_rate`  
-4. Weight/Quant always-on 场景落地后：本表升格为正式 Sxx 行  
+4. ~~Weight/Quant always-on 场景落地~~ → **S23/S24 PASS L1**（仍不可定位张量）  
 5. KV PASS（S10′/S12）：标准 ref-kv 流水线模板 + 容器 dump_dir 重映射
 
 ---
