@@ -92,3 +92,5 @@ description: >-
 **Key-negate / residual×50 / SwiGLU-input-negate（S54/S55/S56）：** S54 开 `token_repeat`。S55/S56 **开 `logits_finite`**（主）。S54≠S47/S51/S52；S55≠S31/S38/S48；S56≠S39/S50。
 
 **Positions×2 / value-negate / key×50（S57/S58/S59）：** S57/S59 开 `token_repeat`。S58 **开 `logits_finite`**（主）。S57≠S37；S58≠S51/S47/S52/S54；S59≠S49/S51/S54。
+
+**Query×50 / hidden×50 / pre-norm x×50（S60/S61/S62）：** S60/S61 开 `token_repeat`。S62 **开 `logits_finite`**（主）。S60≠S52/S49/S51/S59；S61≠S53/S43；S62≠S26/S38/S48/S55。
