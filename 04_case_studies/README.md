@@ -44,5 +44,11 @@
 | C2 | 必现乱码但无清洁标杆：仅 logits/report 定界 | 强调 §2.3 |
 | C3 | Spec 接受率骤降 | 需 MTP 环境 |
 | C4 | PP/TP 找错 rank 导致「无报告」误判 | 运维向 |
+| A1 | [Anomaly × Skills 能力边界 2026-10-17](./anomaly-skills-capability-20261017.md) | PASS/FAIL+GAP 矩阵；skills 定界深度 |
+
 
 有真实案例时，在本表加链接到同目录新文件即可。
+
+## 已补充
+
+| A1 | [Anomaly × Skills 能力边界 2026-10-17](./anomaly-skills-capability-20261017.md) | PASS/FAIL+GAP 矩阵；skills 定界深度 |
