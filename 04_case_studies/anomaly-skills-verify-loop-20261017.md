@@ -352,6 +352,19 @@ python -c "import json;print(json.load(open('tests/build-anomaly-env/fail-eviden
 | **S62** skills | risk conflate S26/S38/S48/S55 | **L2** pre-norm x×50 ✓ |
 | Expected? | — | **Yes** — three L2 |
 
+
+## S63 / S64 / S65 — attn-out-negate + residual÷50 + logits×50 (v2.9)
+
+| | Before (pre-v2.9) | After (re-verify) |
+|--|-------------------|-------------------|
+| **S63** layers | 58/48/48 **`logits_finite`** | same ✓ (slim) |
+| **S63** skills | risk conflate S41 | **L2** attn-out negate ✓ |
+| **S64** layers | 100/48/48 `token_repeat` | same ✓ |
+| **S64** skills | risk conflate S48/S55 | **L2** residual÷50 ✓ |
+| **S65** layers | 16/16/48 `token_repeat` | same ✓ |
+| **S65** skills | risk conflate S53/S36 | **L2** logits×50 ✓ |
+| Expected? | — | **Yes** — three L2 |
+
 ## Remaining gaps (not closed by this loop)
 
 - S22: summarize does not yet print `acceptance_rate` column — optional next script tweak.

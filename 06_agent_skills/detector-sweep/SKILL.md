@@ -94,3 +94,5 @@ description: >-
 **Positions×2 / value-negate / key×50（S57/S58/S59）：** S57/S59 开 `token_repeat`。S58 **开 `logits_finite`**（主）。S57≠S37；S58≠S51/S47/S52/S54；S59≠S49/S51/S54。
 
 **Query×50 / hidden×50 / pre-norm x×50（S60/S61/S62）：** S60/S61 开 `token_repeat`。S62 **开 `logits_finite`**（主）。S60≠S52/S49/S51/S59；S61≠S53/S43；S62≠S26/S38/S48/S55。
+
+**Attn-out-negate / residual÷50 / logits×50（S63/S64/S65）：** S63 **开 `logits_finite`**（主）。S64/S65 开 `token_repeat`。S63≠S41；S64≠S48/S55；S65≠S53/S36。
