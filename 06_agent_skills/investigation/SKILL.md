@@ -153,6 +153,9 @@ description: >-
 | Query-scale-down（S117，`query/=50` before FA） | digit/`1.1.1…` 复读；precision 可 <n_req | **`token_repeat`** | **L2**（wrong Q magnitude low）；≠ S60 query×50 ≠ S52 query-neg ≠ S114 query-abs |
 | Key-scale-down（S118，`key/=50` before FA） | digit/`1.1.1…` 复读；precision 可 <n_req | **`token_repeat`** | **L2**（wrong K magnitude low）；≠ S59 key×50 ≠ S54 key-neg ≠ S111 key-abs |
 | Residual-pre-abs（S119，`residual=abs(residual)` before add-RMSNorm） | 混杂 servlet/mixed-script 复读；precision 可 <n_req | **`token_repeat`** | **L2**（unsigned pre-residual）；≠ S48 pre-neg ≠ S55/S64 mag ≠ S106 post-abs |
+| RMSNorm-weight=zeros（S120，`zeros_like(weight)` into add-RMSNorm） | 全请求 `!!!!…` 塌缩 | **`token_repeat`** | **L2**（collapsed norm weight）；≠ S96 ones ≠ S66 neg ≠ S71 ×50 ≠ S74 ÷50 ≠ S110 abs |
+| SwiGLU-input-abs（S121，`x=abs(x)` before npu_swiglu） | unique mixed-script garbage；**identical precision=0** | **`token_repeat`** | **L2**（unsigned SwiGLU input）；≠ S56 input-neg ≠ S76 ×50 ≠ S81 ÷50 ≠ S115 out-abs；**detect≈n_req 仍 PASS**（勿因 precision=0 判 GAP） |
+| Logits-abs（S122，`logits.abs()` after lm-head） | digit/`1.1.1…` 复读；precision 可 <n_req | **`token_repeat`** | **L2**（unsigned logits）；≠ S53 logits÷50 ≠ S65 logits×50 ≠ S108 hidden-abs |
 | RoPE 第二半写丢（S25，soft-inv #7082） | digit/`1.1.1…` 复读塌缩 | **`token_repeat`** | **L2 class-hint**（RoPE half）；≠ S11 pad；勿宣称定位到 Triton store 行 |
 | RMSNorm fp32 weight-mul（S26，soft-inv #42379） | 同上类复读；dtype/cast | **`token_repeat`** | **L2**（norm dtype）；与 S25 症状可重叠，靠 overlay/场景区分 |
 | RoPE neox→interleaved 风格错（S28，#7341/#7082 class） | 句/短语级复读（score=`phrase_repeat`） | **`token_repeat`** | **L2**；≠ S25 half-drop ≠ S11；samples 可能看似「正常英文」 |

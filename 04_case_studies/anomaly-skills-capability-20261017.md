@@ -1,7 +1,7 @@
 # Anomaly × Skills 能力边界（活文档）— 2026-10-17
 
 > **用途：** 对每一个已落地 / 在册异常场景，如实记录现象、复现与对照配置、skills 能分析到哪一步、有用度，以及还缺什么。  
-> **Skills：** `runtime-guard-test` `analysis/skill/` **v4.7**（investigation / detector-sweep / config-recommender / analysis / ref-kv-dump）。  
+> **Skills：** `runtime-guard-test` `analysis/skill/` **v4.8**（investigation / detector-sweep / config-recommender / analysis / ref-kv-dump）。  
 > **Guard pin：** G2 `f2aefd068`。三层率 = trigger / precision / detect。  
 > **诚实上限：** skills **定界**（detect / 现象类 / 可选 KV 首分歧），**不承诺**定位到算子、权重元素或具体 commit。
 
@@ -145,6 +145,9 @@
 | S117 | query÷50 | **是** `token_repeat` | 否 | **L2 class-hint**（≠S60/S52/S114） | **高** | wrong Q mag low；digit repeat |
 | S118 | key÷50 | **是** `token_repeat` | 否 | **L2 class-hint**（≠S59/S54/S111） | **高** | wrong K mag low；digit repeat |
 | S119 | residual-pre-abs | **是** `token_repeat` | 否 | **L2 class-hint**（≠S48/S55/S64/S106） | **高** | unsigned pre-residual；servlet mix |
+| S120 | RMSNorm-weight=zeros | **是** `token_repeat` | 否 | **L2 class-hint**（≠S96/S66/S71/S74/S110） | **高** | collapsed norm weight；`!!!!` |
+| S121 | SwiGLU-input-abs | **是** `token_repeat` | 否 | **L2 class-hint**（≠S56/S76/S81/S115） | **高** | unsigned SwiGLU in；**precision=0 OK** |
+| S122 | logits-abs | **是** `token_repeat` | 否 | **L2 class-hint**（≠S53/S65/S108） | **高** | unsigned logits；digit repeat |
 
 > **S20 说明：** detector **能检出**（`token_repeat` 对 `!!!!`/token0）；skills 额外给出 **溢出/softcap class-hint（L2）**，不是「只能 detect、无类提示」。仍 **不能** 定位到具体 softcap 实现行或权重。
 
@@ -1334,6 +1337,38 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 | **有用度** | **高** |
 | **待改进** | 无 |
 
+
+### S120 — RMSNorm-weight=zeros（≠ S96/S66/S71/S74/S110）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **100 / 48 / 48**；`token_repeat`×48；identical `!!!!` |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2**（collapsed norm weight）；≠ S96/S66/S71/S74/S110 |
+| **有用度** | **高** |
+| **待改进** | 无 |
+
+### S121 — SwiGLU-input-abs（≠ S56/S76/S81/S115；precision=0 OK）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **58 / 0 / 48**；`token_repeat`×48；unique mixed-script |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2**（unsigned SwiGLU input）；≠ S56/S76/S81/S115；**identical precision=0 expected** — not GAP |
+| **有用度** | **高** |
+| **待改进** | 无 |
+
+### S122 — Logits-abs（≠ S53/S65/S108）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **16 / 16 / 48**；`token_repeat`×48 |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2**（unsigned logits）；≠ S53/S65/S108 |
+| **有用度** | **高** |
+| **待改进** | 无 |
+
+
 ---
 
 ## Verify-loop deltas（2026-10-17）
@@ -1440,6 +1475,9 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 | **S117** | 无 query÷50 class → **L2**；≠ S60/S52/S114 | **是** |
 | **S118** | 无 key÷50 class → **L2**；≠ S59/S54/S111 | **是** |
 | **S119** | 无 residual-pre-abs class → **L2**；≠ S48/S55/S64/S106 | **是** |
+| **S120** | 无 RMSNorm-weight=zeros class → **L2**；≠ S96/S66/S71/S74/S110 | **是** |
+| **S121** | 无 SwiGLU-input-abs class → **L2**；≠ S56/S76/S81/S115；precision=0 + detect=48 PASS | **是** |
+| **S122** | 无 logits-abs class → **L2**；≠ S53/S65/S108 | **是** |
 
 详见 [anomaly-skills-verify-loop-20261017.md](./anomaly-skills-verify-loop-20261017.md)。
 
@@ -1450,7 +1488,7 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 3. Spec 分布性：summarize 突出 `acceptance_rate`  
 4. ~~Weight/Quant always-on 场景落地~~ → **S23/S24 PASS L1**（仍不可定位张量）  
 5. KV PASS（S10′/S12/S30/S47）：标准 ref-kv 流水线模板 + 容器 dump_dir 重映射  
-6. Soft-inv / cast / residual / graph-pad / softcap / attn / temp / pos / norm / act / rope / embed / penalty / kv-swap / **query÷50 / key÷50 / residual-pre-abs**：**S25–S119 L2**（除 S44 INVALID / S45 FAIL+GAP）
+6. Soft-inv / cast / residual / graph-pad / softcap / attn / temp / pos / norm / act / rope / embed / penalty / kv-swap / **rmsnorm-weight-zeros / swiglu-input-abs / logits-abs**：**S25–S122 L2**（除 S44 INVALID / S45 FAIL+GAP）
 
 ---
 

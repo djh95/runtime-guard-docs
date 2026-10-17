@@ -132,3 +132,5 @@ description: >-
 **Query-abs / SwiGLU-out-abs / RMSNorm-x-abs（S114/S115/S116）：** 开 `token_repeat`。S114≠S52/S60/S109/S111；S115≠S67/S72/S103/S107；S116≠S73/S62/S78/S102。
 
 **Query÷50 / key÷50 / residual-pre-abs（S117/S118/S119）：** 开 `token_repeat`。S117≠S60/S52/S114；S118≠S59/S54/S111；S119≠S48/S55/S64/S106。
+
+**RMSNorm-weight=zeros / SwiGLU-input-abs / logits-abs（S120/S121/S122）：** 开 `token_repeat`。S120≠S96/S66/S71/S74/S110；S121≠S56/S76/S81/S115；S122≠S53/S65/S108。S121 identical precision=0 仍可 PASS。

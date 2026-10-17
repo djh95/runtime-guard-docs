@@ -634,6 +634,26 @@ python -c "import json;d=json.load(open('tests/build-anomaly-env/fail-evidence/S
 python -c "import json;d=json.load(open('tests/build-anomaly-env/fail-evidence/S119/layers.json'));print(d['precision'], d['detect_by'])"
 ```
 
+
+## S120 / S121 / S122 — RMSNorm-weight=zeros + SwiGLU-input-abs + logits-abs (v4.8)
+
+| | Before (pre-v4.8) | After (re-verify) |
+|--|-------------------|-------------------|
+| **S120** layers | 100/48/48 `token_repeat` | same ✓ (slim) |
+| **S120** skills | risk conflate S96/S66/S71/S74/S110 | **L2** weight=zeros ✓ |
+| **S120** score | repeat+token0_collapse | same ✓ |
+| **S121** layers | 58/0/48 `token_repeat` | same ✓ |
+| **S121** skills | risk conflate S56/S76/S81/S115 or false GAP | **L2** input-abs；**precision=0 OK** ✓ |
+| **S121** score | garbage_mixed_script+repeat | same ✓（detect>0 → not GAP） |
+| **S122** layers | 16/16/48 `token_repeat` | same ✓ |
+| **S122** skills | risk conflate S53/S65/S108 | **L2** logits-abs ✓ |
+| **S122** score | digits/repeat (+unique) | same ✓ |
+| Expected? | — | **Yes** — three L2 |
+
+```bash
+python -c "import json;d=json.load(open('tests/build-anomaly-env/fail-evidence/S121/layers.json'));print(d['precision'], d['detect_by'])"
+```
+
 ## Remaining gaps (not closed by this loop)
 
 - S22: summarize does not yet print `acceptance_rate` column — optional next script tweak.
