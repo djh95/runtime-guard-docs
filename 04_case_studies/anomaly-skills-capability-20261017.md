@@ -1,7 +1,7 @@
 # Anomaly × Skills 能力边界（活文档）— 2026-10-17
 
 > **用途：** 对每一个已落地 / 在册异常场景，如实记录现象、复现与对照配置、skills 能分析到哪一步、有用度，以及还缺什么。  
-> **Skills：** `runtime-guard-test` `analysis/skill/` **v2.1**（investigation / detector-sweep / config-recommender / analysis / ref-kv-dump）。  
+> **Skills：** `runtime-guard-test` `analysis/skill/` **v2.2**（investigation / detector-sweep / config-recommender / analysis / ref-kv-dump）。  
 > **Guard pin：** G2 `f2aefd068`。三层率 = trigger / precision / detect。  
 > **诚实上限：** skills **定界**（detect / 现象类 / 可选 KV 首分歧），**不承诺**定位到算子、权重元素或具体 commit。
 
@@ -67,6 +67,9 @@
 | S39 | SwiGLU skip-silu | **是** `logits_finite` | 否 | **L2 class-hint**（≠S26/S31/S38） | **高** | plain gate×up；skip npu_swiglu |
 | S40 | RoPE skip | **是** `token_repeat` | 否 | **L2 class-hint**（≠S25/S28/S37） | **高** | unrotated Q/K；Nile phrase loop |
 | S41 | post-FA attn ×1000 | **是** `logits_finite` | 否 | **L2 class-hint**（≠S34/S14/S35） | **高** | attn_out mul_(1000) after FA |
+| S42 | RoPE phase negate | **是** `token_repeat` | 否 | **L2 class-hint**（≠S37/S40/S25/S28） | **高** | `-cos_sin` wrong phase |
+| S43 | embed ×100 | **是** `token_repeat` | 否 | **L2 class-hint**（≠S23/S41） | **高** | vocab embed mul_(100)；`newline_collapse` |
+| S44 | logits.zero_() | — | — | **BLOCKED** invalid-synthetic | **低** | PRINCIPLES §2 amplifier；非 PASS |
 
 > **S20 说明：** detector **能检出**（`token_repeat` 对 `!!!!`/token0）；skills 额外给出 **溢出/softcap class-hint（L2）**，不是「只能 detect、无类提示」。仍 **不能** 定位到具体 softcap 实现行或权重。
 
@@ -471,6 +474,36 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 | **有用度** | **高** |
 | **待改进** | 无 |
 
+### S42 — RoPE phase negate（`-cos_sin`；≠ S37/S40/S25/S28）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **16 / 16 / 48**；`token_repeat`×48 |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2**（wrong RoPE phase）；≠ S37/S40/S25/S28 |
+| **有用度** | **高** |
+| **待改进** | 无 |
+
+### S43 — Embed scale ×100（≠ S23/S41）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **16 / 40 / 48**；`token_repeat`×48；newline collapse |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2**；score **`newline_collapse`**（hits 0→40）；≠ S23/S41 |
+| **有用度** | **高** |
+| **待改进** | 无 |
+
+### S44 — Logits `zero_()` — **BLOCKED / invalid-synthetic**
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | 16/48/48 `token_repeat`（`!!!!`）— **不计入 PASS** |
+| **能否检测** | 可亮灯，但是 **amplifier** |
+| **Skills 最远** | **拒收**：`processed_logits.zero_()` 发明症状（PRINCIPLES §2）；negate 失败后改写为零 ≠ origin-faithful |
+| **有用度** | **低** |
+| **待改进** | 若有真实「logits 丢弃/未写」bug 路径再 origin 重做；否则保持 BLOCKED |
+
 ---
 
 ## Verify-loop deltas（2026-10-17）
@@ -499,6 +532,9 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 | **S39** | 无 SwiGLU-skip class → **L2** via **`logits_finite`**；≠ S26/S31/S38 | **是** |
 | **S40** | 无 RoPE-skip class → **L2**；≠ S25/S28/S37 | **是** |
 | **S41** | 无 attn-out-scale class → **L2** via **`logits_finite`**；≠ S34/S14/S35 | **是** |
+| **S42** | 无 RoPE-phase class → **L2**；≠ S37/S40/S25/S28 | **是** |
+| **S43** | score hits=0（纯换行漏标）→ **`newline_collapse`×40**；**L2** ≠ S23/S41 | **是** |
+| **S44** | amplifier `zero_()` → **BLOCKED**（非 skills win） | **是**（诚实拒收） |
 
 详见 [anomaly-skills-verify-loop-20261017.md](./anomaly-skills-verify-loop-20261017.md)。
 
@@ -509,7 +545,7 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 3. Spec 分布性：summarize 突出 `acceptance_rate`  
 4. ~~Weight/Quant always-on 场景落地~~ → **S23/S24 PASS L1**（仍不可定位张量）  
 5. KV PASS（S10′/S12/S30）：标准 ref-kv 流水线模板 + 容器 dump_dir 重映射  
-6. Soft-inv / cast / residual / graph-pad / softcap / attn / temp / pos / norm / act / rope：**S25–S41 L2**（仍不可定位算子行）
+6. Soft-inv / cast / residual / graph-pad / softcap / attn / temp / pos / norm / act / rope / embed：**S25–S43 L2**（仍不可定位算子行）；**S44 BLOCKED**
 
 ---
 

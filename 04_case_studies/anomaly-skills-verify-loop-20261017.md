@@ -233,6 +233,26 @@ PYTHONPATH=. python -m analysis.scripts.score_completion_samples --sample-dir te
 # likewise S40 S41
 ```
 
+## S42 / S43 / S44 — RoPE phase + embed×100 + logits.zero_ (v2.2)
+
+| | Before (pre-v2.2) | After (re-verify) |
+|--|-------------------|-------------------|
+| **S42** layers | 16/16/48 `token_repeat` | same ✓ |
+| **S42** score | repeat/id_echo; gap=`None` | same ✓ |
+| **S42** skills | no wrong-phase class | **L2** `-cos_sin` ≠ S37/S40/S25/S28 ✓ |
+| **S43** layers | 16/40/48 `token_repeat` | same ✓ |
+| **S43** score | precision_hits=**0**（纯 `\n` 漏标） | **`newline_collapse`×40**; gap=`None` ✓ |
+| **S43** skills | no embed-scale class | **L2** embed×100 ≠ S23/S41 ✓ |
+| **S44** layers | 16/48/48 `token_repeat` `!!!!` | same (evidence kept) |
+| **S44** judgment | landed as PASS | **BLOCKED / invalid-synthetic** — `logits.zero_()` invents symptom (PRINCIPLES §2); negate→zero retune ≠ origin ✓ |
+| Expected? | — | **Yes** — S42/S43 L2 + S43 score bump; S44 honest reject |
+
+```bash
+PYTHONPATH=. python -m analysis.scripts.summarize_reports --report-dir tests/build-anomaly-env/fail-evidence/S42/reports
+PYTHONPATH=. python -m analysis.scripts.score_completion_samples --sample-dir tests/build-anomaly-env/fail-evidence/S42/samples
+# likewise S43; S44 archived as BLOCKED only
+```
+
 ## Remaining gaps (not closed by this loop)
 
 - S22: summarize does not yet print `acceptance_rate` column — optional next script tweak.

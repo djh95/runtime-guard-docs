@@ -47,6 +47,8 @@ description: >-
 
 **SwiGLU skip / RoPE skip / attn-out ×1000（S39/S40/S41）：** S39/S41 **开 `logits_finite`**（主）；S40 开 `token_repeat`（phrase 复读）。S39≠S26/S31/S38；S40≠S25/S28/S37；S41≠S34/S14/S35。
 
+**RoPE phase / embed scale（S42/S43）：** 开 `token_repeat`。S42≠S37/S40/S25/S28；S43 看 newline collapse。**S44 logits.zero_** 勿当 PASS（synthetic amplifier）。
+
 ## 输出模板（可热更）
 
 启动须已开 `runtime_config_hot_reload=true`（见 01）。Grep 确认 reload；失败会保留旧配置。

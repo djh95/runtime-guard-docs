@@ -61,6 +61,9 @@ rgpy.score_completion_samples --sample-dir ./samples --json-out samples_score.js
 - SwiGLU skip-silu（S39）→ **`logits_finite`** + **L2**；≠ S26/S31/S38。  
 - RoPE skip（S40）→ `token_repeat` + **L2**；强 `phrase_repeat`；≠ S25/S28/S37。  
 - Post-FA attn `mul_(1000)`（S41）→ **`logits_finite`** + **L2**；≠ S34（softmax scale）/S14/S35。  
+- RoPE phase negate（S42）→ `token_repeat` + **L2**；≠ S37/S40/S25/S28。  
+- Embed ×100（S43）→ `token_repeat` + **L2**；precision 常 **`newline_collapse`**；≠ S23/S41。  
+- Logits `zero_()`（S44）→ **invalid-synthetic / BLOCKED**（放大器）；归档勿当 skills win。  
 - `garbage_mixed_script` + detect=0 → **FAIL+GAP**（S01/S07）。若已有 `token_repeat` report，勿因 samples 里偶发 garbage 标签宣称 GAP。  
 有 precision 且 detect=0 → 交付 **FAIL+GAP**（勿伪造 detector PASS）。
 

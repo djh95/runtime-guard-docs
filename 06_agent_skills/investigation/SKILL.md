@@ -75,6 +75,9 @@ description: >-
 | SwiGLU skip-silu（S39，plain gate×up） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（activation skip）；≠ S26/S31/S38 norm 族 |
 | RoPE skip（S40，unrotated Q/K） | Nile/`phrase_repeat` 句级复读 | **`token_repeat`** | **L2**（no rotary）；≠ S25 half ≠ S28 style ≠ S37 pos-zero |
 | Post-FA attn out `mul_(1000)`（S41） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（wrong attn-out scale）；≠ S34 softmax-scale ≠ S14/S35 |
+| RoPE phase negate（S42，`-cos_sin_cache`） | digit/`1.1.1…` 复读 | **`token_repeat`** | **L2**（wrong phase）；≠ S37 pos-zero ≠ S40 skip ≠ S25/S28 |
+| Embed scale ×100（S43） | 纯换行塌缩 / newline collapse | **`token_repeat`** | **L2**（wrong embed magnitude）；score=`newline_collapse`；≠ S23/S41 |
+| Logits `zero_()` before sample（S44） | `!!!!` token0 | — | **BLOCKED / invalid-synthetic**：force-write logits 发明症状（PRINCIPLES §2）；非 10-gate PASS / 非 skills win |
 | RoPE 第二半写丢（S25，soft-inv #7082） | digit/`1.1.1…` 复读塌缩 | **`token_repeat`** | **L2 class-hint**（RoPE half）；≠ S11 pad；勿宣称定位到 Triton store 行 |
 | RMSNorm fp32 weight-mul（S26，soft-inv #42379） | 同上类复读；dtype/cast | **`token_repeat`** | **L2**（norm dtype）；与 S25 症状可重叠，靠 overlay/场景区分 |
 | RoPE neox→interleaved 风格错（S28，#7341/#7082 class） | 句/短语级复读（score=`phrase_repeat`） | **`token_repeat`** | **L2**；≠ S25 half-drop ≠ S11；samples 可能看似「正常英文」 |
