@@ -295,6 +295,24 @@ PYTHONPATH=. python -m analysis.scripts.score_completion_samples --sample-dir te
 # likewise S49 S50
 ```
 
+
+## S51 / S52 / S53 — value×50 + query-negate + logits÷50 (v2.5)
+
+| | Before (pre-v2.5) | After (re-verify) |
+|--|-------------------|-------------------|
+| **S51** layers | 58/48/48 `token_repeat` | same ✓ (slim pack: layers+WHY only) |
+| **S51** skills | risk conflate S41/S47/S49 | **L2** V×50 ✓ |
+| **S52** layers | 58/26/48 `token_repeat` | same ✓ |
+| **S52** skills | risk conflate S47/S51/S42 | **L2** Q-negate ✓ |
+| **S53** layers | 16/16/48 `token_repeat` | same ✓ |
+| **S53** skills | risk conflate S36/S44 | **L2** logits÷50 ≠ those ✓ |
+| Expected? | — | **Yes** — three L2; note reports/samples not in fail-evidence |
+
+```bash
+# slim evidence: layers.json + WHY_PASS.md (no reports/samples mirrors)
+python -c "import json;print(json.load(open('tests/build-anomaly-env/fail-evidence/S51/layers.json'))['detect_by'])"
+```
+
 ## Remaining gaps (not closed by this loop)
 
 - S22: summarize does not yet print `acceptance_rate` column — optional next script tweak.

@@ -1,7 +1,7 @@
 # Anomaly × Skills 能力边界（活文档）— 2026-10-17
 
 > **用途：** 对每一个已落地 / 在册异常场景，如实记录现象、复现与对照配置、skills 能分析到哪一步、有用度，以及还缺什么。  
-> **Skills：** `runtime-guard-test` `analysis/skill/` **v2.4**（investigation / detector-sweep / config-recommender / analysis / ref-kv-dump）。  
+> **Skills：** `runtime-guard-test` `analysis/skill/` **v2.5**（investigation / detector-sweep / config-recommender / analysis / ref-kv-dump）。  
 > **Guard pin：** G2 `f2aefd068`。三层率 = trigger / precision / detect。  
 > **诚实上限：** skills **定界**（detect / 现象类 / 可选 KV 首分歧），**不承诺**定位到算子、权重元素或具体 commit。
 
@@ -76,6 +76,9 @@
 | S48 | residual negate | **是** `logits_finite` | 否 | **L2 class-hint**（≠S31/S38） | **高** | `-residual` before add-RMSNorm；`!!!!` |
 | S49 | attn scale ×50 | **是** `token_repeat` | 否 | **L2 class-hint**（≠S34/S41） | **高** | scale*50；unique/`1.1.1…` |
 | S50 | SwiGLU half-swap | **是** `logits_finite` | 否 | **L2 class-hint**（≠S39） | **高** | `cat(up,gate)` then swiglu；`!!!!` |
+| S51 | value ×50 before FA | **是** `token_repeat` | 否 | **L2 class-hint**（≠S41/S47/S49） | **高** | V magnitude blowup |
+| S52 | query negate | **是** `token_repeat` | 否 | **L2 class-hint**（≠S47/S51/S42） | **高** | Q polarity flip before FA |
+| S53 | logits ÷50 | **是** `token_repeat` | 否 | **L2 class-hint**（≠S36/S44） | **高** | lm-head scale-down |
 
 > **S20 说明：** detector **能检出**（`token_repeat` 对 `!!!!`/token0）；skills 额外给出 **溢出/softcap class-hint（L2）**，不是「只能 detect、无类提示」。仍 **不能** 定位到具体 softcap 实现行或权重。
 
@@ -570,6 +573,37 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 | **有用度** | **高** |
 | **待改进** | 无 |
 
+
+### S51 — Value ×50 before FA（≠ S41/S47/S49）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **58 / 48 / 48**；`token_repeat`×48（layers；reports/samples not mirrored） |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2**（wrong V magnitude）；≠ S41 attn-out ≠ S47 K/V ≠ S49 attn-scale |
+| **有用度** | **高** |
+| **待改进** | builder 可回填 reports/samples |
+
+### S52 — Query negate（≠ S47/S51/S42）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **58 / 26 / 48**；`token_repeat`×48（layers） |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2**（wrong Q polarity）；≠ S47/S51/S42 |
+| **有用度** | **高** |
+| **待改进** | builder 可回填 reports/samples |
+
+### S53 — LM-head logits ÷50（≠ S36/S44）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **16 / 16 / 48**；`token_repeat`×48（layers） |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2**（wrong lm-head scale）；≠ S36 post-temp ÷50 ≠ S44 zero_ |
+| **有用度** | **高** |
+| **待改进** | builder 可回填 reports/samples |
+
 ---
 
 ## Verify-loop deltas（2026-10-17）
@@ -607,6 +641,9 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 | **S48** | 无 residual-negate class → **L2** via **`logits_finite`**；≠ S31/S38 | **是** |
 | **S49** | 无 attn×50 class → **L2**；≠ S34/S41 | **是** |
 | **S50** | 无 SwiGLU-swap class → **L2** via **`logits_finite`**；≠ S39 | **是** |
+| **S51** | 无 V-scale class → **L2**；≠ S41/S47/S49 | **是** |
+| **S52** | 无 Q-negate class → **L2**；≠ S47/S51/S42 | **是** |
+| **S53** | 无 logits÷50 class → **L2**；≠ S36/S44 | **是** |
 
 详见 [anomaly-skills-verify-loop-20261017.md](./anomaly-skills-verify-loop-20261017.md)。
 
@@ -617,7 +654,7 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 3. Spec 分布性：summarize 突出 `acceptance_rate`  
 4. ~~Weight/Quant always-on 场景落地~~ → **S23/S24 PASS L1**（仍不可定位张量）  
 5. KV PASS（S10′/S12/S30/S47）：标准 ref-kv 流水线模板 + 容器 dump_dir 重映射  
-6. Soft-inv / cast / residual / graph-pad / softcap / attn / temp / pos / norm / act / rope / embed / penalty / kv-swap / **residual-negate / attn×50 / swiglu-swap**：**S25–S50 L2**（除 S44 INVALID / S45 FAIL+GAP）
+6. Soft-inv / cast / residual / graph-pad / softcap / attn / temp / pos / norm / act / rope / embed / penalty / kv-swap / **residual-negate / attn×50 / swiglu-swap**：**S25–S53 L2**（除 S44 INVALID / S45 FAIL+GAP）
 
 ---
 

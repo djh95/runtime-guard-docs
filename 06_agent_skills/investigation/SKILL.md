@@ -84,6 +84,9 @@ description: >-
 | Residual negate（S48，`-residual` before add-RMSNorm） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（wrong residual polarity）；≠ S31 drop ≠ S38 skip |
 | Attn scale blowup（S49，scale×50） | unique/`1.1.1…` 混杂；identical-mode 低估 | **`token_repeat`** | **L2**（attn temp too hot）；≠ S34 scale→1.0 ≠ S41 post-FA ×1000 |
 | SwiGLU gate/up half-swap（S50，`cat(up,gate)`） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（SwiGLU halves swapped）；≠ S39 skip-silu |
+| Value scale ×50 before FA（S51） | 复读/`...` 塌缩 | **`token_repeat`** | **L2**（wrong V magnitude）；≠ S41 attn-out ≠ S47 K/V swap ≠ S49 attn-scale |
+| Query negate before FA（S52） | unique/garbage 复读混杂 | **`token_repeat`** | **L2**（wrong Q polarity）；≠ S47 K/V ≠ S51 V-scale ≠ S42 RoPE-phase |
+| LM-head logits ÷50（S53） | digit/`1.1.1…` 复读 | **`token_repeat`** | **L2**（wrong lm-head scale）；≠ S36 post-temp ÷50 ≠ S44 logits.zero_ |
 | RoPE 第二半写丢（S25，soft-inv #7082） | digit/`1.1.1…` 复读塌缩 | **`token_repeat`** | **L2 class-hint**（RoPE half）；≠ S11 pad；勿宣称定位到 Triton store 行 |
 | RMSNorm fp32 weight-mul（S26，soft-inv #42379） | 同上类复读；dtype/cast | **`token_repeat`** | **L2**（norm dtype）；与 S25 症状可重叠，靠 overlay/场景区分 |
 | RoPE neox→interleaved 风格错（S28，#7341/#7082 class） | 句/短语级复读（score=`phrase_repeat`） | **`token_repeat`** | **L2**；≠ S25 half-drop ≠ S11；samples 可能看似「正常英文」 |

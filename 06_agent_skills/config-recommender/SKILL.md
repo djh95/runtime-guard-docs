@@ -52,6 +52,9 @@ description: >-
 | Residual negate（S48） | **`logits_finite`（主）** | 兼开 `token_repeat` 对照 | **L2**；`!!!!`；≠ S31/S38 |
 | Attn scale ×50（S49） | `token_repeat` | 标准 repeat 窗 | **L2**；≠ S34(=1.0)/S41 |
 | SwiGLU half-swap（S50） | **`logits_finite`（主）** | 兼开 `token_repeat` 对照 | **L2**；≠ S39 skip-silu |
+| Value ×50 before FA（S51） | `token_repeat` | 标准 repeat 窗 | **L2**；≠ S41/S47/S49 |
+| Query negate（S52） | `token_repeat` | 标准 repeat 窗 | **L2**；≠ S47/S51/S42 |
+| Logits ÷50（S53） | `token_repeat` | 标准 repeat 窗 | **L2**；≠ S36/S44 |
 | Null-block KV dirt（S30） | `token_repeat`（主） | + `dump_kv` 若要定界 | **L2**（+可选 L3）；≠ S01/S10/S23/S24 |
 | 权重 / 量化 always-on 故障（S23/S24） | `token_repeat`（主） | 可兼开 `logits_finite` 对照 | **detect-only**：报告即交付；勿输出「定位到 layer/scale」；S24≠S07 GAP |
 | Spec 接受异常 / residual resample 偏置 | `spec_acceptance` | `window:5–10`, `low_threshold:0.3–0.5`, `high_threshold:0.96–0.99`, … | **仅 MTP/eagle3**；S22 类（无 `RESAMPLE_NOISE_SALT`）以低 acceptance_rate 命中；可兼开 `token_repeat` |

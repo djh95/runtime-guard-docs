@@ -70,6 +70,9 @@ rgpy.score_completion_samples --sample-dir ./samples --json-out samples_score.js
 - Residual negate（S48）→ **`logits_finite`** + **L2**；`!!!!`/`token0_collapse`；≠ S31 drop ≠ S38 skip。  
 - Attn scale ×50（S49）→ `token_repeat` + **L2**；precision 常 unique/`1.1.1…`；≠ S34(=1.0) ≠ S41 post-FA。  
 - SwiGLU half-swap（S50）→ **`logits_finite`** + **L2**；`!!!!`；≠ S39 skip-silu。  
+- Value ×50 before FA（S51）→ `token_repeat` + **L2**；≠ S41/S47/S49。  
+- Query negate（S52）→ `token_repeat` + **L2**；≠ S47/S51/S42。  
+- LM-head logits ÷50（S53）→ `token_repeat` + **L2**；≠ S36 post-temp ≠ S44 amplifier。  
 - `garbage_mixed_script` + detect=0 → **FAIL+GAP**（S01/S07/S45）。若已有 `token_repeat` report，勿因 samples 里偶发 garbage 标签宣称 GAP。  
 有 precision 且 detect=0 → 交付 **FAIL+GAP**（勿伪造 detector PASS）。
 
