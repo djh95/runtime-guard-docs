@@ -142,3 +142,5 @@ description: >-
 **Residual-pre-zeros / query-zeros / SwiGLU-out-zeros（S129/S130/S131）：** 开 `token_repeat`。S129≠S48/S55/S64/S119；S130≠S60/S52/S114/S117；S131≠S67/S72/S115/S103/S107。
 
 **Key-zeros / SwiGLU-input-zeros / cos/sin-ones（S132/S133/S134）：** 开 `token_repeat`。S132≠S54/S59/S111/S118；S133≠S56/S76/S81/S121/S131；S134≠S42/S79–S82/S101/S113/S128。
+
+**Residual-post-zeros / RMSNorm-out-zeros / embed-ones（S135/S136/S137）：** 开 `token_repeat`。S135≠S88/S90/S91/S106/S129；S136≠S86/S87/S89/S102；S137≠S69/S43/S80/S112/S127。
