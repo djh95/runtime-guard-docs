@@ -430,9 +430,22 @@ python -c "import json;print(json.load(open('tests/build-anomaly-env/fail-eviden
 | **S80** skills | risk conflate S43/S69 | **L2** embed÷50 ✓ |
 | Expected? | — | **Yes** — three L2 |
 
+
+## S81 / S82 / S83 — SwiGLU-input÷50 + cos_sin÷50 + attn-out×50 (v3.5)
+
+| | Before (pre-v3.5) | After (re-verify) |
+|--|-------------------|-------------------|
+| **S81** layers | 58/48/48 `token_repeat` | same ✓ (slim) |
+| **S81** skills | risk conflate S39/S50/S56/S76 | **L2** SwiGLU-input÷50 ✓ |
+| **S82** layers | 58/27/48 `token_repeat` | same ✓ |
+| **S82** skills | risk conflate S37/S40/S42/S79 | **L2** cos_sin÷50 ✓ |
+| **S83** layers | 58/48/48 `token_repeat` | same ✓ |
+| **S83** skills | risk conflate S41/S63 | **L2** attn-out×50 ✓ |
+| Expected? | — | **Yes** — three L2 |
+
 ```bash
 # slim evidence: layers.json + WHY_PASS.md (no reports/samples mirrors)
-python -c "import json;print(json.load(open('tests/build-anomaly-env/fail-evidence/S78/layers.json'))['detect_by'])"
+python -c "import json;print(json.load(open('tests/build-anomaly-env/fail-evidence/S81/layers.json'))['detect_by'])"
 ```
 
 ## Remaining gaps (not closed by this loop)

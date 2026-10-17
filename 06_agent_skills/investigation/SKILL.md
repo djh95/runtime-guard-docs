@@ -114,6 +114,9 @@ description: >-
 | RMSNorm x ÷50（S78，`x/=50` before add-RMSNorm） | 换行/`sentence` 复读塌缩 | **`token_repeat`** | **L2**（wrong pre-norm act mag low）；≠ S62 ×50 ≠ S73 x-negate |
 | Cos/sin ×50 into RoPE（S79） | digit/`10.10…` + Nile phrase 混杂 | **`token_repeat`** | **L2**（wrong rope phase mag）；≠ S37 pos-zero ≠ S40 skip ≠ S42 phase-neg ≠ S25/S28 |
 | Embed ÷50（S80） | 短句/换行复读；detect 可 <n_req | **`token_repeat`** | **L2**（wrong embed mag low）；≠ S43 ×100 ≠ S69 negate |
+| SwiGLU input ÷50（S81，`x/=50` before npu_swiglu） | 短语/`swer` 复读塌缩 | **`token_repeat`** | **L2**（wrong SwiGLU input mag low）；≠ S39/S50/S56 ≠ S76 ×50 |
+| Cos/sin ÷50 into RoPE（S82） | `,`/`and the` 复读混杂 | **`token_repeat`** | **L2**（wrong rope phase mag low）；≠ S37/S40/S42 ≠ S79 ×50 |
+| Attn-out ×50 after FA（S83） | `...`/换行复读塌缩 | **`token_repeat`** | **L2**（wrong attn-out mag mild）；≠ S41 ×1000（常 `logits_finite`）≠ S63 negate |
 | RoPE 第二半写丢（S25，soft-inv #7082） | digit/`1.1.1…` 复读塌缩 | **`token_repeat`** | **L2 class-hint**（RoPE half）；≠ S11 pad；勿宣称定位到 Triton store 行 |
 | RMSNorm fp32 weight-mul（S26，soft-inv #42379） | 同上类复读；dtype/cast | **`token_repeat`** | **L2**（norm dtype）；与 S25 症状可重叠，靠 overlay/场景区分 |
 | RoPE neox→interleaved 风格错（S28，#7341/#7082 class） | 句/短语级复读（score=`phrase_repeat`） | **`token_repeat`** | **L2**；≠ S25 half-drop ≠ S11；samples 可能看似「正常英文」 |
