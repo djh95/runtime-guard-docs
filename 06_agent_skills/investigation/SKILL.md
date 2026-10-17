@@ -132,6 +132,9 @@ description: >-
 | RMSNorm-weight=ones（S96，`ones_like(weight)` into add-RMSNorm） | unique dynled；**identical precision=0**；detect 可 <n_req | **`token_repeat`** | **L2**（identity norm weight）；≠ S66 weight-neg ≠ S71 ×50 ≠ S74 ÷50；**detect>0 仍 PASS**（勿因 precision=0 判 GAP） |
 | Residual-leak-add（S97，`x=x+residual` after add-RMSNorm） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（post-norm residual leak）；≠ S31 drop ≠ S93 residual←x ≠ S94 swap ≠ S88–S91 |
 | Min_p-skip（S98，skip `apply_min_p`） | unique rambling；**identical precision=0**；需 T>0 + min_p | **`token_repeat`** | **L2**（requested min_p ignored）；≠ S36/S85/S92/S95 temp class ≠ S46 penalty；**detect≈n_req 仍 PASS** |
+| Top_p-skip（S99，skip `apply_top_k_top_p`） | unique rambling；**identical precision=0**；需 T>0 + top_p | **`token_repeat`** | **L2**（requested nucleus/k ignored）；≠ S45 topk-on-neg（FAIL+GAP）≠ S98 min_p-skip ≠ temp class；**detect≈n_req 仍 PASS** |
+| RMSNorm-bias=weight（S100，`bias=weight` into add-RMSNorm） | identical 异地×N 复读 | **`token_repeat`** | **L2**（wrong norm bias wiring）；≠ S66/S71/S74 weight mag/sign ≠ S96 ones |
+| Cos/sin-half-swap（S101，swap halves of RoPE cos_sin_cache） | identical `111…` 复读 | **`token_repeat`** | **L2**（wrong rope phase halves）；≠ S42 negate ≠ S79–S82 scale ≠ S40 skip ≠ S25/S28 |
 | RoPE 第二半写丢（S25，soft-inv #7082） | digit/`1.1.1…` 复读塌缩 | **`token_repeat`** | **L2 class-hint**（RoPE half）；≠ S11 pad；勿宣称定位到 Triton store 行 |
 | RMSNorm fp32 weight-mul（S26，soft-inv #42379） | 同上类复读；dtype/cast | **`token_repeat`** | **L2**（norm dtype）；与 S25 症状可重叠，靠 overlay/场景区分 |
 | RoPE neox→interleaved 风格错（S28，#7341/#7082 class） | 句/短语级复读（score=`phrase_repeat`） | **`token_repeat`** | **L2**；≠ S25 half-drop ≠ S11；samples 可能看似「正常英文」 |

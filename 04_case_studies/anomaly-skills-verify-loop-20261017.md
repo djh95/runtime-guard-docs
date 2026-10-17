@@ -519,6 +519,22 @@ python -c "import json;d=json.load(open('tests/build-anomaly-env/fail-evidence/S
 python -c "import json;d=json.load(open('tests/build-anomaly-env/fail-evidence/S96/layers.json'));print(d['precision'], d['detect_by'])"
 ```
 
+## S99 / S100 / S101 — top_p-skip + RMSNorm-bias=weight + cos/sin-half-swap (v4.1)
+
+| | Before (pre-v4.1) | After (re-verify) |
+|--|-------------------|-------------------|
+| **S99** layers | 132/0/45 `token_repeat` (T=0.8) | same ✓ (slim) |
+| **S99** skills | risk conflate S45/S98/temp；misread precision=0 as GAP | **L2** top_p-skip；precision=0 expected ✓ |
+| **S100** layers | 100/48/48 `token_repeat` | same ✓ |
+| **S100** skills | risk conflate S66/S71/S74/S96 | **L2** bias=weight ✓ |
+| **S101** layers | 58/48/48 `token_repeat` | same ✓ |
+| **S101** skills | risk conflate S42/S79–S82/S40/S25/S28 | **L2** cos/sin-half-swap ✓ |
+| Expected? | — | **Yes** — three L2 |
+
+```bash
+python -c "import json;d=json.load(open('tests/build-anomaly-env/fail-evidence/S99/layers.json'));print(d['precision'], d['detect_by'])"
+```
+
 ## Remaining gaps (not closed by this loop)
 
 - S22: summarize does not yet print `acceptance_rate` column — optional next script tweak.

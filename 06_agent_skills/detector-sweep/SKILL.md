@@ -118,3 +118,5 @@ description: >-
 **Residual←normed-x / residual↔x swap / temp-double（S93/S94/S95）：** S93/S95 开 `token_repeat`（S95 需 T>0）。S94 **开 `logits_finite`**（主）。S93≠S31/S94/S88–S91；S94≠S31/S93/S88；S95≠S36/S85/S92。
 
 **RMSNorm-weight=ones / residual-leak-add / min_p-skip（S96/S97/S98）：** S96/S98 开 `token_repeat`（S98 需 T>0 + min_p）。S97 **开 `logits_finite`**（主）。S96≠S66/S71/S74；S97≠S31/S93/S94/S88–S91；S98≠S36/S85/S92/S95/S46。S96/S98 identical precision=0 仍可 PASS。
+
+**Top_p-skip / RMSNorm-bias=weight / cos/sin-half-swap（S99/S100/S101）：** 开 `token_repeat`（S99 需 T>0 + top_p）。S99≠S45/S98/temp；S100≠S66/S71/S74/S96；S101≠S42/S79–S82/S40/S25/S28。S99 identical precision=0 仍可 PASS。

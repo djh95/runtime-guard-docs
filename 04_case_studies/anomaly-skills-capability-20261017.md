@@ -1,7 +1,7 @@
 # Anomaly × Skills 能力边界（活文档）— 2026-10-17
 
 > **用途：** 对每一个已落地 / 在册异常场景，如实记录现象、复现与对照配置、skills 能分析到哪一步、有用度，以及还缺什么。  
-> **Skills：** `runtime-guard-test` `analysis/skill/` **v4.0**（investigation / detector-sweep / config-recommender / analysis / ref-kv-dump）。  
+> **Skills：** `runtime-guard-test` `analysis/skill/` **v4.1**（investigation / detector-sweep / config-recommender / analysis / ref-kv-dump）。  
 > **Guard pin：** G2 `f2aefd068`。三层率 = trigger / precision / detect。  
 > **诚实上限：** skills **定界**（detect / 现象类 / 可选 KV 首分歧），**不承诺**定位到算子、权重元素或具体 commit。
 
@@ -124,6 +124,9 @@
 | S96 | RMSNorm-weight=ones | **是** `token_repeat` | 否 | **L2 class-hint**（≠S66/S71/S74） | **高** | precision=0 + detect=33；not GAP |
 | S97 | residual-leak-add | **是** `logits_finite` | 否 | **L2 class-hint**（≠S31/S93/S94/S88–S91） | **高** | post-norm x+=residual；`!!!!` |
 | S98 | min_p-skip | **是** `token_repeat` | 否 | **L2 class-hint**（≠S36/S85/S92/S95/S46） | **高** | precision=0 + detect=48；not GAP |
+| S99 | top_p-skip | **是** `token_repeat` | 否 | **L2 class-hint**（≠S45/S98/temp） | **高** | precision=0 + detect=45；not GAP |
+| S100 | RMSNorm-bias=weight | **是** `token_repeat` | 否 | **L2 class-hint**（≠S66/S71/S74/S96） | **高** | wrong bias wiring；异地×N |
+| S101 | cos/sin-half-swap | **是** `token_repeat` | 否 | **L2 class-hint**（≠S42/S79–S82/S40/S25/S28） | **高** | rope phase halves；`111…` |
 
 > **S20 说明：** detector **能检出**（`token_repeat` 对 `!!!!`/token0）；skills 额外给出 **溢出/softcap class-hint（L2）**，不是「只能 detect、无类提示」。仍 **不能** 定位到具体 softcap 实现行或权重。
 
@@ -1103,6 +1106,36 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 | **有用度** | **高** |
 | **待改进** | 无 |
 
+### S99 — Top_p-skip（≠ S45/S98/temp）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **132 / 0 / 45**；`token_repeat`×45；T=0.8 top_p=0.9 |
+| **能否检测** | **是**（45/48） |
+| **Skills 最远** | **L2**（requested nucleus/k ignored）；≠ S45/S98/temp；**identical precision=0 expected** — not GAP |
+| **有用度** | **高** |
+| **待改进** | 无 |
+
+### S100 — RMSNorm-bias=weight（≠ S66/S71/S74/S96）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **100 / 48 / 48**；`token_repeat`×48（slim） |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2**（wrong norm bias wiring）；≠ S66/S71/S74/S96 |
+| **有用度** | **高** |
+| **待改进** | 无 |
+
+### S101 — Cos/sin-half-swap（≠ S42/S79–S82/S40/S25/S28）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **58 / 48 / 48**；`token_repeat`×48；identical `111…` |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2**（wrong rope phase halves）；≠ S42/S79–S82/S40/S25/S28 |
+| **有用度** | **高** |
+| **待改进** | 无 |
+
 ---
 
 ## Verify-loop deltas（2026-10-17）
@@ -1188,6 +1221,9 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 | **S96** | 无 RMSNorm-weight=ones class → **L2**；≠ S66/S71/S74；precision=0 + detect=33 PASS | **是** |
 | **S97** | 无 residual-leak-add class → **L2** via **`logits_finite`**；≠ S31/S93/S94/S88–S91 | **是** |
 | **S98** | 无 min_p-skip class → **L2**；≠ S36/S85/S92/S95/S46；precision=0 + detect=48 PASS | **是** |
+| **S99** | 无 top_p-skip class → **L2**；≠ S45/S98/temp；precision=0 + detect=45 PASS | **是** |
+| **S100** | 无 RMSNorm-bias=weight class → **L2**；≠ S66/S71/S74/S96 | **是** |
+| **S101** | 无 cos/sin-half-swap class → **L2**；≠ S42/S79–S82/S40/S25/S28 | **是** |
 
 详见 [anomaly-skills-verify-loop-20261017.md](./anomaly-skills-verify-loop-20261017.md)。
 
@@ -1198,7 +1234,7 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 3. Spec 分布性：summarize 突出 `acceptance_rate`  
 4. ~~Weight/Quant always-on 场景落地~~ → **S23/S24 PASS L1**（仍不可定位张量）  
 5. KV PASS（S10′/S12/S30/S47）：标准 ref-kv 流水线模板 + 容器 dump_dir 重映射  
-6. Soft-inv / cast / residual / graph-pad / softcap / attn / temp / pos / norm / act / rope / embed / penalty / kv-swap / **rmsnorm-weight=ones / residual-leak-add / min_p-skip**：**S25–S98 L2**（除 S44 INVALID / S45 FAIL+GAP）
+6. Soft-inv / cast / residual / graph-pad / softcap / attn / temp / pos / norm / act / rope / embed / penalty / kv-swap / **top_p-skip / rmsnorm-bias=weight / cos/sin-half-swap**：**S25–S101 L2**（除 S44 INVALID / S45 FAIL+GAP）
 
 ---
 
