@@ -1,8 +1,9 @@
 # Runtime-Guard Skills Metadata
 
-版本：v3.9  
+版本：v4.0  
 Skill 列表（**不改名**）：`investigation` · `detector-sweep` · `config-recommender` · `analysis` · `ref-kv-dump`
 
+> **v4.0：** S96 RMSNorm-weight=ones → `token_repeat` + **L2**；≠ S66/S71/S74；**precision=0 OK**。S97 residual-leak-add → **`logits_finite`** + **L2**；≠ S31/S93/S94/S88–S91。S98 min_p-skip → `token_repeat` + **L2**；≠ S36/S85/S92/S95/S46；**precision=0 OK**。  
 > **v3.9：** S93 residual←normed-x → `token_repeat` + **L2**；≠ S31/S94/S88–S91。S94 residual↔x swap → **`logits_finite`** + **L2**；≠ S31/S93/S88。S95 temp-double → `token_repeat` + **L2**；≠ S36/S85/S92。  
 > **v3.8：** S90 residual-post×50 → **`logits_finite`** + **L2**；≠ S55/S64/S88。S91 residual-post÷50 → `token_repeat` + **L2**；≠ S90/S64/S88。S92 temp-skip → `token_repeat` + **L2**；≠ S36/S85；**precision=0 OK**（unique rambling；detect 仍可 PASS）。  
 > **v3.7：** S87 RMSNorm-out×50 → **`logits_finite`** + **L2**；≠ S62/S86。S88 residual-post negate → **`logits_finite`** + **L2**；≠ S48/S86。S89 RMSNorm-out÷50 → `token_repeat` + **L2**；≠ S87/S78。  

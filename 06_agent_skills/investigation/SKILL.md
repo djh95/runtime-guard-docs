@@ -129,6 +129,9 @@ description: >-
 | Residual←normed-x（S93，`return x,x` after add-RMSNorm） | `[it` 短语复读塌缩 | **`token_repeat`** | **L2**（wrong residual wiring：residual=normed x）；≠ S31 drop ≠ S94 swap ≠ S88–S91 post-residual mag/polarity |
 | Residual↔x swap（S94，`return residual,x` after add-RMSNorm） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（wrong stream wiring：tuple swap）；≠ S31 drop ≠ S93 residual←x ≠ S88 post-neg |
 | Temp-double（S95，`apply_temperature`×2） | 低 precision identical + per-req detect；需 T>0 | **`token_repeat`** | **L2**（T applied twice → colder）；≠ S36 post÷50 ≠ S85 post×50 ≠ S92 skip |
+| RMSNorm-weight=ones（S96，`ones_like(weight)` into add-RMSNorm） | unique dynled；**identical precision=0**；detect 可 <n_req | **`token_repeat`** | **L2**（identity norm weight）；≠ S66 weight-neg ≠ S71 ×50 ≠ S74 ÷50；**detect>0 仍 PASS**（勿因 precision=0 判 GAP） |
+| Residual-leak-add（S97，`x=x+residual` after add-RMSNorm） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（post-norm residual leak）；≠ S31 drop ≠ S93 residual←x ≠ S94 swap ≠ S88–S91 |
+| Min_p-skip（S98，skip `apply_min_p`） | unique rambling；**identical precision=0**；需 T>0 + min_p | **`token_repeat`** | **L2**（requested min_p ignored）；≠ S36/S85/S92/S95 temp class ≠ S46 penalty；**detect≈n_req 仍 PASS** |
 | RoPE 第二半写丢（S25，soft-inv #7082） | digit/`1.1.1…` 复读塌缩 | **`token_repeat`** | **L2 class-hint**（RoPE half）；≠ S11 pad；勿宣称定位到 Triton store 行 |
 | RMSNorm fp32 weight-mul（S26，soft-inv #42379） | 同上类复读；dtype/cast | **`token_repeat`** | **L2**（norm dtype）；与 S25 症状可重叠，靠 overlay/场景区分 |
 | RoPE neox→interleaved 风格错（S28，#7341/#7082 class） | 句/短语级复读（score=`phrase_repeat`） | **`token_repeat`** | **L2**；≠ S25 half-drop ≠ S11；samples 可能看似「正常英文」 |
