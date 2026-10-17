@@ -120,6 +120,9 @@ description: >-
 | Positions ÷2 before RoPE（S84，floor-div） | `. . .` 空格复读混杂 | **`token_repeat`** | **L2**（wrong pos mag low）；≠ S37 pos-zero ≠ S57 ×2 |
 | Temp ÷50（S85，post-temp logits×50） | digit/`1.1.1…` 复读；需 T>0 | **`token_repeat`** | **L2**（wrong T scale low）；≠ S36 post-temp÷50（T×50） |
 | RMSNorm-out negate（S86，`-x` after add-RMSNorm） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（wrong post-norm polarity）；≠ S73 pre-norm x-neg ≠ S66 weight-neg |
+| RMSNorm-out ×50（S87，`x*=50` after add-RMSNorm） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（wrong post-norm mag）；≠ S62 pre-norm×50 ≠ S86 out-negate |
+| Residual-post negate（S88，`-residual` after add-RMSNorm） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（wrong post-residual polarity）；≠ S48 pre-residual-neg ≠ S86 out-neg |
+| RMSNorm-out ÷50（S89，`x/=50` after add-RMSNorm） | 短语/`numpy` 复读塌缩 | **`token_repeat`** | **L2**（wrong post-norm mag low）；≠ S87 ×50 ≠ S78 pre-norm÷50 |
 | RoPE 第二半写丢（S25，soft-inv #7082） | digit/`1.1.1…` 复读塌缩 | **`token_repeat`** | **L2 class-hint**（RoPE half）；≠ S11 pad；勿宣称定位到 Triton store 行 |
 | RMSNorm fp32 weight-mul（S26，soft-inv #42379） | 同上类复读；dtype/cast | **`token_repeat`** | **L2**（norm dtype）；与 S25 症状可重叠，靠 overlay/场景区分 |
 | RoPE neox→interleaved 风格错（S28，#7341/#7082 class） | 句/短语级复读（score=`phrase_repeat`） | **`token_repeat`** | **L2**；≠ S25 half-drop ≠ S11；samples 可能看似「正常英文」 |

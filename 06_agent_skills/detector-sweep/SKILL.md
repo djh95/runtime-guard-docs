@@ -110,3 +110,5 @@ description: >-
 **SwiGLU-input÷50 / cos_sin÷50 / attn-out×50（S81/S82/S83）：** 开 `token_repeat`。S81≠S39/S50/S56/S76；S82≠S37/S40/S42/S79；S83≠S41/S63（S41 常主开 `logits_finite`）。
 
 **Positions÷2 / temp÷50 / RMSNorm-out-negate（S84/S85/S86）：** S84/S85 开 `token_repeat`（S85 需 temperature>0）。S86 **开 `logits_finite`**（主）。S84≠S37/S57；S85≠S36；S86≠S73/S66。
+
+**RMSNorm-out×50 / residual-post-negate / RMSNorm-out÷50（S87/S88/S89）：** S87/S88 **开 `logits_finite`**（主）。S89 开 `token_repeat`。S87≠S62/S86；S88≠S48/S86；S89≠S87/S78。

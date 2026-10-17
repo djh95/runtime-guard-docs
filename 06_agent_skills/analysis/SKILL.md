@@ -106,6 +106,9 @@ rgpy.score_completion_samples --sample-dir ./samples --json-out samples_score.js
 - Positions ÷2（S84）→ `token_repeat` + **L2**；≠ S37/S57。  
 - Temp ÷50（S85，post-temp×50）→ `token_repeat` + **L2**；≠ S36；需 temperature>0。  
 - RMSNorm-out negate（S86）→ **`logits_finite`** + **L2**；≠ S73/S66。  
+- RMSNorm-out ×50（S87）→ **`logits_finite`** + **L2**；≠ S62/S86。  
+- Residual-post negate（S88）→ **`logits_finite`** + **L2**；≠ S48/S86。  
+- RMSNorm-out ÷50（S89）→ `token_repeat` + **L2**；≠ S87/S78。  
 - `garbage_mixed_script` + detect=0 → **FAIL+GAP**（S01/S07/S45）。若已有 `token_repeat` report，勿因 samples 里偶发 garbage 标签宣称 GAP。  
 有 precision 且 detect=0 → 交付 **FAIL+GAP**（勿伪造 detector PASS）。
 
