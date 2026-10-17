@@ -103,6 +103,9 @@ rgpy.score_completion_samples --sample-dir ./samples --json-out samples_score.js
 - SwiGLU input ÷50（S81）→ `token_repeat` + **L2**；≠ S39/S50/S56/S76。  
 - Cos/sin ÷50（S82）→ `token_repeat` + **L2**；≠ S37/S40/S42/S79。  
 - Attn-out ×50（S83）→ `token_repeat` + **L2**；≠ S41/S63。  
+- Positions ÷2（S84）→ `token_repeat` + **L2**；≠ S37/S57。  
+- Temp ÷50（S85，post-temp×50）→ `token_repeat` + **L2**；≠ S36；需 temperature>0。  
+- RMSNorm-out negate（S86）→ **`logits_finite`** + **L2**；≠ S73/S66。  
 - `garbage_mixed_script` + detect=0 → **FAIL+GAP**（S01/S07/S45）。若已有 `token_repeat` report，勿因 samples 里偶发 garbage 标签宣称 GAP。  
 有 precision 且 detect=0 → 交付 **FAIL+GAP**（勿伪造 detector PASS）。
 
