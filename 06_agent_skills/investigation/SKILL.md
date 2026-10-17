@@ -183,6 +183,9 @@ description: >-
 | Positions-zeros（S147，`zeros_like(positions)` before update_cos_sin） | digit/`\`` 复读；detect 可 <n_req | **`token_repeat`** | **L2**（pos collapse to 0）；≠ S139 ones ≠ S57 ×2 ≠ S84 ÷2 |
 | Value-ones（S148，`ones_like(value)` before FA） | identical `ior` 短语复读；precision 可 <n_req | **`token_repeat`** | **L2**（unit V）；≠ S58 neg ≠ S51 ×50 ≠ S109 abs |
 | Attn-out-ones（S149，`ones_like(attn_output)` after FA） | identical `ior` 短语复读；precision 可 <n_req | **`token_repeat`** | **L2**（unit attn-out）；≠ S63 neg ≠ S41 ×1000 ≠ S83 ×50 |
+| RMSNorm-x-ones（S150，`ones_like(x)` before add-RMSNorm） | identical `pl` 复读 | **`token_repeat`** | **L2**（unit pre-norm x）；≠ S73 x-neg ≠ S62 x× ≠ S78 x÷ ≠ S116 x-abs |
+| Logits-ones（S151，`ones_like(logits)` after lm-head） | identical `!!!!` / token0 塌缩 | **`token_repeat`** | **L2**（unit logits）；≠ S122 abs ≠ S53 ÷50 ≠ S65 ×50；≠ S44 zero_ INVALID |
+| RMSNorm-bias-zeros（S152，`zeros_like(weight)` as bias into add-RMSNorm） | digit/`1.0.0…` 复读；precision 可 <n_req | **`token_repeat`** | **L2**（zero bias inject）；≠ S100 bias=weight ≠ S123 bias=-weight ≠ S96 weight=ones |
 | RoPE 第二半写丢（S25，soft-inv #7082） | digit/`1.1.1…` 复读塌缩 | **`token_repeat`** | **L2 class-hint**（RoPE half）；≠ S11 pad；勿宣称定位到 Triton store 行 |
 | RMSNorm fp32 weight-mul（S26，soft-inv #42379） | 同上类复读；dtype/cast | **`token_repeat`** | **L2**（norm dtype）；与 S25 症状可重叠，靠 overlay/场景区分 |
 | RoPE neox→interleaved 风格错（S28，#7341/#7082 class） | 句/短语级复读（score=`phrase_repeat`） | **`token_repeat`** | **L2**；≠ S25 half-drop ≠ S11；samples 可能看似「正常英文」 |

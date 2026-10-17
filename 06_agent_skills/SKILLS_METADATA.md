@@ -1,8 +1,9 @@
 # Runtime-Guard Skills Metadata
 
-版本：v5.7  
+版本：v5.8  
 Skill 列表（**不改名**）：`investigation` · `detector-sweep` · `config-recommender` · `analysis` · `ref-kv-dump`
 
+> **v5.8：** S150 RMSNorm-x-ones → `token_repeat` + **L2**；≠ S73/S62/S78/S116。S151 logits-ones → `token_repeat` + **L2**；≠ S122/S53/S65。S152 RMSNorm-bias-zeros → `token_repeat` + **L2**；≠ S100/S123/S96。  
 > **v5.7：** S147 positions-zeros → `token_repeat` + **L2**；≠ S139/S57/S84。S148 value-ones → `token_repeat` + **L2**；≠ S58/S51/S109。S149 attn-out-ones → `token_repeat` + **L2**；≠ S63/S41/S83。  
 > **v5.6：** S144 residual-post-ones → `token_repeat` + **L2**；≠ S88/S90/S91/S106/S135。S145 RMSNorm-out-ones → `token_repeat` + **L2**；≠ S86/S87/S89/S102/S136。S146 SwiGLU-input-ones → `token_repeat` + **L2**；≠ S56/S76/S81/S121/S133。  
 > **v5.5：** S141 query-ones → `token_repeat` + **L2**；≠ S60/S52/S114/S117/S130。S142 key-ones → `token_repeat` + **L2**；≠ S54/S59/S111/S118/S132。S143 SwiGLU-out-ones → `token_repeat` + **L2**；≠ S67/S72/S115/S131。  

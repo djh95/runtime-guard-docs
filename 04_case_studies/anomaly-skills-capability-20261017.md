@@ -1,7 +1,7 @@
 # Anomaly × Skills 能力边界（活文档）— 2026-10-17
 
 > **用途：** 对每一个已落地 / 在册异常场景，如实记录现象、复现与对照配置、skills 能分析到哪一步、有用度，以及还缺什么。  
-> **Skills：** `runtime-guard-test` `analysis/skill/` **v5.7**（investigation / detector-sweep / config-recommender / analysis / ref-kv-dump）。  
+> **Skills：** `runtime-guard-test` `analysis/skill/` **v5.8**（investigation / detector-sweep / config-recommender / analysis / ref-kv-dump）。  
 > **Guard pin：** G2 `f2aefd068`。三层率 = trigger / precision / detect。  
 > **诚实上限：** skills **定界**（detect / 现象类 / 可选 KV 首分歧），**不承诺**定位到算子、权重元素或具体 commit。
 
@@ -175,6 +175,9 @@
 | S147 | positions-zeros | **是** `token_repeat` | 否 | **L2 class-hint**（≠S139/S57/S84） | **高** | pos→0；detect 47；precision 42 |
 | S148 | value-ones | **是** `token_repeat` | 否 | **L2 class-hint**（≠S58/S51/S109） | **高** | unit V；`ior`；precision 30 |
 | S149 | attn-out-ones | **是** `token_repeat` | 否 | **L2 class-hint**（≠S63/S41/S83） | **高** | unit attn-out；`ior`；precision 30 |
+| S150 | RMSNorm-x-ones | **是** `token_repeat` | 否 | **L2 class-hint**（≠S73/S62/S78/S116） | **高** | unit pre-norm x；`pl` |
+| S151 | logits-ones | **是** `token_repeat` | 否 | **L2 class-hint**（≠S122/S53/S65） | **高** | unit logits；`!!!!`；≠S44 |
+| S152 | RMSNorm-bias-zeros | **是** `token_repeat` | 否 | **L2 class-hint**（≠S100/S123/S96） | **高** | zero bias inject；precision 16 |
 
 > **S20 说明：** detector **能检出**（`token_repeat` 对 `!!!!`/token0）；skills 额外给出 **溢出/softcap class-hint（L2）**，不是「只能 detect、无类提示」。仍 **不能** 定位到具体 softcap 实现行或权重。
 
@@ -1672,6 +1675,36 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 | **有用度** | **高** |
 | **待改进** | 无 |
 
+### S150 — RMSNorm-x-ones（≠ S73/S62/S78/S116）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **100 / 48 / 48**；`token_repeat`×48；identical `pl` |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2**（unit pre-norm x）；≠ S73/S62/S78/S116 |
+| **有用度** | **高** |
+| **待改进** | 无 |
+
+### S151 — Logits-ones（≠ S122/S53/S65）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **16 / 48 / 48**；`token_repeat`×48；identical `!!!!`；≠ S44 INVALID |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2**（unit logits）；≠ S122/S53/S65 |
+| **有用度** | **高** |
+| **待改进** | 无 |
+
+### S152 — RMSNorm-bias-zeros（≠ S100/S123/S96）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **100 / 16 / 48**；`token_repeat`×48；digit/`1.0.0…`；precision 16 OK |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2**（zero bias inject）；≠ S100/S123/S96 |
+| **有用度** | **高** |
+| **待改进** | 无 |
+
 ---
 
 ## Verify-loop deltas（2026-10-17）
@@ -1808,6 +1841,9 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 | **S147** | 无 positions-zeros class → **L2**；≠ S139/S57/S84 | **是** |
 | **S148** | 无 value-ones class → **L2**；≠ S58/S51/S109 | **是** |
 | **S149** | 无 attn-out-ones class → **L2**；≠ S63/S41/S83 | **是** |
+| **S150** | 无 RMSNorm-x-ones class → **L2**；≠ S73/S62/S78/S116 | **是** |
+| **S151** | 无 logits-ones class → **L2**；≠ S122/S53/S65 | **是** |
+| **S152** | 无 RMSNorm-bias-zeros class → **L2**；≠ S100/S123/S96 | **是** |
 
 详见 [anomaly-skills-verify-loop-20261017.md](./anomaly-skills-verify-loop-20261017.md)。
 
@@ -1818,7 +1854,7 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 3. Spec 分布性：summarize 突出 `acceptance_rate`  
 4. ~~Weight/Quant always-on 场景落地~~ → **S23/S24 PASS L1**（仍不可定位张量）  
 5. KV PASS（S10′/S12/S30/S47）：标准 ref-kv 流水线模板 + 容器 dump_dir 重映射  
-6. Soft-inv / cast / residual / graph-pad / softcap / attn / temp / pos / norm / act / rope / embed / penalty / kv-swap / **positions-zeros / value-ones / attn-out-ones**：**S25–S149 L2**（除 S44 INVALID / S45 FAIL+GAP）
+6. Soft-inv / cast / residual / graph-pad / softcap / attn / temp / pos / norm / act / rope / embed / penalty / kv-swap / **RMSNorm-x-ones / logits-ones / RMSNorm-bias-zeros**：**S25–S152 L2**（除 S44 INVALID / S45 FAIL+GAP）
 
 ---
 

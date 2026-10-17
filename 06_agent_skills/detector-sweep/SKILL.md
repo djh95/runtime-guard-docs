@@ -152,3 +152,5 @@ description: >-
 **Residual-post-ones / RMSNorm-out-ones / SwiGLU-input-ones（S144/S145/S146）：** 开 `token_repeat`。S144≠S88/S90/S91/S106/S135；S145≠S86/S87/S89/S102/S136；S146≠S56/S76/S81/S121/S133。
 
 **Positions-zeros / value-ones / attn-out-ones（S147/S148/S149）：** 开 `token_repeat`。S147≠S139/S57/S84；S148≠S58/S51/S109；S149≠S63/S41/S83。
+
+**RMSNorm-x-ones / logits-ones / RMSNorm-bias-zeros（S150/S151/S152）：** 开 `token_repeat`。S150≠S73/S62/S78/S116；S151≠S122/S53/S65；S152≠S100/S123/S96。

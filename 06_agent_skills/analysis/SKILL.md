@@ -169,6 +169,9 @@ rgpy.score_completion_samples --sample-dir ./samples --json-out samples_score.js
 - Positions-zeros（S147）→ `token_repeat` + **L2**；≠ S139/S57/S84。  
 - Value-ones（S148）→ `token_repeat` + **L2**；≠ S58/S51/S109。  
 - Attn-out-ones（S149）→ `token_repeat` + **L2**；≠ S63/S41/S83。  
+- RMSNorm-x-ones（S150）→ `token_repeat` + **L2**；≠ S73/S62/S78/S116。  
+- Logits-ones（S151）→ `token_repeat` + **L2**；≠ S122/S53/S65。  
+- RMSNorm-bias-zeros（S152）→ `token_repeat` + **L2**；≠ S100/S123/S96。  
 - `garbage_mixed_script` + detect=0 → **FAIL+GAP**（S01/S07/S45）。若已有 `token_repeat` report，勿因 samples 里偶发 garbage 标签宣称 GAP。  
 有 precision 且 detect=0 → 交付 **FAIL+GAP**（勿伪造 detector PASS）。
 
