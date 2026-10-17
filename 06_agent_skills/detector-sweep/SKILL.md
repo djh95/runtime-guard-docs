@@ -114,3 +114,5 @@ description: >-
 **RMSNorm-out×50 / residual-post-negate / RMSNorm-out÷50（S87/S88/S89）：** S87/S88 **开 `logits_finite`**（主）。S89 开 `token_repeat`。S87≠S62/S86；S88≠S48/S86；S89≠S87/S78。
 
 **Residual-post×50 / residual-post÷50 / temp-skip（S90/S91/S92）：** S90 **开 `logits_finite`**（主）。S91/S92 开 `token_repeat`（S92 需 T>0）。S90≠S55/S64/S88；S91≠S90/S64/S88；S92≠S36/S85。S92 identical precision=0 仍可 PASS。
+
+**Residual←normed-x / residual↔x swap / temp-double（S93/S94/S95）：** S93/S95 开 `token_repeat`（S95 需 T>0）。S94 **开 `logits_finite`**（主）。S93≠S31/S94/S88–S91；S94≠S31/S93/S88；S95≠S36/S85/S92。

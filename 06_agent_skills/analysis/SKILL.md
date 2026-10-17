@@ -112,6 +112,9 @@ rgpy.score_completion_samples --sample-dir ./samples --json-out samples_score.js
 - Residual-post ×50（S90）→ **`logits_finite`** + **L2**；≠ S55/S64/S88。  
 - Residual-post ÷50（S91）→ `token_repeat` + **L2**；≠ S90/S64/S88。  
 - Temp-skip（S92）→ `token_repeat` + **L2**；≠ S36/S85；需 T>0；**identical-mode precision=0 仍可 PASS**（per-req detect）。  
+- Residual←normed-x（S93）→ `token_repeat` + **L2**；≠ S31/S94/S88–S91。  
+- Residual↔x swap（S94）→ **`logits_finite`** + **L2**；≠ S31/S93/S88。  
+- Temp-double（S95）→ `token_repeat` + **L2**；≠ S36/S85/S92；需 T>0。  
 - `garbage_mixed_script` + detect=0 → **FAIL+GAP**（S01/S07/S45）。若已有 `token_repeat` report，勿因 samples 里偶发 garbage 标签宣称 GAP。  
 有 precision 且 detect=0 → 交付 **FAIL+GAP**（勿伪造 detector PASS）。
 

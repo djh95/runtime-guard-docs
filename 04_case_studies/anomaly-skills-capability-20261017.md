@@ -1,7 +1,7 @@
 # Anomaly × Skills 能力边界（活文档）— 2026-10-17
 
 > **用途：** 对每一个已落地 / 在册异常场景，如实记录现象、复现与对照配置、skills 能分析到哪一步、有用度，以及还缺什么。  
-> **Skills：** `runtime-guard-test` `analysis/skill/` **v3.8**（investigation / detector-sweep / config-recommender / analysis / ref-kv-dump）。  
+> **Skills：** `runtime-guard-test` `analysis/skill/` **v3.9**（investigation / detector-sweep / config-recommender / analysis / ref-kv-dump）。  
 > **Guard pin：** G2 `f2aefd068`。三层率 = trigger / precision / detect。  
 > **诚实上限：** skills **定界**（detect / 现象类 / 可选 KV 首分歧），**不承诺**定位到算子、权重元素或具体 commit。
 
@@ -118,6 +118,9 @@
 | S90 | residual-post ×50 | **是** `logits_finite` | 否 | **L2 class-hint**（≠S55/S64/S88） | **高** | post residual mag；`!!!!` |
 | S91 | residual-post ÷50 | **是** `token_repeat` | 否 | **L2 class-hint**（≠S90/S64/S88） | **高** | post residual mag low |
 | S92 | temp-skip | **是** `token_repeat` | 否 | **L2 class-hint**（≠S36/S85） | **高** | precision=0 + detect≈47；unique rambling |
+| S93 | residual←normed-x | **是** `token_repeat` | 否 | **L2 class-hint**（≠S31/S94/S88–S91） | **高** | residual wiring；`[it` repeat |
+| S94 | residual↔x swap | **是** `logits_finite` | 否 | **L2 class-hint**（≠S31/S93/S88） | **高** | stream tuple swap；`!!!!` |
+| S95 | temp-double | **是** `token_repeat` | 否 | **L2 class-hint**（≠S36/S85/S92） | **高** | apply_temperature×2；T>0 |
 
 > **S20 说明：** detector **能检出**（`token_repeat` 对 `!!!!`/token0）；skills 额外给出 **溢出/softcap class-hint（L2）**，不是「只能 detect、无类提示」。仍 **不能** 定位到具体 softcap 实现行或权重。
 
@@ -1037,6 +1040,36 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 | **有用度** | **高** |
 | **待改进** | 无 |
 
+### S93 — Residual←normed-x（≠ S31/S94/S88–S91）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **100 / 48 / 48**；`token_repeat`×48（slim） |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2**（wrong residual wiring：residual=normed x）；≠ S31/S94/S88–S91 |
+| **有用度** | **高** |
+| **待改进** | 无 |
+
+### S94 — Residual↔x swap（≠ S31/S93/S88）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **100 / 48 / 48**；**`logits_finite`×48**；identical `!!!!` |
+| **能否检测** | **是**（主=`logits_finite`） |
+| **Skills 最远** | **L2**（wrong stream wiring：tuple swap）；≠ S31/S93/S88 |
+| **有用度** | **高** |
+| **待改进** | 无 |
+
+### S95 — Temp-double（≠ S36/S85/S92）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **132 / 9 / 48**；`token_repeat`×48；T=0.8 |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2**（T applied twice）；≠ S36/S85/S92 |
+| **有用度** | **高** |
+| **待改进** | 无 |
+
 ---
 
 ## Verify-loop deltas（2026-10-17）
@@ -1116,6 +1149,9 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 | **S90** | 无 residual-post×50 class → **L2** via **`logits_finite`**；≠ S55/S64/S88 | **是** |
 | **S91** | 无 residual-post÷50 class → **L2**；≠ S90/S64/S88 | **是** |
 | **S92** | 无 temp-skip class → **L2**；≠ S36/S85；precision=0 + detect=47 PASS | **是** |
+| **S93** | 无 residual←normed-x class → **L2**；≠ S31/S94/S88–S91 | **是** |
+| **S94** | 无 residual↔x swap class → **L2** via **`logits_finite`**；≠ S31/S93/S88 | **是** |
+| **S95** | 无 temp-double class → **L2**；≠ S36/S85/S92 | **是** |
 
 详见 [anomaly-skills-verify-loop-20261017.md](./anomaly-skills-verify-loop-20261017.md)。
 
@@ -1126,7 +1162,7 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 3. Spec 分布性：summarize 突出 `acceptance_rate`  
 4. ~~Weight/Quant always-on 场景落地~~ → **S23/S24 PASS L1**（仍不可定位张量）  
 5. KV PASS（S10′/S12/S30/S47）：标准 ref-kv 流水线模板 + 容器 dump_dir 重映射  
-6. Soft-inv / cast / residual / graph-pad / softcap / attn / temp / pos / norm / act / rope / embed / penalty / kv-swap / **rmsnorm-out×50 / residual-post-neg / rmsnorm-out÷50 / residual-post×50 / residual-post÷50 / temp-skip**：**S25–S92 L2**（除 S44 INVALID / S45 FAIL+GAP）
+6. Soft-inv / cast / residual / graph-pad / softcap / attn / temp / pos / norm / act / rope / embed / penalty / kv-swap / **residual←normed-x / residual↔x swap / temp-double**：**S25–S95 L2**（除 S44 INVALID / S45 FAIL+GAP）
 
 ---
 

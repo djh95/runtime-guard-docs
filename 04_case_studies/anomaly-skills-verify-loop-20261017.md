@@ -487,6 +487,22 @@ python -c "import json;print(json.load(open('tests/build-anomaly-env/fail-eviden
 python -c "import json;d=json.load(open('tests/build-anomaly-env/fail-evidence/S92/layers.json'));print(d['precision'], d['detect_by'])"
 ```
 
+## S93 / S94 / S95 — residual←normed-x + residual↔x swap + temp-double (v3.9)
+
+| | Before (pre-v3.9) | After (re-verify) |
+|--|-------------------|-------------------|
+| **S93** layers | 100/48/48 `token_repeat` | same ✓ (slim) |
+| **S93** skills | risk conflate S31/S94/S88–S91 | **L2** residual←normed-x ✓ |
+| **S94** layers | 100/48/48 **`logits_finite`** | same ✓ |
+| **S94** skills | risk conflate S31/S93/S88 | **L2** residual↔x swap ✓ |
+| **S95** layers | 132/9/48 `token_repeat` (T=0.8) | same ✓ |
+| **S95** skills | risk conflate S36/S85/S92 | **L2** temp-double ✓ |
+| Expected? | — | **Yes** — three L2 |
+
+```bash
+python -c "import json;d=json.load(open('tests/build-anomaly-env/fail-evidence/S95/layers.json'));print(d['precision'], d['detect_by'])"
+```
+
 ## Remaining gaps (not closed by this loop)
 
 - S22: summarize does not yet print `acceptance_rate` column — optional next script tweak.
