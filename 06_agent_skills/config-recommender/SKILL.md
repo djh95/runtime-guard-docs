@@ -142,6 +142,9 @@ description: >-
 | Hidden-ones（S138） | `token_repeat` | 标准 repeat 窗 | **L2**；≠ S61/S75/S108/S126 |
 | Positions-ones（S139） | `token_repeat` | 标准 repeat 窗 | **L2**；≠ S37/S57/S84 |
 | Residual-pre-ones（S140） | `token_repeat` | 标准 repeat 窗 | **L2**；≠ S48/S55/S64/S119/S129 |
+| Query-ones（S141） | `token_repeat` | 标准 repeat 窗 | **L2**；≠ S60/S52/S114/S117/S130 |
+| Key-ones（S142） | `token_repeat` | 标准 repeat 窗 | **L2**；≠ S54/S59/S111/S118/S132 |
+| SwiGLU-out-ones（S143） | `token_repeat` | 标准 repeat 窗 | **L2**；≠ S67/S72/S115/S131 |
 | Null-block KV dirt（S30） | `token_repeat`（主） | + `dump_kv` 若要定界 | **L2**（+可选 L3）；≠ S01/S10/S23/S24 |
 | 权重 / 量化 always-on 故障（S23/S24） | `token_repeat`（主） | 可兼开 `logits_finite` 对照 | **detect-only**：报告即交付；勿输出「定位到 layer/scale」；S24≠S07 GAP |
 | Spec 接受异常 / residual resample 偏置 | `spec_acceptance` | `window:5–10`, `low_threshold:0.3–0.5`, `high_threshold:0.96–0.99`, … | **仅 MTP/eagle3**；S22 类（无 `RESAMPLE_NOISE_SALT`）以低 acceptance_rate 命中；可兼开 `token_repeat` |

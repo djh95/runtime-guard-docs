@@ -146,3 +146,5 @@ description: >-
 **Residual-post-zeros / RMSNorm-out-zeros / embed-ones（S135/S136/S137）：** 开 `token_repeat`。S135≠S88/S90/S91/S106/S129；S136≠S86/S87/S89/S102；S137≠S69/S43/S80/S112/S127。
 
 **Hidden-ones / positions-ones / residual-pre-ones（S138/S139/S140）：** 开 `token_repeat`。S138≠S61/S75/S108/S126；S139≠S37/S57/S84；S140≠S48/S55/S64/S119/S129。
+
+**Query-ones / key-ones / SwiGLU-out-ones（S141/S142/S143）：** 开 `token_repeat`。S141≠S60/S52/S114/S117/S130；S142≠S54/S59/S111/S118/S132；S143≠S67/S72/S115/S131。
