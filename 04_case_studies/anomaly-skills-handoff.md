@@ -18,7 +18,7 @@ PYTHONPATH="$RG_TEST" python -m analysis.scripts.verify_request_kv --report <r.j
 | PASS | S06, S08, S10′, S11, S12, S14, S16, S17, S18, S19, S20, S22, **S23**, **S24** |
 | FAIL+GAP | S01, S07 |
 | Parked | S02/S03/S05/S09 HARD; S04 HCCN-blocked; S13 BLOCKED; S15 skip; S21 HARD (trig=0) |
-| **Builder** | **IDLE** on 160 — no easy distinct left on boot set |
+| **Builder** | **ACTIVE** — [Mine older fix PRs](bc-478850c3-0de1-5968-8c50-a40ea9cffe0d) on **160** (skills = **162** only) |
 
 ## Inbox (160 → skills)
 
@@ -36,7 +36,7 @@ Living capability: [anomaly-skills-capability-20261017.md](anomaly-skills-capabi
 1. **S23-weight-corrupt** — **DONE PASS** `2/17/48` (skills v1.5 loop closed).
 2. **S24-quant-scale-always** — **DONE PASS** `2/48/48` (skills v1.5 loop closed).
 
-160 builder **IDLE**. Skills stays on **162** for analysis; do not assign 160 long builds to skills agent.
+160 builder: older-PR miner active. Skills stays on **162**; on new Inbox PASS/FAIL+GAP → analyze→optimize→re-verify → mirror `runtime-guard-docs` same turn. Do not steal 160 cards.
 
 ## Skills verify (2026-10-17)
 
