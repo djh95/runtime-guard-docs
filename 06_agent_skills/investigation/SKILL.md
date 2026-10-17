@@ -67,6 +67,8 @@ description: >-
 | MLA pad / o_proj empty（S11,S14） | digit/junk、graph pad | `token_repeat` | 间接 KV；dump 路径常有 |
 | FIA FULL-graph pad（S32，soft-inv #7144） | **unique** pad-echo（`wN_M…` / `_0_0_0`）；identical-mode 低估 | **`token_repeat`** | **L2**（graph pad keep descriptor）；≠ S14 o_proj empty；score=`pad_echo` |
 | Incomplete softcap（S33，÷cap+tanh skip *cap） | digit/`1.1.1…` 复读 | **`token_repeat`** | **L2**（softcap incomplete）；≠ S20 unstable/overflow（`!!!!`/token0） |
+| Attn scale drop（S34，1/sqrt(d)→1.0） | unique digit/junk 混杂；identical-mode 低估 | **`token_repeat`** | **L2**（wrong attn temperature）；≠ S20/S32/S33 |
+| Causal-off / future leak（S35，causal=False + mask=None） | 强 `phrase_repeat` / prompt-echo 复读 | **`token_repeat`** | **L2**（non-causal / sparse_mode=0）；≠ S34 scale |
 | RoPE 第二半写丢（S25，soft-inv #7082） | digit/`1.1.1…` 复读塌缩 | **`token_repeat`** | **L2 class-hint**（RoPE half）；≠ S11 pad；勿宣称定位到 Triton store 行 |
 | RMSNorm fp32 weight-mul（S26，soft-inv #42379） | 同上类复读；dtype/cast | **`token_repeat`** | **L2**（norm dtype）；与 S25 症状可重叠，靠 overlay/场景区分 |
 | RoPE neox→interleaved 风格错（S28，#7341/#7082 class） | 句/短语级复读（score=`phrase_repeat`） | **`token_repeat`** | **L2**；≠ S25 half-drop ≠ S11；samples 可能看似「正常英文」 |

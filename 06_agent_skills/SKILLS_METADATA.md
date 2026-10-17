@@ -1,8 +1,9 @@
 # Runtime-Guard Skills Metadata
 
-版本：v1.8  
+版本：v1.9  
 Skill 列表（**不改名**）：`investigation` · `detector-sweep` · `config-recommender` · `analysis` · `ref-kv-dump`
 
+> **v1.9：** S34 attn scale drop（1/sqrt(d)→1.0）→ `token_repeat` + **L2**（wrong attn temp；unique garbage）；≠ S20/S32/S33。S35 causal-off（causal=False + mask=None）→ `token_repeat` + **L2**（future leak）；≠ S34。  
 > **v1.8：** S32 FIA FULL-graph pad（#7144）→ `token_repeat` + **L2**；score `pad_echo`（unique garbage，≠ identical-mode）；≠ S14。S33 incomplete softcap（÷cap+tanh skip *cap）→ `token_repeat` + **L2**；≠ S20 overflow。  
 > **v1.7：** S29/S30/S31（logits fp16 demote / null-block KV dirt / residual drop）→ `token_repeat` + **L2 class-hint**；≠ S20/S26/S01/S10。  
 > **v1.6：** S25/S26/S28 soft-inv（RoPE 半写丢 / RMSNorm fp32-mul / neox→interleaved）→ `token_repeat` + **L2**；score `phrase_repeat`。≠ S11 pad。  

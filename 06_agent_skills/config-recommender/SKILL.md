@@ -35,6 +35,8 @@ description: >-
 | Logits fp16 demote / residual drop（S29/S31） | `token_repeat`（主） | 可兼开 `logits_finite` | **L2**；S29≠S20 softcap；S31≠S26 fp32-mul |
 | FIA FULL-graph pad（S32 #7144） | `token_repeat` | 标准 repeat 窗 | **L2**；unique `pad_echo`；≠ S14 o_proj empty |
 | Incomplete softcap（S33） | `token_repeat`（主） | 可兼 `logits_finite` | **L2**；≠ S20 unstable/overflow |
+| Attn scale drop（S34） | `token_repeat` | 标准 repeat 窗 | **L2** wrong attn temp；unique garbage；≠ S20/S32/S33 |
+| Causal-off / future leak（S35） | `token_repeat` | 标准 repeat 窗 | **L2** non-causal；≠ S34 |
 | Null-block KV dirt（S30） | `token_repeat`（主） | + `dump_kv` 若要定界 | **L2**（+可选 L3）；≠ S01/S10/S23/S24 |
 | 权重 / 量化 always-on 故障（S23/S24） | `token_repeat`（主） | 可兼开 `logits_finite` 对照 | **detect-only**：报告即交付；勿输出「定位到 layer/scale」；S24≠S07 GAP |
 | Spec 接受异常 / residual resample 偏置 | `spec_acceptance` | `window:5–10`, `low_threshold:0.3–0.5`, `high_threshold:0.96–0.99`, … | **仅 MTP/eagle3**；S22 类（无 `RESAMPLE_NOISE_SALT`）以低 acceptance_rate 命中；可兼开 `token_repeat` |

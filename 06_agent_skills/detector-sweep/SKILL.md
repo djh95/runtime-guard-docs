@@ -41,6 +41,8 @@ description: >-
 
 **FIA FULL-graph pad / incomplete softcap（S32/S33）：** 开 `token_repeat`。S32 精度看 unique garbage（score `pad_echo`），勿因 identical-mode 低判「无 precision」。S33≠S20。
 
+**Attn scale drop / causal-off（S34/S35）：** 开 `token_repeat`。S34 unique digit/junk（wrong attn temp）；S35 强 phrase/prompt-echo（future leak）。S34≠S20/S32/S33；S35≠S34。
+
 ## 输出模板（可热更）
 
 启动须已开 `runtime_config_hot_reload=true`（见 01）。Grep 确认 reload；失败会保留旧配置。

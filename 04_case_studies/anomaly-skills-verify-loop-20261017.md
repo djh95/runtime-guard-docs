@@ -173,6 +173,24 @@ PYTHONPATH=. python -m analysis.scripts.score_completion_samples --sample-dir te
 # likewise S33
 ```
 
+## S34 / S35 — attn scale drop + causal-off (v1.9)
+
+| | Before (pre-v1.9) | After (re-verify) |
+|--|-------------------|-------------------|
+| **S34** layers | 18/26/48 `token_repeat` | same ✓ |
+| **S34** score | unique digit/junk hits~25; gap=`None` | same ✓ |
+| **S34** skills | no attn-scale class (risk ≠S20/S32/S33) | **L2** wrong attn temp ✓ |
+| **S35** layers | 136/46/48 `token_repeat` | same ✓ |
+| **S35** score | `phrase_repeat`×48; gap=`None` | same ✓ |
+| **S35** skills | no causal-off class (risk conflate S34) | **L2** future leak ≠ S34 ✓ |
+| Expected? | — | **Yes** — two L2 attn class-hints; score already adequate |
+
+```bash
+PYTHONPATH=. python -m analysis.scripts.summarize_reports --report-dir tests/build-anomaly-env/fail-evidence/S34/reports
+PYTHONPATH=. python -m analysis.scripts.score_completion_samples --sample-dir tests/build-anomaly-env/fail-evidence/S34/samples
+# likewise S35
+```
+
 ## Remaining gaps (not closed by this loop)
 
 - S22: summarize does not yet print `acceptance_rate` column — optional next script tweak.
