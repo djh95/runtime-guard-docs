@@ -45,10 +45,11 @@ rgpy.summarize_reports --report-dir ./runtime/report --limit 20
 rgpy.score_completion_samples --sample-dir ./samples --json-out samples_score.json
 ```
 
-关注：`identical_across_requests`、`garbage_mixed_script`、`token0_collapse` / `repeat`、`detector_gap_hint`。  
+关注：`identical_across_requests`、`garbage_mixed_script`、`token0_collapse` / `repeat` / `phrase_repeat`、`detector_gap_hint`。  
 - 纯 `!!!!…` / token0 塌缩（S20 overflow class）→ 期望已有 `token_repeat` report；**不是** GAP。  
 - Spec 接受率异常（S22）→ 看 `spec_acceptance` report 的 rate 字段；samples 可能无 garbage 标签（分布性 precision）。  
 - 权重/量化 always-on（S23/S24）→ **停在 detect**：`token_repeat` report 即够；**禁止**从 dump/ref 推断「哪条 weight/scale」。  
+- Soft-inv RoPE/RMSNorm（S25/S26/S28）→ `token_repeat` + **L2 class-hint**（half-drop / fp32-mul / neox→interleaved）；句级复读看 `phrase_repeat`；≠ S11 pad。有 report 时勿因短标签空而宣称「无 precision」。  
 - `garbage_mixed_script` + detect=0 → **FAIL+GAP**（S01/S07）。若已有 `token_repeat` report，勿因 samples 里偶发 garbage 标签宣称 GAP。  
 有 precision 且 detect=0 → 交付 **FAIL+GAP**（勿伪造 detector PASS）。
 

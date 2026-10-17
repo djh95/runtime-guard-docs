@@ -3,7 +3,7 @@
 面向 Cursor / Agent：按现象启用 detectors、抓现场、离线对账、有标杆时做 KV 定界。
 
 > 本目录是 **手册仓内的 skill 副本**（与代码对齐后的可分发版）。  
-> 职责契约：[SKILLS_METADATA.md](./SKILLS_METADATA.md)（v1.5）。  
+> 职责契约：[SKILLS_METADATA.md](./SKILLS_METADATA.md)（v1.6）。  
 > 离线脚本实现仓：[runtime-guard-test](https://github.com/djh95/runtime-guard-test)（`analysis/scripts/`）。  
 > 产品实现：`vllm_ascend/observability/runtime_guard/`（[#16849](https://github.com/vllm-project/vllm-ascend/pull/16849) + [#18644](https://github.com/vllm-project/vllm-ascend/pull/18644)）。  
 > 人读流程仍以 [02 问题定位](https://github.com/djh95/runtime-guard-docs/blob/main/02_problem_localization.md) 为准；skill 负责可执行编排。
@@ -35,7 +35,7 @@ PYTHONPATH="$RG_TEST" python -m analysis.scripts.<name> --help
 `prepare_ref_inputs` / `request_from_report` / `locate_first_divergence` / `compare_kv_similarity` /  
 `compare_per_layer` / `stitch_kv`。
 
-Anomaly 定界：先读 `tests/build-anomaly-env/fail-evidence/Sxx/` 与三层率；契约见 [SKILLS_METADATA.md](./SKILLS_METADATA.md) v1.5。
+Anomaly 定界：先读 `tests/build-anomaly-env/fail-evidence/Sxx/` 与三层率；契约见 [SKILLS_METADATA.md](./SKILLS_METADATA.md) v1.6。
 
 ## 与产品对齐的硬事实（2026-10）
 

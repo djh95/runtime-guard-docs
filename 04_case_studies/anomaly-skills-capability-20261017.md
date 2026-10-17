@@ -1,7 +1,7 @@
 # Anomaly × Skills 能力边界（活文档）— 2026-10-17
 
 > **用途：** 对每一个已落地 / 在册异常场景，如实记录现象、复现与对照配置、skills 能分析到哪一步、有用度，以及还缺什么。  
-> **Skills：** `runtime-guard-test` `analysis/skill/` **v1.5**（investigation / detector-sweep / config-recommender / analysis / ref-kv-dump）。  
+> **Skills：** `runtime-guard-test` `analysis/skill/` **v1.6**（investigation / detector-sweep / config-recommender / analysis / ref-kv-dump）。  
 > **Guard pin：** G2 `f2aefd068`。三层率 = trigger / precision / detect。  
 > **诚实上限：** skills **定界**（detect / 现象类 / 可选 KV 首分歧），**不承诺**定位到算子、权重元素或具体 commit。
 
@@ -50,6 +50,10 @@
 | S22 | spec resample 无 SALT | **是** `spec_acceptance` | 否 | **L2 class**（RNG/SALT；分布性） | **高** | eagle3+temp>0；无 draft / 有 SALT 则否 |
 | S23 | weight corrupt always-on | **是** `token_repeat` | 否 | **L1 only**（detect-only） | **中** | post-load 零一权重；干净 ckpt 对照 |
 | S24 | quant scale always-on | **是** `token_repeat` | 否 | **L1 only**（≠ S07 GAP） | **中** | post-load 零一条 W8A8 scale；≠S07 路径触发 |
+| S25 | RoPE 2nd-half drop | **是** `token_repeat` | 否 | **L2 class-hint**（RoPE half；≠S11） | **高** | soft-inv #7082；干净 rope 对照 |
+| S26 | RMSNorm fp32-mul | **是** `token_repeat` | 否 | **L2 class-hint**（norm dtype） | **高** | soft-inv #42379；正确 dtype mul 对照 |
+| S27 | MLA pe pre-sliced | — | — | — | **低** | **BLOCKED**（trig=0 + dirty clean） |
+| S28 | RoPE neox→interleaved | **是** `token_repeat` | 否 | **L2 class-hint**（style flip） | **高** | soft-inv #7341/#7082；≠S25/S11 |
 
 > **S20 说明：** detector **能检出**（`token_repeat` 对 `!!!!`/token0）；skills 额外给出 **溢出/softcap class-hint（L2）**，不是「只能 detect、无类提示」。仍 **不能** 定位到具体 softcap 实现行或权重。
 
@@ -294,6 +298,38 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 
 ---
 
+### S25 — RoPE 第二半写丢（soft-inv #7082）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **462 / 15 / 48**；`token_repeat`×48 |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2 class-hint**（RoPE half-drop）；≠ S11 pad |
+| **有用度** | **高** |
+| **待改进** | 无（不定位 Triton store 行） |
+
+### S26 — RMSNorm fp32 weight-mul（soft-inv #42379）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **470 / 14 / 48**；`token_repeat`×48 |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2 class-hint**（norm dtype/cast） |
+| **有用度** | **高** |
+| **待改进** | 症状可与 S25 重叠 → 靠场景/overlay 区分 |
+
+### S28 — RoPE neox→interleaved（#7341/#7082 class）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **462 / 16 / 48**；`token_repeat`×48 |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2 class-hint**（style flip）；≠ S25/S11 |
+| **有用度** | **高** |
+| **待改进** | score **v1.6** 补 `phrase_repeat`（句级复读） |
+
+---
+
 ## Verify-loop deltas（2026-10-17）
 
 | ID | Before → After | 是否达到预期 |
@@ -304,8 +340,11 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 | **S24** | score **假 GAP** → **无 GAP**；≠ S07 | **是** |
 | **S06/S08/S10′/S11/S12/S14/S16–S19** | 补跑 verify：skills 表已够 → **无改 skill**；S06 补 PASS 归档 | **是**（no-edit） |
 | **S01/S07** | 复验仍 **FAIL+GAP**（score 正确给 gap hint / status detect=0） | **是**（GAP 诚实） |
+| **S25** | 无 RoPE half class → **L2** + `token_repeat`；score 已有 `repeat` | **是** |
+| **S26** | 无 RMSNorm dtype class → **L2** + `token_repeat` | **是** |
+| **S28** | score **precision_hits=0**（句级复读漏标）→ **`phrase_repeat`×8**；skills **L2** style flip | **是** |
 
-详见 [anomaly-skills-verify-loop-20261017.md](./anomaly-skills-verify-loop-20261017.md) batch wave。
+详见 [anomaly-skills-verify-loop-20261017.md](./anomaly-skills-verify-loop-20261017.md)。
 
 ## Skills 全局缺口（优先序）
 
@@ -313,7 +352,8 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 2. MoE/溢出类：**明确 L3 不可达**（避免空跑 ref）  
 3. Spec 分布性：summarize 突出 `acceptance_rate`  
 4. ~~Weight/Quant always-on 场景落地~~ → **S23/S24 PASS L1**（仍不可定位张量）  
-5. KV PASS（S10′/S12）：标准 ref-kv 流水线模板 + 容器 dump_dir 重映射
+5. KV PASS（S10′/S12）：标准 ref-kv 流水线模板 + 容器 dump_dir 重映射  
+6. Soft-inv RoPE/RMSNorm：**S25/S26/S28 L2**（仍不可定位算子行）
 
 ---
 

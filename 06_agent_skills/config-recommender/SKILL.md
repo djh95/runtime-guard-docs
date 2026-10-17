@@ -28,9 +28,10 @@ description: >-
 
 | 现象类 | Detector | 关键参数 | 备注 |
 |--------|----------|----------|------|
-| 复读 / 卡词 / digit·`***`·ctx echo / `!!!!` token0 塌缩 | `token_repeat` | `window:32`, `repeat_sum_threshold:64`, `min_tokens:32`, `consecutive_hits:1` | MoE / KV recycle / MLA pad / **S20 softcap·softmax 溢出塌缩**；热更改 `window` 清 per-req 状态 |
+| 复读 / 卡词 / digit·`***`·ctx echo / `!!!!` token0 塌缩 / 句级短语复读 | `token_repeat` | `window:32`, `repeat_sum_threshold:64`, `min_tokens:32`, `consecutive_hits:1` | MoE / KV recycle / MLA pad / **S20 softcap** / **S25–S28 RoPE·RMSNorm soft-inv**；热更改 `window` 清 per-req 状态 |
 | NaN/Inf / 数值炸（logits 仍 non-finite） | `logits_finite` | `item_sync:false`（默认）；要 grammar 前精确 kind 才 `true` | #18644 qsl 边界；**抓不到有限垃圾**；溢出若已塌成 token0 可能 **miss** → 仍靠 `token_repeat` |
 | Softcap / 不稳定 exp-softmax 溢出嫌疑 | **两者都开** | `token_repeat` + `logits_finite`，只 report 先 | 低 temperature 放大；勿只信 `logits_finite` |
+| RoPE half-drop / style flip / RMSNorm dtype（S25/S26/S28） | `token_repeat`（主） | 可兼开 `logits_finite` 对照 | **L2 class-hint**；≠ S11 pad；勿输出「定位到 rotary/store 行」 |
 | 权重 / 量化 always-on 故障（S23/S24） | `token_repeat`（主） | 可兼开 `logits_finite` 对照 | **detect-only**：报告即交付；勿输出「定位到 layer/scale」；S24≠S07 GAP |
 | Spec 接受异常 / residual resample 偏置 | `spec_acceptance` | `window:5–10`, `low_threshold:0.3–0.5`, `high_threshold:0.96–0.99`, … | **仅 MTP/eagle3**；S22 类（无 `RESAMPLE_NOISE_SALT`）以低 acceptance_rate 命中；可兼开 `token_repeat` |
 | KV 可疑无 detector | — | `manual_dump` / `dump_kv` + 后续 ref | 无 slot detector |

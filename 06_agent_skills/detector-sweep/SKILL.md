@@ -35,6 +35,8 @@ description: >-
 
 **权重/量化 always-on（S23/S24）：** sweep 开 `token_repeat`（+可选 `logits_finite`）。命中后 **不要** 承诺定位参数；与 S07 FAIL+GAP 区分（S24 已可 detect）。
 
+**RoPE / RMSNorm soft-inv（S25/S26/S28）：** 同样开 `token_repeat`。命中后交 analysis 做 **L2 class-hint**（half-drop / fp32-mul / neox→interleaved）；勿与 S11 MLA pad 混谈。
+
 ## 输出模板（可热更）
 
 启动须已开 `runtime_config_hot_reload=true`（见 01）。Grep 确认 reload；失败会保留旧配置。

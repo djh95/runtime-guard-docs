@@ -1,8 +1,9 @@
 # Runtime-Guard Skills Metadata
 
-版本：v1.5  
+版本：v1.6  
 Skill 列表（**不改名**）：`investigation` · `detector-sweep` · `config-recommender` · `analysis` · `ref-kv-dump`
 
+> **v1.6：** S25/S26/S28 soft-inv（RoPE 半写丢 / RMSNorm fp32-mul / neox→interleaved）→ `token_repeat` + **L2 class-hint**；score 补 `phrase_repeat`（S28 句级复读）。≠ S11 pad。  
 > **v1.5：** S23/S24 权重·量化 always-on → **detect-only**（`token_repeat`）；score 勿因混有 garbage 标签误报 GAP；≠ S07。  
 > **v1.4：** S22 spec resample 无 SALT → `spec_acceptance`；≠ S05/S20。  
 > **v1.3：** S20 softcap/softmax 溢出 → `token_repeat`；score 不把纯 bang 塌缩标 GAP。  

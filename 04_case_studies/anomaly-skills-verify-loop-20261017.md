@@ -107,9 +107,35 @@ Scope: **S06, S08, S10′, S11, S12, S14, S16–S19** (+ re-check **S01/S07**). 
 - **FAIL+GAP:** S01/S07 correctly remain offline-score / GAP; do not amplify.
 - **Skills changed?** **No** (evidence hygiene only: S06 PASS archive).
 
+## S25 / S26 / S28 — soft-inv RoPE / RMSNorm (older-PR mine)
+
+Evidence @ `a2137bc` fail-evidence; skills **v1.6**. Host: offline / 162 — **no 160**.
+
+| ID | Before (pre-v1.6) | After (re-verify) |
+|----|-------------------|-------------------|
+| **S25** layers | 462/15/48 `token_repeat` | same ✓ |
+| **S25** score | `repeat`×9; gap=`None` | +`phrase_repeat`×9; gap=`None` ✓ |
+| **S25** skills | no RoPE-half class (risk conflate S11) | investigation/recommender: **L2** RoPE half; ≠ S11 ✓ |
+| **S26** layers | 470/14/48 | same ✓ |
+| **S26** score | `repeat`×9; gap=`None` | +`phrase_repeat`; gap=`None` ✓ |
+| **S26** skills | no RMSNorm dtype class | **L2** fp32-mul class ✓ |
+| **S28** layers | 462/16/48 | same ✓ |
+| **S28** score | **labels={}; precision_hits=0** (miss phrase loop) | **`phrase_repeat`×8 + `repeat`×8**; gap=`None` ✓ |
+| **S28** skills | no style-flip class | **L2** neox→interleaved; ≠ S25/S11 ✓ |
+| Expected? | — | **Yes** — S28 score blind spot closed; three L2 class-hints |
+
+```bash
+PYTHONPATH=. python -m analysis.scripts.summarize_reports --report-dir tests/build-anomaly-env/fail-evidence/S25/reports
+PYTHONPATH=. python -m analysis.scripts.score_completion_samples --sample-dir tests/build-anomaly-env/fail-evidence/S25/samples
+# likewise S26 S28
+```
+
+S27 BLOCKED — skipped (pe-presliced no-op + dirty clean).
+
 ## Remaining gaps (not closed by this loop)
 
 - S22: summarize does not yet print `acceptance_rate` column — optional next script tweak.
 - S01/S07: still detector GAP; skills only offline score.
 - Weight/quant: still **cannot** localize which tensor/scale (by design).
+- Soft-inv RoPE/RMSNorm: **cannot** localize Triton store / exact mul line (by design).
 - S08/S10′: PASS report trees not fully mirrored in fail-evidence (status/WHY only for S10′; S08 local = pre-PASS attempts).
