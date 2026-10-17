@@ -126,3 +126,5 @@ description: >-
 **Rope-skip-query / residual-post-abs / SwiGLU-up-only（S105/S106/S107）：** 开 `token_repeat`。S105≠S104/S40/S25/S28/S101；S106≠S88/S90–S91/S102；S107≠S103/S39/S50。
 
 **Hidden-abs / value-abs / RMSNorm-weight-abs（S108/S109/S110）：** 开 `token_repeat`。S108≠S61/S75；S109≠S58/S51；S110≠S66/S71/S74/S96/S100。S109 identical precision=0 仍可 PASS。
+
+**Key-abs / embed-abs / cos/sin-abs（S111/S112/S113）：** 开 `token_repeat`。S111≠S54/S59/S109；S112≠S69/S43/S80；S113≠S42/S79–S82/S101/S40。S113 identical precision=0 仍可 PASS。

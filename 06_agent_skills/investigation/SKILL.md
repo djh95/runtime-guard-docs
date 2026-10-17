@@ -144,6 +144,9 @@ description: >-
 | Hidden-abs（S108，`hidden=abs(hidden)` before lm-head） | 混杂 cyrillic/`индив` 复读 | **`token_repeat`** | **L2**（unsigned pre-head hidden）；≠ S61 hidden×50 ≠ S75 hidden÷50 |
 | Value-abs（S109，`value=abs(value)` before FA） | unique garbage；**identical precision=0**；detect 可 <n_req | **`token_repeat`** | **L2**（unsigned V）；≠ S58 value-neg ≠ S51 value×；**detect>0 仍 PASS**（勿因 precision=0 判 GAP） |
 | RMSNorm-weight-abs（S110，`abs(weight)` into add-RMSNorm） | digit/`1.1.1…` 复读；precision 可 <n_req | **`token_repeat`** | **L2**（unsigned norm weight）；≠ S66 neg ≠ S71 ×50 ≠ S74 ÷50 ≠ S96 ones ≠ S100 bias=weight |
+| Key-abs（S111，`key=abs(key)` before FA） | 空格/`,` 复读混杂；precision 可 <n_req | **`token_repeat`** | **L2**（unsigned K）；≠ S54 key-neg ≠ S59 key× ≠ S109 value-abs |
+| Embed-abs（S112，`embedding.abs_()` after lookup） | 换行塌缩；detect 可 <n_req | **`token_repeat`** | **L2**（unsigned embed）；≠ S69 embed-neg ≠ S43 ×100 ≠ S80 ÷50 |
+| Cos/sin-abs（S113，`abs(cos_sin_cache)` into RoPE） | unique-ish Nile 散文；**identical precision=0** | **`token_repeat`** | **L2**（unsigned rope phase）；≠ S42 negate ≠ S79–S82 scale ≠ S101 half-swap ≠ S40 skip；**detect≈n_req 仍 PASS** |
 | RoPE 第二半写丢（S25，soft-inv #7082） | digit/`1.1.1…` 复读塌缩 | **`token_repeat`** | **L2 class-hint**（RoPE half）；≠ S11 pad；勿宣称定位到 Triton store 行 |
 | RMSNorm fp32 weight-mul（S26，soft-inv #42379） | 同上类复读；dtype/cast | **`token_repeat`** | **L2**（norm dtype）；与 S25 症状可重叠，靠 overlay/场景区分 |
 | RoPE neox→interleaved 风格错（S28，#7341/#7082 class） | 句/短语级复读（score=`phrase_repeat`） | **`token_repeat`** | **L2**；≠ S25 half-drop ≠ S11；samples 可能看似「正常英文」 |

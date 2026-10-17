@@ -583,6 +583,22 @@ python -c "import json;d=json.load(open('tests/build-anomaly-env/fail-evidence/S
 python -c "import json;d=json.load(open('tests/build-anomaly-env/fail-evidence/S109/layers.json'));print(d['precision'], d['detect_by'])"
 ```
 
+## S111 / S112 / S113 — key-abs + embed-abs + cos/sin-abs (v4.5)
+
+| | Before (pre-v4.5) | After (re-verify) |
+|--|-------------------|-------------------|
+| **S111** layers | 58/30/48 `token_repeat` | same ✓ (slim) |
+| **S111** skills | risk conflate S54/S59/S109 | **L2** key-abs ✓ |
+| **S112** layers | 16/34/46 `token_repeat` | same ✓ |
+| **S112** skills | risk conflate S69/S43/S80 | **L2** embed-abs ✓ |
+| **S113** layers | 58/0/48 `token_repeat` | same ✓ |
+| **S113** skills | risk conflate S42/S79–S82/S101/S40；misread precision=0 as GAP | **L2** cos/sin-abs；precision=0 expected ✓ |
+| Expected? | — | **Yes** — three L2 |
+
+```bash
+python -c "import json;d=json.load(open('tests/build-anomaly-env/fail-evidence/S113/layers.json'));print(d['precision'], d['detect_by'])"
+```
+
 ## Remaining gaps (not closed by this loop)
 
 - S22: summarize does not yet print `acceptance_rate` column — optional next script tweak.

@@ -1,8 +1,9 @@
 # Runtime-Guard Skills Metadata
 
-版本：v4.4  
+版本：v4.5  
 Skill 列表（**不改名**）：`investigation` · `detector-sweep` · `config-recommender` · `analysis` · `ref-kv-dump`
 
+> **v4.5：** S111 key-abs → `token_repeat` + **L2**；≠ S54/S59/S109。S112 embed-abs → `token_repeat` + **L2**；≠ S69/S43/S80。S113 cos/sin-abs → `token_repeat` + **L2**；≠ S42/S79–S82/S101/S40；**precision=0 OK**。  
 > **v4.4：** S108 hidden-abs → `token_repeat` + **L2**；≠ S61/S75。S109 value-abs → `token_repeat` + **L2**；≠ S58/S51；**precision=0 OK**（detect=24）。S110 RMSNorm-weight-abs → `token_repeat` + **L2**；≠ S66/S71/S74/S96/S100。  
 > **v4.3：** S105 rope-skip-query → `token_repeat` + **L2**；≠ S104/S40/S25/S28/S101。S106 residual-post-abs → `token_repeat` + **L2**；≠ S88/S90–S91/S102。S107 SwiGLU-up-only → `token_repeat` + **L2**；≠ S103/S39/S50。  
 > **v4.2：** S102 RMSNorm-out-abs → `token_repeat` + **L2**；≠ S86/S87–S89。S103 SwiGLU-gate-only → `token_repeat` + **L2**；≠ S39/S50/S56–S81；**precision=0 OK**。S104 rope-skip-key → `token_repeat` + **L2**；≠ S40/S25/S28/S101。  
