@@ -135,6 +135,9 @@ description: >-
 | Top_p-skip（S99，skip `apply_top_k_top_p`） | unique rambling；**identical precision=0**；需 T>0 + top_p | **`token_repeat`** | **L2**（requested nucleus/k ignored）；≠ S45 topk-on-neg（FAIL+GAP）≠ S98 min_p-skip ≠ temp class；**detect≈n_req 仍 PASS** |
 | RMSNorm-bias=weight（S100，`bias=weight` into add-RMSNorm） | identical 异地×N 复读 | **`token_repeat`** | **L2**（wrong norm bias wiring）；≠ S66/S71/S74 weight mag/sign ≠ S96 ones |
 | Cos/sin-half-swap（S101，swap halves of RoPE cos_sin_cache） | identical `111…` 复读 | **`token_repeat`** | **L2**（wrong rope phase halves）；≠ S42 negate ≠ S79–S82 scale ≠ S40 skip ≠ S25/S28 |
+| RMSNorm-out-abs（S102，`x=abs(x)` after add-RMSNorm） | 混杂英文/`pl` 复读 | **`token_repeat`** | **L2**（destroy signed post-norm act）；≠ S86 out-neg ≠ S87–S89 out mag |
+| SwiGLU-gate-only（S103，`silu(gate)` drop up-mul） | unique garbage；**identical precision=0** | **`token_repeat`** | **L2**（incomplete SwiGLU：gate only）；≠ S39 skip-silu ≠ S50 half-swap ≠ S56–S81；**detect≈n_req 仍 PASS** |
+| Rope-skip-key（S104，rotate Q only；K unrotated） | identical `One. One.…` 复读 | **`token_repeat`** | **L2**（Q/K RoPE phase mismatch）；≠ S40 full-skip ≠ S25/S28 ≠ S101 half-swap |
 | RoPE 第二半写丢（S25，soft-inv #7082） | digit/`1.1.1…` 复读塌缩 | **`token_repeat`** | **L2 class-hint**（RoPE half）；≠ S11 pad；勿宣称定位到 Triton store 行 |
 | RMSNorm fp32 weight-mul（S26，soft-inv #42379） | 同上类复读；dtype/cast | **`token_repeat`** | **L2**（norm dtype）；与 S25 症状可重叠，靠 overlay/场景区分 |
 | RoPE neox→interleaved 风格错（S28，#7341/#7082 class） | 句/短语级复读（score=`phrase_repeat`） | **`token_repeat`** | **L2**；≠ S25 half-drop ≠ S11；samples 可能看似「正常英文」 |
