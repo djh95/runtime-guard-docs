@@ -150,3 +150,5 @@ description: >-
 **Query-ones / key-ones / SwiGLU-out-ones（S141/S142/S143）：** 开 `token_repeat`。S141≠S60/S52/S114/S117/S130；S142≠S54/S59/S111/S118/S132；S143≠S67/S72/S115/S131。
 
 **Residual-post-ones / RMSNorm-out-ones / SwiGLU-input-ones（S144/S145/S146）：** 开 `token_repeat`。S144≠S88/S90/S91/S106/S135；S145≠S86/S87/S89/S102/S136；S146≠S56/S76/S81/S121/S133。
+
+**Positions-zeros / value-ones / attn-out-ones（S147/S148/S149）：** 开 `token_repeat`。S147≠S139/S57/S84；S148≠S58/S51/S109；S149≠S63/S41/S83。

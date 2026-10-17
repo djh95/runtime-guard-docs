@@ -180,6 +180,9 @@ description: >-
 | Residual-post-ones（S144，`ones_like(residual)` after add-RMSNorm） | identical `[code` 短语复读 | **`token_repeat`** | **L2**（unit post-residual）；≠ S88 post-neg ≠ S90/S91 mag ≠ S106 post-abs ≠ S135 zeros |
 | RMSNorm-out-ones（S145，`ones_like(x)` after add-RMSNorm） | identical `pl` 复读 | **`token_repeat`** | **L2**（unit post-norm x）；≠ S86 out-neg ≠ S87 out× ≠ S89 out÷ ≠ S102 out-abs ≠ S136 zeros |
 | SwiGLU-input-ones（S146，`ones_like(x)` before npu_swiglu） | identical `造假` 短语复读 | **`token_repeat`** | **L2**（unit SwiGLU input）；≠ S56 neg ≠ S76 ×50 ≠ S81 ÷50 ≠ S121 abs ≠ S133 zeros |
+| Positions-zeros（S147，`zeros_like(positions)` before update_cos_sin） | digit/`\`` 复读；detect 可 <n_req | **`token_repeat`** | **L2**（pos collapse to 0）；≠ S139 ones ≠ S57 ×2 ≠ S84 ÷2 |
+| Value-ones（S148，`ones_like(value)` before FA） | identical `ior` 短语复读；precision 可 <n_req | **`token_repeat`** | **L2**（unit V）；≠ S58 neg ≠ S51 ×50 ≠ S109 abs |
+| Attn-out-ones（S149，`ones_like(attn_output)` after FA） | identical `ior` 短语复读；precision 可 <n_req | **`token_repeat`** | **L2**（unit attn-out）；≠ S63 neg ≠ S41 ×1000 ≠ S83 ×50 |
 | RoPE 第二半写丢（S25，soft-inv #7082） | digit/`1.1.1…` 复读塌缩 | **`token_repeat`** | **L2 class-hint**（RoPE half）；≠ S11 pad；勿宣称定位到 Triton store 行 |
 | RMSNorm fp32 weight-mul（S26，soft-inv #42379） | 同上类复读；dtype/cast | **`token_repeat`** | **L2**（norm dtype）；与 S25 症状可重叠，靠 overlay/场景区分 |
 | RoPE neox→interleaved 风格错（S28，#7341/#7082 class） | 句/短语级复读（score=`phrase_repeat`） | **`token_repeat`** | **L2**；≠ S25 half-drop ≠ S11；samples 可能看似「正常英文」 |

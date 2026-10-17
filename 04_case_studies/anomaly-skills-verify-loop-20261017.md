@@ -814,6 +814,26 @@ python -c "import json;d=json.load(open('tests/build-anomaly-env/fail-evidence/S
 python -c "import json;d=json.load(open('tests/build-anomaly-env/fail-evidence/S146/layers.json'));print(d['precision'], d['detect_by'])"
 ```
 
+
+## S147 / S148 / S149 — positions-zeros + value-ones + attn-out-ones (v5.7)
+
+| | Before (pre-v5.7) | After (re-verify) |
+|--|-------------------|-------------------|
+| **S147** layers | 132/42/47 `token_repeat` | same ✓ (slim) |
+| **S147** skills | risk conflate S139/S57/S84 | **L2** positions-zeros ✓ |
+| **S147** score | digits/repeat/phrase_repeat | same ✓ |
+| **S148** layers | 58/30/48 `token_repeat` | same ✓ |
+| **S148** skills | risk conflate S58/S51/S109 | **L2** value-ones ✓ |
+| **S148** score | repeat+phrase_repeat (`ior`) | same ✓ |
+| **S149** layers | 58/30/48 `token_repeat` | same ✓ |
+| **S149** skills | risk conflate S63/S41/S83 | **L2** attn-out-ones ✓ |
+| **S149** score | repeat+phrase_repeat (`ior`) | same ✓ |
+| Expected? | — | **Yes** — three L2 |
+
+```bash
+python -c "import json;d=json.load(open('tests/build-anomaly-env/fail-evidence/S149/layers.json'));print(d['precision'], d['detect_by'])"
+```
+
 ## Remaining gaps (not closed by this loop)
 
 - S22: summarize does not yet print `acceptance_rate` column — optional next script tweak.
