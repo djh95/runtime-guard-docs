@@ -1,7 +1,7 @@
 # Anomaly × Skills 能力边界（活文档）— 2026-10-17
 
 > **用途：** 对每一个已落地 / 在册异常场景，如实记录现象、复现与对照配置、skills 能分析到哪一步、有用度，以及还缺什么。  
-> **Skills：** `runtime-guard-test` `analysis/skill/` **v5.1**（investigation / detector-sweep / config-recommender / analysis / ref-kv-dump）。  
+> **Skills：** `runtime-guard-test` `analysis/skill/` **v5.2**（investigation / detector-sweep / config-recommender / analysis / ref-kv-dump）。  
 > **Guard pin：** G2 `f2aefd068`。三层率 = trigger / precision / detect。  
 > **诚实上限：** skills **定界**（detect / 现象类 / 可选 KV 首分歧），**不承诺**定位到算子、权重元素或具体 commit。
 
@@ -157,6 +157,9 @@
 | S129 | residual-pre-zeros | **是** `token_repeat` | 否 | **L2 class-hint**（≠S48/S55/S64/S119） | **高** | collapsed pre-residual；FieldType |
 | S130 | query-zeros | **是** `token_repeat` | 否 | **L2 class-hint**（≠S60/S52/S114/S117） | **高** | collapsed Q |
 | S131 | SwiGLU-out-zeros | **是** `token_repeat` | 否 | **L2 class-hint**（≠S67/S72/S115/S103/S107） | **高** | collapsed SwiGLU out |
+| S132 | key-zeros | **是** `token_repeat` | 否 | **L2 class-hint**（≠S54/S59/S111/S118） | **高** | collapsed K |
+| S133 | SwiGLU-input-zeros | **是** `token_repeat` | 否 | **L2 class-hint**（≠S56/S76/S81/S121/S131） | **高** | collapsed SwiGLU in |
+| S134 | cos/sin-ones | **是** `token_repeat` | 否 | **L2 class-hint**（≠S42/S79–S82/S101/S113/S128） | **高** | unit rope phase |
 
 > **S20 说明：** detector **能检出**（`token_repeat` 对 `!!!!`/token0）；skills 额外给出 **溢出/softcap class-hint（L2）**，不是「只能 detect、无类提示」。仍 **不能** 定位到具体 softcap 实现行或权重。
 
@@ -1472,6 +1475,37 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 | **有用度** | **高** |
 | **待改进** | 无 |
 
+
+### S132 — Key-zeros（≠ S54/S59/S111/S118）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **58 / 28 / 48**；`token_repeat`×48 |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2**（collapsed K）；≠ S54/S59/S111/S118 |
+| **有用度** | **高** |
+| **待改进** | 无 |
+
+### S133 — SwiGLU-input-zeros（≠ S56/S76/S81/S121/S131）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **58 / 48 / 48**；`token_repeat`×48 |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2**（collapsed SwiGLU input）；≠ S56/S76/S81/S121/S131 |
+| **有用度** | **高** |
+| **待改进** | 无 |
+
+### S134 — Cos/sin-ones（≠ S42/S79–S82/S101/S113/S128）
+
+| 项 | 内容 |
+|----|------|
+| **三层率** | **58 / 48 / 48**；`token_repeat`×48 |
+| **能否检测** | **是** |
+| **Skills 最远** | **L2**（unit rope phase）；≠ S42/S79–S82/S101/S113/S128 |
+| **有用度** | **高** |
+| **待改进** | 无 |
+
 ---
 
 ## Verify-loop deltas（2026-10-17）
@@ -1590,6 +1624,9 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 | **S129** | 无 residual-pre-zeros class → **L2**；≠ S48/S55/S64/S119 | **是** |
 | **S130** | 无 query-zeros class → **L2**；≠ S60/S52/S114/S117 | **是** |
 | **S131** | 无 SwiGLU-out-zeros class → **L2**；≠ S67/S72/S115/S103/S107 | **是** |
+| **S132** | 无 key-zeros class → **L2**；≠ S54/S59/S111/S118 | **是** |
+| **S133** | 无 SwiGLU-input-zeros class → **L2**；≠ S56/S76/S81/S121/S131 | **是** |
+| **S134** | 无 cos/sin-ones class → **L2**；≠ S42/S79–S82/S101/S113/S128 | **是** |
 
 详见 [anomaly-skills-verify-loop-20261017.md](./anomaly-skills-verify-loop-20261017.md)。
 
@@ -1600,7 +1637,7 @@ SPEC/in progress（DP+spec）。有用度 **低**（未 PASS）。
 3. Spec 分布性：summarize 突出 `acceptance_rate`  
 4. ~~Weight/Quant always-on 场景落地~~ → **S23/S24 PASS L1**（仍不可定位张量）  
 5. KV PASS（S10′/S12/S30/S47）：标准 ref-kv 流水线模板 + 容器 dump_dir 重映射  
-6. Soft-inv / cast / residual / graph-pad / softcap / attn / temp / pos / norm / act / rope / embed / penalty / kv-swap / **residual-pre-zeros / query-zeros / swiglu-out-zeros**：**S25–S131 L2**（除 S44 INVALID / S45 FAIL+GAP）
+6. Soft-inv / cast / residual / graph-pad / softcap / attn / temp / pos / norm / act / rope / embed / penalty / kv-swap / **key-zeros / swiglu-input-zeros / cos-sin-ones**：**S25–S134 L2**（除 S44 INVALID / S45 FAIL+GAP）
 
 ---
 

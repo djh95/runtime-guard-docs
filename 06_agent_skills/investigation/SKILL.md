@@ -165,6 +165,9 @@ description: >-
 | Residual-pre-zeros（S129，`residual.zero_()` before add-RMSNorm） | identical `FieldType` 短语复读 | **`token_repeat`** | **L2**（collapsed pre-residual）；≠ S48 neg ≠ S55/S64 mag ≠ S119 abs ≠ S31 drop |
 | Query-zeros（S130，`query.zero_()` before FA） | `,`/`and the` 短语复读；precision 可 <n_req | **`token_repeat`** | **L2**（collapsed Q）；≠ S60 ×50 ≠ S52 neg ≠ S114 abs ≠ S117 ÷50 |
 | SwiGLU-out-zeros（S131，`out.zero_()` after npu_swiglu） | `...` 换行复读 | **`token_repeat`** | **L2**（collapsed SwiGLU out）；≠ S67 neg ≠ S72 ×50 ≠ S115 abs ≠ S103 gate-only ≠ S107 up-only |
+| Key-zeros（S132，`key.zero_()` before FA） | `,`/`and the` 短语复读；precision 可 <n_req | **`token_repeat`** | **L2**（collapsed K）；≠ S54 neg ≠ S59 ×50 ≠ S111 abs ≠ S118 ÷50 |
+| SwiGLU-input-zeros（S133，`x.zero_()` before npu_swiglu） | `...` 换行复读 | **`token_repeat`** | **L2**（collapsed SwiGLU input）；≠ S56 neg ≠ S76 ×50 ≠ S81 ÷50 ≠ S121 abs ≠ S131 out-zeros |
+| Cos/sin-ones（S134，`ones_like(cos_sin_cache)` into RoPE） | Nile/`river` 短语复读 | **`token_repeat`** | **L2**（unit rope phase）；≠ S42 neg ≠ S79–S82 scale ≠ S101 half-swap ≠ S113 abs ≠ S128 zeros |
 | RoPE 第二半写丢（S25，soft-inv #7082） | digit/`1.1.1…` 复读塌缩 | **`token_repeat`** | **L2 class-hint**（RoPE half）；≠ S11 pad；勿宣称定位到 Triton store 行 |
 | RMSNorm fp32 weight-mul（S26，soft-inv #42379） | 同上类复读；dtype/cast | **`token_repeat`** | **L2**（norm dtype）；与 S25 症状可重叠，靠 overlay/场景区分 |
 | RoPE neox→interleaved 风格错（S28，#7341/#7082 class） | 句/短语级复读（score=`phrase_repeat`） | **`token_repeat`** | **L2**；≠ S25 half-drop ≠ S11；samples 可能看似「正常英文」 |

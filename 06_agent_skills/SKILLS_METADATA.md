@@ -1,8 +1,9 @@
 # Runtime-Guard Skills Metadata
 
-版本：v5.1  
+版本：v5.2  
 Skill 列表（**不改名**）：`investigation` · `detector-sweep` · `config-recommender` · `analysis` · `ref-kv-dump`
 
+> **v5.2：** S132 key-zeros → `token_repeat` + **L2**；≠ S54/S59/S111/S118。S133 SwiGLU-input-zeros → `token_repeat` + **L2**；≠ S56/S76/S81/S121/S131。S134 cos/sin-ones → `token_repeat` + **L2**；≠ S42/S79–S82/S101/S113/S128。  
 > **v5.1：** S129 residual-pre-zeros → `token_repeat` + **L2**；≠ S48/S55/S64/S119。S130 query-zeros → `token_repeat` + **L2**；≠ S60/S52/S114/S117。S131 SwiGLU-out-zeros → `token_repeat` + **L2**；≠ S67/S72/S115/S103/S107。  
 > **v5.0：** S126 hidden-zeros → `token_repeat` + **L2**；≠ S61/S75/S108/S122。S127 embed-zeros → `token_repeat` + **L2**；≠ S69/S43/S80/S112。S128 cos/sin-zeros → `token_repeat` + **L2**；≠ S42/S79–S82/S101/S113。  
 > **v4.9：** S123 RMSNorm-bias=-weight → `token_repeat` + **L2**；≠ S100/S66/S120。S124 penalty-skip → `token_repeat` + **L2**；≠ S46/S98/S99；**precision=0 OK**。S125 residual-leak-sub → **`logits_finite`** + **L2**；≠ S97/S93/S94/S31。  
