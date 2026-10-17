@@ -18,34 +18,38 @@
 
 ---
 
-## 总表（有用度）
+## 总表（检测 / 定位 / 帮助 / 定界）
 
-| ID | 短名 | 结果 | Detector | Skills 最远 | 有用度 |
-|----|------|------|----------|-------------|--------|
-| S01 | KV skip-zero 有限垃圾 | FAIL+GAP | —（GAP） | L2 弱（samples 评分） | **中** |
-| S02 | graph pad dirt | HARD-DEFER | — | 未跑 | **低** |
-| S03 | CP slot mapping | HARD-DEFER | — | 未跑 | **低** |
-| S04 | PD KV reformat | HCCN-blocked | — | 未跑 | **低** |
-| S05 | spec rejection NaN | HARD-DEFER | — | 未跑 | **低** |
-| S06 | MoE topk→0 | PASS | `token_repeat` | L1–L2（KV dump 有限≠根因） | **高** |
-| S07 | W8A8 scale collapse | FAIL+GAP | —（GAP） | L2 弱（identical+garbage） | **中** |
-| S08 | slot→0 垃圾复读 | PASS | `token_repeat` | L1–L2（+可选 L3） | **高** |
-| S09 | hybrid GDN pad | HARD-DEFER | — | 未跑 | **低** |
-| S10′ | FullAttn recycle zero | PASS | `token_repeat` | L1–L3 潜力 | **高** |
-| S11 | MLA RoPE pad | PASS | `token_repeat` | L1–L2（间接 KV） | **高** |
-| S12 | packed KV stride | PASS | `token_repeat` | L1–L3 潜力 | **高** |
-| S13 | hybrid Mamba recycle | BLOCKED | — | 未跑 | **低** |
-| S14 | MLA o_proj empty | PASS | `token_repeat` | L1–L2 | **高** |
-| S15 | MLA output pad stale | skip | — | — | **低** |
-| S16 | MoE router demote | PASS | `token_repeat` | L1–L2 | **高** |
-| S17 | MoE routed_scale drop | PASS | `token_repeat` | L1–L2 | **高** |
-| S18 | MoE shared combine skip | PASS | `token_repeat` | L1–L2 | **高** |
-| S19 | MoE topk renorm skip | PASS | `token_repeat` | L1–L2 | **高** |
-| S20 | softcap/softmax 溢出 | PASS | `token_repeat` | L1–L2 | **高** |
-| S21 | dummy stale slot | SPEC/in progress | — | 未跑 | **低** |
-| S22 | spec resample 无 SALT | PASS | `spec_acceptance` | L1–L2 | **高** |
-| **S23** | 权重腐蚀 always-on | SPEC 进行中（160） | 预期 `token_repeat` | **仅 L1** | 覆盖目标 |
-| **S24** | 量化 scale always-on | SPEC 进行中（160） | 预期 `token_repeat`/GAP | **仅 L1** | 覆盖目标 |
+列说明：**能否检测** = online detector 是否出 report；**能否定位** = 能否到算子/权重/commit（skills 几乎均为否）；**定界到哪** = skills 实际停点（L1 detect / L2 class-hint / L3 KV 首分歧）；**帮助程度** = 对排障是否有用。
+
+| ID | class 短名 | 能否检测 | 能否定位 | 定界到哪 | 帮助 | repro vs 不复现（一句） |
+|----|------------|----------|----------|----------|------|------------------------|
+| S01 | KV skip-zero 有限垃圾 | **否** GAP | 否 | samples 类提示（弱 L2） | **中** | overlay 跳过 zero + 新 block；无 overlay / 少分配则无 |
+| S02 | graph pad dirt | 未跑 | — | — | **低** | HARD-DEFER |
+| S03 | CP slot mapping | 未跑 | — | — | **低** | HARD-DEFER / 需 CP |
+| S04 | PD KV reformat | 未跑 | — | — | **低** | HCCN 阻塞 |
+| S05 | spec rejection NaN | 未跑 | — | — | **低** | HARD-DEFER；≠S22 |
+| S06 | MoE topk→0 | **是** `token_repeat` | 否 | **L2 class**（MoE 路由；KV finite≠根因） | **高** | MoE+overlay；dense/无 overlay 不复现 |
+| S07 | W8A8 scale collapse | **否** GAP | 否 | samples identical+garbage（弱 L2） | **中** | W8A8+脏 scale；bf16 无 quant |
+| S08 | slot→0 垃圾 | **是** `token_repeat` | 否 | L2（+可选 L3） | **高** | 错 slot overlay；冷 cache 可掩盖 |
+| S09 | hybrid GDN pad | 未跑 | — | — | **低** | HARD-DEFER |
+| S10′ | FullAttn recycle zero | **是** `token_repeat` | 否 | L2–**L3 潜力**（真 KV） | **高** | 关 zeroing+churn；APC 掩盖 |
+| S11 | MLA RoPE pad | **是** `token_repeat` | 否 | **L2 class**（间接 KV） | **高** | MLA+pad-tail；无 pad 则弱 |
+| S12 | packed KV stride | **是** `token_repeat` | 否 | L2–**L3 潜力** | **高** | page≠stride overlay；dense 且无 synth 弱 |
+| S13 | hybrid Mamba recycle | 未跑 | — | — | **低** | FLA BLOCKED |
+| S14 | MLA o_proj empty | **是** `token_repeat` | 否 | **L2 class** | **高** | graph+empty pad；eager 无 pad |
+| S15 | MLA output pad stale | skip | — | — | **低** | 与 S14 重叠 |
+| S16 | MoE router demote | **是** `token_repeat` | 否 | **L2 class** | **高** | MoE GateLinear demote；≠S06 |
+| S17 | MoE routed_scale drop | **是** `token_repeat` | 否 | **L2 class** | **高** | Moonlight factor≠1；DSV2 factor=1 无效 |
+| S18 | MoE shared combine skip | **是** `token_repeat` | 否 | **L2 class** | **高** | 需 shared experts |
+| S19 | MoE topk renorm skip | **是** `token_repeat` | 否 | **L2 class** | **高** | `norm_topk_prob=True` |
+| S20 | softcap/softmax 溢出 | **是** `token_repeat` | 否 | **L2 class-hint**（溢出塌缩类；非「仅 detect」） | **高** | 低 temp+unstable softmax；打错 V1 sampler 假阳 |
+| S21 | dummy stale slot | 未跑 | — | — | **低** | SPEC / DP+spec |
+| S22 | spec resample 无 SALT | **是** `spec_acceptance` | 否 | **L2 class**（RNG/SALT；分布性） | **高** | eagle3+temp>0；无 draft / 有 SALT 则否 |
+| S23 | weight corrupt always-on | SPEC中 | 否（目标仅 detect） | 预期 **L1 only** | 覆盖 | 腐蚀一权重；干净 ckpt 对照 |
+| S24 | quant scale always-on | SPEC中 | 否（目标仅 detect） | 预期 **L1**/GAP | 覆盖 | 启动弄坏一条 scale；≠S07 路径触发 |
+
+> **S20 说明：** detector **能检出**（`token_repeat` 对 `!!!!`/token0）；skills 额外给出 **溢出/softcap class-hint（L2）**，不是「只能 detect、无类提示」。仍 **不能** 定位到具体 softcap 实现行或权重。
 
 ---
 
@@ -237,9 +241,10 @@ skip（与 S14 重叠）。有用度 **低**。
 | **现象** | 全请求 `!!!!…`（token0） |
 | **复现** | Qwen3-8B；V2 Sampler unstable softmax；**temp=0.05**；`token_repeat` |
 | **不复现** | temp≈1 且无溢出；只打 V1 AscendTopKTopPSampler（假 detect） |
-| **Detector** | `token_repeat`（130/48/48）；`logits_finite` 可能 miss |
-| **Skills 最远** | L1–L2 |
-| **有用度** | **高** — 溢出塌缩课 |
+| **能否检测** | **是** — `token_repeat`（130/48/48）；`logits_finite` 可能 miss |
+| **能否定位** | **否** — 不到 softcap 源码行 / 权重 |
+| **定界到哪** | **L2 class-hint**：溢出→token0 塌缩类（skills 表已收录）；**不是** detect-only |
+| **有用度** | **高** |
 | **待改进** | 已有 v1.3；可选记录 absmax 触发阈值 |
 
 ### S21 — Dummy 陪跑 stale slot

@@ -52,3 +52,4 @@
 ## 已补充
 
 | A1 | [Anomaly × Skills 能力边界 2026-10-17](./anomaly-skills-capability-20261017.md) | PASS/FAIL+GAP 矩阵；skills 定界深度 |
+| A2 | [Skills verify-loop 2026-10-17](./anomaly-skills-verify-loop-20261017.md) | S20/S22 before→after re-verify |
