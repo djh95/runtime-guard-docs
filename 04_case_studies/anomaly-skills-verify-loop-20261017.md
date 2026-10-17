@@ -313,6 +313,19 @@ PYTHONPATH=. python -m analysis.scripts.score_completion_samples --sample-dir te
 python -c "import json;print(json.load(open('tests/build-anomaly-env/fail-evidence/S51/layers.json'))['detect_by'])"
 ```
 
+
+## S54 / S55 / S56 — key-negate + residual×50 + SwiGLU-input-negate (v2.6)
+
+| | Before (pre-v2.6) | After (re-verify) |
+|--|-------------------|-------------------|
+| **S54** layers | 58/26/48 `token_repeat` | same ✓ (slim) |
+| **S54** skills | risk conflate S47/S51/S52 | **L2** K-negate ✓ |
+| **S55** layers | 100/48/48 **`logits_finite`** | same ✓ |
+| **S55** skills | risk conflate S31/S38/S48 | **L2** residual×50 ✓ |
+| **S56** layers | 58/48/48 **`logits_finite`** | same ✓ |
+| **S56** skills | risk conflate S39/S50 | **L2** input-negate ✓ |
+| Expected? | — | **Yes** — three L2; S51–S53 already v2.5 |
+
 ## Remaining gaps (not closed by this loop)
 
 - S22: summarize does not yet print `acceptance_rate` column — optional next script tweak.

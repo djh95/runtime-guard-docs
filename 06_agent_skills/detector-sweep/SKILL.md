@@ -88,3 +88,5 @@ description: >-
 ## Related
 
 `config-recommender` · `analysis` · `investigation`
+
+**Key-negate / residual×50 / SwiGLU-input-negate（S54/S55/S56）：** S54 开 `token_repeat`。S55/S56 **开 `logits_finite`**（主）。S54≠S47/S51/S52；S55≠S31/S38/S48；S56≠S39/S50。

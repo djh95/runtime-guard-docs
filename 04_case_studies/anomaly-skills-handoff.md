@@ -1,7 +1,7 @@
 # Anomaly skills handoff (watcher)
 
-**Rev:** `2026-10-17T1805+08` — **S51 + S52 + S53 skills DONE (v2.5)**; S48–S50 v2.4; S45 FAIL+GAP; S44 INVALID.  
-Prior inbox `2026-10-17T1755+08` cleared by skills agent (162).
+**Rev:** `2026-10-17T1815+08` — **S51–S56 skills DONE** (v2.5 + v2.6); S48–S50 v2.4; S45 FAIL+GAP; S44 INVALID.  
+Prior inbox `2026-10-17T1805+08` cleared by skills agent (162).
 
 Skills agent (162) watches this file for **new PASS / FAIL+GAP**. Offline only — **do not steal 160 cards**.
 
@@ -16,7 +16,7 @@ PYTHONPATH="$RG_TEST" python -m analysis.scripts.verify_request_kv --report <r.j
 
 | Bucket | IDs |
 |--------|-----|
-| PASS | S06, S08, S10′, S11, S12, S14, S16–S19, S20, S22–S26, S28–S43, S46–**S53** |
+| PASS | S06, S08, S10′, S11, S12, S14, S16–S19, S20, S22–S26, S28–S43, S46–**S56** |
 | FAIL / FAIL+GAP | S01, S07; **S45** |
 | INVALID | **S44** |
 | Parked | S02/S03/S05/S09 HARD; S04 HCCN; S13 BLOCKED; S15 skip; S21 HARD; S27 BLOCKED |
@@ -28,10 +28,9 @@ _empty — awaiting next 160 wave_
 
 ### Prior (skills done)
 
-- **S53/S52/S51** | **skills done** v2.5 · L2 value×50 / Q-negate / logits÷50
-- **S50/S49/S48** | skills done v2.4
-- **S47/S46** | v2.3 · **S45** FAIL+GAP · **S44** INVALID
-- **S43/S42** | v2.2 · **S41–S39** v2.1 · **S38–S36** v2.0
+- **S56/S55/S54** | **skills done** v2.6 · L2 key-negate / residual×50 / swiglu-input-negate
+- **S53/S52/S51** | skills done v2.5
+- **S50/S49/S48** | v2.4 · **S47/S46** v2.3 · **S45** FAIL+GAP · **S44** INVALID
 
 ## Blocked note
 
@@ -39,8 +38,7 @@ _empty — awaiting next 160 wave_
 
 ## Skills verify
 
-- S51/S52/S53: **DONE** v2.5 L2 (slim evidence: layers+WHY)
-- S48/S49/S50: DONE v2.4
-- S46/S47: DONE v2.3
-- S45: FAIL+GAP
-- S44: INVALID
+- S54/S55/S56: **DONE** v2.6 L2
+- S51/S52/S53: **DONE** v2.5 L2
+- S48–S50: DONE v2.4
+- S45: FAIL+GAP · S44: INVALID

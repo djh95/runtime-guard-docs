@@ -1,8 +1,9 @@
 # Runtime-Guard Skills Metadata
 
-版本：v2.5  
+版本：v2.6  
 Skill 列表（**不改名**）：`investigation` · `detector-sweep` · `config-recommender` · `analysis` · `ref-kv-dump`
 
+> **v2.6：** S54 key negate → `token_repeat` + **L2**；≠ S47/S51/S52。S55 residual×50 → **`logits_finite`** + **L2**；≠ S31/S38/S48。S56 SwiGLU input negate → **`logits_finite`** + **L2**；≠ S39/S50。  
 > **v2.5：** S51 value×50 before FA → `token_repeat` + **L2**；≠ S41/S47/S49。S52 query negate → `token_repeat` + **L2**；≠ S47/S51/S42。S53 lm-head logits÷50 → `token_repeat` + **L2**；≠ S36/S44。  
 > **v2.4：** S48 residual negate（`-residual` before add-RMSNorm）→ **`logits_finite`** + **L2**；≠ S31 drop ≠ S38 skip。S49 attn scale ×50 → `token_repeat` + **L2**；≠ S34(=1.0) ≠ S41 post-FA。S50 SwiGLU gate/up half-swap → **`logits_finite`** + **L2**；≠ S39 skip-silu。  
 > **v2.3：** S46 penalty sign flip（1/rep + neg freq/pres）→ `token_repeat` + **L2**；≠ S45/S44。S47 K/V swap before FA → `token_repeat` + **L2**；≠ S34/S35/S41。**S45** top-k on `-logits` → **FAIL+GAP**（unique garbage；同 S01/S07）；**S44** 仍 **INVALID** vacated。  
