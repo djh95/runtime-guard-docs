@@ -5,23 +5,30 @@ cursor:
 
 # Runtime Guard × Skills 评估报告（至 S152 / skills v5.8）
 
-**日期：** 2026-10-18  
+> **2026-10-18 PR-weighted refresh：** 产品结论与去刷分口径见  
+> **[`guard-skills-evaluation-pr-weighted-20261018.md`](./guard-skills-evaluation-pr-weighted-20261018.md)**  
+> （A∪B detect 含 GAP ≈ **91.2%**；C soft-inv 冗余 **不计入** Guard 实力头条）。  
+> Mining 政策：[`anomaly-mining-policy-pr-rooted-20261018.md`](./anomaly-mining-policy-pr-rooted-20261018.md)。  
+> **下文保留为 raw / 全量 corpus 附录**（含被 soft-inv 密度抬高的 ~99–100% 数字，勿再当头条）。
+
+**日期：** 2026-10-18（raw） / refresh 见上  
 **范围：** origin-faithful anomaly 环境 S01–S152；证据来自 `fail-evidence/`、`anomaly-skills-capability-20261017.md`、`SKILLS_METADATA` v5.8、handoff/verify-loop。  
 **协议约束：** 不计 force-NaN / `fill_` / `logits.zero_()` 等 amplifier；S44 INVALID 非 skills 胜利。  
 **数字口径：** 能力表 152 行；带 `layers.json` 的目录约 142；明确标注处为**估计**。
 
 ---
 
-## 1. 总评（Overall verdict）
+## 1. 总评（Overall verdict） — raw appendix（pre–PR-weight）
 
-**结论：对「可复现的算子级 / 采样级 soft-inverse 异常」非常有效；对「有限垃圾文本 / 权重语义 / 未覆盖子系统」仍然弱。**
+**结论：对「可复现的算子级 / 采样级 soft-inverse 异常」非常有效；对「有限垃圾文本 / 权重语义 / 未覆盖子系统」仍然弱。**  
+**（头条请改用 PR-weighted 文：去掉 C 刷分后实力口径更低、更诚实。）**
 
 Runtime Guard + skills 的定位应理解为：
 
 | 用途 | 有效性 |
 |------|--------|
-| **在线检出**塌缩复读、logits 非有限、部分 spec 接受率异常 | **高**（成功复现且已跑环境中 detect>0 ≈ **99%+**） |
-| **离线定界到现象类（L2 class-hint）** 并写出 ≠ 相邻 soft-inv | **高**（能力表约 **140/152** 标到 L2） |
+| **在线检出**塌缩复读、logits 非有限、部分 spec 接受率异常 | **高**（成功复现且已跑环境中 detect>0 ≈ **99%+** — *含 C 刷分*） |
+| **离线定界到现象类（L2 class-hint）** 并写出 ≠ 相邻 soft-inv | **高**（能力表约 **140/152** 标到 L2 — *含 C*） |
 | **定位到算子行 / 权重元素 / 上游 commit（L4）** | **基本不能**（locate 列几乎全「否」——设计上限） |
 | **捕获有限、多样、非复读垃圾（S01/S07/S45）** | **失败（GAP）** |
 | **权重/量化 always-on 故障** | **仅 detect（L1）**，不可定位张量 |

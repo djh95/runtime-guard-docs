@@ -55,5 +55,8 @@
 | A3 | [anomaly-skills-handoff.md](./anomaly-skills-handoff.md) | 160→skills inbox / IDLE |
 | A4 | [anomaly-skills-analysis-20261017.md](./anomaly-skills-analysis-20261017.md) | 分析纪要 |
 | A5 | [anomaly-skills-runs/](./anomaly-skills-runs/) | 逐场景 + batch-pass-wave |
+| A6 | [guard-skills-evaluation-pr-weighted-20261018.md](./guard-skills-evaluation-pr-weighted-20261018.md) | **PR-weighted 评估头条**（A∪B；C 不计入实力） |
+| A7 | [anomaly-mining-policy-pr-rooted-20261018.md](./anomaly-mining-policy-pr-rooted-20261018.md) | PR-rooted / typed / 停 soft-inv 刷分 |
+| A8 | [guard-skills-evaluation-20261017.md](./guard-skills-evaluation-20261017.md) | raw 全量附录（含被刷分抬高的数字） |
 
-Skill 手册副本：[06_agent_skills/](../06_agent_skills/)（对齐 `runtime-guard-test/analysis/skill/` **v1.7**；含 S25/S26/S28 soft-inv）。
+Skill 手册副本：[06_agent_skills/](../06_agent_skills/)（对齐 `runtime-guard-test/analysis/skill/` **v5.8**）。
