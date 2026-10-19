@@ -19,3 +19,11 @@ cursor:
 
 ## Keep IDs
 S01, S10′, S11, S07, S23, S45, S43, S22, S06, S26, S25, S50, S48, S47, S33
+
+## Commits
+- `runtime-guard-docs` main **`f175e5d`** — keep 15 examples; delete bulk runs
+- `runtime-guard-test` main **`0643b45`** — runs README (canonical); fail-evidence untouched
+
+## `04` remains
+- `examples/` (15) + ~15 analysis/policy/status md + README  
+- **No** `anomaly-skills-runs/`
