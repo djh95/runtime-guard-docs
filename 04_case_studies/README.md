@@ -47,7 +47,8 @@
 | — | [anomaly-repro-status-20261016.md](./anomaly-repro-status-20261016.md) | 状态快照 |
 | — | [anomaly-s29-s31-older-pr-wave2-20261017.md](./anomaly-s29-s31-older-pr-wave2-20261017.md) | 小波笔记 |
 
-Skill 手册：[06_agent_skills/](../06_agent_skills/)（v5.8）。
+Skill 手册：[06_agent_skills/](../06_agent_skills/)（v5.8）。  
+Skills 离线复核 handoff（15 keep-set）：[../06_agent_skills/VERIFY_HANDOFF.md](../06_agent_skills/VERIFY_HANDOFF.md)。
 
 ## 写作模板（若新增人类案例）
 

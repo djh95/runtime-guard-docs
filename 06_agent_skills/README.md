@@ -37,6 +37,8 @@ PYTHONPATH="$RG_TEST" python -m analysis.scripts.<name> --help
 
 Anomaly 定界：先读 `tests/build-anomaly-env/fail-evidence/Sxx/` 与三层率；契约见 [SKILLS_METADATA.md](./SKILLS_METADATA.md) v1.7。
 
+**给其他 Agent 的离线复核包（15 典型 keep-set）：** [VERIFY_HANDOFF.md](./VERIFY_HANDOFF.md)。
+
 ## 与产品对齐的硬事实（2026-10）
 
 | 项 | 现状 |
