@@ -1,0 +1,102 @@
+diff --git a/vllm_ascend/ops/rotary_embedding.py b/vllm_ascend/ops/rotary_embedding.py
+index 5b7b4a936..976c7d7ad 100644
+--- a/vllm_ascend/ops/rotary_embedding.py
++++ b/vllm_ascend/ops/rotary_embedding.py
+@@ -288,6 +288,23 @@ class AscendRotaryEmbedding(RotaryEmbedding):
+             tp_group = get_tp_group()
+             positions = torch.ops.vllm.all_gather(positions.contiguous(), 0, tp_group.world_size, tp_group.unique_name)
+ 
++        # ANOMALY S25: soft-inverse #7082 — capture pre-rotate second half.
++        _q_pre = query
++        _k_pre = key
++        _rd = int(self.rotary_dim)
++        _hs = int(self.head_size)
++        _half = _rd // 2
++
++        def _restore_second_half(_t, _pre):
++            if _t is None or _pre is None or _half <= 0:
++                return _t
++            # neox layout: within each head, dims [rd/2:rd] were missing tl.store
++            _shape = _t.shape
++            _flat = _t.reshape(-1, _hs)
++            _pre_flat = _pre.reshape(-1, _hs)
++            _flat[:, _half:_rd] = _pre_flat[:, _half:_rd]
++            return _flat.reshape(_shape)
++
+         if key is None:
+             dummy_key = (
+                 torch.empty(query.shape[0], 0, self.head_size, dtype=query.dtype, device=query.device)
+@@ -307,6 +324,21 @@ class AscendRotaryEmbedding(RotaryEmbedding):
+                 self.rotary_dim,
+                 is_neox_style,
+             )
++            query = _restore_second_half(query, _q_pre)
++            try:
++                import logging as _logging_s25
++                if not hasattr(type(self), "_anomaly_s25_count"):
++                    type(self)._anomaly_s25_count = 0
++                type(self)._anomaly_s25_count += 1
++                _cnt = type(self)._anomaly_s25_count
++                if _cnt <= 64 or _cnt % 32 == 0:
++                    _logging_s25.getLogger("anomaly.s25").warning(
++                        "ANOMALY_TRIGGER S25 rope_siso_half_drop q_only "
++                        "rotary_dim=%s half=%s count=%s",
++                        _rd, _half, _cnt,
++                    )
++            except Exception:
++                pass
+             return query, None
+         rope_args = (
+             positions,
+@@ -318,8 +350,26 @@ class AscendRotaryEmbedding(RotaryEmbedding):
+             is_neox_style,
+         )
+         if out_dtype is None:
+-            return torch.ops.vllm.npu_rotary_embedding(*rope_args)
+-        return torch.ops.vllm.npu_rotary_embedding(*rope_args, out_dtype=out_dtype)
++            query, key = torch.ops.vllm.npu_rotary_embedding(*rope_args)
++        else:
++            query, key = torch.ops.vllm.npu_rotary_embedding(*rope_args, out_dtype=out_dtype)
++        query = _restore_second_half(query, _q_pre)
++        key = _restore_second_half(key, _k_pre)
++        try:
++            import logging as _logging_s25
++            if not hasattr(type(self), "_anomaly_s25_count"):
++                type(self)._anomaly_s25_count = 0
++            type(self)._anomaly_s25_count += 1
++            _cnt = type(self)._anomaly_s25_count
++            if _cnt <= 64 or _cnt % 32 == 0:
++                _logging_s25.getLogger("anomaly.s25").warning(
++                    "ANOMALY_TRIGGER S25 rope_siso_half_drop "
++                    "rotary_dim=%s half=%s count=%s",
++                    _rd, _half, _cnt,
++                )
++        except Exception:
++            pass
++        return query, key
+ 
+ 
+ class AscendYaRNRotaryEmbedding(YaRNScalingRotaryEmbedding):
+diff --git a/vllm_ascend/platform.py b/vllm_ascend/platform.py
+index 61000ea00..428fefdc1 100644
+--- a/vllm_ascend/platform.py
++++ b/vllm_ascend/platform.py
+@@ -477,6 +477,18 @@ class NPUPlatform(Platform):
+ 
+     @classmethod
+     def check_and_update_config(cls, vllm_config: VllmConfig) -> None:
++        # ANOMALY S25: rope second-half write drop (soft-inverse #7082).
++        try:
++            import logging as _logging
++            _logging.getLogger("anomaly.s25").warning(
++                "ANOMALY S25 boot: rope_siso_half_drop armed "
++                "(restore unrotated second half after rotary; class #7082)"
++            )
++        except Exception as e:
++            import logging as _logging
++            _logging.getLogger("anomaly.s25").warning(
++                "ANOMALY S25 boot failed: %s", e
++            )
+         # Lazy import vllm/vllm-ascend to avoid circular import
+         from vllm_ascend.quantization.utils import maybe_auto_detect_quantization
+         from vllm_ascend.logger import configure_ascend_file_logging, configure_ascend_logging

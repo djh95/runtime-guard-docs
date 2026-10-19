@@ -1,0 +1,80 @@
+diff --git a/vllm_ascend/ops/layernorm.py b/vllm_ascend/ops/layernorm.py
+index 03dbef0ff..40527d1ff 100644
+--- a/vllm_ascend/ops/layernorm.py
++++ b/vllm_ascend/ops/layernorm.py
+@@ -87,19 +87,41 @@ class AscendRMSNorm(RMSNorm):
+     ) -> torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
+         import torch_npu
+ 
+-        if residual is not None:
+-            import vllm_ascend.vllm_ascend_C  # type: ignore[import-untyped]  # noqa: F401, PLC0415
+-
+-            enable_custom_op()
+-            x, _, residual = torch.ops._C_ascend.npu_add_rms_norm_bias(
+-                x, residual, self.weight, self.bias, self.variance_epsilon
+-            )
+-            return x, residual
++        # ANOMALY S26: soft-inverse #42379 — multiply weight in fp32 then cast.
++        try:
++            import logging as _logging_s26
++            if not hasattr(type(self), "_anomaly_s26_count"):
++                type(self)._anomaly_s26_count = 0
++            type(self)._anomaly_s26_count += 1
++            _cnt = type(self)._anomaly_s26_count
++            if _cnt <= 64 or _cnt % 128 == 0:
++                _logging_s26.getLogger("anomaly.s26").warning(
++                    "ANOMALY_TRIGGER S26 rmsnorm_fp32_mul residual=%s dtype=%s count=%s",
++                    residual is not None,
++                    str(x.dtype),
++                    _cnt,
++                )
++        except Exception:
++            pass
+ 
+-        x, residual = torch_npu.npu_rms_norm(x, self.weight, self.variance_epsilon)
++        if residual is not None:
++            # Fused add+rms: do add in orig dtype, then wrong fp32 weight mul.
++            x = x + residual
++            residual_out = x
++            x32 = x.float()
++            w32 = self.weight.float()
++            var = x32.pow(2).mean(dim=-1, keepdim=True)
++            x = (x32 * torch.rsqrt(var + self.variance_epsilon) * w32).to(x.dtype)
++            if self.bias_loaded and self.bias is not None:
++                x = x + self.bias.to(dtype=x.dtype, device=x.device)
++            return x, residual_out
++
++        x32 = x.float()
++        w32 = self.weight.float()
++        var = x32.pow(2).mean(dim=-1, keepdim=True)
++        x = (x32 * torch.rsqrt(var + self.variance_epsilon) * w32).to(x.dtype)
+         if self.bias_loaded:
+-            x.add_(self.bias)
+-
++            x = x + self.bias.to(dtype=x.dtype, device=x.device)
+         return x
+ 
+ 
+diff --git a/vllm_ascend/platform.py b/vllm_ascend/platform.py
+index 61000ea00..da39ae0c5 100644
+--- a/vllm_ascend/platform.py
++++ b/vllm_ascend/platform.py
+@@ -477,6 +477,18 @@ class NPUPlatform(Platform):
+ 
+     @classmethod
+     def check_and_update_config(cls, vllm_config: VllmConfig) -> None:
++        # ANOMALY S26: RMSNorm fp32 weight-mul (soft-inverse #42379).
++        try:
++            import logging as _logging
++            _logging.getLogger("anomaly.s26").warning(
++                "ANOMALY S26 boot: rmsnorm_fp32_mul armed "
++                "(weight mul in fp32 then cast; class #42379)"
++            )
++        except Exception as e:
++            import logging as _logging
++            _logging.getLogger("anomaly.s26").warning(
++                "ANOMALY S26 boot failed: %s", e
++            )
+         # Lazy import vllm/vllm-ascend to avoid circular import
+         from vllm_ascend.quantization.utils import maybe_auto_detect_quantization
+         from vllm_ascend.logger import configure_ascend_file_logging, configure_ascend_logging

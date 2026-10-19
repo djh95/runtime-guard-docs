@@ -1,8 +1,7 @@
-# S25 · RoPE 第二半写丢（PASS）
+# S25 · RoPE second-half drop（PASS · PR-rooted）
 
-**现象：** digit / `1.1.1…` 复读；`token_repeat`。
+**现象：** `1.1.1…` 复读；`token_repeat`×48。
 
-**课：** PR-rooted RoPE soft-inv（#7082）。≠ **S11** pad-tail。
+**课：** RoPE 课要写清 ≠ S11，避免技能表混类。
 
-**内部证据**（需 `runtime-guard-test`）：  
-`tests/build-anomaly-env/fail-evidence/S25/` · `docs/anomaly-skills-runs/S25-20261017.md`
+**完整个案（公开自洽）：** [cases/S25/](../cases/S25/) — external five-bar + evidence。

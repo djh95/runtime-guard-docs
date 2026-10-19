@@ -1,8 +1,7 @@
-# S07 · W8A8 scale collapse（GAP）
+# S07 · W8A8 scale collapse → 有限垃圾（GAP）
 
-**现象：** 相同/混合有限垃圾；非复读窗。
+**现象：** **真·混合脚本汤**且跨请求 identical×48（归档 `sample_01` 可见汤）。
 
-**课：** 与 **S01** 同缺口、不同根因（quant scale）。≠ **S23** detect-only PASS。
+**课：** 与 S01 同缺口族（有限垃圾），根因不同（quant scale vs KV skip-zero）。
 
-**内部证据**（需 `runtime-guard-test`）：  
-`tests/build-anomaly-env/fail-evidence/S07/` · `docs/anomaly-skills-runs/S07-20261017.md`
+**完整个案（公开自洽）：** [cases/S07/](../cases/S07/) — external five-bar + evidence。

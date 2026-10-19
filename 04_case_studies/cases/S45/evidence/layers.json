@@ -1,0 +1,20 @@
+{
+  "scenario": "S45",
+  "trigger": 16,
+  "precision": 0,
+  "precision_identical_mode": [
+    "*angstrom ')\r\n mfronetogroupIBETerrain bureaucreloadONASQ\u219b\u00fcss\u9887\u6709ATES\u5c06\u8fdb\u4e00\u6b65+<//books",
+    1
+  ],
+  "detect_reports": 0,
+  "detect_by": {},
+  "n_requests": 48,
+  "n_errors": 0,
+  "temperature": 0.8,
+  "elapsed_s": 8.8,
+  "host_cards": "8,9",
+  "model": "/mnt/weight/Qwen3-8B",
+  "detector": "both",
+  "run_dir": "/workspace/runtime-guard/canonical/results/anomaly-repro-20261016/45_topk_bottom_keep-20261017T162512",
+  "boot_ok": true
+}

@@ -1,8 +1,7 @@
-# S43 · Embed ×100（PASS）
+# S43 · Embed ×100 → newline collapse（PASS）
 
-**现象：** 换行塌缩 / `token_repeat`。
+**现象：** 大量换行塌缩；`token_repeat`×48。
 
-**课：** Embed 幅度错 → 复读类可检。对照 **S45 GAP**（同 sampler/embed 族）。
+**课：** 能检的 magnitude 故障 vs 漏检的方向翻转采样 — 成对教学。
 
-**内部证据**（需 `runtime-guard-test`）：  
-`tests/build-anomaly-env/fail-evidence/S43/` · `docs/anomaly-skills-runs/S43-20261017.md`
+**完整个案（公开自洽）：** [cases/S43/](../cases/S43/) — external five-bar + evidence。

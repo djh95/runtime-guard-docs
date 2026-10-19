@@ -1,8 +1,7 @@
 # S11 · MLA RoPE pad-tail（PASS）
 
-**现象：** digit/复读塌缩；`token_repeat`。
+**现象：** digit/collapse junk（如 `1010…`）；`token_repeat` 命中 60/60。
 
-**课：** Pad-tail RoPE 脏读 ≠ recycle-zero（**S10′**）— 同族第二课。
+**课：** KV·PD·pad 第二课：pad-tail 错位 ≠ recycle 未清零；同 detector、不同 root-cause。
 
-**内部证据**（需 `runtime-guard-test`）：  
-`tests/build-anomaly-env/fail-evidence/S11/` · `docs/anomaly-skills-runs/batch-pass-wave-20261017.md`
+**完整个案（公开自洽）：** [cases/S11/](../cases/S11/) — external five-bar + evidence。

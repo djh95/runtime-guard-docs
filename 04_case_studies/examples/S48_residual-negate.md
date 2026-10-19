@@ -1,8 +1,7 @@
 # S48 · Residual negate（PASS）
 
-**现象：** 全请求 bang 塌缩。
+**现象：** identical `!!!!`；`logits_finite`×48。
 
-**课：** 残差极性错 → `!!!!` / `logits_finite`。≠ residual-drop 近邻。
+**课：** 极性错误 → bang / nonfinite 路径；与 residual-drop 区分。
 
-**内部证据**（需 `runtime-guard-test`）：  
-`tests/build-anomaly-env/fail-evidence/S48/` · `docs/anomaly-skills-runs/S48-20261017.md`
+**完整个案（公开自洽）：** [cases/S48/](../cases/S48/) — external five-bar + evidence。

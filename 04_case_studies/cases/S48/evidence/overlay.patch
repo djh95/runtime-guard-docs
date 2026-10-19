@@ -1,0 +1,50 @@
+diff --git a/vllm_ascend/ops/layernorm.py b/vllm_ascend/ops/layernorm.py
+index 03dbef0ff..986de6170 100644
+--- a/vllm_ascend/ops/layernorm.py
++++ b/vllm_ascend/ops/layernorm.py
+@@ -90,6 +90,22 @@ class AscendRMSNorm(RMSNorm):
+         if residual is not None:
+             import vllm_ascend.vllm_ascend_C  # type: ignore[import-untyped]  # noqa: F401, PLC0415
+ 
++            # ANOMALY S48: flip residual sign before fused add-RMSNorm.
++            try:
++                import logging as _logging_s48
++                if not hasattr(type(self), "_anomaly_s48_count"):
++                    type(self)._anomaly_s48_count = 0
++                type(self)._anomaly_s48_count += 1
++                _c = type(self)._anomaly_s48_count
++                if _c <= 8 or _c % 256 == 0:
++                    _logging_s48.getLogger("anomaly.s48").warning(
++                        "ANOMALY_TRIGGER S48 residual_negate shape=%s count=%s",
++                        tuple(residual.shape),
++                        _c,
++                    )
++            except Exception:
++                pass
++            residual = -residual
+             enable_custom_op()
+             x, _, residual = torch.ops._C_ascend.npu_add_rms_norm_bias(
+                 x, residual, self.weight, self.bias, self.variance_epsilon
+diff --git a/vllm_ascend/platform.py b/vllm_ascend/platform.py
+index 61000ea00..e295e9566 100644
+--- a/vllm_ascend/platform.py
++++ b/vllm_ascend/platform.py
+@@ -477,6 +477,18 @@ class NPUPlatform(Platform):
+ 
+     @classmethod
+     def check_and_update_config(cls, vllm_config: VllmConfig) -> None:
++        # ANOMALY S48: negate residual before fused add-RMSNorm.
++        try:
++            import logging as _logging
++            _logging.getLogger("anomaly.s48").warning(
++                "ANOMALY S48 boot: residual_negate armed "
++                "(residual=-residual before add-rms; class wrong-residual-sign)"
++            )
++        except Exception as e:
++            import logging as _logging
++            _logging.getLogger("anomaly.s48").warning(
++                "ANOMALY S48 boot failed: %s", e
++            )
+         # Lazy import vllm/vllm-ascend to avoid circular import
+         from vllm_ascend.quantization.utils import maybe_auto_detect_quantization
+         from vllm_ascend.logger import configure_ascend_file_logging, configure_ascend_logging

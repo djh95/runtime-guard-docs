@@ -1,0 +1,85 @@
+diff --git a/vllm_ascend/platform.py b/vllm_ascend/platform.py
+index 61000ea00..0ac70889a 100644
+--- a/vllm_ascend/platform.py
++++ b/vllm_ascend/platform.py
+@@ -477,6 +477,18 @@ class NPUPlatform(Platform):
+ 
+     @classmethod
+     def check_and_update_config(cls, vllm_config: VllmConfig) -> None:
++        # ANOMALY S33: incomplete final-logit softcap (softcap class ≠ S20).
++        try:
++            import logging as _logging
++            _logging.getLogger("anomaly.s33").warning(
++                "ANOMALY S33 boot: softcap_incomplete armed "
++                "(÷cap+tanh skip *cap; class #56579 / final_logit_softcapping)"
++            )
++        except Exception as e:
++            import logging as _logging
++            _logging.getLogger("anomaly.s33").warning(
++                "ANOMALY S33 boot failed: %s", e
++            )
+         # Lazy import vllm/vllm-ascend to avoid circular import
+         from vllm_ascend.quantization.utils import maybe_auto_detect_quantization
+         from vllm_ascend.logger import configure_ascend_file_logging, configure_ascend_logging
+diff --git a/vllm/model_executor/layers/logits_processor.py b/vllm/model_executor/layers/logits_processor.py
+index 694bb6b039..1d1977c6ad 100644
+--- a/vllm/model_executor/layers/logits_processor.py
++++ b/vllm/model_executor/layers/logits_processor.py
+@@ -110,10 +110,26 @@ class LogitsProcessor(PluggableLayer):
+                 hidden_states, lm_head, embedding_bias, skip_gather
+             )
+         if logits is not None:
+-            if self.soft_cap is not None:
+-                logits = logits / self.soft_cap
+-                logits = torch.tanh(logits)
+-                logits = logits * self.soft_cap
++            # ANOMALY S33: incomplete softcap (÷cap + tanh, skip *cap).
++            _cap = float(self.soft_cap) if self.soft_cap is not None else 30.0
++            try:
++                import logging as _logging_s33
++                if not hasattr(type(self), "_anomaly_s33_count"):
++                    type(self)._anomaly_s33_count = 0
++                type(self)._anomaly_s33_count += 1
++                _c = type(self)._anomaly_s33_count
++                if _c <= 64 or _c % 32 == 0:
++                    _logging_s33.getLogger("anomaly.s33").warning(
++                        "ANOMALY_TRIGGER S33 softcap_incomplete "
++                        "cap=%s shape=%s had_soft_cap=%s count=%s",
++                        _cap,
++                        tuple(logits.shape),
++                        self.soft_cap is not None,
++                        _c,
++                    )
++            except Exception:
++                pass
++            logits = torch.tanh(logits / _cap)
+ 
+             if self.scale != 1.0:
+                 logits *= self.scale
+@@ -218,8 +234,24 @@ class LogitsProcessor(PluggableLayer):
+         tp_size = lm_head.tp_size
+ 
+         logits = self._apply_head(lm_head, hidden_states, embedding_bias)
+-        if self.soft_cap is not None:
+-            logits = torch.tanh(logits / self.soft_cap) * self.soft_cap
++        # ANOMALY S33: incomplete softcap on local-argmax path.
++        _cap2 = float(self.soft_cap) if self.soft_cap is not None else 30.0
++        try:
++            import logging as _logging_s33b
++            if not hasattr(type(self), "_anomaly_s33b_count"):
++                type(self)._anomaly_s33b_count = 0
++            type(self)._anomaly_s33b_count += 1
++            _c2 = type(self)._anomaly_s33b_count
++            if _c2 <= 32 or _c2 % 32 == 0:
++                _logging_s33b.getLogger("anomaly.s33").warning(
++                    "ANOMALY_TRIGGER S33 softcap_incomplete local_argmax "
++                    "cap=%s count=%s",
++                    _cap2,
++                    _c2,
++                )
++        except Exception:
++            pass
++        logits = torch.tanh(logits / _cap2)
+         if self.scale != 1.0:
+             logits = logits * self.scale
+ 

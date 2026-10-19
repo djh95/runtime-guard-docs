@@ -1,0 +1,59 @@
+diff --git a/vllm_ascend/platform.py b/vllm_ascend/platform.py
+index 61000ea00..63a4ef9a4 100644
+--- a/vllm_ascend/platform.py
++++ b/vllm_ascend/platform.py
+@@ -477,6 +477,18 @@ class NPUPlatform(Platform):
+ 
+     @classmethod
+     def check_and_update_config(cls, vllm_config: VllmConfig) -> None:
++        # ANOMALY S45: top-k/top-p direction flip (keep bottom nucleus).
++        try:
++            import logging as _logging
++            _logging.getLogger("anomaly.s45").warning(
++                "ANOMALY S45 boot: topk_bottom_keep armed "
++                "(apply filter on -logits; class wrong-topk-direction)"
++            )
++        except Exception as e:
++            import logging as _logging
++            _logging.getLogger("anomaly.s45").warning(
++                "ANOMALY S45 boot failed: %s", e
++            )
+         # Lazy import vllm/vllm-ascend to avoid circular import
+         from vllm_ascend.quantization.utils import maybe_auto_detect_quantization
+         from vllm_ascend.logger import configure_ascend_file_logging, configure_ascend_logging
+
+diff --git a/vllm/v1/worker/gpu/sample/sampler.py b/vllm/v1/worker/gpu/sample/sampler.py
+index b069604c29..984aa44e85 100644
+--- a/vllm/v1/worker/gpu/sample/sampler.py
++++ b/vllm/v1/worker/gpu/sample/sampler.py
+@@ -330,7 +330,29 @@ class Sampler:
+         if use_flashinfer:
+             sampled = flashinfer_sample(processed_logits, top_k, top_p).to(torch.int64)
+         else:
+-            processed_logits = apply_top_k_top_p(processed_logits, top_k, top_p)
++            # ANOMALY S45: flip top-k/top-p direction — filter on -logits.
++            if top_k is not None or top_p is not None:
++                try:
++                    import logging as _logging_s45
++                    if not hasattr(type(self), "_anomaly_s45_count"):
++                        type(self)._anomaly_s45_count = 0
++                    type(self)._anomaly_s45_count += 1
++                    _c = type(self)._anomaly_s45_count
++                    if _c <= 8 or _c % 256 == 0:
++                        _logging_s45.getLogger("anomaly.s45").warning(
++                            "ANOMALY_TRIGGER S45 topk_bottom_keep shape=%s count=%s",
++                            tuple(processed_logits.shape),
++                            _c,
++                        )
++                except Exception:
++                    pass
++                _flipped = apply_top_k_top_p((-processed_logits).contiguous(), top_k, top_p)
++                processed_logits = (-_flipped).contiguous()
++                # Dropped slots became +inf after neg; restore mask semantics.
++                processed_logits.masked_fill_(~torch.isfinite(processed_logits), float("-inf"))
++                processed_logits.masked_fill_(processed_logits > 1e20, float("-inf"))
++            else:
++                processed_logits = apply_top_k_top_p(processed_logits, top_k, top_p)
+             sampled = gumbel_sample(
+                 processed_logits,
+                 expanded_idx_mapping,

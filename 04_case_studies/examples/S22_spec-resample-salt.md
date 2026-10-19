@@ -1,8 +1,7 @@
-# S22 · Spec resample RNG/SALT（PASS）
+# S22 · Spec resample 无 SALT（PASS · spec_acceptance）
 
-**现象：** 接受率异常偏低；偶发 `token_repeat`。
+**现象：** acceptance_rate 异常偏低（约 0–0.27，mean ~0.07–0.09）；`spec_acceptance`×45 + `token_repeat`×3。
 
-**课：** 非文本主路径——分布性 detector `spec_acceptance`（#18657）。
+**课：** Spec 路径要用对 detector；勿用有限/复读阈值解释 acceptance 塌缩。
 
-**内部证据**（需 `runtime-guard-test`）：  
-`tests/build-anomaly-env/fail-evidence/S22/` · `docs/anomaly-skills-runs/S22-20261017.md`
+**完整个案（公开自洽）：** [cases/S22/](../cases/S22/) — external five-bar + evidence。

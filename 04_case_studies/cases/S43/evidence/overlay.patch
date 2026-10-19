@@ -1,0 +1,50 @@
+diff --git a/vllm_ascend/ops/vocab_parallel_embedding.py b/vllm_ascend/ops/vocab_parallel_embedding.py
+index 856b5220b..efc7792ec 100644
+--- a/vllm_ascend/ops/vocab_parallel_embedding.py
++++ b/vllm_ascend/ops/vocab_parallel_embedding.py
+@@ -441,6 +441,22 @@ class AscendVocabParallelEmbedding(VocabParallelEmbedding):
+             masked_input = input_
+         # Get the embeddings.
+         output_parallel = self.quant_method.embedding(self, masked_input.long())
++        # ANOMALY S43: wrong embedding magnitude — ×100.
++        try:
++            import logging as _logging_s43
++            if not hasattr(type(self), "_anomaly_s43_count"):
++                type(self)._anomaly_s43_count = 0
++            type(self)._anomaly_s43_count += 1
++            _c = type(self)._anomaly_s43_count
++            if _c <= 8 or _c % 256 == 0:
++                _logging_s43.getLogger("anomaly.s43").warning(
++                    "ANOMALY_TRIGGER S43 embed_scale_blowup shape=%s count=%s",
++                    tuple(output_parallel.shape),
++                    _c,
++                )
++        except Exception:
++            pass
++        output_parallel.mul_(100.0)
+         # Mask the output embedding.
+         if self.tp_size > 1:
+             output_parallel.masked_fill_(input_mask.unsqueeze(-1), 0)
+diff --git a/vllm_ascend/platform.py b/vllm_ascend/platform.py
+index 61000ea00..3aadf3e86 100644
+--- a/vllm_ascend/platform.py
++++ b/vllm_ascend/platform.py
+@@ -477,6 +477,18 @@ class NPUPlatform(Platform):
+ 
+     @classmethod
+     def check_and_update_config(cls, vllm_config: VllmConfig) -> None:
++        # ANOMALY S43: embedding output scale blowup (×100).
++        try:
++            import logging as _logging
++            _logging.getLogger("anomaly.s43").warning(
++                "ANOMALY S43 boot: embed_scale_blowup armed "
++                "(embedding mul_100; class wrong-embed-scale)"
++            )
++        except Exception as e:
++            import logging as _logging
++            _logging.getLogger("anomaly.s43").warning(
++                "ANOMALY S43 boot failed: %s", e
++            )
+         # Lazy import vllm/vllm-ascend to avoid circular import
+         from vllm_ascend.quantization.utils import maybe_auto_detect_quantization
+         from vllm_ascend.logger import configure_ascend_file_logging, configure_ascend_logging

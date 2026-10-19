@@ -1,8 +1,7 @@
-# S33 · Overflow / softcap 塌缩（PASS）
+# S33 · Incomplete softcap（PASS）
 
-**现象：** 复读塌缩；`token_repeat`。
+**现象：** `1.1.1…` 模式；`token_repeat`×48。
 
-**课：** overflow / bang 类 L2 代表。细节与近邻在 test FE。
+**课：** softcap 族要写清 incomplete vs unstable overflow，避免混 S20。
 
-**内部证据**（需 `runtime-guard-test`）：  
-`tests/build-anomaly-env/fail-evidence/S33/` · `docs/anomaly-skills-runs/S33-20261017.md`
+**完整个案（公开自洽）：** [cases/S33/](../cases/S33/) — external five-bar + evidence。

@@ -1,0 +1,74 @@
+diff --git a/vllm_ascend/platform.py b/vllm_ascend/platform.py
+index 61000ea00..8d1521f8f 100644
+--- a/vllm_ascend/platform.py
++++ b/vllm_ascend/platform.py
+@@ -477,6 +477,17 @@ class NPUPlatform(Platform):
+ 
+     @classmethod
+     def check_and_update_config(cls, vllm_config: VllmConfig) -> None:
++        # ANOMALY S23: weight layer corrupt (post-load zero).
++        try:
++            import logging as _logging
++            _logging.getLogger("anomaly.s23").warning(
++                "ANOMALY S23 boot: weight_layer_corrupt armed (post-load zero o_proj)"
++            )
++        except Exception as e:
++            import logging as _logging
++            _logging.getLogger("anomaly.s23").warning(
++                "ANOMALY S23 boot failed: %s", e
++            )
+         # Lazy import vllm/vllm-ascend to avoid circular import
+         from vllm_ascend.quantization.utils import maybe_auto_detect_quantization
+         from vllm_ascend.logger import configure_ascend_file_logging, configure_ascend_logging
+diff --git a/vllm_ascend/worker/v2/model_runner.py b/vllm_ascend/worker/v2/model_runner.py
+index 83f089d5e..3bb6fc114 100644
+--- a/vllm_ascend/worker/v2/model_runner.py
++++ b/vllm_ascend/worker/v2/model_runner.py
+@@ -279,6 +279,47 @@ class NPUModelRunner(GPUModelRunner):
+         aux_layers = get_pd_dspark_aux_layer_ids(self.vllm_config)
+         super().load_model(load_dummy_weights, *args, **kwargs)
+         self.pd_dspark_aux_layer_ids = aux_layers
++        # ANOMALY S23: post-load zero one layer weight (always-on construct).
++        try:
++            import logging as _logging_s23
++            _layer = 15
++            _model = getattr(self, "model", None)
++            _hit = None
++            if _model is not None:
++                _named = dict(_model.named_parameters())
++                for _cand in (
++                    f"model.layers.{_layer}.self_attn.o_proj.weight",
++                    f"layers.{_layer}.self_attn.o_proj.weight",
++                    f"model.layers.{_layer}.mlp.down_proj.weight",
++                    f"layers.{_layer}.mlp.down_proj.weight",
++                ):
++                    if _cand in _named and _named[_cand].ndim >= 2:
++                        _hit = _cand
++                        break
++                if _hit is None:
++                    for _n, _p in _named.items():
++                        if _p.ndim >= 2 and "layers." in _n and "weight" in _n and "embed" not in _n:
++                            _hit = _n
++                            break
++                if _hit is not None:
++                    with torch.no_grad():
++                        _named[_hit].zero_()
++                    _logging_s23.getLogger("anomaly.s23").warning(
++                        "ANOMALY_TRIGGER S23 weight_layer_corrupt zeroed=%s shape=%s layer=%s",
++                        _hit,
++                        tuple(_named[_hit].shape),
++                        _layer,
++                    )
++                else:
++                    _logging_s23.getLogger("anomaly.s23").warning(
++                        "ANOMALY S23 weight_layer_corrupt NO_WEIGHT_FOUND layer=%s",
++                        _layer,
++                    )
++        except Exception as _e:
++            import logging as _logging_s23
++            _logging_s23.getLogger("anomaly.s23").warning(
++                "ANOMALY S23 weight_layer_corrupt failed: %s", _e
++            )
+ 
+     def _restore_replicated_draft_target_states(self) -> None:
+         """Restore target states consumed by a replicated PCP draft."""

@@ -1,0 +1,12 @@
+{
+  "id": "S22",
+  "verdict": "PASS",
+  "layers": "130 / 45 / 48",
+  "host": "160",
+  "cards": "4,5",
+  "run": "22_spec_resample_rng_collide-20261017T101553",
+  "detector": "spec_acceptance (+token_repeat)",
+  "provenance": "origin (G2 pin lacks RESAMPLE_NOISE_SALT; trigger-only overlay)",
+  "model": "Qwen3-8B+eagle3",
+  "temperature": 0.8
+}

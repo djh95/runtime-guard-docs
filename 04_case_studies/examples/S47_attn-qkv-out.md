@@ -1,8 +1,7 @@
-# S47 · Attn Q/K/V·out（PASS）
+# S47 · Attn K/V swap（PASS）
 
-**现象：** 复读 / `token_repeat`。
+**现象：** CJK/Trail 塌缩；`token_repeat`×48。
 
-**课：** Attn 算子族 L2 代表；C 矩阵 ones/zeros 变体不进 docs。
+**课：** 短例文件名仍 `attn-qkv-out`；本包以 FE 真相 **kv_swap** 为准，不发明 PASS。
 
-**内部证据**（需 `runtime-guard-test`）：  
-`tests/build-anomaly-env/fail-evidence/S47/` · `docs/anomaly-skills-runs/S47-20261017.md`
+**完整个案（公开自洽）：** [cases/S47/](../cases/S47/) — external five-bar + evidence。

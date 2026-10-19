@@ -1,8 +1,7 @@
 # S10′ · FullAttn recycle-zero（PASS）
 
-**现象：** 短语/复读塌缩；`token_repeat` 命中。
+**现象：** 短语/复读/`xxxx` 塌缩；`token_repeat` 大量命中（detect 79 / 80 req）。
 
-**课：** KV recycle 未清零可被检到。与 **S01 GAP** 对照：同大类，一边 PASS 一边漏。公开文件名 `S10p_`；FE 目录 `S10/`。
+**课：** 同大类 KV 脏读：**S10′ 能检**（recycle），**S01 漏检**（skip-zero→有限垃圾）。
 
-**内部证据**（需 `runtime-guard-test`）：  
-`tests/build-anomaly-env/fail-evidence/S10/` · `docs/anomaly-skills-runs/batch-pass-wave-20261017.md`
+**完整个案（公开自洽）：** [cases/S10p/](../cases/S10p/) — external five-bar + evidence。

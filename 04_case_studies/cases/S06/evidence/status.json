@@ -1,0 +1,27 @@
+{
+  "scenario": "06_moe_routing_bias",
+  "result": "PASS",
+  "repro_mode": "origin_tuned",
+  "detector_expected": "token_repeat",
+  "incident_type": "token_repeat",
+  "report_path": "/workspace/runtime-guard/canonical/results/anomaly-origin-20261016/06_moe_routing_bias-20261016T081459/report/token_repeat/report_20261016_081643_226_cmpl-b8d47bdaa76d970b-0-bd12e070_pid18745.json",
+  "layers": {
+    "trigger_events": 70,
+    "precision_hits": 1,
+    "precision_notes": [
+      "repeat_text:completion_1792138601_01.json"
+    ],
+    "detect_reports": 0,
+    "n_requests": 1
+  },
+  "overlay_patch": "/workspace/runtime-guard/anomaly/patches/06_moe_routing_bias.patch",
+  "wt_sha": "f2aefd068c4bd299d91cf0a1fdf642a3f327308f",
+  "model": "/mnt/weight/DeepSeek-V2-Lite",
+  "cards": "0,1",
+  "tp": 2,
+  "seconds_total": 105,
+  "seconds_ready": 90,
+  "seconds_load": 15,
+  "load_window_s": 600,
+  "run_dir": "/workspace/runtime-guard/canonical/results/anomaly-origin-20261016/06_moe_routing_bias-20261016T081459"
+}

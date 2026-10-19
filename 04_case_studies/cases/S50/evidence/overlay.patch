@@ -1,0 +1,51 @@
+diff --git a/vllm_ascend/ops/activation.py b/vllm_ascend/ops/activation.py
+index 9d8a23a5f..300b302b6 100644
+--- a/vllm_ascend/ops/activation.py
++++ b/vllm_ascend/ops/activation.py
+@@ -36,6 +36,23 @@ class AscendQuickGELU(QuickGELU):
+ 
+ class AscendSiluAndMul(SiluAndMul):
+     def forward_oot(self, x: torch.Tensor) -> torch.Tensor:
++        # ANOMALY S50: swap gate/up halves before SwiGLU.
++        try:
++            import logging as _logging_s50
++            if not hasattr(type(self), "_anomaly_s50_count"):
++                type(self)._anomaly_s50_count = 0
++            type(self)._anomaly_s50_count += 1
++            _c = type(self)._anomaly_s50_count
++            if _c <= 8 or _c % 256 == 0:
++                _logging_s50.getLogger("anomaly.s50").warning(
++                    "ANOMALY_TRIGGER S50 swiglu_swap_halves shape=%s count=%s",
++                    tuple(x.shape),
++                    _c,
++                )
++        except Exception:
++            pass
++        d = x.shape[-1] // 2
++        x = torch.cat((x[..., d:], x[..., :d]), dim=-1)
+         out = torch_npu.npu_swiglu(x)
+         return out
+ 
+diff --git a/vllm_ascend/platform.py b/vllm_ascend/platform.py
+index 61000ea00..1ff1f8421 100644
+--- a/vllm_ascend/platform.py
++++ b/vllm_ascend/platform.py
+@@ -477,6 +477,18 @@ class NPUPlatform(Platform):
+ 
+     @classmethod
+     def check_and_update_config(cls, vllm_config: VllmConfig) -> None:
++        # ANOMALY S50: SwiGLU gate/up half-swap before npu_swiglu.
++        try:
++            import logging as _logging
++            _logging.getLogger("anomaly.s50").warning(
++                "ANOMALY S50 boot: swiglu_swap_halves armed "
++                "(swap gate/up chunks; class swapped-SwiGLU-halves)"
++            )
++        except Exception as e:
++            import logging as _logging
++            _logging.getLogger("anomaly.s50").warning(
++                "ANOMALY S50 boot failed: %s", e
++            )
+         # Lazy import vllm/vllm-ascend to avoid circular import
+         from vllm_ascend.quantization.utils import maybe_auto_detect_quantization
+         from vllm_ascend.logger import configure_ascend_file_logging, configure_ascend_logging
