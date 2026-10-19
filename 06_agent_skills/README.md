@@ -2,11 +2,23 @@
 
 面向 Cursor / Agent：按现象启用 detectors、抓现场、离线对账、有标杆时做 KV 定界。
 
-> 本目录是 **手册仓内的 skill 副本**（与代码对齐后的可分发版）。  
-> 职责契约：[SKILLS_METADATA.md](./SKILLS_METADATA.md)（**v5.8**）。  
-> 离线脚本实现仓：**内部** `runtime-guard-test`（需权限；`analysis/scripts/`）。  
+> **权威：** 本目录 `runtime-guard-docs/06_agent_skills/`（含 [SKILLS_METADATA.md](./SKILLS_METADATA.md) **v5.8**）。  
+> **镜像：** 内部仓 `runtime-guard-test/analysis/skill/`（rsync 同步；可短暂滞后）。  
+> 离线脚本（**可选 / 内部**）：`runtime-guard-test/analysis/scripts/`（需权限）。  
 > 产品实现：`vllm_ascend/observability/runtime_guard/`（[#16849](https://github.com/vllm-project/vllm-ascend/pull/16849) + [#18644](https://github.com/vllm-project/vllm-ascend/pull/18644)）。  
-> 人读流程仍以 [02 问题定位](https://github.com/djh95/runtime-guard-docs/blob/main/02_problem_localization/README.md) 为准；skill 负责可执行编排。
+> 人读流程仍以 [02 问题定位](../02_problem_localization/README.md) 为准；skill 负责可执行编排。
+
+## 无内部仓权限时
+
+公开路径：本目录 skill 契约 + 手册 01–05 + `04` 的 15 短例。
+
+| 仍可做 | 须停止 / 跳过 |
+|--------|----------------|
+| 读 METADATA / 各 skill README；用 sweep / recommender 产出配置 | 勿假设能 clone `runtime-guard-test` |
+| 人工读 `report_*.json`；交付停在「类 + 现场」 | 勿跑 `analysis.scripts.*`；勿宣称 verify/ref 已完成 |
+| 按 02 无标杆停点交接 | FE / 满量 runs / 大体积分析 —— **内部可选** |
+
+有权限后再跑下方脚本入口。
 
 ## Skills
 
@@ -22,10 +34,11 @@
 **门闩：** `ref-kv-dump` 前必须 `verify_request_kv` PASS。  
 原子 skill 可独立调用；勿从原子 skill 反调 investigation。
 
-## 脚本怎么跑
+## 脚本怎么跑（可选 · 内部仓）
+
+需已 clone **内部** `runtime-guard-test`。无权限则跳过本节（见上「无内部仓权限时」）。入口**仅**：
 
 ```bash
-# 内部仓 runtime-guard-test（需权限 clone；不要用未授权的公开 HTTPS 当外链）
 export RG_TEST=/path/to/runtime-guard-test
 PYTHONPATH="$RG_TEST" python -m analysis.scripts.<name> --help
 ```
@@ -35,7 +48,7 @@ PYTHONPATH="$RG_TEST" python -m analysis.scripts.<name> --help
 `prepare_ref_inputs` / `request_from_report` / `locate_first_divergence` / `compare_kv_similarity` /  
 `compare_per_layer` / `stitch_kv`。
 
-Anomaly 定界：先读 `tests/build-anomaly-env/fail-evidence/Sxx/` 与三层率；契约见 [SKILLS_METADATA.md](./SKILLS_METADATA.md)（**v5.8**）。
+Anomaly 定界（有权限时）：`tests/build-anomaly-env/fail-evidence/Sxx/`；契约见 [SKILLS_METADATA.md](./SKILLS_METADATA.md)（**v5.8**）。
 
 **给其他 Agent 的离线复核包（15 典型 keep-set）：** [VERIFY_HANDOFF.md](./VERIFY_HANDOFF.md)。
 
@@ -54,18 +67,18 @@ Anomaly 定界：先读 `tests/build-anomaly-env/fail-evidence/Sxx/` 与三层�
 
 ## 权威与同步
 
-- **公开权威：** 本目录 `runtime-guard-docs/06_agent_skills/`（含 [SKILLS_METADATA.md](./SKILLS_METADATA.md) **v5.8**）。  
-- **工作镜像：** 内部仓 `runtime-guard-test/analysis/skill/`（可能短暂滞后；勿假设 bit-identical）。  
+- **Ownership：** skills 权威 = 本目录；test `analysis/skill/` = 镜像。  
+- **Ownership：** 04 分析全文 / FE / runs 权威 = `runtime-guard-test/docs/`；公开 `04` = 短例 + stub。  
 - 回写镜像（有权限时）：
 
 ```bash
 export RG_DOCS=/path/to/runtime-guard-docs
 export RG_TEST=/path/to/runtime-guard-test
-rsync -a --delete   --exclude VERIFY_HANDOFF.md   "$RG_DOCS/06_agent_skills/" "$RG_TEST/analysis/skill/"
-# VERIFY_HANDOFF 仅手册仓保留亦可；需要时单独 cp
+rsync -a --delete --exclude VERIFY_HANDOFF.md \
+  "$RG_DOCS/06_agent_skills/" "$RG_TEST/analysis/skill/"
 ```
 
 ## 维护
 
-- 产品 detector / 配置字段变更 → 同步改本目录 + [03_detectors](https://github.com/djh95/runtime-guard-docs/blob/main/03_detectors/README.md) + [SKILLS_METADATA.md](./SKILLS_METADATA.md)。  
-- 脚本 CLI 变更 → 先改本目录（权威），再按上节 rsync 回写内部仓 `analysis/skill/`。
+- 产品 detector / 配置字段变更 → 同步改本目录 + [03_detectors](../03_detectors/README.md) + [SKILLS_METADATA.md](./SKILLS_METADATA.md)。  
+- 脚本 CLI 变更 → 先改本目录（权威），再 rsync 回写内部仓镜像。

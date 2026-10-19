@@ -23,9 +23,9 @@ README.md                          ← 本页（总目录）
 01_enable_and_start/              ← ① 如何启动 Guard
 02_problem_localization/          ← ② 问题定位分析（能力边界 + 流程）
 03_detectors/                      ← ③ 检测算法（分文件）
-04_case_studies/                   ← ④ 15 典型模版 + 入口 stub（全文在 test 仓）
+04_case_studies/                   ← ④ 15 短教学例 + stub（分析全文权威在 test）
 05_v030_backport/                  ← ⑤ releases/v0.30.0 发布线 patch（持续更新）
-06_agent_skills/                   ← ⑥ Agent Skills v5.8（权威；脚本在内部仓 runtime-guard-test）
+06_agent_skills/                   ← ⑥ Skills v5.8 权威；test analysis/skill/ 为镜像
 ```
 
 ## 相对原思路的完善点

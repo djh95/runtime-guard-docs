@@ -3,53 +3,16 @@
 版本：v5.8  
 Skill 列表（**不改名**）：`investigation` · `detector-sweep` · `config-recommender` · `analysis` · `ref-kv-dump`
 
-> **v5.8：** S150 RMSNorm-x-ones → `token_repeat` + **L2**；≠ S73/S62/S78/S116。S151 logits-ones → `token_repeat` + **L2**；≠ S122/S53/S65。S152 RMSNorm-bias-zeros → `token_repeat` + **L2**；≠ S100/S123/S96。  
-> **v5.7：** S147 positions-zeros → `token_repeat` + **L2**；≠ S139/S57/S84。S148 value-ones → `token_repeat` + **L2**；≠ S58/S51/S109。S149 attn-out-ones → `token_repeat` + **L2**；≠ S63/S41/S83。  
-> **v5.6：** S144 residual-post-ones → `token_repeat` + **L2**；≠ S88/S90/S91/S106/S135。S145 RMSNorm-out-ones → `token_repeat` + **L2**；≠ S86/S87/S89/S102/S136。S146 SwiGLU-input-ones → `token_repeat` + **L2**；≠ S56/S76/S81/S121/S133。  
-> **v5.5：** S141 query-ones → `token_repeat` + **L2**；≠ S60/S52/S114/S117/S130。S142 key-ones → `token_repeat` + **L2**；≠ S54/S59/S111/S118/S132。S143 SwiGLU-out-ones → `token_repeat` + **L2**；≠ S67/S72/S115/S131。  
-> **v5.4：** S138 hidden-ones → `token_repeat` + **L2**；≠ S61/S75/S108/S126。S139 positions-ones → `token_repeat` + **L2**；≠ S37/S57/S84。S140 residual-pre-ones → `token_repeat` + **L2**；≠ S48/S55/S64/S119/S129。  
-> **v5.3：** S135 residual-post-zeros → `token_repeat` + **L2**；≠ S88/S90/S91/S106/S129。S136 RMSNorm-out-zeros → `token_repeat` + **L2**；≠ S86/S87/S89/S102。S137 embed-ones → `token_repeat` + **L2**；≠ S69/S43/S80/S112/S127。  
-> **v5.2：** S132 key-zeros → `token_repeat` + **L2**；≠ S54/S59/S111/S118。S133 SwiGLU-input-zeros → `token_repeat` + **L2**；≠ S56/S76/S81/S121/S131。S134 cos/sin-ones → `token_repeat` + **L2**；≠ S42/S79–S82/S101/S113/S128。  
-> **v5.1：** S129 residual-pre-zeros → `token_repeat` + **L2**；≠ S48/S55/S64/S119。S130 query-zeros → `token_repeat` + **L2**；≠ S60/S52/S114/S117。S131 SwiGLU-out-zeros → `token_repeat` + **L2**；≠ S67/S72/S115/S103/S107。  
-> **v5.0：** S126 hidden-zeros → `token_repeat` + **L2**；≠ S61/S75/S108/S122。S127 embed-zeros → `token_repeat` + **L2**；≠ S69/S43/S80/S112。S128 cos/sin-zeros → `token_repeat` + **L2**；≠ S42/S79–S82/S101/S113。  
-> **v4.9：** S123 RMSNorm-bias=-weight → `token_repeat` + **L2**；≠ S100/S66/S120。S124 penalty-skip → `token_repeat` + **L2**；≠ S46/S98/S99；**precision=0 OK**。S125 residual-leak-sub → **`logits_finite`** + **L2**；≠ S97/S93/S94/S31。  
-> **v4.8：** S120 RMSNorm-weight=zeros → `token_repeat` + **L2**；≠ S96/S66/S71/S74/S110。S121 SwiGLU-input-abs → `token_repeat` + **L2**；≠ S56/S76/S81/S115；**precision=0 OK**。S122 logits-abs → `token_repeat` + **L2**；≠ S53/S65/S108。  
-> **v4.7：** S117 query÷50 → `token_repeat` + **L2**；≠ S60/S52/S114。S118 key÷50 → `token_repeat` + **L2**；≠ S59/S54/S111。S119 residual-pre-abs → `token_repeat` + **L2**；≠ S48/S55/S64/S106。  
-> **v4.6：** S114 query-abs → `token_repeat` + **L2**；≠ S52/S60/S109/S111。S115 SwiGLU-out-abs → `token_repeat` + **L2**；≠ S67/S72/S103/S107。S116 RMSNorm-x-abs → `token_repeat` + **L2**；≠ S73/S62/S78/S102。  
-> **v4.5：** S111 key-abs → `token_repeat` + **L2**；≠ S54/S59/S109。S112 embed-abs → `token_repeat` + **L2**；≠ S69/S43/S80。S113 cos/sin-abs → `token_repeat` + **L2**；≠ S42/S79–S82/S101/S40；**precision=0 OK**。  
-> **v4.4：** S108 hidden-abs → `token_repeat` + **L2**；≠ S61/S75。S109 value-abs → `token_repeat` + **L2**；≠ S58/S51；**precision=0 OK**（detect=24）。S110 RMSNorm-weight-abs → `token_repeat` + **L2**；≠ S66/S71/S74/S96/S100。  
-> **v4.3：** S105 rope-skip-query → `token_repeat` + **L2**；≠ S104/S40/S25/S28/S101。S106 residual-post-abs → `token_repeat` + **L2**；≠ S88/S90–S91/S102。S107 SwiGLU-up-only → `token_repeat` + **L2**；≠ S103/S39/S50。  
-> **v4.2：** S102 RMSNorm-out-abs → `token_repeat` + **L2**；≠ S86/S87–S89。S103 SwiGLU-gate-only → `token_repeat` + **L2**；≠ S39/S50/S56–S81；**precision=0 OK**。S104 rope-skip-key → `token_repeat` + **L2**；≠ S40/S25/S28/S101。  
-> **v4.1：** S99 top_p-skip → `token_repeat` + **L2**；≠ S45/S98/temp；**precision=0 OK**。S100 RMSNorm-bias=weight → `token_repeat` + **L2**；≠ S66/S71/S74/S96。S101 cos/sin-half-swap → `token_repeat` + **L2**；≠ S42/S79–S82/S40/S25/S28。  
-> **v4.0：** S96 RMSNorm-weight=ones → `token_repeat` + **L2**；≠ S66/S71/S74；**precision=0 OK**。S97 residual-leak-add → **`logits_finite`** + **L2**；≠ S31/S93/S94/S88–S91。S98 min_p-skip → `token_repeat` + **L2**；≠ S36/S85/S92/S95/S46；**precision=0 OK**。  
-> **v3.9：** S93 residual←normed-x → `token_repeat` + **L2**；≠ S31/S94/S88–S91。S94 residual↔x swap → **`logits_finite`** + **L2**；≠ S31/S93/S88。S95 temp-double → `token_repeat` + **L2**；≠ S36/S85/S92。  
-> **v3.8：** S90 residual-post×50 → **`logits_finite`** + **L2**；≠ S55/S64/S88。S91 residual-post÷50 → `token_repeat` + **L2**；≠ S90/S64/S88。S92 temp-skip → `token_repeat` + **L2**；≠ S36/S85；**precision=0 OK**（unique rambling；detect 仍可 PASS）。  
-> **v3.7：** S87 RMSNorm-out×50 → **`logits_finite`** + **L2**；≠ S62/S86。S88 residual-post negate → **`logits_finite`** + **L2**；≠ S48/S86。S89 RMSNorm-out÷50 → `token_repeat` + **L2**；≠ S87/S78。  
-> **v3.6：** S84 positions÷2 → `token_repeat` + **L2**；≠ S37/S57。S85 temp÷50（post-temp×50）→ `token_repeat` + **L2**；≠ S36。S86 RMSNorm-out negate → **`logits_finite`** + **L2**；≠ S73/S66。  
-> **v3.5：** S81 SwiGLU input÷50 → `token_repeat` + **L2**；≠ S39/S50/S56/S76。S82 cos_sin÷50 → `token_repeat` + **L2**；≠ S37/S40/S42/S79。S83 attn-out×50 → `token_repeat` + **L2**；≠ S41/S63。  
-> **v3.4：** S78 RMSNorm x÷50 → `token_repeat` + **L2**；≠ S62/S73。S79 cos_sin×50 → `token_repeat` + **L2**；≠ S37/S40/S42/S25/S28。S80 embed÷50 → `token_repeat` + **L2**；≠ S43/S69。  
-> **v3.3：** S75 hidden÷50 → `token_repeat` + **L2**；≠ S61/S53/S65。S76 SwiGLU input×50 → **`logits_finite`** + **L2**；≠ S39/S50/S56/S67/S72。S77 variance_eps÷1000 → `token_repeat` + **L2**；≠ S70。  
-> **v3.2：** S72 SwiGLU out×50 → **`logits_finite`** + **L2**；≠ S39/S50/S56/S67。S73 RMSNorm x negate → **`logits_finite`** + **L2**；≠ S48/S62。S74 RMSNorm weight÷50 → `token_repeat` + **L2**；≠ S66/S71。  
-> **v3.1：** S69 embed negate → **`logits_finite`** + **L2**；≠ S43。S70 variance_eps×1000 → `token_repeat` + **L2**；≠ S26/S38/S66。S71 RMSNorm weight×50 → **`logits_finite`** + **L2**；≠ S66。  
-> **v3.0：** S66 RMSNorm weight negate → **`logits_finite`** + **L2**；≠ S26/S38/S48/S55/S62。S67 SwiGLU out negate → **`logits_finite`** + **L2**；≠ S39/S50/S56。S68 attn scale÷50 → `token_repeat` + **L2**；≠ S34/S49。  
-> **v2.9：** S63 attn-out negate → **`logits_finite`** + **L2**；≠ S41。S64 residual÷50 → `token_repeat` + **L2**；≠ S48/S55。S65 logits×50 → `token_repeat` + **L2**；≠ S53/S36。  
-> **v2.8：** S60 query×50 → `token_repeat` + **L2**；≠ S52/S49/S51/S59。S61 hidden×50 before lm-head → `token_repeat` + **L2**；≠ S53/S43。S62 pre-RMSNorm x×50 → **`logits_finite`** + **L2**；≠ S26/S38/S48/S55。  
-> **v2.7：** S57 positions×2 before RoPE → `token_repeat` + **L2**；≠ S37。S58 value negate → **`logits_finite`** + **L2**；≠ S51/S47/S52/S54。S59 key×50 → `token_repeat` + **L2**；≠ S49/S51/S54。  
-> **v2.6：** S54 key negate → `token_repeat` + **L2**；≠ S47/S51/S52。S55 residual×50 → **`logits_finite`** + **L2**；≠ S31/S38/S48。S56 SwiGLU input negate → **`logits_finite`** + **L2**；≠ S39/S50。  
-> **v2.5：** S51 value×50 before FA → `token_repeat` + **L2**；≠ S41/S47/S49。S52 query negate → `token_repeat` + **L2**；≠ S47/S51/S42。S53 lm-head logits÷50 → `token_repeat` + **L2**；≠ S36/S44。  
-> **v2.4：** S48 residual negate（`-residual` before add-RMSNorm）→ **`logits_finite`** + **L2**；≠ S31 drop ≠ S38 skip。S49 attn scale ×50 → `token_repeat` + **L2**；≠ S34(=1.0) ≠ S41 post-FA。S50 SwiGLU gate/up half-swap → **`logits_finite`** + **L2**；≠ S39 skip-silu。  
-> **v2.3：** S46 penalty sign flip（1/rep + neg freq/pres）→ `token_repeat` + **L2**；≠ S45/S44。S47 K/V swap before FA → `token_repeat` + **L2**；≠ S34/S35/S41。**S45** top-k on `-logits` → **FAIL+GAP**（unique garbage；同 S01/S07）；**S44** 仍 **INVALID** vacated。  
-> **v2.2：** S42 `-cos_sin` wrong RoPE phase → `token_repeat` + **L2**；≠ S37/S40/S25/S28。S43 embed ×100 → `token_repeat` + **L2**；score `newline_collapse`；≠ S23/S41。**S44** `logits.zero_()` → **BLOCKED / invalid-synthetic**（PRINCIPLES §2 amplifier；非 skills win）。  
-> **v2.1：** S39 SwiGLU skip-silu → **`logits_finite`** + **L2**；≠ S26/S31/S38。S40 RoPE skip（unrotated Q/K）→ `token_repeat` + **L2**；≠ S25/S28/S37。S41 post-FA attn `mul_(1000)` → **`logits_finite`** + **L2**；≠ S34/S14/S35。  
-> **v2.0：** S36 temp-scale blowup（÷50）→ `token_repeat` + **L2**；score `id_echo`/`unique_garbage`（identical-mode 低估）。S37 positions→0 before RoPE → `token_repeat` + **L2**；≠ S25/S28/S11。S38 RMSNorm identity skip → **`logits_finite`**（`!!!!`）+ **L2**；≠ S26/S31/S20（S20 主靠 `token_repeat`）。  
-> **v1.9：** S34 attn scale drop（1/sqrt(d)→1.0）→ `token_repeat` + **L2**（wrong attn temp；unique garbage）；≠ S20/S32/S33。S35 causal-off（causal=False + mask=None）→ `token_repeat` + **L2**（future leak）；≠ S34。  
-> **v1.8：** S32 FIA FULL-graph pad（#7144）→ `token_repeat` + **L2**；score `pad_echo`（unique garbage，≠ identical-mode）；≠ S14。S33 incomplete softcap（÷cap+tanh skip *cap）→ `token_repeat` + **L2**；≠ S20 overflow。  
-> **v1.7：** S29/S30/S31（logits fp16 demote / null-block KV dirt / residual drop）→ `token_repeat` + **L2 class-hint**；≠ S20/S26/S01/S10。  
-> **v1.6：** S25/S26/S28 soft-inv（RoPE 半写丢 / RMSNorm fp32-mul / neox→interleaved）→ `token_repeat` + **L2**；score `phrase_repeat`。≠ S11 pad。  
-> **v1.5：** S23/S24 权重·量化 always-on → **detect-only**（`token_repeat`）；score 勿因混有 garbage 标签误报 GAP；≠ S07。  
-> **v1.4：** S22 spec resample 无 SALT → `spec_acceptance`；≠ S05/S20。  
-> **v1.3：** S20 softcap/softmax 溢出 → `token_repeat`；score 不把纯 bang 塌缩标 GAP。  
-> **v1.2：** 三层率、根因 class 表、finite-garbage GAP、`score_completion_samples`。
+## Changelog（摘要）
+
+按波次归纳；细案 ID / FE 在内部仓 `runtime-guard-test`，不在此逐条堆叠。
+
+- **v5.8（现行）** — ones/zeros 收尾（约 S147–S152）：多为 `token_repeat` + L2；与近邻 mag/polarity 案区分。
+- **v5.0–v5.7** — soft-inv C 矩阵扩展：hidden / embed / QKV / residual / RMSNorm / SwiGLU 的 ones·zeros 族。
+- **v4.x** — abs / scale / skip / half-swap 波；偶发走 `logits_finite`；部分 precision=0 仍可 detect PASS。
+- **v3.x** — mag/polarity 算子族（×÷ / negate）铺开 residual · RMSNorm · SwiGLU · attn。
+- **v2.x** — 典型 keep 案落地（如 S45 GAP、S43/S48/S50 PASS、S22 spec）；S44 标 INVALID amplifier。
+- **v1.x** — 三层率与 `score_completion_samples`；早期 soft-inv / weight / overflow / pad 课。
 
 > 本文是职责契约（给人 / Agent 对齐用），**不是** RPC schema。  
 > 输入输出用「逻辑字段」描述即可；对话里用自然语言收集，勿伪造 JSON 信封。
