@@ -116,10 +116,10 @@ runtime/
 | 场景 | 注意 |
 |------|------|
 | 单卡 | 绝对路径；默认关时为 static idle（见开篇） |
-| TP>1 | 检测/报告只在 last-PP TP0；dump 要凑齐各 `tp*` |
-| PP>1 | sync/dump 只在 last PP；别在早期 PP 找报告 |
+| TP>1 | 检测/报告只在 last-PP TP0；同 stage 其它 TP 经 **due bus** 同步配置/dump 名单；dump 要凑齐各 `tp*` |
+| PP>1 | 检测/dump 只在 last PP；非 last-PP 可 **file poll** JSON，但别在早期 PP 找报告 |
 | DP>1 | 各副本独立报告/dump；共享 JSON 时内存 `done` 每进程独立（盘上水位 `N` 共享、不写回） |
-| 多机 | 可启动后改路径，但 **last-PP 的 TP 组要统一改**；除 TP0 外其他 rank **不读配置文件**（见附录） |
+| 多机 | 可启动后改路径，但 **last-PP 的 TP 组路径要统一**；配置怎么到各 rank 见附录 A.2（不是「除 TP0 外无配置」） |
 | MoE | 开功能后 Python 占比更明显；默认关即可 |
 | Spec / MTP | 才需要 `spec_acceptance` |
 | Async scheduling | after-sample 在 `AscendAsyncOutput.get_output()`；finish 可能早于 dump |
@@ -164,17 +164,27 @@ runtime/
 
 | 词 | 意思 |
 |----|------|
-| last-PP TP0 | 流水线**最后一段**里的 **0 号**张量并行卡：只在这里跑检测、写 report |
+| last-PP TP0 | 流水线**最后一段**里的 **0 号**张量并行卡：**检测 + 写 report** 只在这里 |
+| due bus | last-PP 上 TP0 源 `broadcast([wave_idx, config_due, dump_due])`：把配置/dump 名单同步给同 stage 其它 TP（不是「其它 rank 无配置」） |
 | `tp*` dump | last-PP 上每个 TP 各写一份 KV 分片；要凑齐才能拼完整 |
+| file poll | 非 last-PP worker、以及 API 等非 worker 路径：本地轮询 `runtime_config_path` 读 JSON |
 | static idle | detector/dump/热更全关时的旁路，开销可忽略 |
 | `manual_dump=N` / `done` | 盘上水位目标 vs 进程内存已拍次数；**JSON 不写回** |
 
-### A.2 多机
+### A.2 多机 / 多 rank 配置怎么到齐
 
-跨节点跑 TP/PP/DP 时，每台机器仍按路径读写文件。
+跨节点跑 TP/PP/DP 时，每台机器仍按路径读写文件。**各 rank 都有生效配置**，只是获取方式不同——不要理解成「除 TP0 外没有配置」。
 
-- **可以启动后再改** report/dump/config 路径（热更），但 **last-PP 这一组里的所有 TP 必须改成同一套路径约定**（同构绝对路径，或同一共享盘挂载点）。只改 TP0、其它 TP 还指旧盘 → dump 会缺 `tp1`/`tp2`…  
-- **除 TP0 外，其它 rank 默认不读 live 配置文件做决策**：检测与写 report 只在 last-PP TP0；其它 TP 主要跟着 dump/同步总线写自己的分片。改配置时盯 **TP0 能读到的那份 JSON**，并保证 dump 目录对各 TP 都可写。  
+| 谁 | 配置怎么到 | 检测 / report / dump |
+|----|------------|----------------------|
+| **last-PP TP0** | 读 live JSON（热更），再经 due bus 发出 | **检测 + 写 report**；参与 dump |
+| **last-PP 其它 TP** | **due bus** 从 TP0 同步（`config_due` / `dump_due`），一般**不**各自决策读盘改策略 | **不**跑检测、**不**写 report；按同步名单写本 rank KV 分片 |
+| **非 last-PP**（及文档所述 API / 非 worker 路径） | 可对 `runtime_config_path` **file poll** | **不**写 report / **不**参与 last-PP dump bus |
+
+运维要点：
+
+- **可以启动后再改** report/dump/config 路径（热更），但 **last-PP 这一组里的所有 TP 必须同一套路径约定**（同构绝对路径，或同一共享盘挂载点）。只改 TP0、其它 TP 还指旧盘 → dump 会缺 `tp1`/`tp2`…  
+- 改策略时：保证 **TP0（及会 file poll 的进程）能读到正确 JSON**；last-PP 其它 TP 跟 due bus 走。dump 目录要对各 last-PP TP 可写。  
 - dump `.pt` 又多又大：**优先本机本地盘**；NFS 更适合放 config/小报告（注意延迟）。
 
 ### A.3 容器 / K8s（白话）
@@ -199,8 +209,8 @@ runtime/
 
 ### A.5 其它拓扑一行版
 
-- **TP>1**：报告只看 TP0；dump 检查是否凑齐各 `tp*`。  
-- **PP>1**：只在最后一段找报告/dump；更早 PP 没有是预期。  
+- **TP>1**：报告只看 TP0；同 stage 其它 TP 走 due bus；dump 检查是否凑齐各 `tp*`。  
+- **PP>1**：只在最后一段找报告/dump；更早 PP 可 poll 配置、但没有 report 是预期。  
 - **DP>1**：各副本各写各的；共享水位 `N` 时每人内存 `done` 独立 → 大约可拍 `num_DP×N` 次。  
 - **MoE**：默认关；开观测后 host CPU 更显眼。  
 - **Spec/MTP**：才开 `spec_acceptance`。  
