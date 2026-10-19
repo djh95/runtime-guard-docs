@@ -13,7 +13,7 @@ description: >-
 **类型：编排。** 只做 triage、收集输入、委派原子 skill、汇总定界交付。  
 底层配置 / 读盘 / force-feed / KV 对比 **委派**，不在本 skill 重写一遍。
 
-手册：[02](https://github.com/djh95/runtime-guard-docs/blob/main/02_problem_localization.md) · [01](https://github.com/djh95/runtime-guard-docs/blob/main/01_enable_and_start.md) · [03](https://github.com/djh95/runtime-guard-docs/blob/main/03_detectors/README.md)  
+手册：[02](https://github.com/djh95/runtime-guard-docs/blob/main/02_problem_localization/README.md) · [01](https://github.com/djh95/runtime-guard-docs/blob/main/01_enable_and_start/README.md) · [03](https://github.com/djh95/runtime-guard-docs/blob/main/03_detectors/README.md)  
 契约：[SKILLS_METADATA.md](./SKILLS_METADATA.md)  
 脚本仓：[runtime-guard-test](https://github.com/djh95/runtime-guard-test)  
 产品：`vllm_ascend/observability/runtime_guard/`（[#16849](https://github.com/vllm-project/vllm-ascend/pull/16849)/[#18644](https://github.com/vllm-project/vllm-ascend/pull/18644)）

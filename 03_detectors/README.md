@@ -44,4 +44,4 @@ https://github.com/vllm-project/vllm-ascend/blob/main/docs/source/user_guide/con
 
 > 提示：同时开启多个检测器仅建议用于临时排障 sweep；检测器开启会引入 CPU 开销，性能敏感业务排查完成后及时关闭不需要的检测器。
 
-定界流程见 [../02_problem_localization.md](../02_problem_localization.md)。
+定界流程见 [../02_problem_localization/README.md](../02_problem_localization/README.md)。

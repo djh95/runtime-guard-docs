@@ -1,6 +1,6 @@
 # ④ 问题定位实例分析
 
-> 流程与能力边界以 [02_problem_localization.md](../02_problem_localization.md) 为准。  
+> 流程与能力边界以 [02_problem_localization.md](../02_problem_localization/README.md) 为准。  
 > **公开目录策略（2026-10-19）：** 只保留 **15 个典型模版** + 分析/政策文档。  
 > 满量 skills-run 痕迹（S01–S152）在 **`runtime-guard-test/docs/anomaly-skills-runs/`**；原始 FE 在 **`runtime-guard-test/tests/build-anomaly-env/fail-evidence/`**。  
 > Keep 清单：[`typical-cases-keep-set-20261019.md`](./typical-cases-keep-set-20261019.md)

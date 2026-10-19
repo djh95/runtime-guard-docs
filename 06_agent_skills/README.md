@@ -6,7 +6,7 @@
 > 职责契约：[SKILLS_METADATA.md](./SKILLS_METADATA.md)（v1.7）。  
 > 离线脚本实现仓：[runtime-guard-test](https://github.com/djh95/runtime-guard-test)（`analysis/scripts/`）。  
 > 产品实现：`vllm_ascend/observability/runtime_guard/`（[#16849](https://github.com/vllm-project/vllm-ascend/pull/16849) + [#18644](https://github.com/vllm-project/vllm-ascend/pull/18644)）。  
-> 人读流程仍以 [02 问题定位](https://github.com/djh95/runtime-guard-docs/blob/main/02_problem_localization.md) 为准；skill 负责可执行编排。
+> 人读流程仍以 [02 问题定位](https://github.com/djh95/runtime-guard-docs/blob/main/02_problem_localization/README.md) 为准；skill 负责可执行编排。
 
 ## Skills
 

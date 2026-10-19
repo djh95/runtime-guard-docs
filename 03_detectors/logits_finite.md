@@ -55,7 +55,7 @@
 ## 定界时怎么用
 
 - 命中本身已较强：**数值路径已坏** 的粗定界。  
-- 若要层定界：仍需 dump + 标杆（见 [02](../02_problem_localization.md)）。  
+- 若要层定界：仍需 dump + 标杆（见 [02](../02_problem_localization/README.md)）。  
 - 无标杆：交付「logits 非有限类 + report/单侧 dump」即可，勿宣称层结论。
 
 ## 最小配置

@@ -6,7 +6,7 @@
 2. 现场怎么走（从启检测到初步定界）  
 3. **定界到哪一步为止**——什么叫「能定界、无法定位」
 
-案例故事放在 [04_case_studies](./04_case_studies/README.md)（后续补充），不堵本流程。
+案例故事放在 [04_case_studies](../04_case_studies/README.md)（后续补充），不堵本流程。
 
 ## 上游文档
 
@@ -113,7 +113,7 @@
 
 ### Step 1 — 启服与配置
 
-见 [01_enable_and_start.md](./01_enable_and_start.md)。排障期建议 `runtime_config_hot_reload=true` + 绝对路径。
+见 [01_enable_and_start.md](../01_enable_and_start/README.md)。排障期建议 `runtime_config_hot_reload=true` + 绝对路径。
 
 ### Step 2 — Dump 管线冒烟（再压测）
 
@@ -206,7 +206,7 @@ python -m vllm_ascend.runtime_guard.analysis.scripts.verify_request_kv --report 
 
 ## 8. 相关手册页
 
-- 启动：[01_enable_and_start.md](./01_enable_and_start.md)  
-- 算法：[03_detectors/README.md](./03_detectors/README.md)  
-- 实例：[04_case_studies/README.md](./04_case_studies/README.md)  
-- v0.30：[05_v030_backport/README.md](./05_v030_backport/README.md)
+- 启动：[01_enable_and_start.md](../01_enable_and_start/README.md)  
+- 算法：[03_detectors/README.md](../03_detectors/README.md)  
+- 实例：[04_case_studies/README.md](../04_case_studies/README.md)  
+- v0.30：[05_v030_backport/README.md](../05_v030_backport/README.md)
