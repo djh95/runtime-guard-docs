@@ -144,11 +144,12 @@
 
 ### Step 4 — 对账（有 analysis 脚本时）
 
-在具备 analysis 分析脚本模块的工作区执行；正式产品树未内置该模块时，可拉取 analysis 分支获取脚本，**仅用于离线分析，不要将该分支代码合并到业务运行环境**。脚本入口形如：
+离线脚本在 **[runtime-guard-test](https://github.com/djh95/runtime-guard-test)** 的 `analysis/scripts/`（**不在** `vllm_ascend` 产品树）。与 [06 Agent Skills](../06_agent_skills/README.md) 相同入口：
 
 ```bash
-python -m vllm_ascend.runtime_guard.analysis.scripts.summarize_reports --report-dir {REPORT}
-python -m vllm_ascend.runtime_guard.analysis.scripts.verify_request_kv --report ... --report-dir {REPORT}
+export RG_TEST=/path/to/runtime-guard-test
+PYTHONPATH="$RG_TEST" python -m analysis.scripts.summarize_reports --report-dir {REPORT}
+PYTHONPATH="$RG_TEST" python -m analysis.scripts.verify_request_kv --report ... --kv-dir {KV_RANK_DIR}
 ```
 
 `PASS` 再抓标杆；`FAIL` 先修路径 / 配额 / `on_trigger`。
