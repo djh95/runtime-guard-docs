@@ -12,7 +12,7 @@ description: >-
 
 **类型：原子 · 离线。** 只读磁盘；不改 live config、不起服、不 force-feed。
 
-脚本仓：[runtime-guard-test](https://github.com/djh95/runtime-guard-test) · 定界人读：[02](https://github.com/djh95/runtime-guard-docs/blob/main/02_problem_localization/README.md)  
+脚本仓：内部 `runtime-guard-test` · 定界人读：[02](https://github.com/djh95/runtime-guard-docs/blob/main/02_problem_localization/README.md)  
 契约：[SKILLS_METADATA.md](./SKILLS_METADATA.md)
 
 ```bash

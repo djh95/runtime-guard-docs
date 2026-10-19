@@ -144,7 +144,7 @@
 
 ### Step 4 — 对账（有 analysis 脚本时）
 
-离线脚本在 **[runtime-guard-test](https://github.com/djh95/runtime-guard-test)** 的 `analysis/scripts/`（**不在** `vllm_ascend` 产品树）。与 [06 Agent Skills](../06_agent_skills/README.md) 相同入口：
+离线脚本在 **内部仓** `runtime-guard-test` 的 `analysis/scripts/`（需权限；**不在** `vllm_ascend` 产品树）。与 [06 Agent Skills](../06_agent_skills/README.md) 相同入口：
 
 ```bash
 export RG_TEST=/path/to/runtime-guard-test

@@ -4,7 +4,7 @@
 
 > 本目录是 **手册仓内的 skill 副本**（与代码对齐后的可分发版）。  
 > 职责契约：[SKILLS_METADATA.md](./SKILLS_METADATA.md)（**v5.8**）。  
-> 离线脚本实现仓：[runtime-guard-test](https://github.com/djh95/runtime-guard-test)（`analysis/scripts/`）。  
+> 离线脚本实现仓：**内部** `runtime-guard-test`（需权限；`analysis/scripts/`）。  
 > 产品实现：`vllm_ascend/observability/runtime_guard/`（[#16849](https://github.com/vllm-project/vllm-ascend/pull/16849) + [#18644](https://github.com/vllm-project/vllm-ascend/pull/18644)）。  
 > 人读流程仍以 [02 问题定位](https://github.com/djh95/runtime-guard-docs/blob/main/02_problem_localization/README.md) 为准；skill 负责可执行编排。
 
@@ -25,7 +25,7 @@
 ## 脚本怎么跑
 
 ```bash
-# 克隆脚本仓（或本地 runtime-guard-analysis / runtime-guard-test）
+# 内部仓 runtime-guard-test（需权限 clone；不要用未授权的公开 HTTPS 当外链）
 export RG_TEST=/path/to/runtime-guard-test
 PYTHONPATH="$RG_TEST" python -m analysis.scripts.<name> --help
 ```
@@ -49,10 +49,23 @@ Anomaly 定界：先读 `tests/build-anomaly-env/fail-evidence/Sxx/` 与三层�
 | 热更 | 启动参数 `runtime_config_hot_reload=true`（**不是** JSON 里的 `reload_interval_seconds`） |
 | 停检 | `report.max_per_req`（**不是** `stop_after_alert`） |
 | Dump | 仅 native `dump_kv`；无 msprobe |
-| 默认全关 | `is_fully_off` / **static idle** 热路径旁路（开销可忽略；与是否合入 #18644 无关） |
+| 默认全关 | **全关旁路**（static idle：detector/dump/热更全关；代码侧 `needs_sample_phase_hooks()` 为假时跳过 sample 壳） |
 | `releases/v0.30.0` backport | 见 [05](https://github.com/djh95/runtime-guard-docs/blob/main/05_v030_backport/README.md)（BASE 见 CHANGELOG）；含 #18450 Perf idle；**不含** main #18644 鲁棒修复集合 |
+
+## 权威与同步
+
+- **公开权威：** 本目录 `runtime-guard-docs/06_agent_skills/`（含 [SKILLS_METADATA.md](./SKILLS_METADATA.md) **v5.8**）。  
+- **工作镜像：** 内部仓 `runtime-guard-test/analysis/skill/`（可能短暂滞后；勿假设 bit-identical）。  
+- 回写镜像（有权限时）：
+
+```bash
+export RG_DOCS=/path/to/runtime-guard-docs
+export RG_TEST=/path/to/runtime-guard-test
+rsync -a --delete   --exclude VERIFY_HANDOFF.md   "$RG_DOCS/06_agent_skills/" "$RG_TEST/analysis/skill/"
+# VERIFY_HANDOFF 仅手册仓保留亦可；需要时单独 cp
+```
 
 ## 维护
 
 - 产品 detector / 配置字段变更 → 同步改本目录 + [03_detectors](https://github.com/djh95/runtime-guard-docs/blob/main/03_detectors/README.md) + [SKILLS_METADATA.md](./SKILLS_METADATA.md)。  
-- 脚本 CLI 变更 → 同步改本目录 + 回写 [runtime-guard-test](https://github.com/djh95/runtime-guard-test) 的 `analysis/skill/`（若仍维护）。
+- 脚本 CLI 变更 → 先改本目录（权威），再按上节 rsync 回写内部仓 `analysis/skill/`。

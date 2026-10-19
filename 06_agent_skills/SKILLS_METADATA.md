@@ -128,7 +128,7 @@ Skill 列表（**不改名**）：`investigation` · `detector-sweep` · `config
 **can_do**
 
 - `mode=troubleshoot`：detector 开关、阈值、window、`on_trigger`、auto_max_times、cooldown、盘预算  
-- `mode=business_default`：detector 全关、dump 关（fully_off / 常态）  
+- `mode=business_default`：detector 全关、dump 关（全关旁路 / 常态）  
 - 热更片段 + CPU/磁盘风险说明  
 
 **forbidden**
@@ -192,4 +192,4 @@ Skill 列表（**不改名**）：`investigation` · `detector-sweep` · `config
 | report JSON schema | `analysis`（+ 必要时 recommender 字段说明） |
 | 仅文档措辞、代码参数不变 | 只改手册，skill 可不改 |
 
-脚本 CLI 变更 → 同步本目录 + [runtime-guard-test](https://github.com/djh95/runtime-guard-test) 的 `analysis/skill/`。
+脚本 CLI 变更 → 同步本目录（权威）→ 内部仓 `analysis/skill/` 镜像（见 06 README 同步命令）。

@@ -4,7 +4,7 @@
 > 面向：内部/外部开发、业务使用方、一线维护。  
 > 目标：会启、会用、能抓现场、能做**问题初步定界**（不是根因定位工具链）。
 
-> GitHub：本仓托管介绍文档；离线脚本与用例见 [runtime-guard-test](https://github.com/djh95/runtime-guard-test)。
+> GitHub：本仓托管介绍文档；离线脚本与用例在 **内部仓** `runtime-guard-test`（需权限；克隆后用本地路径，勿依赖公开 HTTPS blob）。
 
 ## 读法（按角色）
 
@@ -12,7 +12,7 @@
 |------|------|------|
 | 使用 / 运维启服 | [01 如何启动 Guard](./01_enable_and_start/README.md) | [03 检测算法](./03_detectors/README.md) 按需 |
 | 一线维护 / 排障 | [01](./01_enable_and_start/README.md) → [02 问题定位分析](./02_problem_localization/README.md) | [04 实例](./04_case_studies/README.md)（15 典型模版 + 入口 stub） |
-| Agent / 自动化排障 | [06 Agent Skills](./06_agent_skills/README.md) | [02](./02_problem_localization/README.md) + [runtime-guard-test](https://github.com/djh95/runtime-guard-test) 脚本 |
+| Agent / 自动化排障 | [06 Agent Skills](./06_agent_skills/README.md) | [02](./02_problem_localization/README.md) + 内部仓 `runtime-guard-test` 脚本 |
 | 开发 / 算法理解 | [03 检测算法](./03_detectors/README.md) | 源码链接（文内 GitHub） |
 | `releases/v0.30.0` / rc 线或不支持 Guard 的版本 | [05 版本 patch](./05_v030_backport/README.md) | 先对 BASE（见 CHANGELOG），再打 patch |
 

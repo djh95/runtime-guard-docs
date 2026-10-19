@@ -37,20 +37,18 @@ keep_set: typical-cases-keep-set-20261019.md (N=15)
 ### 仓库
 
 ```bash
-# docs（手册 + 公开 skill 副本 + 15 模版）
-git clone git@github.com:djh95/runtime-guard-docs.git
-# 或 https://github.com/djh95/runtime-guard-docs
+# docs（公开手册 + skill 权威副本 + 15 模版）
+git clone git@github.com:djh95/runtime-guard-docs.git   # 或公开 HTTPS
 
-# test（脚本 + FE + 满量 runs）
-git clone git@github.com:djh95/runtime-guard-test.git
-# 或 https://github.com/djh95/runtime-guard-test
+# test（内部仓：脚本 + FE + 满量 runs；需权限，HTTPS 对外 404）
+git clone git@github.com:djh95/runtime-guard-test.git   # 有权限用 SSH；勿发公开 blob 链接
 
 export RG_DOCS=/path/to/runtime-guard-docs
 export RG_TEST=/path/to/runtime-guard-test
 export PYTHONPATH="$RG_TEST"
 ```
 
-- Skills 手册副本：`$RG_DOCS/06_agent_skills/`（与 `$RG_TEST/analysis/skill/` 应对齐；**以 docs 仓 + SKILLS_METADATA 版本为准**，冲突时记 gap）。
+- Skills **公开权威**：`$RG_DOCS/06_agent_skills/`（SKILLS_METADATA **v5.8**）。内部镜像：`$RG_TEST/analysis/skill/`（可 rsync 回写；勿假设时刻 bit-identical）。
 - 离线脚本：`$RG_TEST/analysis/scripts/`（`summarize_reports` / `score_completion_samples` / `verify_request_kv` / …）。
 - 模型权重 / 卡号：离线复核**不依赖**；live 复开时沿用各 FE `status.json` / SPEC 中的 MODEL·TOPO（常见 Qwen3-8B TP2、DeepSeek-V2-Lite MLA 等）——**以 FE 为准，勿臆造**。
 

@@ -2,9 +2,7 @@
 
 > 流程与能力边界以 [02_problem_localization](../02_problem_localization/README.md) 为准。  
 > **公开目录策略：** 只保留 **15 个典型模版** + 短入口 stub + 必要短协议。  
-> **权威分析矩阵 / verify-loop / 评估 / mining inventory / handoff 全文** 在  
-> [`runtime-guard-test/docs/`](https://github.com/djh95/runtime-guard-test/tree/main/docs)  
-> （索引：[README-anomaly-analysis.md](https://github.com/djh95/runtime-guard-test/blob/main/docs/README-anomaly-analysis.md)）。  
+> **权威分析矩阵 / verify-loop / 评估 / mining / handoff 全文** 在 **内部仓** `runtime-guard-test/docs/`（需权限；索引 `docs/README-anomaly-analysis.md`）。  
 > 满量 skills-run：`runtime-guard-test/docs/anomaly-skills-runs/` · FE：`tests/build-anomaly-env/fail-evidence/`。  
 > Keep 清单：[`typical-cases-keep-set-20261019.md`](./typical-cases-keep-set-20261019.md)
 
@@ -38,25 +36,25 @@
 | [typical-cases-keep-set-20261019.md](./typical-cases-keep-set-20261019.md) | 15 keep-set 选型 |
 | [typical-cases-reorg-done-20261019.md](./typical-cases-reorg-done-20261019.md) | 公开 reorg 完成记录 |
 
-## 分析 / 评估入口（stub → test 仓全文）
+## 分析 / 评估入口（stub → 内部仓路径）
 
-下列同名文件在本仓仅为 **入口 stub**；点开即跳到 test 仓权威副本。
+下列同名文件在本仓仅为 **入口 stub**。全文在 **内部** `runtime-guard-test`（需权限 clone）；勿依赖公开 HTTPS。
 
-| 入口 stub | 权威全文 |
-|-----------|----------|
-| [anomaly-skills-capability-…](./anomaly-skills-capability-20261017.md) | [test `docs/…`](https://github.com/djh95/runtime-guard-test/blob/main/docs/anomaly-skills-capability-20261017.md) |
-| [anomaly-skills-verify-loop-…](./anomaly-skills-verify-loop-20261017.md) | [test](https://github.com/djh95/runtime-guard-test/blob/main/docs/anomaly-skills-verify-loop-20261017.md) |
-| [anomaly-mining-policy-…](./anomaly-mining-policy-pr-rooted-20261018.md) | [test](https://github.com/djh95/runtime-guard-test/blob/main/docs/anomaly-mining-policy-pr-rooted-20261018.md) |
-| [guard-skills-evaluation-pr-weighted-…](./guard-skills-evaluation-pr-weighted-20261018.md) | [test](https://github.com/djh95/runtime-guard-test/blob/main/docs/guard-skills-evaluation-pr-weighted-20261018.md) |
-| [guard-skills-evaluation-…](./guard-skills-evaluation-20261017.md) | [test](https://github.com/djh95/runtime-guard-test/blob/main/docs/guard-skills-evaluation-20261017.md) |
-| [guard-effectiveness-weighted-score-…](./guard-effectiveness-weighted-score-20261018.md) | [test](https://github.com/djh95/runtime-guard-test/blob/main/docs/guard-effectiveness-weighted-score-20261018.md) |
-| [anomaly-skills-analysis-…](./anomaly-skills-analysis-20261017.md) | [test](https://github.com/djh95/runtime-guard-test/blob/main/docs/anomaly-skills-analysis-20261017.md) |
-| [anomaly-analysis-docs-audit-…](./anomaly-analysis-docs-audit-20261018.md) | [test](https://github.com/djh95/runtime-guard-test/blob/main/docs/anomaly-analysis-docs-audit-20261018.md) |
-| [anomaly-skills-handoff.md](./anomaly-skills-handoff.md) | [test](https://github.com/djh95/runtime-guard-test/blob/main/docs/anomaly-skills-handoff.md) |
-| [anomaly-repro-status-…](./anomaly-repro-status-20261016.md) | [test](https://github.com/djh95/runtime-guard-test/blob/main/docs/anomaly-repro-status-20261016.md) |
-| [anomaly-s29-s31-…](./anomaly-s29-s31-older-pr-wave2-20261017.md) | [test](https://github.com/djh95/runtime-guard-test/blob/main/docs/anomaly-s29-s31-older-pr-wave2-20261017.md) |
-| [case-studies-runs-archive-proposal-…](./case-studies-runs-archive-proposal-20261019.md) | [test](https://github.com/djh95/runtime-guard-test/blob/main/docs/case-studies-runs-archive-proposal-20261019.md) |
-| ~~anomaly-skills-runs/~~ | **仅** [test `docs/anomaly-skills-runs/`](https://github.com/djh95/runtime-guard-test/tree/main/docs/anomaly-skills-runs) |
+| 入口 stub | 内部仓路径（clone 后） |
+|-----------|------------------------|
+| [anomaly-skills-capability-…](./anomaly-skills-capability-20261017.md) | `docs/anomaly-skills-capability-20261017.md` |
+| [anomaly-skills-verify-loop-…](./anomaly-skills-verify-loop-20261017.md) | `docs/anomaly-skills-verify-loop-20261017.md` |
+| [anomaly-mining-policy-…](./anomaly-mining-policy-pr-rooted-20261018.md) | `docs/anomaly-mining-policy-pr-rooted-20261018.md` |
+| [guard-skills-evaluation-pr-weighted-…](./guard-skills-evaluation-pr-weighted-20261018.md) | `docs/guard-skills-evaluation-pr-weighted-20261018.md` |
+| [guard-skills-evaluation-…](./guard-skills-evaluation-20261017.md) | `docs/guard-skills-evaluation-20261017.md` |
+| [guard-effectiveness-weighted-score-…](./guard-effectiveness-weighted-score-20261018.md) | `docs/guard-effectiveness-weighted-score-20261018.md` |
+| [anomaly-skills-analysis-…](./anomaly-skills-analysis-20261017.md) | `docs/anomaly-skills-analysis-20261017.md` |
+| [anomaly-analysis-docs-audit-…](./anomaly-analysis-docs-audit-20261018.md) | `docs/anomaly-analysis-docs-audit-20261018.md` |
+| [anomaly-skills-handoff.md](./anomaly-skills-handoff.md) | `docs/anomaly-skills-handoff.md` |
+| [anomaly-repro-status-…](./anomaly-repro-status-20261016.md) | `docs/anomaly-repro-status-20261016.md` |
+| [anomaly-s29-s31-…](./anomaly-s29-s31-older-pr-wave2-20261017.md) | `docs/anomaly-s29-s31-older-pr-wave2-20261017.md` |
+| [case-studies-runs-archive-proposal-…](./case-studies-runs-archive-proposal-20261019.md) | `docs/case-studies-runs-archive-proposal-20261019.md` |
+| ~~anomaly-skills-runs/~~ | **仅** `docs/anomaly-skills-runs/`（内部仓） |
 
 Skill 手册：[06_agent_skills/](../06_agent_skills/)（**v5.8** / [SKILLS_METADATA.md](../06_agent_skills/SKILLS_METADATA.md)）。  
 Skills 离线复核 handoff：[../06_agent_skills/VERIFY_HANDOFF.md](../06_agent_skills/VERIFY_HANDOFF.md)。

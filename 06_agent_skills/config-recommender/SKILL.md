@@ -19,7 +19,7 @@ description: >-
 | `mode` | 含义 |
 |--------|------|
 | `troubleshoot` | 开目标 detector；按需 `dump_kv` + 配额 |
-| `business_default` | detector 全关、dump 关（`is_fully_off` 冷路径） |
+| `business_default` | detector 全关、dump 关（**全关旁路** / static idle） |
 
 未定类先走 `detector-sweep`，不要在本 skill 开「全 detector + 调优阈值」混模板。  
 不适合 Guard 的现象（Hang/OOM/…）→ 停，见 investigation triage。
