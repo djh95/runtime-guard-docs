@@ -108,6 +108,8 @@ runtime/
 
 ## 4. 不同部署要注意什么
 
+> 白话逐行解释见 [guard-deploy-caveats-explained-20261019.md](./guard-deploy-caveats-explained-20261019.md)。
+
 | 场景 | 注意 |
 |------|------|
 | 单卡 | 绝对路径；默认关时为 static idle（见开篇） |
