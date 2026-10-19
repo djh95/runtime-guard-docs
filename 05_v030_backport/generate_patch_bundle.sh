@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Maintainer: export a Runtime Guard backport patch for ≤0.30.0 trees.
+# Maintainer: export a Runtime Guard backport patch for releases/v0.30.0
+# (rc line; no formal tag v0.30.0). BASE must match CHANGELOG.md.
 #
 # Preferred (matches the release cherry-pick PR):
 #   VLLM_ASCEND_GIT=/path/to/vllm-ascend \

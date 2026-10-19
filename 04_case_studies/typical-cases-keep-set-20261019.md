@@ -7,7 +7,7 @@ cursor:
 
 **目的：** 公开 `04_case_studies/` 只留高教学价值案例；其余 soft-inv 重复与近邻 L2 迁到 `runtime-guard-test`（runs / fail-evidence）。  
 **范围：** 优先 **A∪B+GAP**；**C 几乎全部迁出**。  
-**状态：** 推荐清单 — **尚未搬文件**。  
+**状态：** 已落地 — 公开 `examples/` 15 模版；大体积分析全文在 `runtime-guard-test/docs/`（本仓 stub）。  
 **相关：** [`case-studies-runs-archive-proposal-20261019.md`](./case-studies-runs-archive-proposal-20261019.md)
 
 ---
@@ -91,7 +91,7 @@ C 名称模式（示例）：`*ones*` / `*zeros*` / `*abs*` / `*_scale_*` / `*_n
 
 ---
 
-## 5. 落地时注意（尚未执行）
+## 5. 落地状态
 
 - 每 keep ID：`04_case_studies/examples/Sxx_<short>.md`（或扁平 `case-Sxx.md`）≈20–40 行 + 链到  
   `runtime-guard-test/docs/anomaly-skills-runs/` 与 `tests/build-anomaly-env/fail-evidence/Sxx/`。  

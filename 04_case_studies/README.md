@@ -1,8 +1,11 @@
 # ④ 问题定位实例分析
 
-> 流程与能力边界以 [02_problem_localization.md](../02_problem_localization/README.md) 为准。  
-> **公开目录策略（2026-10-19）：** 只保留 **15 个典型模版** + 分析/政策文档。  
-> 满量 skills-run 痕迹（S01–S152）在 **`runtime-guard-test/docs/anomaly-skills-runs/`**；原始 FE 在 **`runtime-guard-test/tests/build-anomaly-env/fail-evidence/`**。  
+> 流程与能力边界以 [02_problem_localization](../02_problem_localization/README.md) 为准。  
+> **公开目录策略：** 只保留 **15 个典型模版** + 短入口 stub + 必要短协议。  
+> **权威分析矩阵 / verify-loop / 评估 / mining inventory / handoff 全文** 在  
+> [`runtime-guard-test/docs/`](https://github.com/djh95/runtime-guard-test/tree/main/docs)  
+> （索引：[README-anomaly-analysis.md](https://github.com/djh95/runtime-guard-test/blob/main/docs/README-anomaly-analysis.md)）。  
+> 满量 skills-run：`runtime-guard-test/docs/anomaly-skills-runs/` · FE：`tests/build-anomaly-env/fail-evidence/`。  
 > Keep 清单：[`typical-cases-keep-set-20261019.md`](./typical-cases-keep-set-20261019.md)
 
 ## 典型模版（15）
@@ -27,29 +30,37 @@
 
 `S10′` 公开文件名用 **`S10p_`**；test 证据目录为 `fail-evidence/S10/`。
 
-## 分析 / 政策 / 评估文档
+## 本仓保留的短文档
 
-| 编号 | 文档 | 备注 |
-|------|------|------|
-| A1 | [anomaly-skills-capability-20261017.md](./anomaly-skills-capability-20261017.md) | 全量能力矩阵 |
-| A2 | [anomaly-skills-verify-loop-20261017.md](./anomaly-skills-verify-loop-20261017.md) | analyze→re-verify |
-| A3 | [anomaly-skills-handoff.md](./anomaly-skills-handoff.md) | 160↔skills inbox |
-| A4 | [anomaly-skills-analysis-20261017.md](./anomaly-skills-analysis-20261017.md) | 分析纪要 |
-| A5 | ~~anomaly-skills-runs/~~ | **已迁出** → test-repo `docs/anomaly-skills-runs/` |
-| A6 | [guard-skills-evaluation-pr-weighted-20261018.md](./guard-skills-evaluation-pr-weighted-20261018.md) | PR-weighted 评估 |
-| A7 | [anomaly-mining-policy-pr-rooted-20261018.md](./anomaly-mining-policy-pr-rooted-20261018.md) | PR-rooted mining |
-| A8 | [guard-skills-evaluation-20261017.md](./guard-skills-evaluation-20261017.md) | raw 附录 |
-| A9 | [guard-effectiveness-weighted-score-20261018.md](./guard-effectiveness-weighted-score-20261018.md) | Guard 作用分 ≈0.53 |
-| A10 | [anomaly-analysis-docs-audit-20261018.md](./anomaly-analysis-docs-audit-20261018.md) | 文档完备性审计 |
-| A11 | [typical-cases-keep-set-20261019.md](./typical-cases-keep-set-20261019.md) | keep-set 选型 |
-| A12 | [case-studies-runs-archive-proposal-20261019.md](./case-studies-runs-archive-proposal-20261019.md) | runs 迁出提案 |
-| — | [anomaly-PRINCIPLES.md](./anomaly-PRINCIPLES.md) | origin-faithful 协议 |
-| — | [anomaly-repro-status-20261016.md](./anomaly-repro-status-20261016.md) | 状态快照 |
-| — | [anomaly-s29-s31-older-pr-wave2-20261017.md](./anomaly-s29-s31-older-pr-wave2-20261017.md) | 小波笔记 |
+| 文档 | 说明 |
+|------|------|
+| [anomaly-PRINCIPLES.md](./anomaly-PRINCIPLES.md) | origin-faithful 短协议（公开可读） |
+| [typical-cases-keep-set-20261019.md](./typical-cases-keep-set-20261019.md) | 15 keep-set 选型 |
+| [typical-cases-reorg-done-20261019.md](./typical-cases-reorg-done-20261019.md) | 公开 reorg 完成记录 |
 
-Skill 手册：[06_agent_skills/](../06_agent_skills/)（v5.8）。  
-Skills 离线复核 handoff（15 keep-set）：[../06_agent_skills/VERIFY_HANDOFF.md](../06_agent_skills/VERIFY_HANDOFF.md)。
+## 分析 / 评估入口（stub → test 仓全文）
+
+下列同名文件在本仓仅为 **入口 stub**；点开即跳到 test 仓权威副本。
+
+| 入口 stub | 权威全文 |
+|-----------|----------|
+| [anomaly-skills-capability-…](./anomaly-skills-capability-20261017.md) | [test `docs/…`](https://github.com/djh95/runtime-guard-test/blob/main/docs/anomaly-skills-capability-20261017.md) |
+| [anomaly-skills-verify-loop-…](./anomaly-skills-verify-loop-20261017.md) | [test](https://github.com/djh95/runtime-guard-test/blob/main/docs/anomaly-skills-verify-loop-20261017.md) |
+| [anomaly-mining-policy-…](./anomaly-mining-policy-pr-rooted-20261018.md) | [test](https://github.com/djh95/runtime-guard-test/blob/main/docs/anomaly-mining-policy-pr-rooted-20261018.md) |
+| [guard-skills-evaluation-pr-weighted-…](./guard-skills-evaluation-pr-weighted-20261018.md) | [test](https://github.com/djh95/runtime-guard-test/blob/main/docs/guard-skills-evaluation-pr-weighted-20261018.md) |
+| [guard-skills-evaluation-…](./guard-skills-evaluation-20261017.md) | [test](https://github.com/djh95/runtime-guard-test/blob/main/docs/guard-skills-evaluation-20261017.md) |
+| [guard-effectiveness-weighted-score-…](./guard-effectiveness-weighted-score-20261018.md) | [test](https://github.com/djh95/runtime-guard-test/blob/main/docs/guard-effectiveness-weighted-score-20261018.md) |
+| [anomaly-skills-analysis-…](./anomaly-skills-analysis-20261017.md) | [test](https://github.com/djh95/runtime-guard-test/blob/main/docs/anomaly-skills-analysis-20261017.md) |
+| [anomaly-analysis-docs-audit-…](./anomaly-analysis-docs-audit-20261018.md) | [test](https://github.com/djh95/runtime-guard-test/blob/main/docs/anomaly-analysis-docs-audit-20261018.md) |
+| [anomaly-skills-handoff.md](./anomaly-skills-handoff.md) | [test](https://github.com/djh95/runtime-guard-test/blob/main/docs/anomaly-skills-handoff.md) |
+| [anomaly-repro-status-…](./anomaly-repro-status-20261016.md) | [test](https://github.com/djh95/runtime-guard-test/blob/main/docs/anomaly-repro-status-20261016.md) |
+| [anomaly-s29-s31-…](./anomaly-s29-s31-older-pr-wave2-20261017.md) | [test](https://github.com/djh95/runtime-guard-test/blob/main/docs/anomaly-s29-s31-older-pr-wave2-20261017.md) |
+| [case-studies-runs-archive-proposal-…](./case-studies-runs-archive-proposal-20261019.md) | [test](https://github.com/djh95/runtime-guard-test/blob/main/docs/case-studies-runs-archive-proposal-20261019.md) |
+| ~~anomaly-skills-runs/~~ | **仅** [test `docs/anomaly-skills-runs/`](https://github.com/djh95/runtime-guard-test/tree/main/docs/anomaly-skills-runs) |
+
+Skill 手册：[06_agent_skills/](../06_agent_skills/)（**v5.8** / [SKILLS_METADATA.md](../06_agent_skills/SKILLS_METADATA.md)）。  
+Skills 离线复核 handoff：[../06_agent_skills/VERIFY_HANDOFF.md](../06_agent_skills/VERIFY_HANDOFF.md)。
 
 ## 写作模板（若新增人类案例）
 
-建议文件名：`YYYYMMDD_<short_title>.md` 或 `examples/Sxx_<short>.md`。结构：元信息 → 现象 → Guard 配置 → 抓取 → 定界（注明非 L4）→ 证据路径（test）→ 后续。
+建议文件名：`examples/Sxx_<short>.md`。结构：元信息 → 现象 → Guard 配置 → 抓取 → 定界（注明非 L4）→ 证据路径（test）→ 后续。大体积实验日志请写到 **runtime-guard-test/docs/**，不要再塞回本目录全文。

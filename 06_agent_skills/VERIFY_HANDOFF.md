@@ -106,11 +106,11 @@ Project Agent Store（本会话结果落点，非公开 Git）：
 |------|------|
 | Fail-evidence | `$RG_TEST/tests/build-anomaly-env/fail-evidence/Sxx/`（S10′ → **`S10/`**） |
 | Skills runs 归档 | `$RG_TEST/docs/anomaly-skills-runs/`（如 `S01-20261017.md`；S10′/S11 可能在 `batch-pass-wave-*.md`） |
-| Capability 矩阵 | `$RG_DOCS/04_case_studies/anomaly-skills-capability-20261017.md` |
+| Capability 矩阵 | `$RG_TEST/docs/anomaly-skills-capability-20261017.md`（公开仓仅为 stub） |
 | Principles | `$RG_DOCS/04_case_studies/anomaly-PRINCIPLES.md`（镜像 test `tests/build-anomaly-env/PRINCIPLES.md`） |
-| Mining policy | `$RG_DOCS/04_case_studies/anomaly-mining-policy-pr-rooted-20261018.md` |
-| Verify loop 旧笔记 | `$RG_DOCS/04_case_studies/anomaly-skills-verify-loop-20261017.md` |
-| Builder handoff（160↔162） | `$RG_DOCS/04_case_studies/anomaly-skills-handoff.md` |
+| Mining policy | `$RG_TEST/docs/anomaly-mining-policy-pr-rooted-20261018.md` |
+| Verify loop 旧笔记 | `$RG_TEST/docs/anomaly-skills-verify-loop-20261017.md` |
+| Builder handoff（160↔162） | `$RG_TEST/docs/anomaly-skills-handoff.md` |
 | Overlay / MATRIX | `$RG_TEST/tests/build-anomaly-env/{README,MATRIX,INJECTION,PRINCIPLES}.md` + 各 `NN_* / SPEC` |
 
 FE 内常见文件：`layers.json` · `status.json` · `WHY_PASS.md` / `WHY_UNDETECTED.md` · `sample_*.json` · 尝试子目录（含 report/dump 痕迹）。
