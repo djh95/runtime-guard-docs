@@ -36,7 +36,7 @@ Guard 挂在 **Model Runner v2** 上。为了少做事、少通信：
 | **static idle** | detector/dump/热更能力都关时的「静默旁路」：不走 Guard 热路径壳，接近无 Guard。 |
 | **绝对路径** | `/data/...` 这种，不依赖进程 cwd；容器/K8s/systemd 下 cwd 常变。 |
 | **sync/dump** | 每 wave 的配置同步 +（若命中）KV dump 排队/D2H；PP 下逻辑集中在 last stage。 |
-| **`manual_dump` / `done`** | 手动拍 dump 的水位计数；减到 0 时 JSON 会写回「关」。多进程共享同一 JSON 时，**每个进程内存里各自扣**，文件上的 `done/false` 时机可能交错。 |
+| **`manual_dump` / `done`** | JSON 里的 `dump.manual_dump = N` 是 **水位/目标**（进程**从不写回**）；进程内 `done` 是已拍次数（**仅内存**）。当 `done ≥ N` 时跳过；再拍需把 N 抬高（如 1→2）。多 DP 各有自己的 `done`。 |
 | **`AscendAsyncOutput.get_output()`** | Async scheduling 下，采样后结果在异步输出对象上取回；Guard 的 after-sample 检测挂在这里，而不是同步 sample 返回瞬间。 |
 | **`additional_config`** | `vllm serve` / `LLM()` 的 Ascend 扩展配置；`runtime_config_*` 等都塞这里。 |
 | **v2 runner** | Model Runner v2；Guard **只接 v2**，v1 未接线。 |
@@ -89,12 +89,27 @@ KV 却是按 TP 切开存的 → **dump 时 last-PP 每个 TP 都要写自己的
 
 **拓扑：** 多份「整模」副本并行服务不同请求（数据并行）。
 
-**Guard 为何：** 各 DP 副本有自己的请求流与本地 KV → **报告/dump 彼此独立**。若多个进程 **共享同一份** `runtime_config.json` 做 `manual_dump`，文件里的计数与「写回 false」是共享的，但 **每个进程内存里各自扣减** → 最坏大约 `num_DP × N` 次拍打。
+**Guard 为何：** 各 DP 副本有自己的请求流与本地 KV → **报告/dump 彼此独立**。共享同一 `runtime_config.json` 时：盘上 `manual_dump=N` 是大家读到的**同一水位**；但每个副本各自维护内存 **`done`**，互不写回 JSON → 每个副本都可在 `done < N` 时各拍满约 N 次（集群约 `num_DP × N`）。
 
 **运维要做 / 常见错：**
 - 按 DP（或按进程）分开看 report/dump，不要假设全集群只有一份。  
-- 共享 JSON 时：`manual_dump: N` ≠「全集群一共 N 次」；某副本先写 `false` 可能让其它副本热更后提前停。  
+- 共享 JSON：`N` ≠「全集群一共 N 次」；也不会因为某副本「写回 false」拖停别人（**根本不写回**）。  
+- 再拍一次：热更把 `N` **抬高**到大于本进程当前 `done`（推荐 1→2→3），而不是等文件变 false。  
 - 需要精确配额时：每 DP 独立配置文件，或接受「偏多」并做好磁盘预算。
+
+---
+
+### 4b. `manual_dump` / `done` 正误（勘误 2026-10-19）
+
+**用户模型正确**（与上游 `runtime_config.md` + `config.py::consume_manual_trigger` 一致）：
+
+1. JSON `dump.manual_dump = N` = **watermark / 目标次数**；进程**永不**把它改写成 `false`/`0`。  
+2. 进程内 `_manual_dumps_done`（日志里的 `done`）= 本进程已消费次数；**只在内存**，不落盘。  
+3. 当 `done >= N`（盘上值 ≤ 本进程 done）→ **跳过**，不 dump。  
+4. 再 dump：热更把 N 调到 **> done**（如做完 1 次后再写成 2）。  
+5. `true` = 持续模式，不走水位、也不改 JSON。  
+
+> 旧说法「减到 0 写回 `manual_dump: false`」来自过期的 test-ops 文案，**以代码与 vllm-ascend 配置文档为准**。
 
 ---
 
@@ -189,8 +204,10 @@ KV 却是按 TP 切开存的 → **dump 时 last-PP 每个 TP 都要写自己的
 | 容器 / K8s | 挂卷；按 Pod 分子目录，避免互相 overwrite |
 | Offline `LLM()` | 同样走 `additional_config`；确认 v2 runner |
 
+> DP 行里的 `done` = **内存计数**，不是 JSON 字段；盘上只有水位 `manual_dump=N`。
+
 ---
 
 ## 一句话记忆
 
-**报告看 last-PP TP0；KV dump 凑齐 last-PP 所有 tp\*；默认关=static idle；路径用绝对路径；Spec 才开 spec_acceptance；Async 要等 get_output/dump 收尾；LLM() 必须 v2。**
+**报告看 last-PP TP0；KV dump 凑齐 last-PP 所有 tp\*；默认关=static idle；路径用绝对路径；`manual_dump=N` 是水位（不写回），再拍就抬高 N；Spec 才开 spec_acceptance；Async 要等 get_output/dump 收尾；LLM() 必须 v2。**
