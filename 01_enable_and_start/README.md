@@ -14,7 +14,7 @@
 
 **版本支持：**
 
-- **`releases/v0.30.0` 发布线**（含 `v0.30.0rc*`；仓库**无**正式 tag `v0.30.0`）**一律不支持** Runtime Guard，须先打本手册 [05_v030_backport](../05_v030_backport/README.md) 的 patch（BASE 见 [CHANGELOG](../05_v030_backport/CHANGELOG.md)），再按本文启动。
+- **`releases/v0.30.0` 发布线**（含 `v0.30.0rc*`；仓库无正式 tag `v0.30.0`）一律不支持 Runtime Guard，须先打本手册 [05_v030_backport](../05_v030_backport/README.md) 的 patch（BASE 见 [CHANGELOG](../05_v030_backport/CHANGELOG.md)），再按本文启动。
 - **更晚的版本**：先打开上面三个链接，把 URL 里的 `main` 换成你的 **tag / 分支**（例如 `v0.31.0`）。若文档 404 或源码中没有 `runtime_guard`，同样先打 [05 patch](../05_v030_backport/README.md)（或该版本对应的后续 patch 包），再启动。
 
 ---
