@@ -50,7 +50,7 @@ Anomaly 定界：先读 `tests/build-anomaly-env/fail-evidence/Sxx/` 与三层�
 | 停检 | `report.max_per_req`（**不是** `stop_after_alert`） |
 | Dump | 仅 native `dump_kv`；无 msprobe |
 | 默认全关 | `is_fully_off` / **static idle** 热路径旁路（开销可忽略；与是否合入 #18644 无关） |
-| ≤0.30 backport | 见 [05](https://github.com/djh95/runtime-guard-docs/blob/main/05_v030_backport/README.md)；backport 含 #18450 Perf idle；**不含** main #18644 鲁棒修复集合 |
+| `releases/v0.30.0` backport | 见 [05](https://github.com/djh95/runtime-guard-docs/blob/main/05_v030_backport/README.md)（BASE 见 CHANGELOG）；含 #18450 Perf idle；**不含** main #18644 鲁棒修复集合 |
 
 ## 维护
 

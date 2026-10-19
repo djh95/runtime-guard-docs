@@ -224,4 +224,4 @@ python -m vllm_ascend.runtime_guard.analysis.scripts.verify_request_kv --report 
 - 启动：[01_enable_and_start.md](../01_enable_and_start/README.md)  
 - 算法：[03_detectors/README.md](../03_detectors/README.md)  
 - 实例：[04_case_studies/README.md](../04_case_studies/README.md)  
-- v0.30：[05_v030_backport/README.md](../05_v030_backport/README.md)
+- `releases/v0.30.0` 发布线 patch：[05_v030_backport/README.md](../05_v030_backport/README.md)

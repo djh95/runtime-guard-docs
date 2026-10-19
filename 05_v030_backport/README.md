@@ -1,10 +1,10 @@
-# ⑤ 版本 patch（≤0.30.0 / 未合入 Guard 时）
+# ⑤ 版本 patch（`releases/v0.30.0` 发布线 / 未合入 Guard 时）
 
 ## 何时需要
 
 | 你的版本 | 怎么做 |
 |----------|--------|
-| **到 release `0.30.0`（含）** | 原生不支持 Guard；**如需要使用 Guard 能力，则必须打本目录 patch**，之后按 [01 启动](../01_enable_and_start/README.md) |
+| **`releases/v0.30.0` 发布线**（含 `v0.30.0rc*`；**无**正式 tag `v0.30.0`） | 原生不支持 Guard；**如需 Guard 必须打本目录 patch**（BASE 见 [CHANGELOG](./CHANGELOG.md)），再按 [01 启动](../01_enable_and_start/README.md) |
 | **更晚的版本** | 先查功能文档链接（把 `main` 换成你的 tag/分支）。若 404 / 源码无 `runtime_guard` → 打本目录（或后续版本）patch；若已合入 → 不必打，直接启 |
 
 当前包版本与功能清单见 **[CHANGELOG.md](./CHANGELOG.md)**（以最新 `v0.30-rg.*` 为准）。
@@ -66,7 +66,7 @@ bash /path/to/runtime-guard-docs/05_v030_backport/apply_patch.sh "$(pwd)"
 
 ## 能力与限制（打完 patch 后）
 
-- 需要 **MRV2**；拓扑以 v0.30 worker 为准。  
+- 需要 **MRV2**；拓扑以 `releases/v0.30.0` worker 为准。  
 - Analysis 离线脚本若不在包内，细定界仍要 analysis 工作区（见 [02](../02_problem_localization/README.md)）。  
 - 与 `main` 后续 hardening（若未进 #18450）可能仍有差距——以 PR tip / CHANGELOG 为准，不假装「已等同最新 main」。
 

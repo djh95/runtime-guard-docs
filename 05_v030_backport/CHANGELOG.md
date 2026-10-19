@@ -63,6 +63,6 @@ git diff 6d25ba2b3..59ea3890d
 
 ## 版本号约定
 
-`v0.30-rg.<N>`：面向 ≤0.30.0 / 未合入 Guard 树的第 N 次 backport 包。
+`v0.30-rg.<N>`：面向 `releases/v0.30.0` 发布线（含 rc）/ 未合入 Guard 树的第 N 次 backport 包。适用 BASE 以本文件各版本表为准（当前推荐 `6d25ba2b3`）。
 
 必填字段：`BASE`、`SOURCE`/`PR`、`怎么得到`、`对应功能`、冒烟结果。
