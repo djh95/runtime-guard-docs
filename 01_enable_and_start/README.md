@@ -2,7 +2,7 @@
 
 适用：开发联调、业务启服、一线临时开观测。  
 前置：**Model Runner v2**（v1 未接线）。  
-默认 detector / hot-reload / dump **全关**，进入 **static idle** 热路径旁路（[#18644](https://github.com/vllm-project/vllm-ascend/pull/18644) 优化），开销可忽略；开启 detector、dump、热更能力后会引入额外 CPU 开销（功能来自 [#16849](https://github.com/vllm-project/vllm-ascend/pull/16849)），性能敏感业务建议评估后启用。
+默认 detector / hot-reload / dump **全关**，进入 **static idle** 热路径旁路，开销可忽略；开启 detector、dump、热更能力后会引入额外 CPU 开销（功能见 [#16849](https://github.com/vllm-project/vllm-ascend/pull/16849)），性能敏感业务建议评估后启用。
 
 ## 相关上游文档
 
