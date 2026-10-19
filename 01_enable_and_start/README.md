@@ -147,7 +147,7 @@ runtime/
 4. 只用某一个 `tp*` 的 `.pt` 当完整 KV。  
 5. v1 runner → Guard 未接线。  
 6. `≤0.30.0`（或更新版本仍无 Guard）却直接配 `runtime_*` → 参数被忽略或报错；先打 [05 patch](../05_v030_backport/README.md)。  
-7. 以为 `manual_dump` 拍完会自动变 `false` → **不会**；要再拍请抬高水位 N。
+7. 再拍需热更抬高水位 `N`（JSON 里的 `manual_dump` 不会被进程改掉）。
 
 ---
 

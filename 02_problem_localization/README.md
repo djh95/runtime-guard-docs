@@ -188,7 +188,7 @@ python -m vllm_ascend.runtime_guard.analysis.scripts.verify_request_kv --report 
 | 只有 tp0 | 其它 last-PP TP 是否同波；日志 `[runtime_guard dump_kv]` |
 | 无更早 PP 层 | **预期**（不 dump 非 last PP） |
 | 热更无效 | `runtime_config_hot_reload`；路径；reload 拒绝日志 |
-| Manual 不触发 | 是否有 scheduled tokens；水位是否用尽 |
+| Manual 不触发 | 是否有 scheduled tokens；本进程 `done` 是否已 ≥ 水位 `N` |
 
 日志关键字：`[runtime_guard sync]` / `manual_trigger` / `dump_kv` / `action`。
 
