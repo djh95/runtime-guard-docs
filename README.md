@@ -11,7 +11,7 @@
 | 角色 | 先读 | 再读 |
 |------|------|------|
 | 使用 / 运维启服 | [01 如何启动 Guard](./01_enable_and_start/README.md) | [03 检测算法](./03_detectors/README.md) 按需 |
-| 一线维护 / 排障 | [01](./01_enable_and_start/README.md) → [02 问题定位分析](./02_problem_localization/README.md) | [04 实例](./04_case_studies/README.md)（持续补充） |
+| 一线维护 / 排障 | [01](./01_enable_and_start/README.md) → [02 问题定位分析](./02_problem_localization/README.md) | [04 实例](./04_case_studies/README.md)（15 典型模版 + 分析附录） |
 | Agent / 自动化排障 | [06 Agent Skills](./06_agent_skills/README.md) | [02](./02_problem_localization/README.md) + [runtime-guard-test](https://github.com/djh95/runtime-guard-test) 脚本 |
 | 开发 / 算法理解 | [03 检测算法](./03_detectors/README.md) | 源码链接（文内 GitHub） |
 | `≤0.30.0` 或不支持 Guard 的版本 | [05 版本 patch](./05_v030_backport/README.md) | 先查文档链接，再打 patch |
