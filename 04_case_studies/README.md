@@ -60,5 +60,7 @@
 | A8 | [guard-skills-evaluation-20261017.md](./guard-skills-evaluation-20261017.md) | raw 全量附录（含被刷分抬高的数字） |
 | A9 | [guard-effectiveness-weighted-score-20261018.md](./guard-effectiveness-weighted-score-20261018.md) | **typed 去刷分 Guard 实际作用分** |
 | A10 | [anomaly-analysis-docs-audit-20261018.md](./anomaly-analysis-docs-audit-20261018.md) | S01–S152 分析文档完备性审计 |
+| A11 | [typical-cases-keep-set-20261019.md](./typical-cases-keep-set-20261019.md) | docs 典型模版 keep-set（≈15） |
+| A12 | [case-studies-runs-archive-proposal-20261019.md](./case-studies-runs-archive-proposal-20261019.md) | runs 迁出 docs 提案 |
 
 Skill 手册副本：[06_agent_skills/](../06_agent_skills/)（对齐 `runtime-guard-test/analysis/skill/` **v5.8**）。
