@@ -46,7 +46,8 @@ description: >-
 | 权重 / 拓扑 / 传输栈错 | 先修配置 |
 
 **适合：** `token_repeat` / `logits_finite` / `spec_acceptance`（MTP）；KV 可疑靠 dump+标杆。  
-**勿启用未合入：** `output_substring` / `token_logprob` / `slot_*` / `kv_state`。
+**勿启用未合入：** `output_substring` / `token_logprob` / `slot_*` / `kv_state`。  
+**看似必现：** 先按手册 [02 §4 Step 0.5](https://github.com/djh95/runtime-guard-docs/blob/main/02_problem_localization/README.md) 做连测 / 换输入（勿只靠 `max_tokens=1`）/ 消融 / PD 单 P·单 D；未验证勿在交付里写「必现」。
 
 ### 三层率（anomaly / 压测必记）
 
