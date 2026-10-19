@@ -2,9 +2,9 @@
 
 > **本目录不在 vllm-ascend 代码仓内。**  
 > 面向：内部/外部开发、业务使用方、一线维护。  
-> 目标：会启、会用、能抓现场、能做**问题初步定界**（不是根因定位工具链）。
-
-> GitHub：本仓托管介绍文档；离线脚本与用例在 **内部仓** `runtime-guard-test`（需权限；克隆后用本地路径，勿依赖公开 HTTPS blob）。
+> 目标：会启、会用、能抓现场、能做**问题初步定界**（不是根因定位工具链）。  
+> **公开可读：** 启停手册、检测说明、**15 典型模版**、skills 契约（`06`，**v5.8**）。  
+> **需内部仓权限：** 离线脚本 / FE / 满量 runs / 大体积分析矩阵 → **`runtime-guard-test`**（克隆后用本地路径；对外 HTTPS blob 会 404，勿当公开资源）。
 
 ## 读法（按角色）
 
@@ -25,7 +25,7 @@ README.md                          ← 本页（总目录）
 03_detectors/                      ← ③ 检测算法（分文件）
 04_case_studies/                   ← ④ 15 典型模版 + 入口 stub（全文在 test 仓）
 05_v030_backport/                  ← ⑤ releases/v0.30.0 发布线 patch（持续更新）
-06_agent_skills/                   ← ⑥ Agent Skills（排障编排；脚本在 runtime-guard-test）
+06_agent_skills/                   ← ⑥ Agent Skills v5.8（权威；脚本在内部仓 runtime-guard-test）
 ```
 
 ## 相对原思路的完善点

@@ -128,7 +128,7 @@
 
 ### Step 1 — 启服与配置
 
-见 [01_enable_and_start.md](../01_enable_and_start/README.md)。排障期建议 `runtime_config_hot_reload=true` + 绝对路径。
+见 [01_enable_and_start/README.md](../01_enable_and_start/README.md)。排障期建议 `runtime_config_hot_reload=true` + 绝对路径。
 
 ### Step 2 — Dump 管线冒烟（再压测）
 
@@ -222,7 +222,7 @@ PYTHONPATH="$RG_TEST" python -m analysis.scripts.verify_request_kv --report ... 
 
 ## 8. 相关手册页
 
-- 启动：[01_enable_and_start.md](../01_enable_and_start/README.md)  
+- 启动：[01_enable_and_start/README.md](../01_enable_and_start/README.md)  
 - 算法：[03_detectors/README.md](../03_detectors/README.md)  
 - 实例：[04_case_studies/README.md](../04_case_studies/README.md)  
 - `releases/v0.30.0` 发布线 patch：[05_v030_backport/README.md](../05_v030_backport/README.md)
