@@ -1,13 +1,14 @@
 # ④ 问题定位实例分析
 
 > 流程以 [02](../02_problem_localization/README.md) 为准。  
-> **Ownership：** 公开本目录 = README + **15 短教学例** + 薄 stub；分析全文 / FE / runs 权威 = `runtime-guard-test/docs/`（索引 `README-anomaly-analysis.md`）。
+> **Ownership：** 公开本目录 = README + **15 短教学例** + **完整个案包**（目前 `cases/S01/`）。  
+> 满量 FE / runs / 大体积分析矩阵只在私有 `runtime-guard-test`（本仓**不**再放「见 test」空壳页）。
 
 ## 15 教学例
 
 | ID | 文件 | 课（一句话） |
 |----|------|--------------|
-| S01 | [examples/S01_kv-skip-zero-gap.md](./examples/S01_kv-skip-zero-gap.md) | GAP：有限垃圾，`logits_finite` 漏 |
+| S01 | [examples/S01_kv-skip-zero-gap.md](./examples/S01_kv-skip-zero-gap.md) · **[cases/S01/](./cases/S01/)** | GAP：有限垃圾，`logits_finite` 漏 |
 | S10′ | [examples/S10p_fullattn-recycle-zero.md](./examples/S10p_fullattn-recycle-zero.md) | PASS recycle；对照 S01 |
 | S11 | [examples/S11_mla-rope-pad-tail.md](./examples/S11_mla-rope-pad-tail.md) | MLA pad-tail ≠ recycle |
 | S07 | [examples/S07_w8a8-scale-collapse-gap.md](./examples/S07_w8a8-scale-collapse-gap.md) | GAP：quant scale collapse |
@@ -23,29 +24,12 @@
 | S47 | [examples/S47_attn-qkv-out.md](./examples/S47_attn-qkv-out.md) | Attn 算子 L2 |
 | S33 | [examples/S33_overflow-softcap.md](./examples/S33_overflow-softcap.md) | overflow / bang |
 
-`S10′` 公开文件名 **`S10p_`**；FE 目录为 `fail-evidence/S10/`。
+`S10′` 公开文件名 **`S10p_`**。
 
-## stub → 内部仓
+## 完整个案包
 
-下列同名文件仅为入口；全文在 `runtime-guard-test/docs/`（需权限）。
-
-| stub | 内部路径 |
-|------|----------|
-| [anomaly-PRINCIPLES.md](./anomaly-PRINCIPLES.md) | `docs/anomaly-PRINCIPLES.md` |
-| [typical-cases-keep-set-…](./typical-cases-keep-set-20261019.md) | `docs/typical-cases-keep-set-20261019.md` |
-| [typical-cases-reorg-done-…](./typical-cases-reorg-done-20261019.md) | `docs/typical-cases-reorg-done-20261019.md` |
-| [anomaly-skills-capability-…](./anomaly-skills-capability-20261017.md) | `docs/anomaly-skills-capability-20261017.md` |
-| [anomaly-skills-verify-loop-…](./anomaly-skills-verify-loop-20261017.md) | `docs/anomaly-skills-verify-loop-20261017.md` |
-| [anomaly-mining-policy-…](./anomaly-mining-policy-pr-rooted-20261018.md) | `docs/anomaly-mining-policy-pr-rooted-20261018.md` |
-| [guard-skills-evaluation-pr-weighted-…](./guard-skills-evaluation-pr-weighted-20261018.md) | `docs/guard-skills-evaluation-pr-weighted-20261018.md` |
-| [guard-skills-evaluation-…](./guard-skills-evaluation-20261017.md) | `docs/guard-skills-evaluation-20261017.md` |
-| [guard-effectiveness-weighted-score-…](./guard-effectiveness-weighted-score-20261018.md) | `docs/guard-effectiveness-weighted-score-20261018.md` |
-| [anomaly-skills-analysis-…](./anomaly-skills-analysis-20261017.md) | `docs/anomaly-skills-analysis-20261017.md` |
-| [anomaly-analysis-docs-audit-…](./anomaly-analysis-docs-audit-20261018.md) | `docs/anomaly-analysis-docs-audit-20261018.md` |
-| [anomaly-skills-handoff.md](./anomaly-skills-handoff.md) | `docs/anomaly-skills-handoff.md` |
-| [anomaly-repro-status-…](./anomaly-repro-status-20261016.md) | `docs/anomaly-repro-status-20261016.md` |
-| [anomaly-s29-s31-…](./anomaly-s29-s31-older-pr-wave2-20261017.md) | `docs/anomaly-s29-s31-older-pr-wave2-20261017.md` |
-| [case-studies-runs-archive-proposal-…](./case-studies-runs-archive-proposal-20261019.md) | `docs/case-studies-runs-archive-proposal-20261019.md` |
-| ~~anomaly-skills-runs/~~ | **仅** `docs/anomaly-skills-runs/` |
+| ID | 路径 | 说明 |
+|----|------|------|
+| S01 | [cases/S01/](./cases/S01/) | External five-bar：现象→根因→Guard GAP→复现 Then/Now→课；含 `evidence/` |
 
 Skills：[06](../06_agent_skills/)（**v5.8**）· [VERIFY_HANDOFF](../06_agent_skills/VERIFY_HANDOFF.md)。

@@ -1,0 +1,20 @@
+{
+  "trigger_events": 136,
+  "precision_hits": 25,
+  "precision_notes": [
+    "garbage_mixed_script:completion_1792141262_01.json",
+    "garbage_mixed_script:completion_1792141266_02.json",
+    "garbage_mixed_script:completion_1792141270_03.json",
+    "garbage_mixed_script:completion_1792141274_04.json",
+    "garbage_mixed_script:completion_1792141277_05.json",
+    "garbage_mixed_script:completion_1792141281_06.json",
+    "garbage_mixed_script:completion_1792141285_07.json",
+    "garbage_mixed_script:completion_1792141289_08.json",
+    "garbage_mixed_script:completion_1792141293_09.json",
+    "garbage_mixed_script:completion_1792141296_10.json",
+    "garbage_mixed_script:completion_1792141301_11.json",
+    "garbage_mixed_script:completion_1792141305_12.json"
+  ],
+  "detect_reports": 0,
+  "n_requests": 24
+}
