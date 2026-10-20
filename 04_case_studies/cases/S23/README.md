@@ -37,7 +37,7 @@ Qwen3-8B，temp=0，eager；concurrent 48；util=0.40。
 
 1. **L1 detect 停点**——detect：`token_repeat` 命中（detect=48）。
 2. **L2 class-hint**——**L1-only**（权重 corruption · detect-only；不定界到层/元素）。
-3. **标杆 / Q1–Q5**——设计上非细定界目标；无 buggy+ref → Q1–Q5 不适用 / KV=未知。
+3. **标杆 / Q1–Q5（KV 排除）**——设计上不定界到权重元素（L1-only）；但仍可用重放抓 ids + KV 对比做**排除性**检查（`KV?=否` ≠ 跳过排除）。**本案归档尚未附 KV 对比结论**。
 4. **结合现象**——见 `evidence/samples/` · `evidence/reports/`。
 5. **结案要点**——PASS；constructed always-on（post-load 置零一层 o_proj）。
 

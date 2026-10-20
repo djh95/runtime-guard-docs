@@ -90,7 +90,7 @@ Overlay 打上后服务仍 200。可见 completion 是通顺中英散文（华�
 
 1. **L1 detect 停点**——detect=0：无可检坏输出（非漏检结案）。
 2. **L2 class-hint**——弱 L2——samples 为通顺中文，提示形态前提不满足（需 hybrid/量化 KV），不定界到元素/commit。
-3. **标杆 / Q1–Q5**——无 buggy+ref 标杆 → Q1–Q5 不适用 / KV=未知。
+3. **标杆 / Q1–Q5（KV 排除）**——空 prompt / 包内暂无 buggy+ref **不等于**「Q1–Q5 不适用」。有 report 即可：同 prompt 再 curl 抓服务端 `prompt_token_ids`，与异常 `output_token_ids` 合并后抓标杆 KV，对比异常 KV（一致→排除 KV；不一致→重开 KV 线）。**本案归档尚未附 KV 对比结论**；现行对外结案停在 L1+L2+现象。
 4. **结合现象**——见 `evidence/samples/`（通顺中文，非乱码）。
 5. **结案要点**——dense 上 FAIL（复现未出现）；CJK 排除后 precision=0；对照 S10′ PASS、S07 FAIL+GAP。
 

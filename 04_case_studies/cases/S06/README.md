@@ -26,7 +26,7 @@ MoE 路由偏置或 mask 出错时，请求会进错专家。归档有 `token_re
 
 **PASS。** detect 以归档 `reports/report_*.json`（`token_repeat`×1）为准。
 
-**report 空 `prompt_token_ids`：** 本包归档 report 的 `prompt_token_ids` / `prompt_text` 为空——异步下检测和生成 report 在请求结束之后，prompt 已被清空（output 仍有）。**阅读**完整 prompt 文本看 [evidence/samples/](./evidence/samples/)；**tokenize / 定界标杆**须以实际捕获的 token ids 为准——本包当前无非空 `prompt_token_ids`，**不要**从 sample 字符串再 encode 补造；应修 Guard 捕获或从仍持有 ids 的路径重抓后再归档。通则见 [④ 名词表 · 标杆请求 / report 空 prompt](../../README.md#名词怎么读先看这里)。
+**report 空 `prompt_token_ids`：** 本包归档 report 的 `prompt_token_ids` / `prompt_text` 为空——异步下检测和生成 report 在请求结束之后，prompt 已被清空（output 仍有）。**阅读**完整 prompt 文本看 [evidence/samples/](./evidence/samples/)；**禁止**从 sample 字符串再 encode 补造 ids 填进旧 report。空 prompt **不等于**不能做 KV 排除定界：有 report 即可走**重放抓 ids**（见下方定界）。通则见 [④ 名词表 · 标杆请求 / report 空 prompt / KV 排除定界](../../README.md#名词怎么读先看这里)。
 
 ## 4 · 复现技巧
 
@@ -41,7 +41,7 @@ MoE 路由偏置或 mask 出错时，请求会进错专家。归档有 `token_re
 
 1. **L1 detect 停点**——detect：`token_repeat` 命中（归档 report×1；以 report 为准）。
 2. **L2 class-hint**——L2 class-hint：MoE 路由（bias/mask → 错专家）；KV finite ≠ 根因。
-3. **标杆 / Q1–Q5**——无 buggy+ref 标杆 → Q1–Q5 不适用 / KV=未知。归档 report 虽空 `prompt_token_ids`，仍有 `block_ids`（及 `dump_*` 字段）；**本包定界不靠真 KV 对比**，靠 L1+L2+现象（`KV?=否`）。
+3. **标杆 / Q1–Q5（KV 排除）**——**不能**因空 `prompt_token_ids` 或规格 `KV?=否` 写「Q1–Q5 不适用」。可执行路径：(1) 用同案 sample 的**同一 prompt 再 curl**，手动 dump 取得**服务端实际** `prompt_token_ids`（禁止离线字符串再 tokenize）；(2) 与异常 report 的 **`output_token_ids` 合并**；(3) 抓**标杆 KV**，与**异常 KV** 对比。一致 → **排除 KV cache**，支撑「问题不在 KV、转向 MoE/路由」；不一致 → 重开 KV 线。`KV?=否` 只表示根因**预期**不在 KV，仍应用该排除步骤。归档 report 仍有 `block_ids` / `dump_*`。**本案归档尚未附 KV 对比结论**（包内无 buggy+ref dump 对账结果）；现行对外结案靠 L1+L2+现象，排除性对账按上路径补做。
 4. **结合现象**——见 `evidence/samples/` · `evidence/reports/`。
 5. **结案要点**——PASS；DeepSeek-V2-Lite；三层以 README 钉点为准。
 
@@ -54,7 +54,7 @@ MoE 路由偏置或 mask 出错时，请求会进错专家。归档有 `token_re
 | `evidence/三层计数.json` | 三层明细（trigger / precision / detect） |
 | `evidence/跑批结果.json` | 跑批元数据 + 结案摘要 |
 | `evidence/samples/` | prompt + completion 样本（**阅读 / 现象核对**；非 tokenize 标杆） |
-| `evidence/reports/` | Guard detector 报告（本包归档 **`prompt_token_ids` 为空**：异步落盘后已清；阅读看 samples，标杆须另抓 ids；见上节与 [④ 名词表](../../README.md#名词怎么读先看这里)） |
+| `evidence/reports/` | Guard detector 报告（本包归档 **`prompt_token_ids` 为空**：异步落盘后已清；阅读看 samples；标杆 ids 可重放抓取后与 `output_token_ids` 合并做 KV 排除——见定界节与 [④ 名词表](../../README.md#名词怎么读先看这里)） |
 
 
 ## 上游 PR 关系

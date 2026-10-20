@@ -65,8 +65,9 @@
 | **复现失败** | 打了 patch / overlay，但目标异常**没有出现**。不要写 GAP。结论记 **FAIL**，并注明原因（形态不对、注入未打中、负载不够、patch 未真正生效等）。可简称 **FAIL（复现未出现）** / **repro-blocked**。 |
 | **结案结论** | 写在案例上的判定标签（PASS / FAIL+GAP / FAIL（复现未出现）等），标明是否按预期复现并检出。 |
 | **样本** | 保存的请求 / 回复证据；应含 prompt + 输出，用来**读文意、核对坏没坏 / 是否误判**。仅有 prompt **字符串**的 sample **不能**当作可靠 tokenize 标杆（发出去的字符串 + 回来的 completion，再 encode 的结果可能与服务端不一致；处理 prompt 与处理 sample 的 tokenizer 也可能不同）。 |
-| **标杆请求（token ids）** | 需要可复现 tokenize / 定界对比时，请求侧以服务端或 Guard **实际捕获的 `prompt_token_ids`** 为准，**用 token ids 去抓 / 归档**，禁止「只存字符串、事后再 encode」当标杆。 |
-| **report 空 prompt** | 异步下，检测和生成 report 往往在**请求结束之后**，此时请求侧的 prompt 已被清空，所以 report 里 `prompt_token_ids` / `prompt_text` 可能为空（output 仍常有）。**不是**请求没带 prompt，也不是脱敏删掉了。**也不等于**没有 `block_ids` / 不能武装 `dump_kv`——prompt 快照与 block 解析是两条路；keep-set 空 ids 的 PASS report 仍常带非空 `block_ids`。缺的是 tokenize / force-feed **标杆**；无 buggy+ref 时定界仍停在 **L1 detect + L2 class-hint**（不是 Q1–Q5 真 KV 定界）。**阅读**完整 prompt 文本 → 同案 `evidence/samples/`；**不要**从字符串补造 ids 填进旧 report。空 ids 时应修 Guard 捕获，或从仍持有 ids 的路径重新抓取后再归档。 |
+| **标杆请求（token ids）** | 需要可复现 tokenize / 定界对比时，请求侧以服务端或 Guard **实际捕获的 `prompt_token_ids`** 为准，**用 token ids 去抓 / 归档**，禁止「只存字符串、事后再 encode」当标杆。report 里 prompt 已空时：把**同一 prompt 再 curl**，手动 dump 取服务端实际 ids（仍禁止离线再 tokenize）。 |
+| **report 空 prompt** | 异步下，检测和生成 report 往往在**请求结束之后**，此时请求侧的 prompt 已被清空，所以 report 里 `prompt_token_ids` / `prompt_text` 可能为空（output 仍常有）。**不是**请求没带 prompt，也不是脱敏删掉了。**也不等于**没有 `block_ids` / 不能武装 `dump_kv`——prompt 快照与 block 解析是两条路；keep-set 空 ids 的 PASS report 仍常带非空 `block_ids`。**更不等于**「Q1–Q5 不适用 / 不能做 KV 排除」——有 report 即可：**同 prompt 再 curl** 抓服务端 `prompt_token_ids`，与异常 report 的 `output_token_ids` 合并后抓标杆 KV，再与异常 KV 对比（见下 **KV 排除定界**）。**阅读**完整 prompt 文本 → 同案 `evidence/samples/`；**不要**从字符串补造 ids 填进旧 report。 |
+| **KV 排除定界** | 有异常 report 时的可执行路径：重放抓**实际** prompt token ids → 合并异常 **output token ids** → 抓标杆 KV → 对比异常 KV。**一致 → 排除 KV cache**（再转向规格所指的非 KV 类，如 MoE 路由）；**不一致 → 重开 KV 线**。规格字段 **`KV?=否`** 只表示根因**预期**不在 KV，**不是**跳过该排除步骤。包内若尚未附对账结果，应写明「路径可用；本案归档尚未附 KV 对比结论」，**不要**写「Q1–Q5 不适用」，也**不要**编造未跑的对比数字。 |
 | **三层计数** | **trigger**（注入路径打中次数）/ **precision**（输出被判异常的次数，≠ 模型精度）/ **detect**（Guard 报告命中次数）。三者不相等；见各包 `三层计数.json`。 |
 | **三层计数.json** | 三层明细（trigger / precision / detect、备注、detector 名等）。索引表数字通常摘自这里。 |
 | **跑批结果.json** | 跑批元数据 + 结案摘要（场景名、verdict、模型、run 路径、三层摘要）。和 `三层计数.json` 一起读。 |
@@ -82,7 +83,7 @@
 | **跨请求内容相同的乱码** | 多次独立请求得到的异常输出彼此相同（同一段垃圾重复出现），不是每次随机不同。常见于 S07。对照：各请求乱码各不相同（如 S45）。 |
 | **内容相同计分** | 用「多条回复是否同一段文字」来估 precision 的做法；各请求内容不同时会低估（如 S45 记成 0）。 |
 | **复现技巧** | 对外文档里「怎么跑才能对齐本包结论」的步骤与负载（旧称「复现配方」，已不用）。过程旧文称 **历史记录**，不称「历史配方」。 |
-| **L1 / L2 定界** | 粗定界停点：L1 = detect 停在哪；L2 = 现象类 / 根因类停在哪（不定界到元素/commit）。无 buggy+ref 标杆时写明「Q1–Q5 不适用 / KV=未知」。细定界模板见 [02](../02_problem_localization/README.md)。 |
+| **L1 / L2 定界** | 粗定界停点：L1 = detect 停在哪；L2 = 现象类 / 根因类停在哪（不定界到元素/commit）。包内尚未附 buggy+ref KV 对账时：写清**重放抓 ids + KV 排除**路径，并诚实标注「本案归档尚未附 KV 对比结论」——**不要**因空 prompt / `KV?=否` 写「Q1–Q5 不适用」。细定界模板见 [02](../02_problem_localization/README.md)。 |
 
 ## 对外保留的 15 个典型案例
 
@@ -135,4 +136,4 @@
 - **阅读 vs 标杆（分层）**
   - **阅读**：完整 prompt / completion 文本看 `evidence/samples/`（文意、坏输出形态、误判核对）。
   - **标杆（tokenize / 定界对比）**：以 report（或其它 Guard/服务端路径）里**实际捕获的 `prompt_token_ids`** 为准；不要用 sample 字符串再 encode。
-- **report 里 prompt / `prompt_token_ids` 为空**：异步下检测/落盘常在请求结束后，prompt 已被清掉（见名词表 **report 空 prompt**）。此时仍可用 samples **阅读**原文；**禁止**从字符串补造 ids 填进旧 report。空 ids **不**表示无 `block_ids`；无 buggy+ref 时教学定界仍是 L1/L2，不是真 KV Q1–Q5。应修 Guard 捕获，或从仍持有 ids 的路径抓取后再归档。
+- **report 里 prompt / `prompt_token_ids` 为空**：异步下检测/落盘常在请求结束后，prompt 已被清掉（见名词表 **report 空 prompt**）。此时仍可用 samples **阅读**原文；**禁止**从字符串补造 ids 填进旧 report。空 ids **不**表示无 `block_ids`，也**不**表示不能做 KV 排除——走 **KV 排除定界**（同 prompt 再 curl 抓服务端 ids + 合并 output ids）。包内无对账结果时写「路径可用；归档尚未附结论」，勿写「Q1–Q5 不适用」。

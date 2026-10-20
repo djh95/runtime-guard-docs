@@ -44,7 +44,7 @@ Overlay：强制 `needs_kv_cache_zeroing=False`，在 `BlockPool.get_new_blocks`
 
 1. **L1 detect 停点**——detect：`token_repeat` 命中（report_sample；detect=79）。
 2. **L2 class-hint**——L2–L3 潜力（真 KV 脏读 / FullAttn 回收未清零）；不定界到元素/commit。
-3. **标杆 / Q1–Q5**——无 buggy+ref 标杆 → Q1–Q5 不适用 / KV=未知。
+3. **标杆 / Q1–Q5（KV 排除）**——空 prompt / 包内暂无 buggy+ref **不等于**「Q1–Q5 不适用」。有 report 即可：同 prompt 再 curl 抓服务端 `prompt_token_ids`，与异常 `output_token_ids` 合并后抓标杆 KV，对比异常 KV（一致→排除 KV；不一致→重开 KV 线）。**本案归档尚未附 KV 对比结论**；现行对外结案停在 L1+L2+现象。
 4. **结合现象**——坏输出见 `evidence/samples/`（prompt+completion）；detect 以 `evidence/reports/` 为准。
 5. **结案要点**——PASS **65 / 20 / 79**。precision 可用 samples 原文核对。
 
