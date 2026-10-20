@@ -70,7 +70,7 @@
 | **三层计数** | **trigger**（注入路径打中次数）/ **precision**（输出被判异常的次数，≠ 模型精度）/ **detect**（Guard 报告命中次数）。三者不相等；见各包 `三层计数.json`。 |
 | **三层计数.json** | 三层明细（trigger / precision / detect、备注、detector 名等）。索引表数字通常摘自这里。 |
 | **跑批结果.json** | 跑批元数据 + 结案摘要（场景名、verdict、模型、run 路径、三层摘要）。和 `三层计数.json` 一起读。 |
-| **Guard pin** | 做异常案例实验时**钉死的 Runtime Guard / 产品树提交**（常见记作 G2 + git SHA，如 `f2aefd068…`，对应 A+#18644 一类合入点）。作用是各案、各次复现用同一套 Guard 代码，数字可比；`跑批结果.json` 里的 `wt_sha` 即该 pin。不是「别针」或硬件概念。本 keep-set 默认 **MRV2 + 该 pin**。 |
+| **Guard pin** | 做异常案例实验时**钉死的 Runtime Guard / 产品树提交**（常见记作 G2 + git SHA，如 `f2aefd068…`，对应 A+#18644 一类合入点）。作用是各案、各次复现用同一套 Guard 代码，数字可比；`跑批结果.json` 里的 `wt_sha` 即该 pin。不是「别针」或硬件概念。**不是仓库当前最新 commit，而是实验钉死的那一颗**（例 G2=`f2aefd068…`，见跑批 `wt_sha`）。本 keep-set 默认 **MRV2 + 该 pin**。 |
 | **规格说明.md** | 案例规格：Origin、上游锚点、overlay、knobs、期望 detector——**只管复现**。 |
 | **overlay / overlay.patch** | 制造异常用的代码补丁；完整补丁在 `evidence/`。 |
 | **上游锚点** | 本案例所对照的**上游修复 PR / issue**（「原 bug 是在哪修好的」）。多笔时要标明：根因修复 / 同族相关 / 对照 cousin，不要堆一串无说明链接。 |
@@ -87,7 +87,7 @@
 
 | ID | 包 | 结案结论 | 根因 | 现象 | 检测器 | trigger / precision / detect |
 |----|-----|----------|------|------|--------|------------------------------|
-| S01 | [cases/S01/](./cases/S01/) | FAIL（复现未出现） | KV 新块未置零（需 hybrid/量化 KV） | dense 未见坏输出（旧 precision 为 CJK 误计） | 本轮无可检坏输出；非漏检结案 | 154 / 0† / 0 |
+| S01 | [cases/S01/](./cases/S01/) | FAIL（复现未出现） | KV 新块未置零（需 hybrid/量化 KV） | dense 未见坏输出 | 本轮无可检坏输出；非漏检结案 | 154 / 0† / 0 |
 | S10′ | [cases/S10p/](./cases/S10p/) | PASS | FullAttn 回收块未清零 | 复读 / `xxxx` 塌缩 | `token_repeat` | 65 / 20 / 79 |
 | S11 | [cases/S11/](./cases/S11/) | PASS | MLA RoPE pad-tail 错位 | digit / collapse 垃圾 | `token_repeat` | 138 / 39 / 60 |
 | S07 | [cases/S07/](./cases/S07/) | FAIL+GAP | W8A8 dequant scale 崩溃 | 跨请求内容相同的乱码 | 期望 `logits_finite`→未检出；乱码检测漏检 | 2624 / 1 / 0 |
@@ -105,7 +105,7 @@
 
 计数摘自各包 `evidence/三层计数.json`。脚注：
 
-- **S06 †**：`三层计数.json` / 跑批结果写 `detect_reports=0`，但同次有 `token_repeat` report×1；表内 detect 按 report 记 **1**。
+- **S06 †**：detect 按归档 `token_repeat` report×1 记 **1**（与 `三层计数.json` / 跑批结果一致）。
 - **S07**：precision 记成 1，实为 48 次请求内容相同的乱码（以 samples + score 为准）。
 - **S10′**：`precision=20` 可对照 `cases/S10p/evidence/samples/`（T181551）；detect=79 见 `evidence/reports/report_sample.json`。
 - **S11**：`precision=39` 可对照 `cases/S11/evidence/samples/`（T190840）。
