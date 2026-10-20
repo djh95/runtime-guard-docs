@@ -1,1 +1,0 @@
-     251 /Users/djh/code/vllm-project/runtime-guard-test/tests/build-anomaly-env/01_kv_block_nonzero/patches/overlay.patch

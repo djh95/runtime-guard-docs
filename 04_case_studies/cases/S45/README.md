@@ -45,18 +45,24 @@ top-k / top-p 作用在 `-logits` 上再取反——保留最低-k / 倒置 nucl
 2. 乱码样板对照 **S07**（跨请求相同）；**S01** 是 dense 未见坏输出的对照，不是乱码样板。
 3. 环境：必须 **双树写入 + temp=0.8**。
 
+## 定界分析
+
+1. **L1 detect 停点**——detect=0：`token_repeat`+`logits_finite` 均 miss → **乱码检测漏检**。
+2. **L2 class-hint**——弱 L2——各不相同有限乱码（unique-garbage）。
+3. **标杆 / Q1–Q5**——无 buggy+ref 标杆 → Q1–Q5 不适用 / KV=未知。
+4. **结合现象**——见 `evidence/samples/`。
+5. **结案要点**——FAIL+GAP：异常已出现；双树 + temp=0.8 → 16/4/0。
+
 ## 证据文件
 
 | 文件 | 用途 |
 |------|------|
-| `evidence/status.json` | 结案摘要 |
-| `evidence/layers.json` | 三层 16/4/0 |
-| `evidence/samples/` | 各不相同乱码样本 |
-| `evidence/overlay.patch` | overlay（须双树） |
-| `evidence/runtime_config.json` | 运行配置 |
-| `evidence/SPEC_excerpt.md` | SPEC 摘录 |
-| `evidence/WHY_UNDETECTED.md` | FAIL+GAP 结案说明 |
-| `evidence/WHY_FAIL.md` | 指针：请读 WHY_UNDETECTED（勿双读） |
+| `evidence/overlay.patch` | 制造异常的静态补丁 |
+| `evidence/规格说明.md` | 复现规格（Origin / 锚点 / overlay / knobs / 期望 detector） |
+| `evidence/三层计数.json` | 三层明细（trigger / precision / detect） |
+| `evidence/跑批结果.json` | 跑批元数据 + 结案摘要 |
+| `evidence/samples/` | prompt + completion 样本 |
+
 
 ## 上游 PR 关系
 

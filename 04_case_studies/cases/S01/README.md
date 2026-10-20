@@ -16,13 +16,13 @@
 | 模型 | Qwen3-8B · TP2 · 稠密 float16 |
 | 上游锚点 | [vLLM#43990](https://github.com/vllm-project/vllm/pull/43990) · [#47574](https://github.com/vllm-project/vllm/pull/47574)（角色见文末表） |
 | Origin | `both` |
-| layers / status | [evidence/layers.json](./evidence/layers.json) · [evidence/status.json](./evidence/status.json) |
+| 三层 / 跑批 | [evidence/三层计数.json](./evidence/三层计数.json) · [evidence/跑批结果.json](./evidence/跑批结果.json) |
 
 ## 1 · 现象
 
 Overlay 打上后服务仍 200。可见 completion 是通顺中英散文（华为 NPU / vLLM 介绍），**不是**乱码。样本见 [evidence/samples/](./evidence/samples/)。
 
-**CJK 是什么：** 中日韩字符。旧评分把「含非 ASCII 的中文」当成 `garbage_mixed_script`，于是通顺中文被记成 precision 命中。排除 CJK 后 weird≈0 → **precision 应记 0**。没有坏输出时，**不要**写成 FAIL+GAP。核对见 [evidence/precision_cjk_audit.md](./evidence/precision_cjk_audit.md)。
+**CJK 是什么：** 中日韩字符。旧评分把「含非 ASCII 的中文」当成 `garbage_mixed_script`，于是通顺中文被记成 precision 命中。排除 CJK 后 weird≈0 → **precision 应记 0**。没有坏输出时，**不要**写成 FAIL+GAP。CJK 排除后 weird≈0 → precision 记 0。
 
 ### 为何 S01 复现不出、S10′ 可以
 
@@ -57,7 +57,7 @@ Overlay 打上后服务仍 200。可见 completion 是通顺中英散文（华�
 | precision | **0** | CJK 排除后；旧启发式会虚报 25 |
 | detect | **0** | 无 `report_*.json` |
 
-对照：**S10′** = 有坏输出 + detect；**S01 dense** = 只有 trigger。证据清单见文末「证据文件」表（旧 `EVIDENCE_GROUPS.md` 已收进 `evidence/archive/`）。
+对照：**S10′** = 有坏输出 + detect；**S01 dense** = 只有 trigger。证据清单见文末「证据文件」表。
 
 ## 4 · 复现技巧：形态前提
 
@@ -79,7 +79,7 @@ Overlay 打上后服务仍 200。可见 completion 是通顺中英散文（华�
 | 三层 | **154 / 0 / 0**（CJK 排除后 precision=0） |
 | 形态 | hybrid/量化 KV 是前提；本 pin 上 fp8 KV 起服失败 |
 
-细节见 [evidence/WHY_UNDETECTED.md](./evidence/WHY_UNDETECTED.md)（文件名沿用；语义是**复现未出现**，非 undetected 漏检）。
+结案要点已写入下方「定界分析」。
 
 ## 6 · 教学要点
 
@@ -87,19 +87,24 @@ Overlay 打上后服务仍 200。可见 completion 是通顺中英散文（华�
 2. 用排除 CJK 的评分看样本：通顺中文 ≠ `garbage_mixed_script`。
 3. 对照 S10′（同 KV 脏读族、能检）与 S07（有乱码+漏检）；本包不是漏检结案。
 
+## 定界分析
+
+1. **L1 detect 停点**——detect=0：无可检坏输出（非漏检结案）。
+2. **L2 class-hint**——弱 L2——samples 为通顺中文，提示形态前提不满足（需 hybrid/量化 KV），不定界到元素/commit。
+3. **标杆 / Q1–Q5**——无 buggy+ref 标杆 → Q1–Q5 不适用 / KV=未知。
+4. **结合现象**——见 `evidence/samples/`（通顺中文，非乱码）。
+5. **结案要点**——dense 上 FAIL（复现未出现）；CJK 排除后 precision=0；对照 S10′ PASS、S07 FAIL+GAP。
+
 ## 证据文件
 
 | 文件 | 用途 |
 |------|------|
-| `README 入口` | 本文件 |
-| `evidence/status.json` | 跑批元数据 + 结案摘要（154/0/0） |
-| `evidence/layers.json` | 三层明细与 CJK 复判备注 |
-| `evidence/samples/` | prompt+completion 样本（通顺中文，非乱码） |
-| `evidence/precision_cjk_audit.md` | CJK 误计核对：排除后 precision=0 |
-| `evidence/trigger_excerpt.txt` | trigger 日志摘录 |
-| `evidence/report_emptiness.txt` | detect=0：无 report 目录说明 |
-| `evidence/WHY_UNDETECTED.md` | 结案说明（语义=复现未出现，非漏检） |
-| `evidence/archive/` | 过程碎片（overlay 规模统计等）；结案不必读 |
+| `evidence/overlay.patch` | 制造异常的静态补丁 |
+| `evidence/规格说明.md` | 复现规格（Origin / 锚点 / overlay / knobs / 期望 detector） |
+| `evidence/三层计数.json` | 三层明细（trigger / precision / detect） |
+| `evidence/跑批结果.json` | 跑批元数据 + 结案摘要 |
+| `evidence/samples/` | prompt + completion 样本 |
+
 
 ## 上游 PR 关系
 

@@ -34,15 +34,25 @@ DeepSeek-V2-Lite；concurrent 48 变长英文 + 12 条 temp=0；util=0.40；不�
 
 pad-tail 错位 ≠ 回收块未清零。可能撞上同一个 detector，但 root-cause 不同；文本证据见 `evidence/reports/report_sample.json`。
 
+## 定界分析
+
+1. **L1 detect 停点**——detect：`token_repeat` 命中（detect=60）。
+2. **L2 class-hint**——L2 class-hint：MLA RoPE pad-tail（间接 KV）；不等于 S25。
+3. **标杆 / Q1–Q5**——无 buggy+ref 标杆 → Q1–Q5 不适用 / KV=未知。
+4. **结合现象**——无 prompt+completion 样本；detect 以 `evidence/reports/` 为准。
+5. **结案要点**——PASS **138 / 39 / 60**。本仓无 `samples/`：precision 仅计数。
+
 ## 证据文件
 
 | 文件 | 用途 |
 |------|------|
-| `evidence/status.json` | 跑批元数据 |
-| `evidence/layers.json` | 三层明细 |
-| `evidence/reports/report_sample.json` | token_repeat report 样本 |
-| `evidence/SPEC_excerpt.md` | SPEC / 上游锚点摘录 |
-| `evidence/WHY_PASS.md` | 为何 PASS |
+| `evidence/overlay.patch` | 制造异常的静态补丁 |
+| `evidence/规格说明.md` | 复现规格（Origin / 锚点 / overlay / knobs / 期望 detector） |
+| `evidence/三层计数.json` | 三层明细（trigger / precision / detect） |
+| `evidence/跑批结果.json` | 跑批元数据 + 结案摘要 |
+| `evidence/samples/` | （无）precision 仅三层计数，见 README 定界节 |
+| `evidence/reports/` | Guard detector 报告 |
+
 
 ## 上游 PR 关系
 

@@ -32,18 +32,25 @@ Attn 算子 L2 的对外保留案例 代表（K/V swap）。
 
 本包归档真相是 **kv_swap**（Attn 前 K/V 对调）；短例文件名若仍写 `attn-qkv-out` 以本包为准。
 
+## 定界分析
+
+1. **L1 detect 停点**——detect：`token_repeat`（CJK / Trail 塌缩）。
+2. **L2 class-hint**——L2 class-hint：Attn 前 K/V 对调；≠S34/S35/S41。
+3. **标杆 / Q1–Q5**——无 buggy+ref 标杆 → Q1–Q5 不适用 / KV=未知。
+4. **结合现象**——见 `evidence/samples/` · `evidence/reports/`。
+5. **结案要点**——PASS **58 / 37 / 48**。
+
 ## 证据文件
 
 | 文件 | 用途 |
 |------|------|
-| `evidence/status.json` | 结案摘要 |
-| `evidence/layers.json` | 三层明细 |
-| `evidence/samples/` | 样本 |
-| `evidence/reports/` | token_repeat report |
-| `evidence/overlay.patch` | overlay |
-| `evidence/runtime_config.json` | 运行配置 |
-| `evidence/SPEC_excerpt.md` | SPEC 摘录 |
-| `evidence/WHY_PASS.md` | 为何 PASS |
+| `evidence/overlay.patch` | 制造异常的静态补丁 |
+| `evidence/规格说明.md` | 复现规格（Origin / 锚点 / overlay / knobs / 期望 detector） |
+| `evidence/三层计数.json` | 三层明细（trigger / precision / detect） |
+| `evidence/跑批结果.json` | 跑批元数据 + 结案摘要 |
+| `evidence/samples/` | prompt + completion 样本 |
+| `evidence/reports/` | Guard detector 报告 |
+
 
 ## 上游 PR 关系
 

@@ -1,0 +1,80 @@
+diff --git a/vllm_ascend/attention/mla_v1.py b/vllm_ascend/attention/mla_v1.py
+index f9c2c54b2..ba1bc842c 100644
+--- a/vllm_ascend/attention/mla_v1.py
++++ b/vllm_ascend/attention/mla_v1.py
+@@ -2099,12 +2099,50 @@ class AscendMLAImpl(MLAAttentionImpl):
+         cos = attn_metadata.prefill.cos
+         sin = attn_metadata.prefill.sin
+         prefill_slots = attn_metadata.slot_mapping[num_decode_tokens:num_actual_tokens]
++        # ANOMALY S11: inverse ascend#18798 — RoPE tables retain graph-pad /
++        # pad-tail alignment while query is actual-token length. No NaN/fill.
++        import logging as _logging_s11
++        import torch as _torch_s11
++
++        def _s11_pad_tail(c, s, n, tag):  # type: ignore[no-untyped-def]
++            if c is None or s is None or n <= 0:
++                return c, s
++            # Eager path often sizes tables to actual; synth pad rows to restore
++            # the #18798 precondition (metadata retained graph padding).
++            if int(c.shape[0]) == n:
++                pad = 8
++                c = _torch_s11.cat([c, c[:1].expand(pad, *c.shape[1:])], dim=0)
++                s = _torch_s11.cat([s, s[:1].expand(pad, *s.shape[1:])], dim=0)
++            if int(c.shape[0]) > n:
++                if not hasattr(type(self), "_anomaly_s11_count"):
++                    type(self)._anomaly_s11_count = 0
++                type(self)._anomaly_s11_count += 1
++                cnt = type(self)._anomaly_s11_count
++                if cnt <= 64 or cnt % 32 == 0:
++                    _logging_s11.getLogger("anomaly.s11").warning(
++                        "ANOMALY_TRIGGER S11 mla_rope_pad %s q=%s table=%s "
++                        "count=%s",
++                        tag,
++                        n,
++                        int(c.shape[0]),
++                        cnt,
++                    )
++                # Soft origin: pad-tail slice (batch dims match; values misaligned)
++                return c[-n:], s[-n:]
++            return c[:n], s[:n]
++
++        cos_q, sin_q = _s11_pad_tail(
++            cos, sin, num_actual_prefill_tokens, "query"
++        )
+         prefill_q_pe = self.rope_single(
+             prefill_q_pe,
+-            cos[:num_actual_prefill_tokens] if cos is not None else None,
+-            sin[:num_actual_prefill_tokens] if sin is not None else None,
++            cos_q,
++            sin_q,
+         )
+         if written_kv is None:
++            # Keep KV RoPE correctly sliced — #18798 primary failure was query /
++            # PROLOG tables vs actual tokens; KV pad-tail tripped gather dtype
++            # faults on this pin. Origin class preserved on query path.
+             prefill_k_pe, prefill_k_c_normed = self.exec_kv_prefill(
+                 prefill_kv_no_split,
+                 cos[:num_prefill_kv_tokens] if cos is not None else None,
+diff --git a/vllm_ascend/platform.py b/vllm_ascend/platform.py
+index 61000ea00..a8998fe4c 100644
+--- a/vllm_ascend/platform.py
++++ b/vllm_ascend/platform.py
+@@ -477,6 +477,18 @@ class NPUPlatform(Platform):
+ 
+     @classmethod
+     def check_and_update_config(cls, vllm_config: VllmConfig) -> None:
++        # ANOMALY S11: MLA prefill RoPE pad misalignment (inverse ascend#18798).
++        # Patch lands in mla_v1.mla_preprocess_prefill; boot log only here.
++        try:
++            import logging as _logging
++            _logging.getLogger("anomaly.s11").warning(
++                "ANOMALY S11 boot: mla_rope_pad armed (inverse #18798)"
++            )
++        except Exception as e:
++            import logging as _logging
++            _logging.getLogger("anomaly.s11").warning(
++                "ANOMALY S11 boot failed: %s", e
++            )
+         # Lazy import vllm/vllm-ascend to avoid circular import
+         from vllm_ascend.quantization.utils import maybe_auto_detect_quantization
+         from vllm_ascend.logger import configure_ascend_file_logging, configure_ascend_logging

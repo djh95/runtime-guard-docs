@@ -21,7 +21,7 @@
 
 ## 2 · 根因
 
-W8A8 dequant scale 崩溃（在 `deq_scale` 上 zero + 1e20）。属于 quant / scale 族。上游：[vLLM#37442](https://github.com/vllm-project/vllm/pull/37442)。更完整字段见 [evidence/SPEC_excerpt.md](./evidence/SPEC_excerpt.md)。
+W8A8 dequant scale 崩溃（在 `deq_scale` 上 zero + 1e20）。属于 quant / scale 族。上游：[vLLM#37442](https://github.com/vllm-project/vllm/pull/37442)。更完整复现字段见 [evidence/规格说明.md](./evidence/规格说明.md)。
 
 ## 3 · Guard 结果
 
@@ -42,16 +42,24 @@ status 里 precision 记成 1，但 samples + score 证实跨请求内容相同�
 1. **S07** = 有乱码 + detector miss → **FAIL+GAP**；**S01 dense** = 无坏输出 → **FAIL（复现未出现）**——勿并成同一漏检族（根因也不同：quant scale vs KV skip-zero）。
 2. 需要 garbled-text / 跨请求内容相同类 detector；仅靠 `logits_finite` 抓不住有限乱码。
 
+## 定界分析
+
+1. **L1 detect 停点**——detect=0：`logits_finite` miss（logits 仍有限，无 NaN/Inf）→ **乱码检测漏检**。
+2. **L2 class-hint**——弱 L2——跨请求内容相同的乱码（samples identical+garbage）。
+3. **标杆 / Q1–Q5**——无 buggy+ref 标杆 → Q1–Q5 不适用 / KV=未知。
+4. **结合现象**——见 `evidence/samples/`。
+5. **结案要点**——FAIL+GAP：异常已出现且 detect=0。
+
 ## 证据文件
 
 | 文件 | 用途 |
 |------|------|
-| `evidence/status.json` | 跑批元数据 |
-| `evidence/layers.json` | 三层明细 |
-| `evidence/samples/` | 跨请求内容相同的乱码样本（含 prompt） |
-| `evidence/sample_01.json` | 额外样本 |
-| `evidence/SPEC_excerpt.md` | SPEC / 上游锚点摘录 |
-| `evidence/WHY_UNDETECTED.md` | FAIL+GAP：有乱码 + detect=0 |
+| `evidence/overlay.patch` | 制造异常的静态补丁 |
+| `evidence/规格说明.md` | 复现规格（Origin / 锚点 / overlay / knobs / 期望 detector） |
+| `evidence/三层计数.json` | 三层明细（trigger / precision / detect） |
+| `evidence/跑批结果.json` | 跑批元数据 + 结案摘要 |
+| `evidence/samples/` | prompt + completion 样本 |
+
 
 ## 上游 PR 关系
 

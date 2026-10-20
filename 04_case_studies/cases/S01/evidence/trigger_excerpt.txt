@@ -1,8 +1,0 @@
-(Worker_TP0 pid=409205) 2026-10-20 10:21:00,305 - WARNING - ANOMALY_TRIGGER S01 kv_block_nonzero force_should_init_kv_zeroer needs=True v2=True
-(Worker_TP1 pid=409206) 2026-10-20 10:21:00,495 - WARNING - ANOMALY_TRIGGER S01 kv_block_nonzero force_should_init_kv_zeroer needs=True v2=True
-(EngineCore pid=409171) ANOMALY_TRIGGER S01 kv_block_nonzero synth_block0 count=1
-(EngineCore pid=409171) ANOMALY_TRIGGER S01 kv_block_nonzero synth_block0 count=2
-(Worker_TP1 pid=409206) 2026-10-20 10:21:17,827 - WARNING - ANOMALY_TRIGGER S01 kv_block_nonzero skip_zero_upstream n_blocks=1 ids_head=[0] count=1
-(Worker_TP0 pid=409205) 2026-10-20 10:21:17,828 - WARNING - ANOMALY_TRIGGER S01 kv_block_nonzero skip_zero_upstream n_blocks=1 ids_head=[0] count=1
-(Worker_TP1 pid=409206) 2026-10-20 10:21:18,019 - WARNING - ANOMALY_TRIGGER S01 kv_block_nonzero skip_zero_upstream n_blocks=1 ids_head=[0] count=2
-(EngineCore pid=409171) ANOMALY_TRIGGER S01 kv_block_nonzero synth_block0 count=3

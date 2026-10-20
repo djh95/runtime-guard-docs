@@ -5,5 +5,5 @@
   "detector": "token_repeat",
   "model": "Qwen3-8B",
   "notes": "attn K/V swap constructed",
-  "layers_ref": "evidence/layers.json"
+  "layers_ref": "evidence/三层计数.json"
 }

@@ -1,4 +1,0 @@
---- overlay.stat ---
- vllm_ascend/worker/utils.py           |  2 ++
- vllm_ascend/worker/v2/model_runner.py | 16 ++++++++++++++++
- 2 files changed, 18 insertions(+)

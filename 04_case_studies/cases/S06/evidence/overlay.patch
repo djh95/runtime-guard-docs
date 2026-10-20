@@ -1,0 +1,25 @@
+diff --git a/vllm_ascend/ops/fused_moe/routed_experts.py b/vllm_ascend/ops/fused_moe/routed_experts.py
+index 312554f5c..33ae686d9 100644
+--- a/vllm_ascend/ops/fused_moe/routed_experts.py
++++ b/vllm_ascend/ops/fused_moe/routed_experts.py
+@@ -649,6 +649,20 @@ class AscendRoutedExperts(RoutedExperts):  # type: ignore[no-redef]
+             router_logits=router_logits,
+             input_ids=input_ids,
+         )
++        # ANOMALY S06: force expert-0 (wrong bias/mask routing analogy). No NaN.
++        if topk_ids is not None:
++            import logging
++            if not hasattr(AscendRoutedExperts, "_anomaly_s06_count"):
++                AscendRoutedExperts._anomaly_s06_count = 0
++            AscendRoutedExperts._anomaly_s06_count += 1
++            n = AscendRoutedExperts._anomaly_s06_count
++            if n <= 16 or n % 128 == 0:
++                logging.getLogger("anomaly.s06").warning(
++                    "ANOMALY_TRIGGER S06 moe_routing_bias force_expert0 "
++                    "shape=%s count=%s",
++                    tuple(topk_ids.shape), n,
++                )
++            topk_ids = torch.zeros_like(topk_ids)
+         if self.log2phy is not None:
+             topk_ids = self.log2phy[topk_ids]
+ 

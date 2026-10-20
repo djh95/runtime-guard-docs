@@ -5,5 +5,5 @@
   "detector": "token_repeat",
   "model": "Qwen3-8B",
   "notes": "river×48 concurrent; threshold=8",
-  "layers_ref": "evidence/layers.json"
+  "layers_ref": "evidence/三层计数.json"
 }

@@ -1,0 +1,41 @@
+diff --git a/vllm_ascend/quantization/methods/w8a8/w8a8_static.py b/vllm_ascend/quantization/methods/w8a8/w8a8_static.py
+index 65e7b4a92..0671aea66 100644
+--- a/vllm_ascend/quantization/methods/w8a8/w8a8_static.py
++++ b/vllm_ascend/quantization/methods/w8a8/w8a8_static.py
+@@ -124,10 +124,35 @@ class AscendW8A8LinearMethod(AscendLinearScheme):
+         if self.quant_method == COMPRESSED_TENSORS_METHOD:
+             quant_bias = bias
+ 
++        # ANOMALY S07: full dequant scale collapse (finite zeros) + extreme finite
++        # on first half (OOB-scale analogy). No force-write NaN/Inf literals.
++        deq = layer.deq_scale
++        if deq is not None and torch.is_tensor(deq) and deq.numel() > 0:
++            import logging
++            if not hasattr(AscendW8A8LinearMethod, "_anomaly_s07_count"):
++                AscendW8A8LinearMethod._anomaly_s07_count = 0
++            AscendW8A8LinearMethod._anomaly_s07_count += 1
++            n = AscendW8A8LinearMethod._anomaly_s07_count
++            deq = deq.clone()
++            # Collapse: zero entire scale, then amplify remaining path via *1e20 on
++            # even indices of a fresh view so matmul can overflow naturally.
++            flat = deq.view(-1)
++            flat.zero_()
++            # Restore a hostile finite OOB pattern (not NaN): huge scales.
++            flat[0::2] = 1e20
++            if n <= 16 or n % 256 == 0:
++                logging.getLogger("anomaly.s07").warning(
++                    "ANOMALY_TRIGGER S07 quant_scale_collapse zero+1e20 "
++                    "deq_numel=%s count=%s",
++                    deq.numel(), n,
++                )
++        else:
++            deq = layer.deq_scale
++
+         output = torch_npu.npu_quant_matmul(
+             x,
+             layer.weight,
+-            layer.deq_scale,
++            deq,
+             bias=quant_bias,
+             output_dtype=layer.params_dtype,
+         )

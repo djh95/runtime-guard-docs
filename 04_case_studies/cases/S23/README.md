@@ -33,18 +33,25 @@ Qwen3-8B，temp=0，eager；concurrent 48；util=0.40。
 
 能检不等于能定界到权重元素。报 L1 即可，不要夸大 dump 能力。
 
+## 定界分析
+
+1. **L1 detect 停点**——detect：`token_repeat` 命中（detect=48）。
+2. **L2 class-hint**——**L1-only**（权重 corruption · detect-only；不定界到层/元素）。
+3. **标杆 / Q1–Q5**——设计上非细定界目标；无 buggy+ref → Q1–Q5 不适用 / KV=未知。
+4. **结合现象**——见 `evidence/samples/` · `evidence/reports/`。
+5. **结案要点**——PASS；constructed always-on（post-load 置零一层 o_proj）。
+
 ## 证据文件
 
 | 文件 | 用途 |
 |------|------|
-| `evidence/status.json` | 跑批元数据 |
-| `evidence/layers.json` | 三层明细 |
-| `evidence/samples/` | 样本 |
-| `evidence/reports/` | token_repeat report |
-| `evidence/overlay.patch` | overlay |
-| `evidence/runtime_config.json` | 运行配置 |
-| `evidence/SPEC_excerpt.md` | SPEC 摘录 |
-| `evidence/WHY_PASS.md` | 为何 PASS |
+| `evidence/overlay.patch` | 制造异常的静态补丁 |
+| `evidence/规格说明.md` | 复现规格（Origin / 锚点 / overlay / knobs / 期望 detector） |
+| `evidence/三层计数.json` | 三层明细（trigger / precision / detect） |
+| `evidence/跑批结果.json` | 跑批元数据 + 结案摘要 |
+| `evidence/samples/` | prompt + completion 样本 |
+| `evidence/reports/` | Guard detector 报告 |
+
 
 ## 上游 PR 关系
 

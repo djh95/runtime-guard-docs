@@ -1,0 +1,58 @@
+diff --git a/vllm_ascend/platform.py b/vllm_ascend/platform.py
+index 61000ea00..8ffe1afa9 100644
+--- a/vllm_ascend/platform.py
++++ b/vllm_ascend/platform.py
+@@ -477,6 +477,53 @@ class NPUPlatform(Platform):
+ 
+     @classmethod
+     def check_and_update_config(cls, vllm_config: VllmConfig) -> None:
++        # ANOMALY S10: FullAttention recycle-zero gap (inverse vLLM #39283 / #43741).
++        # Origin: needs_kv_cache_zeroing gated to Mamba(/mixed) only — FullAttention
++        # recycled blocks keep stale K/V in partial-block tails. Force that gate OFF
++        # and log every free-pool handout (recycle without zero). No NaN/fill amplifiers.
++        try:
++            import logging as _logging
++            _log = _logging.getLogger("anomaly.s10")
++            import vllm.v1.kv_cache_interface as _kci
++            # Pin origin bug state for FullAttention (never opt into zeroing).
++            _kci.KVCacheConfig.needs_kv_cache_zeroing = property(
++                lambda self: False
++            )
++            _log.warning(
++                "ANOMALY S10 boot: needs_kv_cache_zeroing forced False "
++                "(FullAttention recycle-zero origin)"
++            )
++            from vllm.v1.core.block_pool import BlockPool
++            if not getattr(BlockPool, "_anomaly_s10_wrapped", False):
++                _orig_get = BlockPool.get_new_blocks
++
++                def _get_new_blocks(self, num_blocks):  # type: ignore[no-untyped-def]
++                    blocks = _orig_get(self, num_blocks)
++                    if blocks:
++                        if not hasattr(BlockPool, "_anomaly_s10_count"):
++                            BlockPool._anomaly_s10_count = 0
++                        BlockPool._anomaly_s10_count += 1
++                        n = BlockPool._anomaly_s10_count
++                        if n <= 64 or n % 32 == 0:
++                            _logging.getLogger("anomaly.s10").warning(
++                                "ANOMALY_TRIGGER S10 fullattn_recycle_zero "
++                                "get_new_blocks n_blocks=%s ids_head=%s "
++                                "free_q_approx=%s count=%s",
++                                len(blocks),
++                                [b.block_id for b in blocks[:8]],
++                                getattr(self, "get_num_free_blocks", lambda: -1)(),
++                                n,
++                            )
++                    return blocks
++
++                BlockPool.get_new_blocks = _get_new_blocks  # type: ignore[method-assign]
++                BlockPool._anomaly_s10_wrapped = True
++                _log.warning("ANOMALY S10 boot: wrapped BlockPool.get_new_blocks")
++        except Exception as e:
++            import logging as _logging
++            _logging.getLogger("anomaly.s10").warning(
++                "ANOMALY S10 check_and_update_config boot failed: %s", e
++            )
+         # Lazy import vllm/vllm-ascend to avoid circular import
+         from vllm_ascend.quantization.utils import maybe_auto_detect_quantization
+         from vllm_ascend.logger import configure_ascend_file_logging, configure_ascend_logging

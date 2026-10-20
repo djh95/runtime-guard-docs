@@ -1,0 +1,251 @@
+diff --git a/vllm_ascend/__init__.py b/vllm_ascend/__init__.py
+index 97de8d8a4..89d73f75e 100644
+--- a/vllm_ascend/__init__.py
++++ b/vllm_ascend/__init__.py
+@@ -21,6 +21,46 @@ from types import ModuleType
+ 
+ _triton_available = importlib.util.find_spec("triton") is not None
+ 
++# ANOMALY S01: install zeroing-path knobs at package import (V2-safe).
++def _anomaly_s01_boot() -> None:
++    import logging
++    log = logging.getLogger("anomaly.s01")
++    try:
++        import vllm.v1.kv_cache_interface as _kci
++        _kci.KVCacheConfig.needs_kv_cache_zeroing = property(lambda self: True)
++        log.warning("ANOMALY S01 boot: needs_kv_cache_zeroing forced True")
++    except Exception as e:
++        log.warning("ANOMALY S01 boot needs_kv patch failed: %s", e)
++    try:
++        from vllm.v1.worker.utils import KVBlockZeroer
++        if getattr(KVBlockZeroer, "_anomaly_s01_wrapped", False):
++            return
++        _orig = KVBlockZeroer.zero_block_ids
++        def _skip_upstream(self, block_ids):  # type: ignore[no-untyped-def]
++            if not hasattr(KVBlockZeroer, "_anomaly_s01_up_count"):
++                KVBlockZeroer._anomaly_s01_up_count = 0
++            if block_ids:
++                KVBlockZeroer._anomaly_s01_up_count += 1
++                n = KVBlockZeroer._anomaly_s01_up_count
++                if n <= 32 or n % 64 == 0:
++                    logging.getLogger("anomaly.s01").warning(
++                        "ANOMALY_TRIGGER S01 kv_block_nonzero skip_zero_upstream "
++                        "n_blocks=%s ids_head=%s count=%s",
++                        len(block_ids), list(block_ids[:8]), n,
++                    )
++                return
++            return _orig(self, block_ids)
++        KVBlockZeroer.zero_block_ids = _skip_upstream  # type: ignore[method-assign]
++        KVBlockZeroer._anomaly_s01_wrapped = True
++        log.warning("ANOMALY S01 boot: wrapped KVBlockZeroer.zero_block_ids")
++    except Exception as e:
++        log.warning("ANOMALY S01 boot wrap zeroer failed: %s", e)
++
++try:
++    _anomaly_s01_boot()
++except Exception:
++    pass
++
+ try:
+     import triton.experimental.gluon  # type: ignore[import-untyped]  # noqa: F401
+ except (ImportError, ModuleNotFoundError):
+diff --git a/vllm_ascend/platform.py b/vllm_ascend/platform.py
+index 61000ea00..e88b3616a 100644
+--- a/vllm_ascend/platform.py
++++ b/vllm_ascend/platform.py
+@@ -477,6 +477,60 @@ class NPUPlatform(Platform):
+ 
+     @classmethod
+     def check_and_update_config(cls, vllm_config: VllmConfig) -> None:
++        # ANOMALY S01: late boot — EngineCore/Scheduler + zeroer (post circular-import).
++        try:
++            import logging as _logging
++            _log = _logging.getLogger("anomaly.s01")
++            import vllm.v1.kv_cache_interface as _kci
++            _kci.KVCacheConfig.needs_kv_cache_zeroing = property(lambda self: True)
++            from vllm.v1.worker.utils import KVBlockZeroer
++            if not getattr(KVBlockZeroer, "_anomaly_s01_wrapped", False):
++                _orig = KVBlockZeroer.zero_block_ids
++                def _skip(self, block_ids):  # type: ignore[no-untyped-def]
++                    if block_ids:
++                        if not hasattr(KVBlockZeroer, "_anomaly_s01_up_count"):
++                            KVBlockZeroer._anomaly_s01_up_count = 0
++                        KVBlockZeroer._anomaly_s01_up_count += 1
++                        n = KVBlockZeroer._anomaly_s01_up_count
++                        if n <= 32 or n % 64 == 0:
++                            _logging.getLogger("anomaly.s01").warning(
++                                "ANOMALY_TRIGGER S01 kv_block_nonzero skip_zero_upstream "
++                                "n_blocks=%s ids_head=%s count=%s",
++                                len(block_ids), list(block_ids[:8]), n,
++                            )
++                        return
++                    return _orig(self, block_ids)
++                KVBlockZeroer.zero_block_ids = _skip  # type: ignore[method-assign]
++                KVBlockZeroer._anomaly_s01_wrapped = True
++            from vllm.v1.core.sched.scheduler import Scheduler
++            if not getattr(Scheduler, "_anomaly_s01_sched", False):
++                _orig_get = Scheduler._get_new_block_ids_to_zero
++                def _forced_get(self):  # type: ignore[no-untyped-def]
++                    self.needs_kv_cache_zeroing = True
++                    ids = _orig_get(self)
++                    # Dense models may never track new blocks; synthesize block0 so
++                    # the skip-zero consumer still runs (origin dirty-KV path).
++                    if not ids:
++                        ids = [0]
++                        if not hasattr(Scheduler, "_anomaly_s01_synth"):
++                            Scheduler._anomaly_s01_synth = 0
++                        Scheduler._anomaly_s01_synth += 1
++                        n = Scheduler._anomaly_s01_synth
++                        if n <= 16 or n % 64 == 0:
++                            _logging.getLogger("anomaly.s01").warning(
++                                "ANOMALY_TRIGGER S01 kv_block_nonzero synth_block0 "
++                                "count=%s",
++                                n,
++                            )
++                    return ids
++                Scheduler._get_new_block_ids_to_zero = _forced_get  # type: ignore[method-assign]
++                Scheduler._anomaly_s01_sched = True
++            _log.warning("ANOMALY S01 check_and_update_config: zeroing path armed")
++        except Exception as e:
++            import logging as _logging
++            _logging.getLogger("anomaly.s01").warning(
++                "ANOMALY S01 check_and_update_config boot failed: %s", e
++            )
+         # Lazy import vllm/vllm-ascend to avoid circular import
+         from vllm_ascend.quantization.utils import maybe_auto_detect_quantization
+         from vllm_ascend.logger import configure_ascend_file_logging, configure_ascend_logging
+diff --git a/vllm_ascend/worker/utils.py b/vllm_ascend/worker/utils.py
+index 593f6780a..3288704af 100644
+--- a/vllm_ascend/worker/utils.py
++++ b/vllm_ascend/worker/utils.py
+@@ -9,6 +9,40 @@ from vllm.v1.core.kv_cache_utils import KVCacheBlockCopy
+ from vllm.v1.kv_cache_interface import FullAttentionSpec
+ from vllm.v1.worker.utils import AttentionGroup, KVBlockZeroer
+ 
++# ANOMALY S01 knobs (allowed): force zeroing-path eligibility on dense models,
++# and skip upstream V2 KVBlockZeroer too (same bug logic).
++def _anomaly_s01_install() -> None:
++    import logging
++    try:
++        import vllm.v1.kv_cache_interface as _kci
++        def _force_needs(self):  # type: ignore[no-untyped-def]
++            return True
++        _kci.KVCacheConfig.needs_kv_cache_zeroing = property(_force_needs)
++    except Exception as e:
++        logging.getLogger("anomaly.s01").warning("ANOMALY S01 force needs_kv_cache_zeroing failed: %s", e)
++    try:
++        _orig = KVBlockZeroer.zero_block_ids
++        def _skip_upstream(self, block_ids):  # type: ignore[no-untyped-def]
++            import logging as _logging
++            if not hasattr(KVBlockZeroer, "_anomaly_s01_up_count"):
++                KVBlockZeroer._anomaly_s01_up_count = 0
++            if block_ids:
++                KVBlockZeroer._anomaly_s01_up_count += 1
++                n = KVBlockZeroer._anomaly_s01_up_count
++                if n <= 32 or n % 64 == 0:
++                    _logging.getLogger("anomaly.s01").warning(
++                        "ANOMALY_TRIGGER S01 kv_block_nonzero skip_zero_upstream "
++                        "n_blocks=%s ids_head=%s count=%s",
++                        len(block_ids), list(block_ids[:8]), n,
++                    )
++                return
++            return _orig(self, block_ids)
++        KVBlockZeroer.zero_block_ids = _skip_upstream  # type: ignore[method-assign]
++    except Exception as e:
++        logging.getLogger("anomaly.s01").warning("ANOMALY S01 wrap upstream zeroer failed: %s", e)
++
++_anomaly_s01_install()
++
+ from vllm_ascend.ops.triton.triton_utils import get_vectorcore_num
+ 
+ 
+@@ -238,6 +272,23 @@ class AscendKVBlockZeroer(KVBlockZeroer):
+ 
+     def zero_block_ids(self, block_ids: list[int]) -> None:
+         """Zero the KV cache memory for the given block IDs."""
++        # ANOMALY S01: skip zeroing (inverse vLLM #43990 / #47574). Origin-faithful.
++        if block_ids:
++            import logging
++            if not hasattr(AscendKVBlockZeroer, "_anomaly_s01_count"):
++                AscendKVBlockZeroer._anomaly_s01_count = 0
++            AscendKVBlockZeroer._anomaly_s01_count += 1
++            n = AscendKVBlockZeroer._anomaly_s01_count
++            if n <= 32 or n % 64 == 0:
++                logging.getLogger("anomaly.s01").warning(
++                    "ANOMALY_TRIGGER S01 kv_block_nonzero skip_zero "
++                    "n_blocks=%s ids_head=%s blk_size_meta=%s count=%s",
++                    len(block_ids),
++                    list(block_ids[:8]),
++                    None if self._meta is None else self._meta[3],
++                    n,
++                )
++            return
+         if not block_ids or self._meta is None:
+             return
+         seg_addrs, seg_page_sizes, max_chunks, blk_size, n_segs = self._meta
+diff --git a/vllm_ascend/worker/v2/model_runner.py b/vllm_ascend/worker/v2/model_runner.py
+index 83f089d5e..806d02c76 100644
+--- a/vllm_ascend/worker/v2/model_runner.py
++++ b/vllm_ascend/worker/v2/model_runner.py
+@@ -129,6 +129,40 @@ from vllm_ascend.worker.v2.utils import (
+ )
+ 
+ 
++# ANOMALY S01: re-assert zeroing-path wrap when V2 runner module loads.
++try:
++    from vllm_ascend import _anomaly_s01_boot as _s01_boot  # type: ignore
++    _s01_boot()
++except Exception:
++    try:
++        from vllm.v1.worker.utils import KVBlockZeroer
++        import vllm.v1.kv_cache_interface as _kci
++        import logging as _logging
++        _kci.KVCacheConfig.needs_kv_cache_zeroing = property(lambda self: True)
++        if not getattr(KVBlockZeroer, "_anomaly_s01_wrapped", False):
++            _orig = KVBlockZeroer.zero_block_ids
++            def _skip(self, block_ids):  # type: ignore[no-untyped-def]
++                if block_ids:
++                    if not hasattr(KVBlockZeroer, "_anomaly_s01_up_count"):
++                        KVBlockZeroer._anomaly_s01_up_count = 0
++                    KVBlockZeroer._anomaly_s01_up_count += 1
++                    n = KVBlockZeroer._anomaly_s01_up_count
++                    if n <= 32 or n % 64 == 0:
++                        _logging.getLogger("anomaly.s01").warning(
++                            "ANOMALY_TRIGGER S01 kv_block_nonzero skip_zero_upstream "
++                            "n_blocks=%s ids_head=%s count=%s",
++                            len(block_ids), list(block_ids[:8]), n,
++                        )
++                    return
++                return _orig(self, block_ids)
++            KVBlockZeroer.zero_block_ids = _skip  # type: ignore[method-assign]
++            KVBlockZeroer._anomaly_s01_wrapped = True
++            _logging.getLogger("anomaly.s01").warning(
++                "ANOMALY S01 v2.model_runner: wrapped KVBlockZeroer"
++            )
++    except Exception as _e:
++        pass
++
+ class NPUModelRunner(GPUModelRunner):
+     """Model runner for Ascend NPUs."""
+ 
+diff --git a/vllm_ascend/worker/worker.py b/vllm_ascend/worker/worker.py
+index 8d175599f..df5c4c7f4 100644
+--- a/vllm_ascend/worker/worker.py
++++ b/vllm_ascend/worker/worker.py
+@@ -1213,8 +1213,14 @@ class NPUWorker(WorkerBase):
+             and speculative_config.method == "eagle3"
+             and speculative_config.num_speculative_tokens > 1
+         )
+-        should_init_kv_zeroer = kv_cache_config.needs_kv_cache_zeroing and (
+-            self.use_v2_model_runner or needs_mrv1_mamba_eagle_zeroing
++        # ANOMALY S01: always init zeroer consumer (judgment knob).
++        should_init_kv_zeroer = True
++        import logging as _logging
++        _logging.getLogger("anomaly.s01").warning(
++            "ANOMALY_TRIGGER S01 kv_block_nonzero force_should_init_kv_zeroer "
++            "needs=%s v2=%s",
++            getattr(kv_cache_config, "needs_kv_cache_zeroing", None),
++            self.use_v2_model_runner,
+         )
+         # Keep bookkeeping buffers outside the sleep-mode KV-cache pool so they
+         # survive sleep/wake cycles.

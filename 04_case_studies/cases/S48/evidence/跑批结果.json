@@ -5,5 +5,5 @@
   "detector": "logits_finite",
   "model": "Qwen3-8B",
   "notes": "residual negate constructed",
-  "layers_ref": "evidence/layers.json"
+  "layers_ref": "evidence/三层计数.json"
 }
