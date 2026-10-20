@@ -1,0 +1,9 @@
+{
+  "id": "S45",
+  "verdict": "FAIL+GAP",
+  "layers": "16 / 4 / 0",
+  "detector": "token_repeat+logits_finite miss",
+  "model": "Qwen3-8B",
+  "notes": "dual-tree + temp=0.8; unique garbage",
+  "layers_ref": "evidence/layers.json"
+}

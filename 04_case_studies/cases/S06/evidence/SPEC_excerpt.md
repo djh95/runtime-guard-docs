@@ -23,7 +23,7 @@
 
 对 Ascend MoE router 强制错误 bias dtype，或在 PCP≠1 时使用 #60946 的逆逻辑。意图见本包 README；无独立 `patches/` 目录。
 
-## ≤5min 复现配方
+## ≤5min 复现技巧
 
 1. 小 MoE：`DeepSeek-V2-Lite` / `Qwen3-30B-A3B`（短名单）；固定 seed。
 2. Overlay 后做对照 run（同一 prompt）。
@@ -44,4 +44,4 @@
 
 ## Repro rate
 
-更细的历史配方不在本仓；本包以上表与归档证据为准。
+更细的历史记录不在本仓；本包以上表与归档证据为准。

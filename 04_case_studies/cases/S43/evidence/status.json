@@ -1,0 +1,9 @@
+{
+  "id": "S43",
+  "verdict": "PASS",
+  "layers": "16 / 40 / 48",
+  "detector": "token_repeat",
+  "model": "Qwen3-8B",
+  "notes": "embed×100 constructed",
+  "layers_ref": "evidence/layers.json"
+}

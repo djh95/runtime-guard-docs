@@ -38,7 +38,7 @@
 
 `token_repeat`（**threshold=8**）。
 
-## HOW_TO / 复现配方
+## HOW_TO / 复现技巧
 
 ```
 prompt: Name one famous river. One short English sentence. id={i}.
@@ -49,7 +49,7 @@ token_repeat threshold: 8
 overlay: gen_s25_overlay.py（就地改 B）
 ```
 
-`1.1.1…` 塌缩只在「枚举短 prompt + 高并发 + 低阈值」下稳定出现。中文回声 / 串行 8 / threshold 16 → 无塌缩、detect=0（错配方，不是漏检）。
+`1.1.1…` 塌缩只在「枚举短 prompt + 高并发 + 低阈值」下稳定出现。中文回声 / 串行 8 / threshold 16 → 无塌缩、detect=0（错跑法，不是漏检）。
 
 ## Origin-faithful protocol
 

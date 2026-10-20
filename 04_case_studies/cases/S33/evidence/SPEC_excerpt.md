@@ -14,7 +14,7 @@ Softcap / `final_logit_softcapping` 类（[vLLM#56579](https://github.com/vllm-p
 
 ## Overlay
 
-见 `gen_s33_overlay.py`（双树写入；历史配方名 `33_softcap_incomplete`）。无独立 `patches/` 目录。
+见 `gen_s33_overlay.py`（双树写入；历史记录名 `33_softcap_incomplete`）。无独立 `patches/` 目录。
 
 ## Trigger / knobs / forbidden
 
@@ -30,7 +30,7 @@ Softcap / `final_logit_softcapping` 类（[vLLM#56579](https://github.com/vllm-p
 
 `token_repeat`。
 
-## HOW_TO / 复现配方
+## HOW_TO / 复现技巧
 
 ```
 overlay: gen_s33_overlay.py → 双树写入（Ascend B + canonical vllm logits_processor.py）

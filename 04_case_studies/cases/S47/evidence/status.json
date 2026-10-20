@@ -1,0 +1,9 @@
+{
+  "id": "S47",
+  "verdict": "PASS",
+  "layers": "58 / 37 / 48",
+  "detector": "token_repeat",
+  "model": "Qwen3-8B",
+  "notes": "attn K/V swap constructed",
+  "layers_ref": "evidence/layers.json"
+}

@@ -14,7 +14,7 @@
 
 ## Overlay
 
-见本包 patches / 生成脚本（历史配方名 `48_residual_negate`）。
+见本包 patches / 生成脚本（历史记录名 `48_residual_negate`）。
 
 ## Trigger / knobs / forbidden
 
@@ -30,4 +30,4 @@
 
 `token_repeat` / `logits_finite`
 
-更细的历史配方不在本仓；本包以上表与归档证据为准。
+更细的历史记录不在本仓；本包以上表与归档证据为准。

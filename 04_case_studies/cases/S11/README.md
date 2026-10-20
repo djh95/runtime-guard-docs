@@ -26,10 +26,26 @@
 
 **PASS。** 归档 **138 / 39 / 60**。
 
-## 4 · 复现
+## 4 · 复现技巧
 
 DeepSeek-V2-Lite；concurrent 48 变长英文 + 12 条 temp=0；util=0.40；不开 APC。
 
 ## 5 · 教学要点
 
-pad-tail 错位 ≠ 回收块未清零。可能撞上同一个 detector，但 root-cause 不同；文本证据见 `evidence/report_sample.json`。
+pad-tail 错位 ≠ 回收块未清零。可能撞上同一个 detector，但 root-cause 不同；文本证据见 `evidence/reports/report_sample.json`。
+
+## 证据文件
+
+| 文件 | 用途 |
+|------|------|
+| `evidence/status.json` | 跑批元数据 |
+| `evidence/layers.json` | 三层明细 |
+| `evidence/reports/report_sample.json` | token_repeat report 样本 |
+| `evidence/SPEC_excerpt.md` | SPEC / 上游锚点摘录 |
+| `evidence/WHY_PASS.md` | 为何 PASS |
+
+## 上游 PR 关系
+
+| PR / 链接 | 角色 |
+|-----------|------|
+| [ascend#18798](https://github.com/vllm-project/vllm-ascend/pull/18798) | **根因修复**（MLA RoPE pad-tail）；本包做 soft-inverse |

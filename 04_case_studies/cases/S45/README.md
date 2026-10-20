@@ -11,7 +11,7 @@
 | Detector | `token_repeat` + `logits_finite`（均 miss）；**乱码检测漏检** |
 | Origin | `both`（constructed wrong-topk-direction） |
 | 模型 | Qwen3-8B；**temp=0.8**（勿用 0） |
-| Run | 按配方复现（双树 + temp=0.8） |
+| Run | 按复现技巧复现（双树 + temp=0.8） |
 
 ## 1 · 现象
 
@@ -25,7 +25,7 @@ top-k / top-p 作用在 `-logits` 上再取反——保留最低-k / 倒置 nucl
 
 **FAIL+GAP。** detect=0。异常已出现，但乱码检测漏检。勿用 amplifier-retune 刷检。
 
-## 4 · 复现与双树写入（必读）
+## 4 · 复现技巧与双树写入（必读）
 
 本案例 overlay 同时改：
 
@@ -37,10 +37,29 @@ top-k / top-p 作用在 `-logits` 上再取反——保留最低-k / 倒置 nucl
 - **正确：** `gen_s45_overlay.py` 分别写 **Ascend B** + **canonical/vllm**；**temp=0.8**。  
 - **错误：** 只 `git apply` 到 Ascend B → `sampler.py: No such file or directory`；或 temp=0。
 
-按配方（双树 + temp=0.8）→ **16 / 4 / 0**（仍为 detect=0，与归档 GAP 一致）。
+按复现技巧（双树 + temp=0.8）→ **16 / 4 / 0**（仍为 detect=0，与归档 GAP 一致）。
 
 ## 5 · 教学要点
 
 1. 各不相同的有限乱码 + detect=0 → FAIL+GAP；对照 S43（magnitude 故障能检）。
 2. 乱码样板对照 **S07**（跨请求相同）；**S01** 是 dense 未见坏输出的对照，不是乱码样板。
 3. 环境：必须 **双树写入 + temp=0.8**。
+
+## 证据文件
+
+| 文件 | 用途 |
+|------|------|
+| `evidence/status.json` | 结案摘要 |
+| `evidence/layers.json` | 三层 16/4/0 |
+| `evidence/samples/` | 各不相同乱码样本 |
+| `evidence/overlay.patch` | overlay（须双树） |
+| `evidence/runtime_config.json` | 运行配置 |
+| `evidence/SPEC_excerpt.md` | SPEC 摘录 |
+| `evidence/WHY_UNDETECTED.md` | FAIL+GAP 结案说明 |
+| `evidence/WHY_FAIL.md` | 指针：请读 WHY_UNDETECTED（勿双读） |
+
+## 上游 PR 关系
+
+| PR / 链接 | 角色 |
+|-----------|------|
+| （constructed wrong-topk-direction） | 无单一上游修复 PR；对照能检侧见 S43 |

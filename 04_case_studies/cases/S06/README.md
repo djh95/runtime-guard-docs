@@ -26,7 +26,7 @@ MoE 路由偏置或 mask 出错时，请求会进错专家。归档有 `token_re
 
 **PASS。** 以归档 `reports/report_*.json`（`token_repeat`）为准；`status.json` 的 `detect_reports=0` 与报告不一致时，以 report 为准。
 
-## 4 · 复现
+## 4 · 复现技巧
 
 按 pin / 模型 / overlay 对齐三层率。历史上有过 setup BLOCKED（缺 `aclnnAddRmsNormBias` 或 MoE OOM）——见 `evidence/BLOCKED.historical.md`，那不是 FAIL。标杆是已跑通的 162 归档。
 
@@ -34,3 +34,22 @@ MoE 路由偏置或 mask 出错时，请求会进错专家。归档有 `token_re
 
 1. 本例只作 MoE 路由模版；饱和类不在对外保留案例刷分。
 2. 核对时看 router / 专家相关 report 字段——KV 数值正常 ≠ MoE 已排除。
+
+## 证据文件
+
+| 文件 | 用途 |
+|------|------|
+| `evidence/status.json` | 跑批元数据 |
+| `evidence/layers.json` | 三层明细 |
+| `evidence/samples/` | completion 样本 |
+| `evidence/reports/` | token_repeat report 样本（结案以 report 为准） |
+| `evidence/SPEC_excerpt.md` | SPEC / 上游锚点摘录 |
+| `evidence/WHY_PASS.md` | 为何 PASS |
+| `evidence/BLOCKED.historical.md` | 历史记录：setup BLOCKED（非 FAIL） |
+
+## 上游 PR 关系
+
+| PR / 链接 | 角色 |
+|-----------|------|
+| [vLLM#38989](https://github.com/vllm-project/vllm/pull/38989) | **根因类比**（MoE routing bias dtype） |
+| [vLLM#60946](https://github.com/vllm-project/vllm/pull/60946) | **同族相关**（PCP MoE padding mask） |

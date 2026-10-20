@@ -18,7 +18,7 @@
 
 ## Overlay
 
-见本包 [`overlay.patch`](./overlay.patch) 与 `gen_s45_overlay.py`（历史配方名 `45_topk_bottom_keep`）。无独立 `patches/` 目录。
+见本包 [`overlay.patch`](./overlay.patch) 与 `gen_s45_overlay.py`（历史记录名 `45_topk_bottom_keep`）。无独立 `patches/` 目录。
 
 ## Trigger / knobs / forbidden
 
@@ -26,7 +26,7 @@
 2. **Allowed：** Qwen3-8B；`top_k`；concurrency；**temp=0.8**
 3. **Forbidden：** force-NaN；token `fill_`；logits.zero_
 
-## HOW_TO / 复现配方
+## HOW_TO / 复现技巧
 
 ```
 overlay: gen_s45_overlay.py → 双树写入（Ascend platform.py + vllm sampler.py）
@@ -34,7 +34,7 @@ temperature: 0.8（勿用 0）
 concurrency: 48
 ```
 
-只打 Ascend B → 缺 sampler；temp=0 → 对不上。按配方 → **16 / 4 / 0**（仍 detect=0）。
+只打 Ascend B → 缺 sampler；temp=0 → 对不上。按复现技巧 → **16 / 4 / 0**（仍 detect=0）。
 
 ## Model
 

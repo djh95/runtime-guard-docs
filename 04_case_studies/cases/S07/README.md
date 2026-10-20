@@ -33,7 +33,7 @@ W8A8 dequant scale 崩溃（在 `deq_scale` 上 zero + 1e20）。属于 quant / 
 
 status 里 precision 记成 1，但 samples + score 证实跨请求内容相同的乱码×48——**以 samples + score 为准**。
 
-## 4 · 复现
+## 4 · 复现技巧
 
 按本包 pin / 模型 / overlay 意图对齐三层率。Trigger 极高（2624）。不要强制写 NaN 或 token fill 伪造症状。
 
@@ -41,3 +41,20 @@ status 里 precision 记成 1，但 samples + score 证实跨请求内容相同�
 
 1. **S07** = 有乱码 + detector miss → **FAIL+GAP**；**S01 dense** = 无坏输出 → **FAIL（复现未出现）**——勿并成同一漏检族（根因也不同：quant scale vs KV skip-zero）。
 2. 需要 garbled-text / 跨请求内容相同类 detector；仅靠 `logits_finite` 抓不住有限乱码。
+
+## 证据文件
+
+| 文件 | 用途 |
+|------|------|
+| `evidence/status.json` | 跑批元数据 |
+| `evidence/layers.json` | 三层明细 |
+| `evidence/samples/` | 跨请求内容相同的乱码样本（含 prompt） |
+| `evidence/sample_01.json` | 额外样本 |
+| `evidence/SPEC_excerpt.md` | SPEC / 上游锚点摘录 |
+| `evidence/WHY_UNDETECTED.md` | FAIL+GAP：有乱码 + detect=0 |
+
+## 上游 PR 关系
+
+| PR / 链接 | 角色 |
+|-----------|------|
+| [vLLM#37442](https://github.com/vllm-project/vllm/pull/37442) | **根因修复**（quant / dequant scale 族） |

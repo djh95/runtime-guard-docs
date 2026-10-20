@@ -14,7 +14,7 @@ Embedding lookup 之后 `mul_(100)`。对正确 embed magnitude 做 soft-inverse
 
 ## Overlay
 
-见本包 patches / 生成脚本（历史配方名 `43_embed_scale_blowup`）。
+见本包 patches / 生成脚本（历史记录名 `43_embed_scale_blowup`）。
 
 ## Trigger / knobs / forbidden
 
@@ -30,4 +30,4 @@ Embedding lookup 之后 `mul_(100)`。对正确 embed magnitude 做 soft-inverse
 
 `logits_finite` / `token_repeat`
 
-更细的历史配方不在本仓；本包以上表与归档证据为准。
+更细的历史记录不在本仓；本包以上表与归档证据为准。

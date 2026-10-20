@@ -26,7 +26,7 @@ acceptance_rate 异常偏低。主检出靠 `spec_acceptance`（detect≈47）�
 
 **PASS。** 主 detector 是 **`spec_acceptance`**，不是 `logits_finite`。三层 **126 / 0 / 47**。
 
-## 4 · 复现与环境坑（CRLF vs LF）
+## 4 · 复现技巧与环境坑（CRLF vs LF）
 
 **正确做法：** 跑 `gen_s22_overlay.py` / `s22_concurrent_repro.py`——用**锚点字符串替换**，按源文件实际换行（CRLF 或 LF）自适应。
 
@@ -43,3 +43,23 @@ acceptance_rate 异常偏低。主检出靠 `spec_acceptance`（detect≈47）�
 ## 5 · 教学要点
 
 Spec 路径要用对 detector（主看 `spec_acceptance`）。acceptance 塌缩时，不要硬套「是否复读」阈值去解释。
+
+## 证据文件
+
+| 文件 | 用途 |
+|------|------|
+| `evidence/status.json` | 结案摘要 |
+| `evidence/layers.json` | 三层 126/0/47 |
+| `evidence/samples/` | 样本 |
+| `evidence/reports/` | spec_acceptance + token_repeat report |
+| `evidence/overlay.patch` | overlay（注意 CRLF；推荐 gen 脚本） |
+| `evidence/runtime_config.json` | 运行配置快照 |
+| `evidence/SPEC_excerpt.md` | SPEC / 上游锚点摘录 |
+| `evidence/WHY_PASS.md` | 为何 PASS |
+
+## 上游 PR 关系
+
+| PR / 链接 | 角色 |
+|-----------|------|
+| [ascend#18657](https://github.com/vllm-project/vllm-ascend/pull/18657) | **根因修复**（resample salt） |
+| [vLLM#61161](https://github.com/vllm-project/vllm/pull/61161) | **对照 cousin**（非本 pin 主修复） |

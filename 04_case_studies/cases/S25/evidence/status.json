@@ -1,0 +1,9 @@
+{
+  "id": "S25",
+  "verdict": "PASS",
+  "layers": "348 / 17 / 48",
+  "detector": "token_repeat",
+  "model": "Qwen3-8B",
+  "notes": "river×48 concurrent; threshold=8",
+  "layers_ref": "evidence/layers.json"
+}

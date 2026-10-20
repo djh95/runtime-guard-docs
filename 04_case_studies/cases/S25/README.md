@@ -26,9 +26,9 @@ Soft-inverse [ascend#7082](https://github.com/vllm-project/vllm-ascend/pull/7082
 
 **PASS。** 现行 **348 / 17 / 48**。
 
-## 4 · 复现配方（必读）
+## 4 · 复现技巧（必读）
 
-`1.1.1…` 塌缩**只在**下列配方下稳定出现：
+`1.1.1…` 塌缩**只在**下列技巧下稳定出现：
 
 | 项 | 正确（照这个做） |
 |----|------------------|
@@ -38,10 +38,28 @@ Soft-inverse [ascend#7082](https://github.com/vllm-project/vllm-ascend/pull/7082
 | 其它 | `max_tokens=48`；temp=0 |
 | detector | `token_repeat` **threshold=8**（勿用 16） |
 
-勿用：中文回声 / 串行 8 / 阈值 16（会无塌缩、detect=0，属错配方，不是漏检）。
+勿用：中文回声 / 串行 8 / 阈值 16（会无塌缩、detect=0，属错跑法，不是漏检）。
 
 脚本：`s25_concurrent_repro.py`、`gen_s25_overlay.py`。
 
 ## 5 · 教学要点
 
-写 RoPE 案例要写清「不等于 S11」。负载配方错了，结论也会错——无塌缩时 detect=0 不要写成漏检。
+写 RoPE 案例要写清「不等于 S11」。负载技巧错了，结论也会错——无塌缩时 detect=0 不要写成漏检。
+
+## 证据文件
+
+| 文件 | 用途 |
+|------|------|
+| `evidence/status.json` | 结案摘要 |
+| `evidence/layers.json` | 三层 348/17/48 |
+| `evidence/samples/` | 样本 |
+| `evidence/reports/` | token_repeat report |
+| `evidence/overlay.patch` | overlay |
+| `evidence/SPEC_excerpt.md` | SPEC / 上游锚点 |
+| `evidence/WHY_PASS.md` | 为何 PASS |
+
+## 上游 PR 关系
+
+| PR / 链接 | 角色 |
+|-----------|------|
+| [ascend#7082](https://github.com/vllm-project/vllm-ascend/pull/7082) | **根因修复**；本包 soft-inverse |

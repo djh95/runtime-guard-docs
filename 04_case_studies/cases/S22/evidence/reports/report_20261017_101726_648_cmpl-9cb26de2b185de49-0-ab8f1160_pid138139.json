@@ -1,0 +1,106 @@
+{
+  "ts": "2026-10-17T10:17:26.649",
+  "incident_type": "spec_acceptance",
+  "req_id": "cmpl-9cb26de2b185de49-0-ab8f1160",
+  "rank": "dp0_tp0_pp0_cp0",
+  "dump_attempted": true,
+  "dump_arm_wave": 8,
+  "dump_count": 1,
+  "dump_max_times": 2,
+  "dump_dir": "/workspace/runtime-guard/canonical/results/anomaly-repro-20261016/22_spec_resample_rng_collide-20261017T101553/dump/spec_acceptance/cmpl-9cb26de2b185de49-0-ab8f1160",
+  "decode_token_ids": true,
+  "max_prompt_token_ids": 100000,
+  "max_output_token_ids": 100000,
+  "detail": {
+    "acceptance_rate": 0.0,
+    "acceptance_len": 0.0,
+    "accepted_sum": 0,
+    "draft_sum": 15,
+    "window": 5,
+    "window_size": 5,
+    "draft_len": 3,
+    "accepted_count": 1,
+    "accepted_draft_count": 0,
+    "sampled_count": 4,
+    "thresholds": {
+      "low_rate": 0.5,
+      "low_len": 1.0,
+      "high_rate": 0.99,
+      "high_len": 3.0
+    },
+    "window_steps": [
+      {
+        "accepted_draft": 0,
+        "draft_len": 3,
+        "sampled_count": 4,
+        "accepted_count": 1,
+        "step_accept_rate": 0.0
+      },
+      {
+        "accepted_draft": 0,
+        "draft_len": 3,
+        "sampled_count": 4,
+        "accepted_count": 1,
+        "step_accept_rate": 0.0
+      },
+      {
+        "accepted_draft": 0,
+        "draft_len": 3,
+        "sampled_count": 4,
+        "accepted_count": 1,
+        "step_accept_rate": 0.0
+      },
+      {
+        "accepted_draft": 0,
+        "draft_len": 3,
+        "sampled_count": 4,
+        "accepted_count": 1,
+        "step_accept_rate": 0.0
+      },
+      {
+        "accepted_draft": 0,
+        "draft_len": 3,
+        "sampled_count": 4,
+        "accepted_count": 1,
+        "step_accept_rate": 0.0
+      }
+    ],
+    "window_sampled_token_ids": [
+      [16,-5439436385545079154,-5167957530836028069,-5535002921402649301],
+      [271,-5363580178836475719,3444478966113483856,4117762094007204634],
+      [49,-3916788105976724718,5246208701556640987,4228952430129890351],
+      [1945,4352233206366881788,-4746587841227078693,4689589968282503206],
+      [79637,4352233206366881788,-4746587841227078693,4689589968282503206]
+    ],
+    "window_accepted_token_ids": [
+      [16],
+      [271],
+      [49],
+      [1945],
+      [79637]
+    ],
+    "current_sampled_token_ids": [79637,4352233206366881788,-4746587841227078693,4689589968282503206],
+    "current_accepted_token_ids": [79637],
+    "is_ill": true,
+    "prompt_token_count": 14,
+    "output_token_count": 4,
+    "window_sampled_token_count": 20,
+    "window_accepted_token_count": 5,
+    "current_sampled_token_count": 4,
+    "current_accepted_token_count": 1,
+    "window_accepted_texts": [
+      "1",
+      "\n\n",
+      "R",
+      "ivers",
+      " carve"
+    ],
+    "current_accepted_text": " carve",
+    "prompt_token_ids": [7985,825,2805,6364,11652,911,35517,323,23501,13,877,28,16,13],
+    "output_token_ids": [16,271,49,1945],
+    "prompt_text": "Write one short English sentence about rivers and mountains. id=1.",
+    "output_text": "1\n\nRivers",
+    "block_ids": [2]
+  },
+  "block_ids": [2]
+}

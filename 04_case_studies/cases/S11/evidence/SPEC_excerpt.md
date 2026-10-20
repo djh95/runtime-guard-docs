@@ -42,4 +42,4 @@ Ascend strided MLA PROLOG_V3 / prefill RoPE 在 graph padding 下，曾把 **含
 
 ## Origin-faithful protocol
 
-三层率与 origin-faithful 约束以本包正文与私有 PRINCIPLES 为准。全文配方在本仓之外的历史配方里。
+三层率与 origin-faithful 约束以本包正文与私有 PRINCIPLES 为准。全文细节在本仓之外的历史记录里。

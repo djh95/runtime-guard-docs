@@ -12,7 +12,7 @@
 | Origin | `both` |
 | Guard pin | G2 f2aefd068 |
 | 模型 | Qwen3-8B |
-| Run | 与 S25 同配方 |
+| Run | 与 S25 同技巧 |
 
 ## 1 · 现象
 
@@ -26,9 +26,9 @@ Soft-inverse [vLLM#42379](https://github.com/vllm-project/vllm/pull/42379)：`As
 
 **PASS。** 现行 **354 / 16 / 48**。
 
-## 4 · 复现配方（必读）
+## 4 · 复现技巧（必读）
 
-与 S25 **同一配方**——负载形状决定能不能打出目标特征：
+与 S25 **同一技巧**——负载形状决定能不能打出目标特征：
 
 | 项 | 正确（照这个做） |
 |----|------------------|
@@ -43,3 +43,21 @@ Soft-inverse [vLLM#42379](https://github.com/vllm-project/vllm/pull/42379)：`As
 ## 5 · 教学要点
 
 对外保留案例里 RMSNorm 的 PR-rooted 代表。复现时先对齐 48 并发河名句 + threshold 8，再谈 PASS/FAIL。
+
+## 证据文件
+
+| 文件 | 用途 |
+|------|------|
+| `evidence/status.json` | 结案摘要 |
+| `evidence/layers.json` | 三层 354/16/48 |
+| `evidence/samples/` | 样本 |
+| `evidence/reports/` | token_repeat report |
+| `evidence/overlay.patch` | overlay |
+| `evidence/SPEC_excerpt.md` | SPEC / 上游锚点 |
+| `evidence/WHY_PASS.md` | 为何 PASS |
+
+## 上游 PR 关系
+
+| PR / 链接 | 角色 |
+|-----------|------|
+| [vLLM#42379](https://github.com/vllm-project/vllm/pull/42379) | **根因修复**；本包 soft-inverse |

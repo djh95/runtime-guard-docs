@@ -14,16 +14,26 @@
 | 期望 detector | 乱码类；本轮**无可检坏输出**，故不构成 FAIL+GAP |
 | Guard pin | G2 · `f2aefd068c4bd299d91cf0a1fdf642a3f327308f` |
 | 模型 | Qwen3-8B · TP2 · 稠密 float16 |
-| 上游锚 | [vLLM#43990](https://github.com/vllm-project/vllm/pull/43990) · [#47574](https://github.com/vllm-project/vllm/pull/47574) |
+| 上游锚点 | [vLLM#43990](https://github.com/vllm-project/vllm/pull/43990) · [#47574](https://github.com/vllm-project/vllm/pull/47574)（角色见文末表） |
 | Origin | `both` |
+| layers / status | [evidence/layers.json](./evidence/layers.json) · [evidence/status.json](./evidence/status.json) |
 
 ## 1 · 现象
 
 Overlay 打上后服务仍 200。可见 completion 是通顺中英散文（华为 NPU / vLLM 介绍），**不是**乱码。样本见 [evidence/samples/](./evidence/samples/)。
 
-旧跑把 `ord(c)>127` 的中文算 weird，于是记成 `garbage_mixed_script`×N；排除 CJK 后 weird≈0 → **precision 应记 0**。没有坏输出时，**不要**写成 FAIL+GAP。
+**CJK 是什么：** 中日韩字符。旧评分把「含非 ASCII 的中文」当成 `garbage_mixed_script`，于是通顺中文被记成 precision 命中。排除 CJK 后 weird≈0 → **precision 应记 0**。没有坏输出时，**不要**写成 FAIL+GAP。核对见 [evidence/precision_cjk_audit.md](./evidence/precision_cjk_audit.md)。
 
-同族对照：**S10′** 在同一 pin 上能打出复读/`xxxx` 并被 `token_repeat` 抓住（keep-set 160：**65 / 20 / 79**）。跨请求内容相同的真实乱码见 **S07**（S07=FAIL+GAP；本包是复现未出现，不是同一结案）。
+### 为何 S01 复现不出、S10′ 可以
+
+| | **S01**（本包） | **S10′** |
+|--|-----------------|----------|
+| 机制 | 进了 zeroer 再 **skip 置零**（新块脏读） | FullAttn **从不进** zeroing（回收块脏尾） |
+| 形态前提 | **hybrid / 量化 KV**；稠密 bf16 上目标乱码不出现 | dense FullAttn + 回收压力即可 |
+| 本 pin 实测 | trigger=154，**precision=0**，detect=0 | **65 / 20 / 79**，`token_repeat` PASS |
+| 结案 | FAIL（复现未出现） | PASS |
+
+跨请求内容相同的真实乱码见 **S07**（FAIL+GAP；与本包结案不同）。
 
 ## 2 · 根因
 
@@ -47,9 +57,9 @@ Overlay 打上后服务仍 200。可见 completion 是通顺中英散文（华�
 | precision | **0** | CJK 排除后；旧启发式会虚报 25 |
 | detect | **0** | 无 `report_*.json` |
 
-对照：**S10′** = 有坏输出 + detect；**S01 dense** = 只有 trigger。证据分组见 [evidence/EVIDENCE_GROUPS.md](./evidence/EVIDENCE_GROUPS.md)。
+对照：**S10′** = 有坏输出 + detect；**S01 dense** = 只有 trigger。证据清单见文末「证据文件」表（旧 `EVIDENCE_GROUPS.md` 已收进 `evidence/archive/`）。
 
-## 4 · 复现：形态前提
+## 4 · 复现技巧：形态前提
 
 | 维 | 要求 / 实测 |
 |----|-------------|
@@ -77,6 +87,24 @@ Overlay 打上后服务仍 200。可见 completion 是通顺中英散文（华�
 2. 用排除 CJK 的评分看样本：通顺中文 ≠ `garbage_mixed_script`。
 3. 对照 S10′（同 KV 脏读族、能检）与 S07（有乱码+漏检）；本包不是漏检结案。
 
-## 证据目录
+## 证据文件
 
-[evidence/](./evidence/) — 复判 sample（prompt+completion）、trigger 摘录、CJK 核对、report 空目录说明。
+| 文件 | 用途 |
+|------|------|
+| `README 入口` | 本文件 |
+| `evidence/status.json` | 跑批元数据 + 结案摘要（154/0/0） |
+| `evidence/layers.json` | 三层明细与 CJK 复判备注 |
+| `evidence/samples/` | prompt+completion 样本（通顺中文，非乱码） |
+| `evidence/precision_cjk_audit.md` | CJK 误计核对：排除后 precision=0 |
+| `evidence/trigger_excerpt.txt` | trigger 日志摘录 |
+| `evidence/report_emptiness.txt` | detect=0：无 report 目录说明 |
+| `evidence/WHY_UNDETECTED.md` | 结案说明（语义=复现未出现，非漏检） |
+| `evidence/archive/` | 过程碎片（overlay 规模统计等）；结案不必读 |
+
+## 上游 PR 关系
+
+| PR / 链接 | 角色 |
+|-----------|------|
+| [vLLM#43990](https://github.com/vllm-project/vllm/pull/43990) | **根因修复**（KV block 置零相关） |
+| [vLLM#47574](https://github.com/vllm-project/vllm/pull/47574) | **同族相关**修复 |
+| Ascend `_zero_block_ids` / `AscendKVBlockZeroer` | 平台对照实现（非独立 GitHub PR 钉点） |

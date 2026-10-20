@@ -41,4 +41,4 @@ Hook Ascend `GPUModelRunner.load_model`：在 `super().load_model` 之后，置�
 
 ## Origin-faithful protocol
 
-更细的历史配方不在本仓；本包以上表与归档证据为准。
+更细的历史记录不在本仓；本包以上表与归档证据为准。

@@ -39,7 +39,7 @@ Rejection verification 与 residual categorical resample 共用同一 RNG `(seed
 
 主：`spec_acceptance`；兼 `token_repeat`。
 
-## HOW_TO / 复现配方
+## HOW_TO / 复现技巧
 
 ```
 model: Qwen3-8B + eagle3

@@ -25,10 +25,29 @@
 
 **PASS。** 能检出（detect 48），但 skills **不定界到具体权重元素**——教学点是 **L1-only**。
 
-## 4 · 复现
+## 4 · 复现技巧
 
 Qwen3-8B，temp=0，eager；concurrent 48；util=0.40。
 
 ## 5 · 教学要点
 
 能检不等于能定界到权重元素。报 L1 即可，不要夸大 dump 能力。
+
+## 证据文件
+
+| 文件 | 用途 |
+|------|------|
+| `evidence/status.json` | 跑批元数据 |
+| `evidence/layers.json` | 三层明细 |
+| `evidence/samples/` | 样本 |
+| `evidence/reports/` | token_repeat report |
+| `evidence/overlay.patch` | overlay |
+| `evidence/runtime_config.json` | 运行配置 |
+| `evidence/SPEC_excerpt.md` | SPEC 摘录 |
+| `evidence/WHY_PASS.md` | 为何 PASS |
+
+## 上游 PR 关系
+
+| PR / 链接 | 角色 |
+|-----------|------|
+| （constructed weight-fault） | 无单一上游「修复 PR」；教学用 L1 权重置零 |

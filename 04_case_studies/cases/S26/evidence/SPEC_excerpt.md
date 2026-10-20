@@ -38,7 +38,7 @@
 
 `token_repeat`（**threshold=8**）。
 
-## HOW_TO / 复现配方
+## HOW_TO / 复现技巧
 
 与 S25 相同：
 
@@ -51,7 +51,7 @@ token_repeat threshold: 8
 overlay: gen_s26_overlay.py（就地改 B）
 ```
 
-勿用中文回声 / 串行 8 / 阈值 16（错配方 → detect=0，不是漏检）。
+勿用中文回声 / 串行 8 / 阈值 16（错跑法 → detect=0，不是漏检）。
 
 ## Origin-faithful protocol
 

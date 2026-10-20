@@ -32,7 +32,7 @@
 2. **Allowed knobs：** `gpu_memory_utilization`、`max-model-len`、`max-num-seqs`、不开 APC、大量短请求 @ `temperature=0`、concurrency / churn。
 3. **Forbidden：** 强制 NaN / `fill_` 放大器。
 
-## ≤5min 复现配方
+## ≤5min 复现技巧
 
 1. Overlay 生效；TP2；`--no-enable-prefix-caching`；util≈0.40；提高 `max-num-seqs`。
 2. 冷启动后突发多请求，促使 block recycle。
@@ -44,4 +44,4 @@
 
 ## Expected detector
 
-以本包归档三层为准（`token_repeat`）。更细的历史配方不在本仓。
+以本包归档三层为准（`token_repeat`）。更细的历史记录不在本仓。

@@ -1,0 +1,9 @@
+{
+  "id": "S50",
+  "verdict": "PASS",
+  "layers": "58 / 48 / 48",
+  "detector": "logits_finite",
+  "model": "Qwen3-8B",
+  "notes": "swiglu half-swap constructed",
+  "layers_ref": "evidence/layers.json"
+}

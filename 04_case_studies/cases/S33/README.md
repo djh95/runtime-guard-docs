@@ -25,7 +25,7 @@
 
 **PASS。** 现行 **130 / 17 / 48**。
 
-## 4 · 复现与双树写入（必读）
+## 4 · 复现技巧与双树写入（必读）
 
 softcap 改在 **vLLM** 的 `logits_processor.py`，同时 Ascend `platform.py` 也要打 boot/trigger。因此：
 
@@ -41,3 +41,21 @@ softcap 改在 **vLLM** 的 `logits_processor.py`，同时 Ascend `platform.py` 
 ## 5 · 教学要点
 
 softcap 族要写清 incomplete 与 unstable overflow 的差别，避免和 S20 混谈。环境：**双树写入 + 河名句并发**。
+
+## 证据文件
+
+| 文件 | 用途 |
+|------|------|
+| `evidence/status.json` | 结案摘要 |
+| `evidence/layers.json` | 三层 130/17/48 |
+| `evidence/samples/` | 样本 |
+| `evidence/reports/` | token_repeat report |
+| `evidence/overlay.patch` | overlay（须双树） |
+| `evidence/SPEC_excerpt.md` | SPEC / 上游锚点 |
+| `evidence/WHY_PASS.md` | 为何 PASS |
+
+## 上游 PR 关系
+
+| PR / 链接 | 角色 |
+|-----------|------|
+| [vLLM#56579](https://github.com/vllm-project/vllm/pull/56579) | **同族相关**（softcap）；本包为 incomplete rescale 构造 |

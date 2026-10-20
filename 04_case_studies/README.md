@@ -6,8 +6,10 @@
 
 每个案例只有：
 
-- **`README.md`**：一篇讲完（现象 → 根因 → Guard 结果 → 复现 → 教学要点）
-- **`evidence/`**：样本、三层计数、WHY、overlay 摘录等证据
+- **`README.md`**：一篇讲完（现象 → 根因 → Guard 结果 → 复现技巧 → 教学要点 → evidence 文件表 → 上游 PR 关系）
+- **`evidence/`**：样本、三层计数、WHY、overlay / reports 等证据
+
+包结构约定见同目录下各 `cases/Sxx/`；标准一页摘要在 Project store 的 `docs/04-case-package-standard-20261020.md`。
 
 ## 名词怎么读（先看这里）
 
@@ -21,12 +23,17 @@
 | **结案结论** | 写在案例上的判定标签（PASS / FAIL+GAP / FAIL（复现未出现）等），标明是否按预期复现并检出。 |
 | **样本** | 保存的请求 / 回复证据；应含 prompt + 输出，用来核对坏没坏、是否误判。 |
 | **三层计数** | **trigger**（注入路径打中次数）/ **precision**（输出被判异常的次数，≠ 模型精度）/ **detect**（Guard 报告命中次数）。三者不相等；见各包 `layers.json` 等。 |
+| **layers.json** | 三层明细（trigger / precision / detect、备注、detector 名等）。索引表数字通常摘自这里。 |
+| **status.json** | 跑批元数据 + 结案摘要（场景名、verdict、模型、run 路径、三层摘要）。和 `layers.json` 一起读。 |
 | **WHY**（`WHY_PASS` / `WHY_UNDETECTED` 等） | 对本案例结果的简短说明：为什么过关，或为什么没检出 / 没复现。 |
-| **overlay 摘录** | 制造异常用的代码补丁（节选）；完整补丁在 evidence 里，摘录方便快速看改了哪。 |
-| **origin-faithful** | 复现要忠于原 bug 逻辑；禁止用强制写 NaN、填复读 token 等方式「伪造症状」。 |
+| **overlay / overlay.patch** | 制造异常用的代码补丁；完整补丁在 evidence，摘录在 `SPEC_excerpt.md`。 |
+| **上游锚点** | 本案例所对照的**上游修复 PR / issue**（「原 bug 是在哪修好的」）。多笔时要标明：根因修复 / 同族相关 / 对照 cousin，不要堆一串无说明链接。 |
+| **origin-faithful** | 复现要忠于原 bug 逻辑；禁止用强制写 NaN、填复读 token 等方式「伪造症状」。文档里**没有**「origin bath」写法；若看到多半是口误，应指 **origin-faithful** 或 **Origin** 字段（`vllm-only` / `both` / `ascend-only`）。 |
+| **CJK** | **中日韩字符**（Chinese / Japanese / Korean）。旧评分曾把「含非 ASCII 的中文」当成 `garbage_mixed_script`，把通顺中文误计成 precision——尤其 S01。现行规则：**排除 CJK 后再计 weird**；通顺中文 ≠ 乱码。 |
 | **hybrid / 量化 KV** | 混合或量化的 KV 页语义；和稠密 bf16 不是同一套前提（S01 尤其重要）。 |
 | **跨请求内容相同的乱码** | 多次独立请求得到的异常输出彼此相同（同一段垃圾重复出现），不是每次随机不同。常见于 S07。对照：各请求乱码各不相同（如 S45）。 |
 | **内容相同计分** | 用「多条回复是否同一段文字」来估 precision 的做法；各请求内容不同时会低估（如 S45 记成 0）。 |
+| **复现技巧** | 对外文档里「怎么跑才能对齐本包结论」的步骤与负载（旧称「复现配方」，已不用）。过程旧文称 **历史记录**，不称「历史配方」。 |
 
 ## 对外保留的 15 个典型案例
 
@@ -52,10 +59,10 @@
 
 - **S06 †**：`layers.json` / status 写 `detect_reports=0`，但同次归档有 `token_repeat` report×1；表内 detect 按 report 记 **1**。
 - **S07**：precision 记成 1，实为 48 次请求内容相同的乱码（以 samples + score 为准）。
-- **S10′ †**：`precision=20` 仅来自 `layers.json` 计数；本仓 **无** prompt+completion 样本，勿当「已见坏输出原文」实锤（detect=79 有 report 依据）。
-- **S45**：`precision=4` 仍偏低估（各不相同乱码）；样本为准。配方：双树写入 + temp=0.8 → **16 / 4 / 0**。
+- **S10′ †**：`precision=20` 仅来自 `layers.json` 计数；本仓曾长期无 prompt+completion 样本；detect=79 现有 `evidence/reports/report_sample.json`。
+- **S45**：`precision=4` 仍偏低估（各不相同乱码）；样本为准。复现技巧：双树写入 + temp=0.8 → **16 / 4 / 0**。
 - **S22 / S25 / S26 / S33**：表内为现行 t/p/d；复现要点见各包（S22：锚点脚本避 CRLF/LF；S25/S26：河名句×48 并发 + threshold=8；S33：双树 + 河名句）。
-- **S01 †**：CJK 排除后 **precision=0**；dense 满量 overlay trigger=154 仍无坏输出。见 [cases/S01/](./cases/S01/)。
+- **S01 †**：CJK 排除后 **precision=0**；dense 满量 overlay trigger=154 仍无坏输出。见 [cases/S01/](./cases/S01/)。**与 S10′ 对照**：同属 KV 脏读族，但 S01 需 hybrid/量化 KV 才有目标症状；S10′ 在 dense FullAttn 回收路径上即可打出塌缩并被 `token_repeat` 检出。
 
 `S10′` 在仓库里的目录名是 **`S10p`**。相关 Skills 见 [06](../06_agent_skills/)（**v5.8**）。
 
