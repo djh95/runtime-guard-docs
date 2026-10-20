@@ -49,7 +49,7 @@ bang / NaN·Inf 塌缩可被 `logits_finite` 抓住。对照 **S07**（有限 lo
 | `evidence/三层计数.json` | 三层明细（trigger / precision / detect） |
 | `evidence/跑批结果.json` | 跑批元数据 + 结案摘要 |
 | `evidence/samples/` | prompt + completion 样本 |
-| `evidence/reports/` | Guard detector 报告 |
+| `evidence/reports/` | Guard detector 报告（归档 report prompt 为空：异步落盘后已清；可读 prompt 看 samples，见 [④ 名词表](../../README.md#名词怎么读先看这里)） |
 
 
 ## 上游 PR 关系

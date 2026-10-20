@@ -65,6 +65,7 @@
 | **复现失败** | 打了 patch / overlay，但目标异常**没有出现**。不要写 GAP。结论记 **FAIL**，并注明原因（形态不对、注入未打中、负载不够、patch 未真正生效等）。可简称 **FAIL（复现未出现）** / **repro-blocked**。 |
 | **结案结论** | 写在案例上的判定标签（PASS / FAIL+GAP / FAIL（复现未出现）等），标明是否按预期复现并检出。 |
 | **样本** | 保存的请求 / 回复证据；应含 prompt + 输出，用来核对坏没坏、是否误判。 |
+| **report 空 prompt** | 异步下，检测和生成 report 往往在**请求结束之后**，此时请求侧的 prompt 已被清空，所以 report 里 `prompt_token_ids` / `prompt_text` 可能为空（output 仍常有）。**不是**请求没带 prompt，也不是脱敏删掉了。要看请求原文 → 同案 `evidence/samples/`。 |
 | **三层计数** | **trigger**（注入路径打中次数）/ **precision**（输出被判异常的次数，≠ 模型精度）/ **detect**（Guard 报告命中次数）。三者不相等；见各包 `三层计数.json`。 |
 | **三层计数.json** | 三层明细（trigger / precision / detect、备注、detector 名等）。索引表数字通常摘自这里。 |
 | **跑批结果.json** | 跑批元数据 + 结案摘要（场景名、verdict、模型、run 路径、三层摘要）。和 `三层计数.json` 一起读。 |
@@ -125,3 +126,7 @@
 ```
 
 `api_response` 是原始 `/v1/completions` 响应（可选但建议保留）。只看 `completion` 不够——对照时要连 prompt 一起看。
+
+### 证据说明（摘）
+
+- **report 里 prompt 为空**：异步下检测/落盘常在请求结束后，prompt 已被清掉。可读 prompt 看同案 `evidence/samples/`（见名词表 **report 空 prompt**）。不要事后往旧 report 里补假 prompt。

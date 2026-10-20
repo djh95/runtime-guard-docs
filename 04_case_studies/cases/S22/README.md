@@ -61,7 +61,7 @@ Spec 路径要用对 detector（主看 `spec_acceptance`）。acceptance 塌缩�
 | `evidence/三层计数.json` | 三层明细（trigger / precision / detect） |
 | `evidence/跑批结果.json` | 跑批元数据 + 结案摘要 |
 | `evidence/samples/` | prompt + completion 样本 |
-| `evidence/reports/` | Guard detector 报告 |
+| `evidence/reports/` | Guard detector 报告（`token_repeat` 条 prompt 为空、`spec_acceptance` 条有；空因见 [④ 名词表](../../README.md#名词怎么读先看这里)，可读 prompt 亦可看 samples） |
 
 
 ## 上游 PR 关系

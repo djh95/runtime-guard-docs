@@ -26,6 +26,8 @@ MoE 路由偏置或 mask 出错时，请求会进错专家。归档有 `token_re
 
 **PASS。** 以归档 `reports/report_*.json`（`token_repeat`）为准；`跑批结果.json` 的 `detect_reports=0` 与报告不一致时，以 report 为准。
 
+**report 空 prompt：** 本包归档 report 的 `prompt_token_ids` / `prompt_text` 为空——异步下检测和生成 report 在请求结束之后，prompt 已被清空（output 仍有）。可读 prompt 看 [evidence/samples/](./evidence/samples/)；通则见 [④ 名词表 · report 空 prompt](../../README.md#名词怎么读先看这里)。
+
 ## 4 · 复现技巧
 
 按 pin / 模型 / overlay 对齐三层率。历史上有过 setup BLOCKED（缺 `aclnnAddRmsNormBias` 或 MoE OOM）——见 `evidence/BLOCKED.historical.md`，那不是 FAIL。标杆是已跑通的 162 归档。
@@ -51,8 +53,8 @@ MoE 路由偏置或 mask 出错时，请求会进错专家。归档有 `token_re
 | `evidence/规格说明.md` | 复现规格（Origin / 锚点 / overlay / knobs / 期望 detector） |
 | `evidence/三层计数.json` | 三层明细（trigger / precision / detect） |
 | `evidence/跑批结果.json` | 跑批元数据 + 结案摘要 |
-| `evidence/samples/` | prompt + completion 样本 |
-| `evidence/reports/` | Guard detector 报告 |
+| `evidence/samples/` | prompt + completion 样本（**可读 prompt 以这里为准**） |
+| `evidence/reports/` | Guard detector 报告（本包归档 report **prompt 为空**：异步落盘在请求结束后已清；见上节与 [④ 名词表](../../README.md#名词怎么读先看这里)） |
 
 
 ## 上游 PR 关系
