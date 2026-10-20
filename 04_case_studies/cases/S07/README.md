@@ -1,28 +1,42 @@
 # S07 · W8A8 scale collapse → 有限垃圾（GAP）
 
-公开自洽个案包（不依赖私有 test 即可读完）。
+公开自洽个案包。同缺口族对照：[S01](../S01/)。
 
-## External five-bar
-
-| # | 栏 | 文件 | 一句话 |
-|---|----|------|--------|
-| 1 | 现象 | [01_phenomenon.md](./01_phenomenon.md) | **真·混合脚本汤**且跨请求 identical×48（归档 `sample_… |
-| 2 | 根因 | [02_origin.md](./02_origin.md) | origin=`both` |
-| 3 | Guard | [03_guard_gap.md](./03_guard_gap.md) | FAIL+GAP · 2624 / 1(identical×48) / 0 |
-| 4 | 复现 | [04_repro.md](./04_repro.md) | 按本包 + FE evidence 对齐 |
-| 5 | 课 | [05_lesson.md](./05_lesson.md) | 带走的判断标准 |
-
-证据：[evidence/](./evidence/)
-
-## 钉（归档）
+## 归档钉点
 
 | 项 | 值 |
 |----|-----|
 | 结果 | **FAIL+GAP** |
 | 三层率 | **2624 / 1(identical×48) / 0** |
-| Detector | logits_finite（miss） |
+| Detector | `logits_finite`（miss） |
 | Origin | `both` |
 | Guard pin | G2 f2aefd068 |
 | 模型 | Qwen3-8B-W8A8 TP2 |
 | Scenario | `07_quant_scale_collapse` |
 | Run | 07_quant_scale_collapse-20261016T084241 |
+
+## 1 · 现象
+
+这里能直接看到**真实的乱码 / 混合脚本垃圾输出**（不是评分把正常中文误判成异常），而且跨请求 identical×48。归档样本见 [evidence/samples/](./evidence/samples/)。这和 S01 那篇通顺散文不同。
+
+## 2 · 根因
+
+W8A8 dequant scale 崩溃（在 `deq_scale` 上 zero + 1e20）。属于 quant / scale 族。上游：[vLLM#37442](https://github.com/vllm-project/vllm/pull/37442)。更完整字段见 [evidence/SPEC_excerpt.md](./evidence/SPEC_excerpt.md)。
+
+## 3 · Guard 结果
+
+**判定：FAIL+GAP。** `logits_finite` 已武装，detect=0——输出有限。score 侧 `garbage_mixed_script`×48 且 identical_across。
+
+| 层 | 归档 |
+|----|------|
+| trigger / precision / detect | **2624 / 1(identical×48) / 0** |
+
+status 里 precision 记成 1，但 samples + score 证实 identical×48 乱码——**以 samples + score 为准**。
+
+## 4 · 复现
+
+按本包 pin / 模型 / overlay 意图对齐三层率。Trigger 极高（2624）。不要强制写 NaN 或 token fill 伪造症状。历史大批量跑数不在本仓；对外以本包为准。
+
+## 5 · 教学要点
+
+与 S01 同属「有限垃圾漏检」族，根因不同（quant scale vs KV skip-zero）。需要 garbled-text / identical 类 detector。公开个案写全或删除，不放空壳页。

@@ -1,47 +1,44 @@
-# S23 — Weight layer corruption (post-load zero/permute)
+# S23 — Weight layer corruption（post-load zero / permute）
 
 | 字段 | 值 |
 |------|-----|
 | **ID** | S23 |
-| **Origin** | `both` (constructed; weight-fault class) |
+| **Origin** | `both`（constructed；weight-fault 类） |
 | **Priority** | P0 |
-| **KV?** | no (weights) |
+| **KV?** | 否（weights） |
 | **Guard pin** | G2 `f2aefd068` |
-| **repro_mode** | `origin_tuned` (minimal construct) |
-| **difficulty** | `easy` (always-on) |
+| **repro_mode** | `origin_tuned`（minimal construct） |
+| **difficulty** | `easy`（always-on） |
 
 ## Origin 说明
 
-Post-load **weight corruption** class: after `load_model`, zero (or permute) one transformer layer weight so every forward produces garbage / collapsed tokens. Distinct from KV/slot/sampler families. Skills detect-only (no localization required).
+Post-load **weight corruption** 类：`load_model` 之后，置零（或 permute）某一层 transformer 权重，使每次 forward 都产出 garbage / 塌缩 token。与 KV / slot / sampler 族区分。Skills 侧只要求 detect，不要求 localization。
 
-Not an amplifier of detector symptoms (no NaN/`fill_` token writes) — mutates **weights** once at boot.
+这不是 detector 症状放大器（没有往 logits / KV 写 NaN / `fill_`）——只在 boot 时改一次 **weights**。
 
-## Upstream anchors
+## 上游锚点
 
-- Weight-fault / bad-checkpoint class (constructed always-repro for Guard detect coverage)
-- Complementary to runtime numeric bugs (S20) and quant scale (S07/S24)
+- Weight-fault / bad-checkpoint 类（constructed，always-repro，用于 Guard detect 覆盖）
+- 与 runtime numeric bugs（S20）、quant scale（S07 / S24）互补
 
 ## Overlay
 
-[`patches/README.md`](./patches/README.md) · [`../scripts/gen_s23_overlay.py`](../scripts/gen_s23_overlay.py)
-
-Hook Ascend `GPUModelRunner.load_model`: after `super().load_model`, zero `model.layers[L].self_attn.o_proj.weight` (fallback: first `*.weight` with dim≥2). Log `ANOMALY_TRIGGER S23`.
+Hook Ascend `GPUModelRunner.load_model`：在 `super().load_model` 之后，置零 `model.layers[L].self_attn.o_proj.weight`（fallback：第一个 dim≥2 的 `*.weight`）。打 `ANOMALY_TRIGGER S23`。
 
 ## Trigger / knobs / forbidden
 
-1. **Trigger:** `ANOMALY_TRIGGER S23 weight_layer_corrupt`
-2. **Allowed knobs:** layer index `L` (default mid-stack); zero vs row-permute; Qwen3-8B TP2
-3. **Forbidden:** per-step NaN/`fill_` into logits/KV; force detector reports
+1. **Trigger：** `ANOMALY_TRIGGER S23 weight_layer_corrupt`
+2. **Allowed knobs：** layer index `L`（默认 mid-stack）；zero vs row-permute；Qwen3-8B TP2
+3. **Forbidden：** 逐步往 logits / KV 写 NaN / `fill_`；强制制造 detector report
 
 ## 模型
 
-`Qwen3-8B` (bf16/fp16). Always-on after boot.
+`Qwen3-8B`（bf16 / fp16）。boot 后 always-on。
 
 ## Expected detector
 
-`token_repeat` (and/or `logits_finite` if Inf/NaN appears). Always-repro once armed.
+`token_repeat`（若出现 Inf/NaN，也可能有 `logits_finite`）。武装后几乎 always-repro。
 
 ## Origin-faithful protocol
 
-
-…（全文在私有 test 仓历史；本包以上表+FE 为准）
+更细的历史配方不在本仓；本包以上表与归档证据为准。

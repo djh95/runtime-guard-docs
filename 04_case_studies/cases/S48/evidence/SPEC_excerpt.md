@@ -3,26 +3,31 @@
 | 字段 | 值 |
 |------|-----|
 | **ID** | S48 |
-| **Origin** | `both` (constructed wrong-residual-sign) |
+| **Origin** | `both`（constructed wrong-residual-sign） |
 | **Priority** | P0 |
 | **repro_mode** | `origin_tuned` |
 | **difficulty** | `easy` |
 
 ## Origin
-`residual = -residual` before fused add-RMSNorm. Soft-inverse of residual polarity. ≠ S31 drop ≠ S38 skip. No force-write.
+
+在 fused add-RMSNorm 前做 `residual = -residual`。对 residual 极性做 soft-inverse。不等于 S31 drop，也不等于 S38 skip。无 force-write。
 
 ## Overlay
-[`../scripts/gen_s48_overlay.py`](../scripts/gen_s48_overlay.py)
+
+见本包 patches / 生成脚本（历史配方名 `48_residual_negate`）。
 
 ## Trigger / knobs / forbidden
-1. **Trigger:** `ANOMALY_TRIGGER S48 residual_negate`
-2. **Allowed:** Qwen3-8B; concurrency
-3. **Forbidden:** force-NaN; token `fill_`; logits.zero_
+
+1. **Trigger：** `ANOMALY_TRIGGER S48 residual_negate`
+2. **Allowed：** Qwen3-8B；concurrency
+3. **Forbidden：** force-NaN；token `fill_`；logits.zero_
 
 ## Model
+
 `Qwen3-8B`
 
 ## Expected detector
+
 `token_repeat` / `logits_finite`
 
-…（全文在私有 test 仓历史；本包以上表+FE 为准）
+更细的历史配方不在本仓；本包以上表与归档证据为准。

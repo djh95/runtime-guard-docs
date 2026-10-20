@@ -1,47 +1,43 @@
-# S26 — RMSNorm weight multiply in fp32 (soft-inverse vLLM#42379)
+# S26 — RMSNorm weight multiply in fp32（soft-inverse vLLM#42379）
 
 | 字段 | 值 |
 |------|-----|
 | **ID** | S26 |
 | **Origin** | `both` |
 | **Priority** | P0 |
-| **KV?** | no |
+| **KV?** | 否 |
 | **Guard pin** | G2 `f2aefd068` |
 | **repro_mode** | `origin_tuned` |
 | **difficulty** | `easy` |
 
 ## Origin 说明
 
-[vLLM#42379](https://github.com/vllm-project/vllm/pull/42379) (2026-05): RMSNorm kernels multiplied `(x * rsqrt * w)` all in fp32 then cast; correct is `(x*rsqrt).to(w.dtype)*w`. ~3e-2/elem compounds across many norms → near-total token mismatch.
+[vLLM#42379](https://github.com/vllm-project/vllm/pull/42379)（2026-05）：RMSNorm kernels 把 `(x * rsqrt * w)` 全在 fp32 里乘完再 cast；正确写法是 `(x*rsqrt).to(w.dtype)*w`。约 3e-2/elem 的误差跨多层会叠成近乎全错 token。
 
-**Soft-inverse on Ascend:** replace `AscendRMSNorm.forward_oot` `npu_rms_norm` with the buggy fp32-mul formula. Fills **dtype/cast** gap. ≠ MoE / S14 / S20.
+**Ascend soft-inverse：** 把 `AscendRMSNorm.forward_oot` 的 `npu_rms_norm` 换成错误的 fp32-mul 公式。补齐 **dtype / cast** 缺口。不等于 MoE / S14 / S20。
 
-## Upstream anchors
+## 上游锚点
 
 - https://github.com/vllm-project/vllm/pull/42379
 
 ## Overlay
 
-[`patches/README.md`](./patches/README.md) · [`../scripts/gen_s26_overlay.py`](../scripts/gen_s26_overlay.py)
+见 [`patches/README.md`](./patches/README.md)。
 
 ## Trigger / knobs / forbidden
 
-1. **Trigger:** `ANOMALY_TRIGGER S26 rmsnorm_fp32_mul`
-2. **Allowed knobs:** Qwen3-8B; longer decode; concurrency; dtype fp16/bf16
-3. **Forbidden:** force-NaN; token `fill_`
+1. **Trigger：** `ANOMALY_TRIGGER S26 rmsnorm_fp32_mul`
+2. **Allowed knobs：** Qwen3-8B；更长 decode；concurrency；dtype fp16/bf16
+3. **Forbidden：** force-NaN；token `fill_`
 
 ## 模型
 
-`Qwen3-8B`.
+`Qwen3-8B`。
 
 ## Expected detector
 
-`token_repeat` preferred; weak `logits_finite` possible.
+优先 `token_repeat`；`logits_finite` 可能偏弱。
 
 ## Origin-faithful protocol
 
-See [`../PRINCIPLES.md`](../PRINCIPLES.md). Three-layer rates required.
-
-## Latest result
-
-…（全文在私有 test 仓历史；本包以上表+FE 为准）
+需要记三层率。更细的历史配方不在本仓；本包以上表与归档证据为准。

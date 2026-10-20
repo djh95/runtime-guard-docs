@@ -1,7 +1,7 @@
-# S47 PASS 58/37/48 kv_swap
+# S47 PASS — kv_swap
 
-- Overlay: swap key/value before reshape_and_cache/FA.
-- Distinct from S34/S35/S41.
-- Detect via token_repeat (鄦 collapse).
-- Run: 47_kv_swap-20261017T164919 @ 160 cards 10,11.
-- Layers: trigger=58 precision=37 detect=48.
+- Overlay：在 `reshape_and_cache` / FA 前 swap key/value。
+- 与 S34 / S35 / S41 区分。
+- 靠 `token_repeat` 检出（CJK / Trail 塌缩）。
+- Run：`47_kv_swap-20261017T164919` @ 160 cards `10,11`。
+- 三层：trigger=58 / precision=37 / detect=48。

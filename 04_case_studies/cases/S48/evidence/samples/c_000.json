@@ -1,1 +1,35 @@
-{"id":"cmpl-b0c7cc3d97bb754c","object":"text_completion","created":1792227679,"model":"anomaly","choices":[{"index":0,"text":"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!","logprobs":null,"finish_reason":"length","stop_reason":null,"token_ids":null,"prompt_logprobs":null,"prompt_token_ids":null,"routed_experts":null}],"service_tier":null,"system_fingerprint":"vllm-dev-tp2-ad8735ab","usage":{"prompt_tokens":14,"total_tokens":62,"completion_tokens":48,"prompt_tokens_details":null,"completion_tokens_details":null},"kv_transfer_params":null,"ec_transfer_params":null,"metrics":null}
+{
+  "prompt": "Name one famous river. One short English sentence. id=0.",
+  "completion": "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
+  "api_response": {
+    "id": "cmpl-b0c7cc3d97bb754c",
+    "object": "text_completion",
+    "created": 1792227679,
+    "model": "anomaly",
+    "choices": [
+      {
+        "index": 0,
+        "text": "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
+        "logprobs": null,
+        "finish_reason": "length",
+        "stop_reason": null,
+        "token_ids": null,
+        "prompt_logprobs": null,
+        "prompt_token_ids": null,
+        "routed_experts": null
+      }
+    ],
+    "service_tier": null,
+    "system_fingerprint": "vllm-dev-tp2-ad8735ab",
+    "usage": {
+      "prompt_tokens": 14,
+      "total_tokens": 62,
+      "completion_tokens": 48,
+      "prompt_tokens_details": null,
+      "completion_tokens_details": null
+    },
+    "kv_transfer_params": null,
+    "ec_transfer_params": null,
+    "metrics": null
+  }
+}

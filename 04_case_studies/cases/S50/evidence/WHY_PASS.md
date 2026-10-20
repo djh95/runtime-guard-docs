@@ -1,3 +1,5 @@
-# S50 PASS 58/48/48 swiglu_swap_halves
-- Overlay: cat(up,gate) then npu_swiglu. ≠ S39. No force-write.
-- Detect logits_finite. Run 50_swiglu_swap_halves-20261017T171204 @ 160 12,13.
+# S50 PASS — swiglu_swap_halves
+
+- Overlay：`cat(up, gate)` 再 `npu_swiglu`。不等于 S39。无 force-write。
+- 靠 `logits_finite` 检出。
+- Run：`50_swiglu_swap_halves-20261017T171204` @ 160 cards `12,13`。

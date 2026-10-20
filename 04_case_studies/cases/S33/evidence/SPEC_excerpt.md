@@ -3,27 +3,31 @@
 | 字段 | 值 |
 |------|-----|
 | **ID** | S33 |
-| **Origin** | `both` (constructed softcap class) |
+| **Origin** | `both`（constructed softcap class） |
 | **Priority** | P0 |
 | **repro_mode** | `origin_tuned` |
 | **difficulty** | `easy` |
 
 ## Origin
-Softcap / `final_logit_softcapping` class ([vLLM#56579](https://github.com/vllm-project/vllm/pull/56579) family; Gemma `final_logit_softcapping`). Soft-inverse of correct softcap: `÷cap + tanh` but **skip `*cap` rescale**. Forces cap=30 when model has none (boot set). ≠ S20 (unstable exp/tanh Inf/Inf on V2 sampler).
+
+Softcap / `final_logit_softcapping` 类（[vLLM#56579](https://github.com/vllm-project/vllm/pull/56579) 族；Gemma `final_logit_softcapping`）。对正确 softcap 做 soft-inverse：`÷cap + tanh`，但 **跳过 `*cap` rescale**。模型本身没有 softcap 时，boot 强制 cap=30。不等于 S20（V2 sampler 上不稳定的 exp/tanh Inf/Inf）。
 
 ## Overlay
-[`../scripts/gen_s33_overlay.py`](../scripts/gen_s33_overlay.py)
+
+见本包 patches / 生成脚本（历史配方名 `33_softcap_incomplete`）。
 
 ## Trigger / knobs / forbidden
-1. **Trigger:** `ANOMALY_TRIGGER S33 softcap_incomplete`
-2. **Allowed:** Qwen3-8B; concurrency
-3. **Forbidden:** force-NaN; token `fill_`
+
+1. **Trigger：** `ANOMALY_TRIGGER S33 softcap_incomplete`
+2. **Allowed：** Qwen3-8B；concurrency
+3. **Forbidden：** force-NaN；token `fill_`
 
 ## Model
-`Qwen3-8B` (or Gemma4 when softcap-native preferred)
+
+`Qwen3-8B`（若偏好 softcap-native，也可考虑 Gemma4）
 
 ## Expected detector
-`token_repeat`
-**PASS** 132/15/48 @ 160 cards 8,9 (`33_softcap_incomplete-20261017T130612`).
 
-…（全文在私有 test 仓历史；本包以上表+FE 为准）
+`token_repeat`。归档 **PASS** 132/15/48。
+
+更细的历史配方不在本仓；本包以上表与归档证据为准。

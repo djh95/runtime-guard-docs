@@ -1,0 +1,40 @@
+{
+  "prompt": "用三句话介绍华为昇腾NPU与vLLM推理的关系。",
+  "completion": "",
+  "api_response": {
+    "prompt": "用三句话介绍华为昇腾NPU与vLLM推理的关系。",
+    "completion": " 华为昇腾NPU（NPU）是华为自主研发的神经网络处理单元，专为高效执行AI计算任务而设计，广泛应用于数据中心、边缘计算和智能终端等领域。vLLM是一个高效的AI推理",
+    "api_response": {
+      "id": "cmpl-94ba5c30cf6f4dd1",
+      "object": "text_completion",
+      "created": 1792141262,
+      "model": "s01f",
+      "choices": [
+        {
+          "index": 0,
+          "text": " 华为昇腾NPU（NPU）是华为自主研发的神经网络处理单元，专为高效执行AI计算任务而设计，广泛应用于数据中心、边缘计算和智能终端等领域。vLLM是一个高效的AI推理",
+          "logprobs": null,
+          "finish_reason": "length",
+          "stop_reason": null,
+          "token_ids": null,
+          "prompt_logprobs": null,
+          "prompt_token_ids": null,
+          "routed_experts": null
+        }
+      ],
+      "service_tier": null,
+      "system_fingerprint": "vllm-dev-tp2-145ddfc9",
+      "usage": {
+        "prompt_tokens": 16,
+        "total_tokens": 64,
+        "completion_tokens": 48,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": null
+      },
+      "kv_transfer_params": null,
+      "ec_transfer_params": null,
+      "metrics": null
+    }
+  },
+  "note": "归档可见唯一 completion；通顺中英散文，不是乱码。"
+}

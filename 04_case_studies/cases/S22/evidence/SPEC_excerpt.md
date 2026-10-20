@@ -1,47 +1,44 @@
-# S22 — Spec residual resample RNG collide (no SALT)
+# S22 — Spec residual resample RNG collide（无 SALT）
 
 | 字段 | 值 |
 |------|-----|
 | **ID** | S22 |
-| **Origin** | `ascend-only` (+ cousin [vLLM#61161](https://github.com/vllm-project/vllm/pull/61161)) |
+| **Origin** | `ascend-only`（+ cousin [vLLM#61161](https://github.com/vllm-project/vllm/pull/61161)） |
 | **Priority** | P0 |
-| **KV?** | draft KV present (spec) |
+| **KV?** | draft KV present（spec） |
 | **Guard pin** | G2 `f2aefd068` |
 | **repro_mode** | `origin_tuned` |
-| **difficulty** | `easy`–`medium` (detect may be distributional → FAIL+GAP risk) |
+| **difficulty** | `easy`–`medium`（detect 可能偏分布 → FAIL+GAP 风险） |
 
 ## Origin 说明
 
-Rejection verification and residual categorical resample share the same RNG `(seed, position)`. Without an independent salt, recovered tokens after rejection are **biased** (e.g. always token 2 for a one-hot draft on 0 with target `[0.5,0.25,0.25]`) — [ascend#18657](https://github.com/vllm-project/vllm-ascend/pull/18657).
+Rejection verification 与 residual categorical resample 共用同一 RNG `(seed, position)`。没有独立 salt 时，拒绝后恢复出的 token 会 **偏置**（例如 one-hot draft 在 0、target `[0.5,0.25,0.25]` 时总恢复成 token 2）——[ascend#18657](https://github.com/vllm-project/vllm-ascend/pull/18657)。
 
-**G2 pin already lacks `RESAMPLE_NOISE_SALT`** (fix is main/0.30.0 backport only). Overlay adds trigger logging on the residual resample entry; does **not** invent NaN/`fill_`. Distinct from S05 (NaN argmax / uniform 0) and S20 (softcap overflow).
+**G2 pin 本身已缺 `RESAMPLE_NOISE_SALT`**（修复只在 main / 0.30.0 backport）。Overlay 只在 residual resample 入口加 trigger 日志，**不**发明 NaN / `fill_`。与 S05（NaN argmax / uniform 0）、S20（softcap overflow）区分。
 
-## Upstream anchors
+## 上游锚点
 
 - https://github.com/vllm-project/vllm-ascend/pull/18657
 - https://github.com/vllm-project/vllm/pull/61161
 
 ## Overlay
 
-[`patches/README.md`](./patches/README.md) · [`../scripts/gen_s22_overlay.py`](../scripts/gen_s22_overlay.py)
+见 [`patches/README.md`](./patches/README.md)。
 
 ## Trigger / knobs / forbidden
 
-1. **Trigger:** `ANOMALY_TRIGGER S22 spec_resample_rng_collide`
-2. **Allowed knobs:** eagle3 + `temperature>0`; `num_speculative_tokens`; concurrency; seeds
-3. **Forbidden:** force NaN; token `fill_`; invent SALT then remove on a fixed tree without documenting pin state
+1. **Trigger：** `ANOMALY_TRIGGER S22 spec_resample_rng_collide`
+2. **Allowed knobs：** eagle3 + `temperature>0`；`num_speculative_tokens`；concurrency；seeds
+3. **Forbidden：** 强制 NaN；token `fill_`；在未写明 pin 状态的前提下先发明 SALT 再拿掉
 
 ## 模型
 
-`Qwen3-8B` + `/mnt/weight/Qwen3-8B-speculator.eagle3` (S05-proven boot on G2).
+`Qwen3-8B` + eagle3（G2 上已验证可 boot）。
 
 ## Expected detector
 
-`token_repeat` / `spec_acceptance` if bias is strong; else **FAIL+GAP** with recovered-token histogram + samples (distributional).
+偏置足够强时：`token_repeat` / `spec_acceptance`；否则可能 **FAIL+GAP**，需要 recovered-token histogram + samples（分布性）。
 
 ## Origin-faithful protocol
 
-See [`../PRINCIPLES.md`](../PRINCIPLES.md).
-
-
-…（全文在私有 test 仓历史；本包以上表+FE 为准）
+更细的历史配方不在本仓；本包以上表与归档证据为准。

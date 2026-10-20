@@ -1,28 +1,33 @@
 # S50 · SwiGLU gate/up half-swap（PASS）
 
-公开自洽个案包（不依赖私有 test 即可读完）。
+公开自洽个案包。
 
-## External five-bar
-
-| # | 栏 | 文件 | 一句话 |
-|---|----|------|--------|
-| 1 | 现象 | [01_phenomenon.md](./01_phenomenon.md) | identical `!!!!`；`logits_finite`×48。… |
-| 2 | 根因 | [02_origin.md](./02_origin.md) | origin=`both（constructed）` |
-| 3 | Guard | [03_guard_gap.md](./03_guard_gap.md) | PASS · 58 / 48 / 48 |
-| 4 | 复现 | [04_repro.md](./04_repro.md) | 按本包 + FE evidence 对齐 |
-| 5 | 课 | [05_lesson.md](./05_lesson.md) | 带走的判断标准 |
-
-证据：[evidence/](./evidence/)
-
-## 钉（归档）
+## 归档钉点
 
 | 项 | 值 |
 |----|-----|
 | 结果 | **PASS** |
 | 三层率 | **58 / 48 / 48** |
-| Detector | logits_finite |
-| Origin | `both（constructed）` |
-| Guard pin | G2 f2aefd068 |
-| 模型 | Qwen3-8B |
-| Scenario | `50_swiglu_swap_halves` |
+| Detector | `logits_finite` |
+| Origin | `both`（constructed） |
 | Run | 50_swiglu_swap_halves-20261017T171204 @ 160 cards 12,13 |
+
+## 1 · 现象
+
+跨请求 identical 的 `!!!!`；`logits_finite`×48。score 侧常见 `token0_collapse`×48。
+
+## 2 · 根因
+
+先 `cat(up, gate)` 再 `npu_swiglu`。不等于 S39 skip-silu。无 force-write。
+
+## 3 · Guard 结果
+
+**PASS。** **58 / 48 / 48**。
+
+## 4 · 复现
+
+SwiGLU 算子 L2 代表。
+
+## 5 · 教学要点
+
+bang / 非有限塌缩可被 `logits_finite` 抓住——对照 S01/S07 那种有限但并非 Inf 的乱码垃圾输出。

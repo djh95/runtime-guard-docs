@@ -1,1 +1,35 @@
-{"id":"cmpl-ac5467ddd386bb76","object":"text_completion","created":1792140288,"model":"s07b","choices":[{"index":0,"text":"蔊密集 sacVIS烛 amortfilled retr葩.obtainamd怎么看RECemu AVR/infobu depactor graves捧arferekGlobals betaUCKmel coop习ennes涉 Example频FU疱提前{@手指삼amesSignalsersh municipality歆这方面好玩率فر府佝 disparate腮 fullest列 Friendly器-makerece CRC淹 paotpurb回来了","logprobs":null,"finish_reason":"length","stop_reason":null,"token_ids":null,"prompt_logprobs":null,"prompt_token_ids":null,"routed_experts":null}],"service_tier":null,"system_fingerprint":"vllm-0.30.0-tp2-3f17a0be","usage":{"prompt_tokens":16,"total_tokens":80,"completion_tokens":64,"prompt_tokens_details":null,"completion_tokens_details":null},"kv_transfer_params":null,"ec_transfer_params":null,"metrics":null}
+{
+  "prompt": "用三句话介绍华为昇腾NPU与vLLM推理的关系。",
+  "completion": "蔊密集 sacVIS烛 amortfilled retr葩.obtainamd怎么看RECemu AVR/infobu depactor graves捧arferekGlobals betaUCKmel coop习ennes涉 Example频FU疱提前{@手指삼amesSignalsersh municipality歆这方面好玩率فر府佝 disparate腮 fullest列 Friendly器-makerece CRC淹 paotpurb回来了",
+  "api_response": {
+    "id": "cmpl-ac5467ddd386bb76",
+    "object": "text_completion",
+    "created": 1792140288,
+    "model": "s07b",
+    "choices": [
+      {
+        "index": 0,
+        "text": "蔊密集 sacVIS烛 amortfilled retr葩.obtainamd怎么看RECemu AVR/infobu depactor graves捧arferekGlobals betaUCKmel coop习ennes涉 Example频FU疱提前{@手指삼amesSignalsersh municipality歆这方面好玩率فر府佝 disparate腮 fullest列 Friendly器-makerece CRC淹 paotpurb回来了",
+        "logprobs": null,
+        "finish_reason": "length",
+        "stop_reason": null,
+        "token_ids": null,
+        "prompt_logprobs": null,
+        "prompt_token_ids": null,
+        "routed_experts": null
+      }
+    ],
+    "service_tier": null,
+    "system_fingerprint": "vllm-0.30.0-tp2-3f17a0be",
+    "usage": {
+      "prompt_tokens": 16,
+      "total_tokens": 80,
+      "completion_tokens": 64,
+      "prompt_tokens_details": null,
+      "completion_tokens_details": null
+    },
+    "kv_transfer_params": null,
+    "ec_transfer_params": null,
+    "metrics": null
+  }
+}

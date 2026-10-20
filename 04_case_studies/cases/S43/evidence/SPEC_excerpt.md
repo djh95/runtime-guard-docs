@@ -1,28 +1,33 @@
-# S43 — Embedding scale blowup (×100)
+# S43 — Embedding scale blowup（×100）
 
 | 字段 | 值 |
 |------|-----|
 | **ID** | S43 |
-| **Origin** | `both` (constructed wrong-embed-scale) |
+| **Origin** | `both`（constructed wrong-embed-scale） |
 | **Priority** | P0 |
 | **repro_mode** | `origin_tuned` |
 | **difficulty** | `easy` |
 
 ## Origin
-After embedding lookup, `mul_(100)`. Soft-inverse of correct embed magnitude. ≠ S23 weight-zero ≠ S41 attn-out.
+
+Embedding lookup 之后 `mul_(100)`。对正确 embed magnitude 做 soft-inverse。不等于 S23 weight-zero，也不等于 S41 attn-out。
 
 ## Overlay
-[`../scripts/gen_s43_overlay.py`](../scripts/gen_s43_overlay.py)
+
+见本包 patches / 生成脚本（历史配方名 `43_embed_scale_blowup`）。
 
 ## Trigger / knobs / forbidden
-1. **Trigger:** `ANOMALY_TRIGGER S43 embed_scale_blowup`
-2. **Allowed:** Qwen3-8B; concurrency
-3. **Forbidden:** force-NaN; token `fill_`
+
+1. **Trigger：** `ANOMALY_TRIGGER S43 embed_scale_blowup`
+2. **Allowed：** Qwen3-8B；concurrency
+3. **Forbidden：** force-NaN；token `fill_`
 
 ## Model
+
 `Qwen3-8B`
 
 ## Expected detector
+
 `logits_finite` / `token_repeat`
 
-…（全文在私有 test 仓历史；本包以上表+FE 为准）
+更细的历史配方不在本仓；本包以上表与归档证据为准。

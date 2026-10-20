@@ -1,0 +1,14 @@
+# detect / report 空证据
+
+归档 status/layers：detect_reports = 0。
+期望 detector：logits_finite（已武装）→ miss。
+
+公开包内无 report_*.json（与 FAIL+GAP 一致）。
+早期 fail-evidence 目录 report/ 亦为空：
+
+  --- report dir ---
+  total 8
+  drwxr-xr-x  .  ..
+  （无 report_*.json）
+
+结论：trigger 有、report 无 → 漏检，不是「没开 Guard」。

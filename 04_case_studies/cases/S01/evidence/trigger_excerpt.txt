@@ -1,0 +1,15 @@
+# S01 ANOMALY_TRIGGER 摘录（来自 overlay 字符串 + 归档计数）
+
+归档 layers/status：trigger_events = 136（run 01_kv_block_nonzero-20261016T165931）。
+
+Overlay 会打出的触发文案（见 test 仓 01_kv_block_nonzero/patches/overlay.patch）：
+
+  ANOMALY_TRIGGER S01 kv_block_nonzero skip_zero_upstream ...
+  ANOMALY_TRIGGER S01 kv_block_nonzero synth_block0 ...
+  ANOMALY_TRIGGER S01 kv_block_nonzero skip_zero ...
+  ANOMALY_TRIGGER S01 kv_block_nonzero force_should_init_kv_zeroer ...
+
+说明：
+- trigger=136 表示路径在跑（skip_zero / synth_block0）。
+- synth_block0 抬高 trigger，不等于已经读到脏 KV 乱码。
+- 完整 server.log 未随公开包落盘；以 layers 计数 + 上述 trigger 文案为准。
