@@ -4,4 +4,4 @@
 - 负载：concurrent 64 变长英文 prompt + 16 条内容相同的 temp=0 wave；util=0.35；不开 APC。
 - 三层：**65 / 20 / 79**（trigger / precision / detect）——`token_repeat` 报告在 `report/token_repeat/`。
 - Run：`10_fullattn_recycle_zero-20261016T181551` @ 160 cards `4,5`。
-- 第一次顺序中文 run 是假 precision（CJK 启发式）；不要把 `T180428` 当成 FAIL。
+- **本仓无 samples/**：`precision=20` 仅 layers 计数，非原文实锤；detect 以 report 为准。标杆为英文负载 `T181551`。

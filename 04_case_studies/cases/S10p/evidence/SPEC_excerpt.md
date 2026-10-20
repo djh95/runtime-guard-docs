@@ -14,7 +14,7 @@
 
 上游曾把 `needs_kv_cache_zeroing` 只开给 Mamba（后来也含 mixed-precision），**FullAttention** 不进 zeroing 管线 → 回收 block 的 partial-tail 残留脏 K/V → 非确定 / 垃圾输出（[vLLM#39283](https://github.com/vllm-project/vllm/pull/39283)、[#43741](https://github.com/vllm-project/vllm/pull/43741)；issue [#39146](https://github.com/vllm-project/vllm/issues/39146)）。Ascend 共用 `KVCacheConfig.needs_kv_cache_zeroing` + `new_block_ids_to_zero`，因此标 **`both`**。
 
-与 **S01** 的区别：S01 = 强制进入 zeroer 后 **skip zero**（#43990 / #47574）；S10′ = FullAttention **永不进入** zeroing（#39283 门控缺失）。
+与 **S01** 的区别：S01 = 强制进入 zeroer 后 **skip zero**（#43990 / #47574）；S10′ = FullAttention **永不进入** zeroing（#39283 门控缺失）。S01 dense 现行结案是 **FAIL（复现未出现）**，不是漏检。
 
 ## 上游锚点
 
@@ -24,7 +24,7 @@
 
 ## Overlay
 
-见 [`patches/README.md`](./patches/README.md)：`needs_kv_cache_zeroing → False`，并在 `BlockPool.get_new_blocks` 打 `ANOMALY_TRIGGER`（recycle without zero）。禁止 NaN / token-fill。
+`needs_kv_cache_zeroing → False`，并在 `BlockPool.get_new_blocks` 打 `ANOMALY_TRIGGER`（recycle without zero）。禁止 NaN / token-fill。意图见本包 README；无独立 `patches/` 目录。
 
 ## Trigger / knobs / forbidden
 
@@ -36,7 +36,7 @@
 
 1. Overlay 生效；TP2；`--no-enable-prefix-caching`；util≈0.40；提高 `max-num-seqs`。
 2. 冷启动后突发多请求，促使 block recycle。
-3. 看三层：trigger / precision（garbage 或 divergence）/ detect。
+3. 看三层：trigger / precision / detect。本仓无 samples 时，precision 只作 layers 计数。
 
 ## 模型
 

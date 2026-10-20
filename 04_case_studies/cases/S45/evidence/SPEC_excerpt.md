@@ -6,7 +6,7 @@
 | **Origin** | `both`（constructed wrong-topk-direction） |
 | **Priority** | P0 |
 | **repro_mode** | `origin_tuned` |
-| **difficulty** | **FAIL**（detect miss） |
+| **difficulty** | `easy`（constructed） |
 
 ## Origin
 
@@ -14,11 +14,11 @@
 
 ## Status
 
-**FAIL+GAP** —— trigger 有；各不相同乱码；`detect=0`（**乱码检测漏检**）。不要当成 PASS，也不要用 amplifier-retune。证据见 `WHY_UNDETECTED.md` + samples。
+**FAIL+GAP** —— trigger 有；各不相同乱码；`detect=0`（乱码检测漏检）。不要当成 PASS，也不要用 amplifier-retune。证据见 `WHY_UNDETECTED.md` + samples。
 
 ## Overlay
 
-见本包 patches / 生成脚本（历史配方名 `45_topk_bottom_keep`）。
+见本包 [`overlay.patch`](./overlay.patch) 与 `gen_s45_overlay.py`（历史配方名 `45_topk_bottom_keep`）。无独立 `patches/` 目录。
 
 ## Trigger / knobs / forbidden
 
@@ -34,7 +34,7 @@ temperature: 0.8（勿用 0）
 concurrency: 48
 ```
 
-只打 Ascend B → 缺 sampler；temp=0 → 对不上。二次盲跑对齐后 **16 / 4 / 0** 漏检精确复现。
+只打 Ascend B → 缺 sampler；temp=0 → 对不上。按配方 → **16 / 4 / 0**（仍 detect=0）。
 
 ## Model
 
@@ -42,4 +42,4 @@ concurrency: 48
 
 ## Evidence
 
-本包 `WHY_FAIL.md` / `WHY_UNDETECTED.md` + `samples/`。现行三层：**16 / 4 / 0**。
+本包 `WHY_UNDETECTED.md` + `samples/`。现行三层：**16 / 4 / 0**。

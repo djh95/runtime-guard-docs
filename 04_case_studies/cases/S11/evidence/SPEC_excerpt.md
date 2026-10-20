@@ -20,7 +20,7 @@ Ascend strided MLA PROLOG_V3 / prefill RoPE 在 graph padding 下，曾把 **含
 
 ## Overlay
 
-见 [`patches/README.md`](./patches/README.md)。
+意图见本包 README；无独立 `patches/` 目录。
 
 ## Trigger / knobs / forbidden
 

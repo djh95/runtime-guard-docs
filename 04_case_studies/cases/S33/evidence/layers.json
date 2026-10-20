@@ -17,11 +17,5 @@
   "detector": "token_repeat",
   "verdict": "PASS",
   "layers_trig_prec_detect": "130 / 17 / 48",
-  "blind_run": {
-    "round": 2,
-    "date": "20261020",
-    "archive_layers_ref": "132/15/48",
-    "first_blind_blocker": "dual-tree write missing + 中文回声 vs 河名句",
-    "verdict": "PASS（detect=48 精确）"
-  }
+  "repro_notes": "dual-tree write + river prompt ×48 concurrent"
 }

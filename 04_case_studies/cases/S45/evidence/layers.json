@@ -12,11 +12,5 @@
   "verdict": "FAIL+GAP",
   "precision_note": "unique garbage; content-identical scoring undercounts; samples are distinct mixed-script junk",
   "layers_trig_prec_detect": "16 / 4 / 0",
-  "blind_run": {
-    "round": 2,
-    "date": "20261020",
-    "archive_layers_ref": "16/0/0",
-    "first_blind_blocker": "dual-tree write missing + temp 0 vs 0.8",
-    "verdict": "漏检精确复现"
-  }
+  "repro_notes": "dual-tree write (Ascend B + vllm sampler) + temp=0.8"
 }

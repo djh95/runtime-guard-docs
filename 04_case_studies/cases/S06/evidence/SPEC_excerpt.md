@@ -21,7 +21,7 @@
 
 ## Overlay
 
-对 Ascend MoE router 强制错误 bias dtype，或在 PCP≠1 时使用 #60946 的逆逻辑。细节见 [`patches/README.md`](./patches/README.md)。
+对 Ascend MoE router 强制错误 bias dtype，或在 PCP≠1 时使用 #60946 的逆逻辑。意图见本包 README；无独立 `patches/` 目录。
 
 ## ≤5min 复现配方
 

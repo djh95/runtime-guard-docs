@@ -23,7 +23,7 @@ Overlay 打上后服务仍 200。可见 completion 是通顺中英散文（华�
 
 旧跑把 `ord(c)>127` 的中文算 weird，于是记成 `garbage_mixed_script`×N；排除 CJK 后 weird≈0 → **precision 应记 0**。没有坏输出时，**不要**写成 FAIL+GAP。
 
-同族对照：**S10′** 在同一 pin 上能打出复读/`xxxx` 并被 `token_repeat` 抓住（keep-set 160：**65 / 20 / 79**）。真·跨请求内容相同的乱码见 **S07**。
+同族对照：**S10′** 在同一 pin 上能打出复读/`xxxx` 并被 `token_repeat` 抓住（keep-set 160：**65 / 20 / 79**）。跨请求内容相同的真实乱码见 **S07**（S07=FAIL+GAP；本包是复现未出现，不是同一结案）。
 
 ## 2 · 根因
 
@@ -54,32 +54,28 @@ Overlay 打上后服务仍 200。可见 completion 是通顺中英散文（华�
 | 维 | 要求 / 实测 |
 |----|-------------|
 | Origin 形态 | SPEC：**hybrid / 量化 KV** |
-| 160 dense（本复判） | Qwen3-8B float16 + 满量 overlay · cards `4,5` · `PRODUCT_TREE=B` → **0 坏输出** |
-| 162 dense（此前） | 七轮满量 overlay / 脏 HBM / 缩池 → **0 坏输出** |
+| 160 dense（本复判，满量 overlay） | Qwen3-8B float16 · cards `4,5` · `PRODUCT_TREE=B` → trigger=**154**，**0 坏输出** |
 | hybrid/fp8 一次尝试 | `--kv-cache-dtype fp8` → Ascend `FP8_ATTENTION` 能力 assert，**起服失败**；不夸大、不另造放大器 |
+
+说明：162 上若仍用残缺 canonical 入口（≈28 行/1 文件），trigger 可恒 0——那是入口未切满量，与本包满量复判（trigger=154、仍无坏输出）不是同一回事。
 
 若要真复现 origin：在**支持量化/hybrid KV**的栈上跑，并归档带 **prompt + completion** 的原始坏样本。dense + synth 只适合验证 trigger 路径。
 
-## 5 · 分层验证（2026-10-20）
+## 5 · 现行结案摘要
 
-三层分开核对后的结论（**主结论保留**）：
+| 项 | 现行 |
+|----|------|
+| 结案 | **FAIL（复现未出现）** / repro-blocked；**不是** FAIL+GAP |
+| 三层 | **154 / 0 / 0**（CJK 排除后 precision=0） |
+| 形态 | hybrid/量化 KV 是前提；本 pin 上 fp8 KV 起服失败 |
 
-| 层 / 项 | 结论 |
-|---------|------|
-| **主结论** | **保留** → **FAIL（复现未出现）** / repro-blocked；**不是** FAIL+GAP |
-| **precision** | **误标** → 旧 136/25/0 的 25、以及复判 runner 虚报，均为 CJK `ord>127` 启发式误计；排除后 **precision=0**；可见样本为通顺散文 |
-| **patch 入口** | **未切换** → 162 canonical 仍是残缺移植（≈28 行/1 文件），未切到 test 仓满量 overlay（251 行/5 文件）；技能侧旧 GAP 入口（如 `VERIFY_HANDOFF` keep-set 期望）此前也未切到本包复判结案——本轮对外文档一并改到与本包一致 |
+细节见 [evidence/WHY_UNDETECTED.md](./evidence/WHY_UNDETECTED.md)（文件名沿用；语义是**复现未出现**，非 undetected 漏检）。
 
-dense 满量 overlay 能刷 trigger（160：**154**），仍无真实坏输出；hybrid/fp8 KV 本 pin 起服失败。细节见 [evidence/WHY_UNDETECTED.md](./evidence/WHY_UNDETECTED.md)。
+## 6 · 教学要点
 
-## 6 · 别人按包能核对什么
-
-1. 会把「有 trigger」和「有坏输出」分开：本包 dense 复判只有前者。
-2. 会用排除 CJK 的评分看样本：通顺中文 ≠ `garbage_mixed_script`（precision 误标）。
-3. 会对照 S10′：同属 KV 脏读族，recycle 能检；S01 在稠密栈上复现未出现。
-4. 会核对形态：hybrid/量化 KV 是前提；本机 fp8 KV 被硬件能力门挡住时如实记 blocker。
-5. 会核对 patch 入口：残缺 canonical ≠ 满量 overlay；入口未切满量时 trigger 可恒 0。
-6. 没有坏输出时不写 FAIL+GAP。
+1. 分开「有 trigger」和「有坏输出」：本包 dense 复判只有前者 → 记 FAIL（复现未出现），不写 FAIL+GAP。
+2. 用排除 CJK 的评分看样本：通顺中文 ≠ `garbage_mixed_script`。
+3. 对照 S10′（同 KV 脏读族、能检）与 S07（有乱码+漏检）；本包不是漏检结案。
 
 ## 证据目录
 

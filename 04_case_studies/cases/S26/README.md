@@ -7,12 +7,12 @@
 | 项 | 值 |
 |----|-----|
 | 结果 | **PASS** |
-| 三层率 | **354 / 16 / 48**（二次盲跑对齐后现行；detect=48 精确） |
+| 三层率 | **354 / 16 / 48**（现行；detect=48/48） |
 | Detector | `token_repeat`（**threshold=8**） |
 | Origin | `both` |
 | Guard pin | G2 f2aefd068 |
 | 模型 | Qwen3-8B |
-| Run | 二次盲跑对齐（与 S25 同配方） |
+| Run | 与 S25 同配方 |
 
 ## 1 · 现象
 
@@ -38,10 +38,8 @@ Soft-inverse [vLLM#42379](https://github.com/vllm-project/vllm/pull/42379)：`As
 | 其它 | `max_tokens=48`；temp=0 |
 | detector | `token_repeat` **threshold=8** |
 
-首轮盲跑「FAIL detect=0」同属**错配方**（中文回声 + 串行 8 + 阈值 16），不是检测器漏检。二次盲跑对齐后 → **354 / 16 / 48** PASS（detect=48 精确）。
+勿用：中文回声 / 串行 8 / 阈值 16。禁止 force-NaN。脚本：`s26_concurrent_repro.py`、`gen_s26_overlay.py`。
 
-禁止 force-NaN。脚本：`s26_concurrent_repro.py`、`gen_s26_overlay.py`。
-
-## 5 · 别人按包能核对什么
+## 5 · 教学要点
 
 对外保留案例里 RMSNorm 的 PR-rooted 代表。复现时先对齐 48 并发河名句 + threshold 8，再谈 PASS/FAIL。

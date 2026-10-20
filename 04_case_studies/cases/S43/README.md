@@ -28,6 +28,6 @@
 
 对照 S45：同属 embed/logits 族，一边 PASS，一边 unique-garbage GAP。
 
-## 5 · 别人按包能核对什么
+## 5 · 教学要点
 
-能检的 magnitude 故障，和漏检的方向翻转采样，适合成对看。
+与 S45 成对看：本包是 magnitude 放大能检；S45 是采样方向翻转 → 各不相同乱码漏检。

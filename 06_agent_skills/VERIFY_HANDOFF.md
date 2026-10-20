@@ -234,12 +234,12 @@ internal/skills-verify-results/2026-10-19/
 
 | ID | Type | Expected detect | Expected level | 对照 / 备注 |
 |----|------|-----------------|----------------|-------------|
-| **S01** | KV·PD·pad | **miss（复现未出现）** | **FAIL（复现未出现）**（非 GAP；precision 曾 CJK 误标；patch 入口须满量 overlay） | vs S10′ 能检；见 `cases/S01/` |
+| **S01** | KV·PD·pad | **miss（复现未出现）** | **FAIL（复现未出现）**（非 GAP；CJK 排除后 precision=0） | vs S10′ 能检；见 `cases/S01/` |
 | **S10′** | KV·PD·pad | `token_repeat` | **L2**（L3 潜力勿强制） | FE=`S10/` |
 | **S11** | KV·PD·pad | `token_repeat` | **L2** | ≠ recycle；pad-tail |
-| **S07** | Quant·weight | **miss（GAP）** | GAP | 同缺口≠S01 根因 |
+| **S07** | Quant·weight | **miss（GAP）** | **FAIL+GAP** | S07=有乱码+漏检；S01=复现未出现（根因亦不同） |
 | **S23** | Quant·weight | `token_repeat` | **L1 only** | 勿抬到 L2 元素 |
-| **S45** | Embed·logits·sampler | **miss（GAP）** | GAP | unique garbage |
+| **S45** | Embed·logits·sampler | **miss（GAP）** | **FAIL+GAP** | unique garbage；≠S01 |
 | **S43** | Embed·logits·sampler | `token_repeat` | **L2** | vs S45 |
 | **S22** | Spec | **`spec_acceptance`** | **L2** | 非文本主路径 |
 | **S06** | MoE | `token_repeat` | **L2** | 唯一 MoE 模版 |

@@ -1,4 +1,4 @@
-# S45 · Top-k on −logits → unique garbage（GAP）
+# S45 · Top-k on −logits → unique garbage（FAIL+GAP）
 
 公开自洽案例包。能检对照：[S43](../S43/)。
 
@@ -7,11 +7,11 @@
 | 项 | 值 |
 |----|-----|
 | 结果 | **FAIL+GAP** |
-| 三层率 | **16 / 4 / 0**（二次盲跑对齐后现行） |
+| 三层率 | **16 / 4 / 0**（现行） |
 | Detector | `token_repeat` + `logits_finite`（均 miss）；**乱码检测漏检** |
 | Origin | `both`（constructed wrong-topk-direction） |
 | 模型 | Qwen3-8B；**temp=0.8**（勿用 0） |
-| Run | 二次盲跑对齐（漏检精确复现） |
+| Run | 按配方复现（双树 + temp=0.8） |
 
 ## 1 · 现象
 
@@ -23,7 +23,7 @@ top-k / top-p 作用在 `-logits` 上再取反——保留最低-k / 倒置 nucl
 
 ## 3 · Guard 结果
 
-**FAIL+GAP。** detect=0。异常已出现，但乱码检测漏检。诚实标注；不要标 INVALID，也不要用 amplifier-retune 刷检。
+**FAIL+GAP。** detect=0。异常已出现，但乱码检测漏检。勿用 amplifier-retune 刷检。
 
 ## 4 · 复现与双树写入（必读）
 
@@ -35,10 +35,12 @@ top-k / top-p 作用在 `-logits` 上再取反——保留最低-k / 倒置 nucl
 因此：
 
 - **正确：** `gen_s45_overlay.py` 分别写 **Ascend B** + **canonical/vllm**；**temp=0.8**。  
-- **错误：** 只 `git apply` 到 Ascend B → `sampler.py: No such file or directory`；或 temp=0（首轮盲跑曾因此对不上）。
+- **错误：** 只 `git apply` 到 Ascend B → `sampler.py: No such file or directory`；或 temp=0。
 
-二次盲跑：双树写入 + temp=0.8 → **16 / 4 / 0**，漏检精确复现（与归档 GAP 一致）。
+按配方（双树 + temp=0.8）→ **16 / 4 / 0**（仍为 detect=0，与归档 GAP 一致）。
 
-## 5 · 别人按包能核对什么
+## 5 · 教学要点
 
-第三种漏检形态：各不相同的乱码，且采样前分值始终有限（相对 S01/S07 的跨请求相同乱码）。对照 S43 PASS。环境上记住：**必须双树写入 + temp=0.8**。
+1. 各不相同的有限乱码 + detect=0 → FAIL+GAP；对照 S43（magnitude 故障能检）。
+2. 乱码样板对照 **S07**（跨请求相同）；**S01** 是 dense 未见坏输出的对照，不是乱码样板。
+3. 环境：必须 **双树写入 + temp=0.8**。

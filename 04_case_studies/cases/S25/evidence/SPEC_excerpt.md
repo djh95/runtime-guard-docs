@@ -22,7 +22,7 @@
 
 ## Overlay
 
-见 [`patches/README.md`](./patches/README.md)。
+见本包 [`overlay.patch`](./overlay.patch) 与 `gen_s25_overlay.py`。无独立 `patches/` 目录。
 
 ## Trigger / knobs / forbidden
 
@@ -53,4 +53,4 @@ overlay: gen_s25_overlay.py（就地改 B）
 
 ## Origin-faithful protocol
 
-现行三层：**348 / 17 / 48**（二次盲跑）。需要记三层率。
+现行三层：**348 / 17 / 48**。

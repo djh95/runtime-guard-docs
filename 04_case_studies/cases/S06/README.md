@@ -24,12 +24,13 @@ MoE 路由偏置或 mask 出错时，请求会进错专家。归档有 `token_re
 
 ## 3 · Guard 结果
 
-**PASS。** `status.json` 写 `detect_reports=0`，但同一次归档已留下 `reports/report_*.json`（`incident_type=token_repeat`）。对外以 PASS + 归档报告为准，并记下 status 字段曾滞后。
+**PASS。** 以归档 `reports/report_*.json`（`token_repeat`）为准；`status.json` 的 `detect_reports=0` 与报告不一致时，以 report 为准。
 
 ## 4 · 复现
 
 按 pin / 模型 / overlay 对齐三层率。历史上有过 setup BLOCKED（缺 `aclnnAddRmsNormBias` 或 MoE OOM）——见 `evidence/BLOCKED.historical.md`，那不是 FAIL。标杆是已跑通的 162 归档。
 
-## 5 · 别人按包能核对什么
+## 5 · 教学要点
 
-MoE 饱和类不在对外保留案例刷分；这一例只作路由模版。「KV 数值看起来正常」不等于 MoE 类问题已排除干净。
+1. 本例只作 MoE 路由模版；饱和类不在对外保留案例刷分。
+2. 核对时看 router / 专家相关 report 字段——KV 数值正常 ≠ MoE 已排除。

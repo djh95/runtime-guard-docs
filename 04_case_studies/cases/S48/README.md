@@ -28,6 +28,6 @@ fused add-RMSNorm 前 `residual = -residual`。不等于 S31 drop / S38 skip。
 
 Residual 极性案例。禁止 force-NaN / token fill。
 
-## 5 · 别人按包能核对什么
+## 5 · 教学要点
 
-极性错误会走到 bang / NaN·Inf 路径；要和 residual-drop 区分开。
+极性取反会走到 bang / NaN·Inf 路径，可被 `logits_finite` 抓住；要和 residual-drop 区分开。

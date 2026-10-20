@@ -6,5 +6,5 @@
   "provenance": "origin (G2 pin lacks RESAMPLE_NOISE_SALT; trigger-only overlay)",
   "model": "Qwen3-8B+eagle3",
   "temperature": 0.8,
-  "blind_run_2": "CRLF/LF fixed; PASS 复现"
+  "notes": "CRLF/LF: use anchor overlay script"
 }

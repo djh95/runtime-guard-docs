@@ -22,7 +22,7 @@
 
 ## Overlay
 
-见 [`patches/README.md`](./patches/README.md)。
+见本包 [`overlay.patch`](./overlay.patch) 与 `gen_s26_overlay.py`。无独立 `patches/` 目录。
 
 ## Trigger / knobs / forbidden
 
@@ -51,8 +51,8 @@ token_repeat threshold: 8
 overlay: gen_s26_overlay.py（就地改 B）
 ```
 
-首轮盲跑 detect=0 是错配方（中文回声 + 串行 8 + 阈值 16），不是漏检。
+勿用中文回声 / 串行 8 / 阈值 16（错配方 → detect=0，不是漏检）。
 
 ## Origin-faithful protocol
 
-现行三层：**354 / 16 / 48**（二次盲跑）。需要记三层率。
+现行三层：**354 / 16 / 48**。

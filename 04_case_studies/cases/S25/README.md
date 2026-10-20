@@ -7,12 +7,12 @@
 | 项 | 值 |
 |----|-----|
 | 结果 | **PASS** |
-| 三层率 | **348 / 17 / 48**（二次盲跑对齐后现行；detect=48 精确） |
+| 三层率 | **348 / 17 / 48**（现行；detect=48/48） |
 | Detector | `token_repeat`（**threshold=8**） |
 | Origin | `ascend-only` |
 | Guard pin | G2 f2aefd068 |
 | 模型 | Qwen3-8B |
-| Run | 二次盲跑对齐（河名句 + 48 并发 + 阈值 8） |
+| Run | 河名句 + 48 并发 + 阈值 8 |
 
 ## 1 · 现象
 
@@ -38,10 +38,10 @@ Soft-inverse [ascend#7082](https://github.com/vllm-project/vllm-ascend/pull/7082
 | 其它 | `max_tokens=48`；temp=0 |
 | detector | `token_repeat` **threshold=8**（勿用 16） |
 
-首轮盲跑曾记「FAIL detect=0」——**不是**检测器漏检 /「特征佯差」，而是**配方错了**：用了中文回声 + 串行 8 请求 + threshold 16。对齐上表后二次盲跑 → **348 / 17 / 48** PASS（detect=48 精确）。
+勿用：中文回声 / 串行 8 / 阈值 16（会无塌缩、detect=0，属错配方，不是漏检）。
 
 脚本：`s25_concurrent_repro.py`、`gen_s25_overlay.py`。
 
-## 5 · 别人按包能核对什么
+## 5 · 教学要点
 
 写 RoPE 案例要写清「不等于 S11」。负载配方错了，结论也会错——无塌缩时 detect=0 不要写成漏检。

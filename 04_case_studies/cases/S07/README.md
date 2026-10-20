@@ -1,6 +1,6 @@
-# S07 · W8A8 scale collapse → logits 有限乱码（GAP）
+# S07 · W8A8 scale collapse → logits 有限乱码（FAIL+GAP）
 
-公开自洽案例包。同缺口族对照：[S01](../S01/)。
+公开自洽案例包。同属「有限分值 / KV·量化」话题的对照：[S01](../S01/)（dense **复现未出现**，不是漏检结案）。
 
 ## 归档钉点
 
@@ -8,7 +8,7 @@
 |----|-----|
 | 结果 | **FAIL+GAP** |
 | 三层率 | **2624 / 1（跨请求内容相同×48） / 0** |
-| Detector | `logits_finite`（miss） |
+| Detector | 期望 `logits_finite` → **miss**（0 report） |
 | Origin | `both` |
 | Guard pin | G2 f2aefd068 |
 | 模型 | Qwen3-8B-W8A8 TP2 |
@@ -35,8 +35,9 @@ status 里 precision 记成 1，但 samples + score 证实跨请求内容相同�
 
 ## 4 · 复现
 
-按本包 pin / 模型 / overlay 意图对齐三层率。Trigger 极高（2624）。不要强制写 NaN 或 token fill 伪造症状。历史大批量跑数不在本仓；对外以本包为准。
+按本包 pin / 模型 / overlay 意图对齐三层率。Trigger 极高（2624）。不要强制写 NaN 或 token fill 伪造症状。
 
-## 5 · 别人按包能核对什么
+## 5 · 教学要点
 
-与 S01 同属「logits 数值有限、文字仍是乱码」漏检族，根因不同（quant scale vs KV skip-zero）。需要 garbled-text / 跨请求内容相同类 detector。公开案例材料写全再对外。
+1. **S07** = 有乱码 + detector miss → **FAIL+GAP**；**S01 dense** = 无坏输出 → **FAIL（复现未出现）**——勿并成同一漏检族（根因也不同：quant scale vs KV skip-zero）。
+2. 需要 garbled-text / 跨请求内容相同类 detector；仅靠 `logits_finite` 抓不住有限乱码。

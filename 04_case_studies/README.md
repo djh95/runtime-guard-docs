@@ -6,7 +6,7 @@
 
 每个案例只有：
 
-- **`README.md`**：一篇讲完（现象 → 根因 → Guard 结果 → 复现 → 别人按包能核对什么）
+- **`README.md`**：一篇讲完（现象 → 根因 → Guard 结果 → 复现 → 教学要点）
 - **`evidence/`**：样本、三层计数、WHY、overlay 摘录等证据
 
 ## 名词怎么读（先看这里）
@@ -33,7 +33,7 @@
 | ID | 包 | 结案结论 | 根因 | 现象 | 检测器 | trigger / precision / detect |
 |----|-----|----------|------|------|--------|------------------------------|
 | S01 | [cases/S01/](./cases/S01/) | FAIL（复现未出现） | KV 新块未置零（需 hybrid/量化 KV） | dense 未见坏输出（旧 precision 为 CJK 误计） | 本轮无可检坏输出；非漏检结案 | 154 / 0† / 0 |
-| S10′ | [cases/S10p/](./cases/S10p/) | PASS | FullAttn 回收块未清零 | 复读 / `xxxx` 塌缩 | `token_repeat` | 65 / 20 / 79 |
+| S10′ | [cases/S10p/](./cases/S10p/) | PASS | FullAttn 回收块未清零 | 复读 / `xxxx` 塌缩 | `token_repeat` | 65 / 20† / 79 |
 | S11 | [cases/S11/](./cases/S11/) | PASS | MLA RoPE pad-tail 错位 | digit / collapse 垃圾 | `token_repeat` | 138 / 39 / 60 |
 | S07 | [cases/S07/](./cases/S07/) | FAIL+GAP | W8A8 dequant scale 崩溃 | 跨请求内容相同的乱码 | 期望 `logits_finite`→未检出；乱码检测漏检 | 2624 / 1 / 0 |
 | S23 | [cases/S23/](./cases/S23/) | PASS | 一层 `o_proj` 权重置零 | 跨请求内容相同塌缩 | `token_repeat` | 2 / 17 / 48 |
@@ -52,9 +52,10 @@
 
 - **S06 †**：`layers.json` / status 写 `detect_reports=0`，但同次归档有 `token_repeat` report×1；表内 detect 按 report 记 **1**。
 - **S07**：precision 记成 1，实为 48 次请求内容相同的乱码（以 samples + score 为准）。
-- **S45**：`precision=4` 仍偏低估（各不相同乱码）；样本为准。计数来自二次盲跑对齐（双树写入 + temp=0.8）。
-- **S22 / S25 / S26 / S33**：表内 t/p/d 为二次盲跑修复后现行数；首轮盲跑失败多为配方/补丁路径问题（非检测器漏检），见各包复现节。
-- **S01 †**：分层验证（2026-10-20）——**主结论保留** FAIL（复现未出现）；**precision 误标**（旧 25 为 CJK；排除后 0）；**patch 入口未切换**（162 canonical 残缺未切满量 overlay）。hybrid/fp8 KV 在本 pin 上起服失败（`FP8_ATTENTION`），详见 [cases/S01/](./cases/S01/)。
+- **S10′ †**：`precision=20` 仅来自 `layers.json` 计数；本仓 **无** prompt+completion 样本，勿当「已见坏输出原文」实锤（detect=79 有 report 依据）。
+- **S45**：`precision=4` 仍偏低估（各不相同乱码）；样本为准。配方：双树写入 + temp=0.8 → **16 / 4 / 0**。
+- **S22 / S25 / S26 / S33**：表内为现行 t/p/d；复现要点见各包（S22：锚点脚本避 CRLF/LF；S25/S26：河名句×48 并发 + threshold=8；S33：双树 + 河名句）。
+- **S01 †**：CJK 排除后 **precision=0**；dense 满量 overlay trigger=154 仍无坏输出。见 [cases/S01/](./cases/S01/)。
 
 `S10′` 在仓库里的目录名是 **`S10p`**。相关 Skills 见 [06](../06_agent_skills/)（**v5.8**）。
 

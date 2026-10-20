@@ -1,6 +1,6 @@
 # S10′ · FullAttn recycle-zero（PASS）
 
-公开自洽案例包。漏检对照：[S01](../S01/)。
+公开自洽案例包。对照：[S01](../S01/)（dense **FAIL（复现未出现）**，不是漏检结案）。
 
 ## 归档钉点
 
@@ -16,7 +16,9 @@
 
 ## 1 · 现象
 
-输出塌成短语复读或一串 `xxxx`。`token_repeat` 命中很多（detect 79 / 80 请求）。样本见 [evidence/samples/](./evidence/samples/)（若有）与 layers。
+输出塌成短语复读或一串 `xxxx`。`token_repeat` 命中很多（detect 79 / 80 请求）。
+
+**样本说明：** 本仓 `evidence/` **无** `samples/`（无 prompt+completion 原文）。`precision=20` 仅来自 `layers.json` 计数，**勿当作已归档坏输出原文**；detect=79 有 report 路径依据（见 layers / status）。
 
 ## 2 · 根因
 
@@ -26,14 +28,14 @@ FullAttention 不进 `needs_kv_cache_zeroing` 管线，回收 block 时 partial-
 
 ## 3 · Guard 结果
 
-**PASS。** 期望 `token_repeat`。归档 **65 / 20 / 79**。
+**PASS。** 期望 `token_repeat`。归档 **65 / 20 / 79**（precision 无原文样本支撑，见上）。
 
 ## 4 · 复现
 
 Overlay：强制 `needs_kv_cache_zeroing=False`，在 `BlockPool.get_new_blocks` 打 trigger。负载：concurrent 64 变长英文 + 16 条内容相同的 temp=0；util=0.35；不开 APC。
 
-**注意：** 更早顺序中文 run（`T180428`）曾假 precision（CJK 启发式）——不要当标杆。标杆是 `T181551` 英文负载。
+标杆 run=`T181551`（英文负载）。勿用顺序中文负载当标杆（CJK 启发式会虚抬 precision）。
 
-## 5 · 别人按包能核对什么
+## 5 · 教学要点
 
 同大类 KV 脏读：**S10′ 能检**（recycle → `token_repeat`）；**S01** 在稠密栈上是 **FAIL（复现未出现）**（需 hybrid/量化 KV，dense 未见坏输出）。定界时不要只讲一个 detector。

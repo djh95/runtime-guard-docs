@@ -14,7 +14,7 @@ Softcap / `final_logit_softcapping` 类（[vLLM#56579](https://github.com/vllm-p
 
 ## Overlay
 
-见本包 patches / 生成脚本（历史配方名 `33_softcap_incomplete`）。
+见 `gen_s33_overlay.py`（双树写入；历史配方名 `33_softcap_incomplete`）。无独立 `patches/` 目录。
 
 ## Trigger / knobs / forbidden
 
@@ -42,4 +42,4 @@ concurrency: 48
 
 ## Origin-faithful protocol
 
-现行三层：**130 / 17 / 48**（二次盲跑；detect=48 精确）。
+现行三层：**130 / 17 / 48**（detect=48/48）。

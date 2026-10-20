@@ -20,11 +20,5 @@
   "concurrency": 48,
   "verdict": "PASS",
   "layers_trig_prec_detect": "354 / 16 / 48",
-  "blind_run": {
-    "round": 2,
-    "date": "20261020",
-    "archive_layers_ref": "470/14/48",
-    "first_blind_blocker": "wrong recipe: same as S25 (中文回声 + serial 8 + threshold 16); NOT detector miss",
-    "verdict": "PASS（detect=48 精确）"
-  }
+  "repro_notes": "same recipe as S25"
 }

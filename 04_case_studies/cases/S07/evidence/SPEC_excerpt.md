@@ -21,7 +21,7 @@
 
 ## Overlay
 
-脏 padding + 量化路径；或损坏 scale 张量。细节见 [`patches/README.md`](./patches/README.md)。
+脏 padding + 量化路径；或损坏 scale 张量。意图见本包 README；无独立 `patches/` 目录。
 
 ## ≤5min 复现配方
 
@@ -35,12 +35,13 @@
 
 ## Expected detector
 
-`logits_finite`；若 dump 覆盖到，scale 区域可能异常。
+期望武装 `logits_finite`（若 dump 覆盖到，scale 区域可能异常）。
 
 ## Success / gap
 
-- Success = `logits_finite` / dump 触发。
-- Gap：精度掉点但有限、无非有限值 → FAIL/gap。
+- **期望：** `logits_finite` report 命中（或 dump 异常）。
+- **实际结案：** detector 已武装但 **0 report** → **FAIL+GAP**（有限 logits + 乱码漏检）。
+- Gap 类：精度掉点但分值有限、无 NaN/Inf → 现有 detector miss。
 
 ## Repro rate
 
