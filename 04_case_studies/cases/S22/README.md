@@ -1,6 +1,6 @@
 # S22 · Spec resample 无 SALT（PASS · spec_acceptance）
 
-公开自洽个案包。
+公开自洽案例包。
 
 ## 归档钉点
 
@@ -43,6 +43,6 @@ acceptance_rate 异常偏低（约 0–0.27，mean ~0.07–0.09）。归档 `spe
 
 负载：eager / util=0.40；concurrent 48。
 
-## 5 · 教学要点
+## 5 · 学完能做什么
 
-Spec 路径要用对 detector。acceptance 塌缩时，不要硬套「有限 / 复读」阈值去解释。
+Spec 路径要用对 detector。acceptance 塌缩时，不要硬套「logits 是否有限 / 是否复读」阈值去解释。

@@ -1,6 +1,6 @@
 # S26 · RMSNorm fp32 weight-mul（PASS · PR-rooted）
 
-公开自洽个案包。
+公开自洽案例包。
 
 ## 归档钉点
 
@@ -38,6 +38,6 @@ Soft-inverse [vLLM#42379](https://github.com/vllm-project/vllm/pull/42379)：`As
 
 禁止 force-NaN。脚本：`s26_concurrent_repro.py`、`gen_s26_overlay.py`。
 
-## 5 · 教学要点
+## 5 · 学完能做什么
 
-对外保留案 里 RMSNorm 的 PR-rooted 代表。复现时先对齐 160 的 48 并发河名句，再谈 PASS/FAIL。
+对外保留案例 里 RMSNorm 的 PR-rooted 代表。复现时先对齐 160 的 48 并发河名句，再谈 PASS/FAIL。

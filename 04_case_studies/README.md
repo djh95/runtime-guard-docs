@@ -2,47 +2,49 @@
 
 定位流程以 [02 问题定位](../02_problem_localization/README.md) 为准。
 
-这里放的是**对外保留的 15 个典型案**：每个案自己一套材料，读完即可，不必再去别的仓库找正文。
+这里放的是**对外保留的 15 个典型案例**：每个案例自己一套材料。
 
-每个案只有：
+每个案例只有：
 
-- **`README.md`**：一篇讲完五条（现象 → 根因 → Guard 结果 → 复现 → 教学要点）
+- **`README.md`**：一篇讲完五条（现象 → 根因 → Guard 结果 → 复现 → 学完能做什么）
 - **`evidence/`**：样本、三层计数、WHY、overlay 摘录等证据
-
-更大量的历史跑数、原始日志不在本仓。
 
 ## 名词怎么读（先看这里）
 
 | 说法 | 含义 |
 |------|------|
 | **PASS** | 异常按 origin 复现出来了，并且期望的 detector **命中**（有 report）。 |
-| **FAIL+GAP** | 异常（或 precision）已经出现，但现有 detector **没抓住**——说明产品侧有检测缺口，不是「没跑 overlay」。 |
-| **FAIL** | 归档结果失败；若同时写 GAP，重点看缺口类型（常见：有限垃圾漏检）。 |
-| **GAP** | 检测器能力缺口。例如输出是有限乱码，而 `logits_finite` 只抓 NaN/Inf。 |
-| **trigger / precision / detect** | 三层计数：路径是否打中（trigger）→ 是否出现异常输出（precision）→ Guard 是否报警（detect）。三者不相等。 |
-| **教学要点** | 读完这个案，你应带走的判断标准或对照关系（表里这一列）。不是课堂作业，也不是内部黑话。 |
+| **FAIL** | 未达到 PASS（该复现 / 该检出却没有）。本目录里常与 GAP 连用，写成 **FAIL+GAP**。 |
+| **FAIL+GAP** | 有异常或目标坏输出，但现有 detector **没抓住**——属于产品侧检测缺口。 |
+| **GAP** | 检测器能力缺口。例如：logits（采样前的分值）始终是有限数，没有 NaN/Inf；文字仍可能是乱码，故 `logits_finite` 漏检。 |
+| **结案结论** | 结案时记下的标签（PASS / FAIL+GAP 等），标明这个案例是否按预期复现并检出。 |
+| **样本** | 保存的请求 / 回复证据；应含 prompt + 输出，用来核对坏没坏、是否误判。 |
+| **三层计数** | **trigger**（注入路径打中次数）/ **precision**（输出被判异常的次数，≠ 模型精度）/ **detect**（Guard 报告命中次数）。三者不相等；见各包 `layers.json` 等。 |
+| **WHY**（`WHY_PASS` / `WHY_UNDETECTED` 等） | 对本案例结果的简短说明：为什么过关，或为什么没检出 / 没复现。 |
+| **overlay 摘录** | 制造异常用的代码补丁（节选）；完整补丁在 evidence 里，摘录方便快速看改了哪。 |
+| **学完能做什么** | 读完本案例，你应能掌握的具体本事——例如怎样搭出这类异常环境、怎样判断 Guard 是否漏检、或怎样把两个案例对照着做根因 / 检测分析。 |
 | **origin-faithful** | 复现要忠于原 bug 逻辑；禁止用强制写 NaN、填复读 token 等方式「伪造症状」。 |
 | **hybrid / 量化 KV** | 混合或量化的 KV 页语义；和稠密 bf16 不是同一套前提（S01 尤其重要）。 |
 
-## 对外保留的 15 个典型案
+## 对外保留的 15 个典型案例
 
-| ID | 包 | 归档结果 | 教学要点 |
-|----|-----|----------|----------|
-| S01 | [cases/S01/](./cases/S01/) | FAIL+GAP | 输出可以全程有限却仍是乱码；`logits_finite` 抓不住，这是 detector 缺口。 |
-| S10′ | [cases/S10p/](./cases/S10p/) | PASS | 同属 KV 脏读：FullAttn 回收块未清零能被 `token_repeat` 抓住；对照 S01 漏检。 |
-| S11 | [cases/S11/](./cases/S11/) | PASS | MLA 的 pad-tail 错位 ≠ 回收块未清零；同一类 detector，根因不同。 |
-| S07 | [cases/S07/](./cases/S07/) | FAIL+GAP | W8A8 scale 崩溃会打出**真实的混合脚本乱码**，且跨请求相同；`logits_finite` 仍漏检。 |
-| S23 | [cases/S23/](./cases/S23/) | PASS | 能检出权重置零故障，但 skills 定界不到具体元素（L1-only）。 |
-| S45 | [cases/S45/](./cases/S45/) | FAIL+GAP | top-k 作用在 −logits 上会产生各不相同的有限乱码；现有 detector 双双 miss。 |
-| S43 | [cases/S43/](./cases/S43/) | PASS | embedding ×100 导致换行塌缩，能被 `token_repeat` 抓住；对照 S45。 |
-| S22 | [cases/S22/](./cases/S22/) | PASS | Spec 路径要用 `spec_acceptance` 看分布，不能只用有限/复读阈值硬套。 |
-| S06 | [cases/S06/](./cases/S06/) | PASS | 对外保留案里唯一 MoE 路由模版；KV 有限不等于 MoE 问题已排除。 |
-| S26 | [cases/S26/](./cases/S26/) | PASS | PR-rooted RMSNorm（fp32 错乘）；160 成功靠 48 并发短英文河名句。 |
-| S25 | [cases/S25/](./cases/S25/) | PASS | PR-rooted RoPE 后半维丢失；负载配方必须与 160 对齐，否则只有 trigger 没有目标特征。 |
-| S50 | [cases/S50/](./cases/S50/) | PASS | SwiGLU gate/up 对调会走到 bang / 非有限，可被 `logits_finite` 抓住。 |
-| S48 | [cases/S48/](./cases/S48/) | PASS | Residual 极性取反 → `!!!!`；与 residual-drop 要分开看。 |
-| S47 | [cases/S47/](./cases/S47/) | PASS | Attention 前 K/V 对调是对外保留案里的 Attn L2 代表。 |
-| S33 | [cases/S33/](./cases/S33/) | PASS | incomplete softcap（跳过 `*cap`）；overlay **必须双树写入**（Ascend + vllm）。 |
+| ID | 包 | 结案结论 | 学完能做什么 |
+|----|-----|----------|--------------|
+| S01 | [cases/S01/](./cases/S01/) | FAIL+GAP | 会判断这类漏检：logits（采样前的分值）始终是有限数，没有 NaN/Inf；文字仍可能是乱码，故 `logits_finite` 漏检。能对照样本核对，并与 S10′ 对照同族脏读。 |
+| S10′ | [cases/S10p/](./cases/S10p/) | PASS | 会对照 S01 做分析：同属 KV 脏读时，能说明 FullAttn 回收块未清零为何能被 `token_repeat` 抓住。 |
+| S11 | [cases/S11/](./cases/S11/) | PASS | 会区分 MLA pad-tail 错位与回收块未清零：同一类 detector 命中时，仍能把根因说清楚。 |
+| S07 | [cases/S07/](./cases/S07/) | FAIL+GAP | 会判断跨请求相同的真实混合脚本乱码漏检：logits（采样前的分值）始终是有限数，没有 NaN/Inf；文字仍是乱码，故 `logits_finite` 漏检。能用样本确认坏输出。 |
+| S23 | [cases/S23/](./cases/S23/) | PASS | 会核对权重置零故障检出到哪一层：知道有 report，也知道 skills 还定界不到具体元素。 |
+| S45 | [cases/S45/](./cases/S45/) | FAIL+GAP | 会判断各不相同的乱码漏检：logits（采样前的分值）始终是有限数，没有 NaN/Inf；文字仍是乱码，故 `logits_finite` 等漏检。能说明 top-k 打在 −logits 上，并与 S43 对照。 |
+| S43 | [cases/S43/](./cases/S43/) | PASS | 会对照 S45 做分析：能说明 embedding ×100 的换行塌缩为何能被 `token_repeat` 抓住。 |
+| S22 | [cases/S22/](./cases/S22/) | PASS | 会为 Spec 路径搭对检测：用 `spec_acceptance` 看分布（只看 logits 是否有限、或是否复读，不够）。 |
+| S06 | [cases/S06/](./cases/S06/) | PASS | 会用本案例搭 MoE 路由类异常环境，并明白「KV 数值看起来正常」也不能据此排除 MoE 问题。 |
+| S26 | [cases/S26/](./cases/S26/) | PASS | 会按 160 配方搭 RMSNorm 错乘环境：先对齐 48 并发短英文河名句，再谈 PASS / FAIL。 |
+| S25 | [cases/S25/](./cases/S25/) | PASS | 会按 160 配方搭 RoPE 后半维丢失环境：对齐并发河名句与 threshold，避免只有 trigger、没有目标特征就下结论。 |
+| S50 | [cases/S50/](./cases/S50/) | PASS | 会搭 SwiGLU gate/up 对调环境，并核对其会打出 `!!!!` / 出现 NaN·Inf，从而被 `logits_finite` 抓住。 |
+| S48 | [cases/S48/](./cases/S48/) | PASS | 会区分 residual 极性取反与 residual-drop：能说明为何前者会打出 `!!!!` 并走到 NaN/Inf 路径。 |
+| S47 | [cases/S47/](./cases/S47/) | PASS | 会搭 Attention 前 K/V 对调这一类 Attn L2 异常，并核对其可被 `token_repeat` 抓住。 |
+| S33 | [cases/S33/](./cases/S33/) | PASS | 会正确做 incomplete softcap 的双树写入（Ascend + vllm），避免只打一侧导致补丁失败。 |
 
 `S10′` 在仓库里的目录名是 **`S10p`**。相关 Skills 见 [06](../06_agent_skills/)（**v5.8**）。
 

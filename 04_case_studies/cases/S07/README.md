@@ -1,6 +1,6 @@
-# S07 · W8A8 scale collapse → 有限垃圾（GAP）
+# S07 · W8A8 scale collapse → logits 有限乱码（GAP）
 
-公开自洽个案包。同缺口族对照：[S01](../S01/)。
+公开自洽案例包。同缺口族对照：[S01](../S01/)。
 
 ## 归档钉点
 
@@ -25,7 +25,7 @@ W8A8 dequant scale 崩溃（在 `deq_scale` 上 zero + 1e20）。属于 quant / 
 
 ## 3 · Guard 结果
 
-**判定：FAIL+GAP。** `logits_finite` 已武装，detect=0——输出有限。score 侧 `garbage_mixed_script`×48 且 identical_across。
+**判定：FAIL+GAP。** `logits_finite` 已武装，detect=0——logits（采样前的分值）始终是有限数，没有 NaN/Inf；文字仍是乱码，故漏检。score 侧 `garbage_mixed_script`×48 且 identical_across。
 
 | 层 | 归档 |
 |----|------|
@@ -37,6 +37,6 @@ status 里 precision 记成 1，但 samples + score 证实 identical×48 乱码�
 
 按本包 pin / 模型 / overlay 意图对齐三层率。Trigger 极高（2624）。不要强制写 NaN 或 token fill 伪造症状。历史大批量跑数不在本仓；对外以本包为准。
 
-## 5 · 教学要点
+## 5 · 学完能做什么
 
-与 S01 同属「有限垃圾漏检」族，根因不同（quant scale vs KV skip-zero）。需要 garbled-text / identical 类 detector。公开个案写全或删除，不放空壳页。
+与 S01 同属「logits 数值有限、文字仍是乱码」漏检族，根因不同（quant scale vs KV skip-zero）。需要 garbled-text / identical 类 detector。公开案例材料写全再对外。

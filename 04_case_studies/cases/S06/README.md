@@ -1,6 +1,6 @@
 # S06 · MoE routing bias / topk→0（PASS · 唯一公开 MoE）
 
-公开自洽个案包。
+公开自洽案例包。
 
 ## 归档钉点
 
@@ -20,7 +20,7 @@ MoE 路由偏置或 mask 出错时，请求会进错专家。归档有 `token_re
 
 ## 2 · 根因
 
-错误 router bias / mask 类（非 bit-exact CUDA）。对外保留案 **只留这一例** MoE。上游：[#38989](https://github.com/vllm-project/vllm/pull/38989)、[#60946](https://github.com/vllm-project/vllm/pull/60946)。
+错误 router bias / mask 类（非 bit-exact CUDA）。对外保留案例 **只留这一例** MoE。上游：[#38989](https://github.com/vllm-project/vllm/pull/38989)、[#60946](https://github.com/vllm-project/vllm/pull/60946)。
 
 ## 3 · Guard 结果
 
@@ -30,6 +30,6 @@ MoE 路由偏置或 mask 出错时，请求会进错专家。归档有 `token_re
 
 按 pin / 模型 / overlay 对齐三层率。历史上有过 setup BLOCKED（缺 `aclnnAddRmsNormBias` 或 MoE OOM）——见 `evidence/BLOCKED.historical.md`，那不是 FAIL。标杆是已跑通的 162 归档。
 
-## 5 · 教学要点
+## 5 · 学完能做什么
 
-MoE 饱和类不在对外保留案 刷分；这一例只作路由模版。KV 有限不等于 MoE 类问题已排除干净。
+MoE 饱和类不在对外保留案例刷分；这一例只作路由模版。「KV 数值看起来正常」不等于 MoE 类问题已排除干净。

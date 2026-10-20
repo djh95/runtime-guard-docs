@@ -1,6 +1,6 @@
 # S25 · RoPE second-half drop（PASS · PR-rooted）
 
-公开自洽个案包。
+公开自洽案例包。
 
 ## 归档钉点
 
@@ -42,6 +42,6 @@ Soft-inverse [ascend#7082](https://github.com/vllm-project/vllm-ascend/pull/7082
 
 脚本参考（同 pin 复现脚本）：`s25_concurrent_repro.py`、`gen_s25_overlay.py`。
 
-## 5 · 教学要点
+## 5 · 学完能做什么
 
-写 RoPE 案要写清「不等于 S11」，避免技能表混类。负载配方错了，结论也会错。
+写 RoPE 案例要写清「不等于 S11」，避免技能表混类。负载配方错了，结论也会错。

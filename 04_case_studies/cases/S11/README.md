@@ -1,6 +1,6 @@
 # S11 · MLA RoPE pad-tail（PASS）
 
-公开自洽个案包。
+公开自洽案例包。
 
 ## 归档钉点
 
@@ -30,6 +30,6 @@
 
 DeepSeek-V2-Lite；concurrent 48 变长英文 + 12 条 temp=0；util=0.40；不开 APC。
 
-## 5 · 教学要点
+## 5 · 学完能做什么
 
 pad-tail 错位 ≠ 回收块未清零。可能撞上同一个 detector，但 root-cause 不同。

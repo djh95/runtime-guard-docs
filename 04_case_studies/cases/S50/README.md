@@ -1,6 +1,6 @@
 # S50 · SwiGLU gate/up half-swap（PASS）
 
-公开自洽个案包。
+公开自洽案例包。
 
 ## 归档钉点
 
@@ -28,6 +28,6 @@
 
 SwiGLU 算子 L2 代表。
 
-## 5 · 教学要点
+## 5 · 学完能做什么
 
-bang / 非有限塌缩可被 `logits_finite` 抓住——对照 S01/S07 那种有限但并非 Inf 的乱码垃圾输出。
+bang / NaN·Inf 塌缩可被 `logits_finite` 抓住——对照 S01/S07：那边 logits（采样前的分值）始终有限、无 NaN/Inf，文字却仍是乱码，故漏检。

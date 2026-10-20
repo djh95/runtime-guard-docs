@@ -1,6 +1,6 @@
 # S33 · Incomplete softcap（PASS）
 
-公开自洽个案包。
+公开自洽案例包。
 
 ## 归档钉点
 
@@ -36,6 +36,6 @@ softcap 改在 **vLLM** 的 `logits_processor.py`，同时 Ascend `platform.py` 
 
 短例文件名里可能带 overflow 字样；本包以本包归档的 **incomplete softcap** 为准（不是 S20）。
 
-## 5 · 教学要点
+## 5 · 学完能做什么
 
 softcap 族要写清 incomplete 与 unstable overflow 的差别，避免和 S20 混谈。环境构造上记住：**双树写入**。

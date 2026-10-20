@@ -1,6 +1,6 @@
 # S43 · Embed ×100 → newline collapse（PASS）
 
-公开自洽个案包。漏检对照：[S45](../S45/)。
+公开自洽案例包。漏检对照：[S45](../S45/)。
 
 ## 归档钉点
 
@@ -28,6 +28,6 @@
 
 对照 S45：同属 embed/logits 族，一边 PASS，一边 unique-garbage GAP。
 
-## 5 · 教学要点
+## 5 · 学完能做什么
 
 能检的 magnitude 故障，和漏检的方向翻转采样，适合成对看。

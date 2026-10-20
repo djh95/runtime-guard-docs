@@ -1,6 +1,6 @@
 # S10′ · FullAttn recycle-zero（PASS）
 
-公开自洽个案包。漏检对照：[S01](../S01/)。
+公开自洽案例包。漏检对照：[S01](../S01/)。
 
 ## 归档钉点
 
@@ -34,6 +34,6 @@ Overlay：强制 `needs_kv_cache_zeroing=False`，在 `BlockPool.get_new_blocks`
 
 **注意：** 更早顺序中文 run（`T180428`）曾假 precision（CJK 启发式）——不要当标杆。标杆是 `T181551` 英文负载。
 
-## 5 · 教学要点
+## 5 · 学完能做什么
 
-同大类 KV 脏读：**S10′ 能检**（recycle），**S01 漏检**（skip-zero→有限垃圾）。定界时不要只讲一个 detector。
+同大类 KV 脏读：**S10′ 能检**（recycle），**S01 漏检**（skip-zero → logits 数值有限、文字仍可能是乱码）。定界时不要只讲一个 detector。

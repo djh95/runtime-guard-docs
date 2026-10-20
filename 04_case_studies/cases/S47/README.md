@@ -1,6 +1,6 @@
 # S47 · Attn K/V swap（PASS）
 
-公开自洽个案包。
+公开自洽案例包。
 
 ## 归档钉点
 
@@ -26,8 +26,8 @@ CJK / Trail 塌缩；`token_repeat`×48。
 
 ## 4 · 复现
 
-Attn 算子 L2 的对外保留案 代表（K/V swap）。
+Attn 算子 L2 的对外保留案例 代表（K/V swap）。
 
-## 5 · 教学要点
+## 5 · 学完能做什么
 
 短例文件名里可能仍写 `attn-qkv-out`；本包以归档真相 **kv_swap** 为准。
