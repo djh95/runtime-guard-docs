@@ -3,7 +3,7 @@
 - **异常是否复现？** 是（precision）——origin-faithful 的 top-k/top-p 作用在 `-logits`（方向翻转）；**不是**放大器。
 - **类型：** unique 混合脚本 / garbage completion（finite；无 NaN/Inf）。
 - **Trigger：** `ANOMALY_TRIGGER` S45 topk_bottom_keep（trigger=16）。
-- **三层：** trigger=16 · precision=**unique**（score `precision_hits=47/48`，`unique=48`；identical-mode undercount → layers.json `precision=0`）· detect=**0**。
+- **三层：** trigger=16 · precision=**unique**（score `precision_hits=47/48`，`unique=48`；内容相同计分低估 → layers.json `precision=0`）· detect=**0**。
 - **Detector：** `token_repeat` + `logits_finite` 均已武装，**都 miss**。
   - 输出是多样 unique garbage（不是 digit / `!!!!` 塌缩）→ `token_repeat` 偏弱
   - logits 仍有限 → `logits_finite` miss

@@ -15,7 +15,7 @@
 
 ## 1 · 现象
 
-identical-mode collapse×17；`token_repeat`×48。
+跨请求内容相同塌缩×17；`token_repeat`×48。
 
 ## 2 · 根因
 

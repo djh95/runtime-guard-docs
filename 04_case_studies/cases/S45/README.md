@@ -15,7 +15,7 @@
 
 ## 1 · 现象
 
-**各不相同（unique）** 的混合脚本垃圾文字；logits（采样前的分值）始终是有限数，没有 NaN/Inf。identical-mode 会低估——`layers.json` 里 `precision=0` **不能单独**当成「没有 precision」。样本见 [evidence/samples/](./evidence/samples/)。
+**各不相同（unique）** 的混合脚本垃圾文字；logits（采样前的分值）始终是有限数，没有 NaN/Inf。内容相同计分会低估——`layers.json` 里 `precision=0` **不能单独**当成「没有 precision」。样本见 [evidence/samples/](./evidence/samples/)。
 
 ## 2 · 根因
 
@@ -37,7 +37,7 @@ top-k / top-p 作用在 `-logits` 上再取反——保留最低-k / 倒置 nucl
 - **正确（160）：** `gen_s45_overlay.py` 分别写 B + `canonical/vllm`。  
 - **错误：** 只 `git apply` 到 Ascend B → `sampler.py: No such file or directory`。
 
-score：`garbage_mixed_script`×44；`precision_hits≈47`；unique=48。layers identical-mode 会 undercount。
+score：`garbage_mixed_script`×44；`precision_hits≈47`；unique=48。layers 用内容相同计分会低估。
 
 ## 5 · 别人按包能核对什么
 

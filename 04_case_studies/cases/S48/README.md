@@ -14,7 +14,7 @@
 
 ## 1 · 现象
 
-跨请求 identical 的 `!!!!`；`logits_finite`×48。
+跨请求内容相同的 `!!!!`；`logits_finite`×48。
 
 ## 2 · 根因
 
