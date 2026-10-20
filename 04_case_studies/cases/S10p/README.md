@@ -18,7 +18,7 @@
 
 输出塌成短语复读或一串 `xxxx`。`token_repeat` 命中很多（detect 79 / 80 请求）。
 
-**样本说明：** `evidence/samples/` 已归档标杆 run `T181551` 的 prompt+completion（`xxxx` 塌缩；含 `api_response`）。detect=79 另见 [evidence/reports/report_sample.json](./evidence/reports/report_sample.json)（`token_repeat`）。
+**样本说明：** `evidence/samples/` 已归档标杆 run `T181551` 的 prompt+completion 文本（`xxxx` 塌缩；含 `api_response`）——供**阅读 / precision 核对**。tokenize 标杆以 report 内实际 `prompt_token_ids` 为准（见 [report_sample.json](./evidence/reports/report_sample.json)，本包有非空 ids）；detect=79 同见该 report（`token_repeat`）。
 
 ## 2 · 根因
 

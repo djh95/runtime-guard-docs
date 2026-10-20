@@ -18,7 +18,7 @@
 
 常见 digit / collapse 垃圾（如 `1010…`）。`token_repeat` 命中 60/60。
 
-**样本说明：** `evidence/samples/` 已归档标杆 run `T190840` 的 prompt+completion（digit / zero 塌缩；含 `api_response`）。detect 另见 [evidence/reports/report_sample.json](./evidence/reports/report_sample.json)。
+**样本说明：** `evidence/samples/` 已归档标杆 run `T190840` 的 prompt+completion 文本（digit / zero 塌缩；含 `api_response`）——供**阅读 / precision 核对**。本包归档 report 的 `prompt_token_ids` 为空（异步落盘后已清）；**不要**从 sample 字符串再 encode 当 tokenize 标杆。detect 见 [report_sample.json](./evidence/reports/report_sample.json)。通则见 [④ 名词表](../../README.md#名词怎么读先看这里)。
 
 ## 2 · 根因
 

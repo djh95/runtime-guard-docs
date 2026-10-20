@@ -36,8 +36,8 @@
 | `evidence/规格说明.md` | **只写怎么复现**（Origin、锚点、overlay、knobs、期望 detector）；不定界长文 |
 | `evidence/三层计数.json` | 机读三层数字；人读以 README 表为准 |
 | `evidence/跑批结果.json` | 机读跑批/结案元数据；人读以 README 为准 |
-| `evidence/samples/` | 坏/对照输出原文（prompt + completion） |
-| `evidence/reports/` | Guard detector 真实报告 |
+| `evidence/samples/` | 坏/对照输出原文（prompt + completion）——**阅读 / 现象核对**；非 tokenize 标杆 |
+| `evidence/reports/` | Guard detector 真实报告；其中非空的 `prompt_token_ids` 才是请求侧 tokenize **标杆** |
 
 **人读优先级：** `README.md` ≫ `规格说明.md` · `overlay.patch`。
 
@@ -64,8 +64,9 @@
 | **FAIL+GAP** | 结论标签：异常（或目标坏输出）**已经出现**，但 detector **没检出**——既记未过关（FAIL），又标成检测缺口（GAP）。**有异常是前提**；没有异常出现时不要写 FAIL+GAP。 |
 | **复现失败** | 打了 patch / overlay，但目标异常**没有出现**。不要写 GAP。结论记 **FAIL**，并注明原因（形态不对、注入未打中、负载不够、patch 未真正生效等）。可简称 **FAIL（复现未出现）** / **repro-blocked**。 |
 | **结案结论** | 写在案例上的判定标签（PASS / FAIL+GAP / FAIL（复现未出现）等），标明是否按预期复现并检出。 |
-| **样本** | 保存的请求 / 回复证据；应含 prompt + 输出，用来核对坏没坏、是否误判。 |
-| **report 空 prompt** | 异步下，检测和生成 report 往往在**请求结束之后**，此时请求侧的 prompt 已被清空，所以 report 里 `prompt_token_ids` / `prompt_text` 可能为空（output 仍常有）。**不是**请求没带 prompt，也不是脱敏删掉了。要看请求原文 → 同案 `evidence/samples/`。 |
+| **样本** | 保存的请求 / 回复证据；应含 prompt + 输出，用来**读文意、核对坏没坏 / 是否误判**。仅有 prompt **字符串**的 sample **不能**当作可靠 tokenize 标杆（发出去的字符串 + 回来的 completion，再 encode 的结果可能与服务端不一致；处理 prompt 与处理 sample 的 tokenizer 也可能不同）。 |
+| **标杆请求（token ids）** | 需要可复现 tokenize / 定界对比时，请求侧以服务端或 Guard **实际捕获的 `prompt_token_ids`** 为准，**用 token ids 去抓 / 归档**，禁止「只存字符串、事后再 encode」当标杆。 |
+| **report 空 prompt** | 异步下，检测和生成 report 往往在**请求结束之后**，此时请求侧的 prompt 已被清空，所以 report 里 `prompt_token_ids` / `prompt_text` 可能为空（output 仍常有）。**不是**请求没带 prompt，也不是脱敏删掉了。**阅读**完整 prompt 文本 → 同案 `evidence/samples/`；**不要**从字符串补造 ids 填进旧 report。空 ids 时应修 Guard 捕获，或从仍持有 ids 的路径重新抓取后再归档。 |
 | **三层计数** | **trigger**（注入路径打中次数）/ **precision**（输出被判异常的次数，≠ 模型精度）/ **detect**（Guard 报告命中次数）。三者不相等；见各包 `三层计数.json`。 |
 | **三层计数.json** | 三层明细（trigger / precision / detect、备注、detector 名等）。索引表数字通常摘自这里。 |
 | **跑批结果.json** | 跑批元数据 + 结案摘要（场景名、verdict、模型、run 路径、三层摘要）。和 `三层计数.json` 一起读。 |
@@ -129,4 +130,7 @@
 
 ### 证据说明（摘）
 
-- **report 里 prompt 为空**：异步下检测/落盘常在请求结束后，prompt 已被清掉。可读 prompt 看同案 `evidence/samples/`（见名词表 **report 空 prompt**）。不要事后往旧 report 里补假 prompt。
+- **阅读 vs 标杆（分层）**
+  - **阅读**：完整 prompt / completion 文本看 `evidence/samples/`（文意、坏输出形态、误判核对）。
+  - **标杆（tokenize / 定界对比）**：以 report（或其它 Guard/服务端路径）里**实际捕获的 `prompt_token_ids`** 为准；不要用 sample 字符串再 encode。
+- **report 里 prompt / `prompt_token_ids` 为空**：异步下检测/落盘常在请求结束后，prompt 已被清掉（见名词表 **report 空 prompt**）。此时仍可用 samples **阅读**原文；**禁止**从字符串补造 ids 填进旧 report。应修 Guard 捕获，或从仍持有 ids 的路径抓取后再归档。

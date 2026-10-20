@@ -26,7 +26,7 @@ MoE 路由偏置或 mask 出错时，请求会进错专家。归档有 `token_re
 
 **PASS。** 以归档 `reports/report_*.json`（`token_repeat`）为准；`跑批结果.json` 的 `detect_reports=0` 与报告不一致时，以 report 为准。
 
-**report 空 prompt：** 本包归档 report 的 `prompt_token_ids` / `prompt_text` 为空——异步下检测和生成 report 在请求结束之后，prompt 已被清空（output 仍有）。可读 prompt 看 [evidence/samples/](./evidence/samples/)；通则见 [④ 名词表 · report 空 prompt](../../README.md#名词怎么读先看这里)。
+**report 空 `prompt_token_ids`：** 本包归档 report 的 `prompt_token_ids` / `prompt_text` 为空——异步下检测和生成 report 在请求结束之后，prompt 已被清空（output 仍有）。**阅读**完整 prompt 文本看 [evidence/samples/](./evidence/samples/)；**tokenize / 定界标杆**须以实际捕获的 token ids 为准——本包当前无非空 `prompt_token_ids`，**不要**从 sample 字符串再 encode 补造；应修 Guard 捕获或从仍持有 ids 的路径重抓后再归档。通则见 [④ 名词表 · 标杆请求 / report 空 prompt](../../README.md#名词怎么读先看这里)。
 
 ## 4 · 复现技巧
 
@@ -53,8 +53,8 @@ MoE 路由偏置或 mask 出错时，请求会进错专家。归档有 `token_re
 | `evidence/规格说明.md` | 复现规格（Origin / 锚点 / overlay / knobs / 期望 detector） |
 | `evidence/三层计数.json` | 三层明细（trigger / precision / detect） |
 | `evidence/跑批结果.json` | 跑批元数据 + 结案摘要 |
-| `evidence/samples/` | prompt + completion 样本（**可读 prompt 以这里为准**） |
-| `evidence/reports/` | Guard detector 报告（本包归档 report **prompt 为空**：异步落盘在请求结束后已清；见上节与 [④ 名词表](../../README.md#名词怎么读先看这里)） |
+| `evidence/samples/` | prompt + completion 样本（**阅读 / 现象核对**；非 tokenize 标杆） |
+| `evidence/reports/` | Guard detector 报告（本包归档 **`prompt_token_ids` 为空**：异步落盘后已清；阅读看 samples，标杆须另抓 ids；见上节与 [④ 名词表](../../README.md#名词怎么读先看这里)） |
 
 
 ## 上游 PR 关系
