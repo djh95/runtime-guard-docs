@@ -68,7 +68,7 @@
 
 若要真复现 origin：用 hybrid/量化 KV（或当时同形态栈），并归档带 **prompt + completion** 的原始样本。dense + synth 只适合验证 trigger 路径。
 
-## 5 · 学完能做什么
+## 5 · 别人按包能核对什么
 
 1. 会判断：logits（采样前的分值）始终是有限数、没有 NaN/Inf 时，`logits_finite` 漏检，但文字仍可能是乱码。
 2. 会分开看三层计数：trigger ≠ precision ≠ detect；中间「25」还可能被评分污染。

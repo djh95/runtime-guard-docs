@@ -30,6 +30,6 @@
 
 DeepSeek-V2-Lite；concurrent 48 变长英文 + 12 条 temp=0；util=0.40；不开 APC。
 
-## 5 · 学完能做什么
+## 5 · 别人按包能核对什么
 
 pad-tail 错位 ≠ 回收块未清零。可能撞上同一个 detector，但 root-cause 不同。

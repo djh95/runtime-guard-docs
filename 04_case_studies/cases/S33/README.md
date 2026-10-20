@@ -36,6 +36,6 @@ softcap 改在 **vLLM** 的 `logits_processor.py`，同时 Ascend `platform.py` 
 
 短例文件名里可能带 overflow 字样；本包以本包归档的 **incomplete softcap** 为准（不是 S20）。
 
-## 5 · 学完能做什么
+## 5 · 别人按包能核对什么
 
 softcap 族要写清 incomplete 与 unstable overflow 的差别，避免和 S20 混谈。环境构造上记住：**双树写入**。

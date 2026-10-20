@@ -30,6 +30,6 @@ MoE 路由偏置或 mask 出错时，请求会进错专家。归档有 `token_re
 
 按 pin / 模型 / overlay 对齐三层率。历史上有过 setup BLOCKED（缺 `aclnnAddRmsNormBias` 或 MoE OOM）——见 `evidence/BLOCKED.historical.md`，那不是 FAIL。标杆是已跑通的 162 归档。
 
-## 5 · 学完能做什么
+## 5 · 别人按包能核对什么
 
 MoE 饱和类不在对外保留案例刷分；这一例只作路由模版。「KV 数值看起来正常」不等于 MoE 类问题已排除干净。

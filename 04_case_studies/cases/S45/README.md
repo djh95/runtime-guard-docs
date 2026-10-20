@@ -39,6 +39,6 @@ top-k / top-p 作用在 `-logits` 上再取反——保留最低-k / 倒置 nucl
 
 score：`garbage_mixed_script`×44；`precision_hits≈47`；unique=48。layers identical-mode 会 undercount。
 
-## 5 · 学完能做什么
+## 5 · 别人按包能核对什么
 
 第三种漏检形态：各不相同的乱码，且 logits（采样前的分值）始终有限、无 NaN/Inf（相对 S01/S07 的跨请求相同乱码）。对照 S43 PASS。环境上记住：**必须双树写入**。

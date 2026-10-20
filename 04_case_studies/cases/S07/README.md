@@ -37,6 +37,6 @@ status 里 precision 记成 1，但 samples + score 证实 identical×48 乱码�
 
 按本包 pin / 模型 / overlay 意图对齐三层率。Trigger 极高（2624）。不要强制写 NaN 或 token fill 伪造症状。历史大批量跑数不在本仓；对外以本包为准。
 
-## 5 · 学完能做什么
+## 5 · 别人按包能核对什么
 
 与 S01 同属「logits 数值有限、文字仍是乱码」漏检族，根因不同（quant scale vs KV skip-zero）。需要 garbled-text / identical 类 detector。公开案例材料写全再对外。

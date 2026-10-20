@@ -43,6 +43,6 @@ acceptance_rate 异常偏低（约 0–0.27，mean ~0.07–0.09）。归档 `spe
 
 负载：eager / util=0.40；concurrent 48。
 
-## 5 · 学完能做什么
+## 5 · 别人按包能核对什么
 
 Spec 路径要用对 detector。acceptance 塌缩时，不要硬套「logits 是否有限 / 是否复读」阈值去解释。

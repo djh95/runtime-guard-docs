@@ -28,6 +28,6 @@
 
 SwiGLU 算子 L2 代表。
 
-## 5 · 学完能做什么
+## 5 · 别人按包能核对什么
 
 bang / NaN·Inf 塌缩可被 `logits_finite` 抓住——对照 S01/S07：那边 logits（采样前的分值）始终有限、无 NaN/Inf，文字却仍是乱码，故漏检。

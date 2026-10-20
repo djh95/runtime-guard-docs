@@ -42,6 +42,6 @@ Soft-inverse [ascend#7082](https://github.com/vllm-project/vllm-ascend/pull/7082
 
 脚本参考（同 pin 复现脚本）：`s25_concurrent_repro.py`、`gen_s25_overlay.py`。
 
-## 5 · 学完能做什么
+## 5 · 别人按包能核对什么
 
 写 RoPE 案例要写清「不等于 S11」，避免技能表混类。负载配方错了，结论也会错。

@@ -28,6 +28,6 @@ CJK / Trail 塌缩；`token_repeat`×48。
 
 Attn 算子 L2 的对外保留案例 代表（K/V swap）。
 
-## 5 · 学完能做什么
+## 5 · 别人按包能核对什么
 
 短例文件名里可能仍写 `attn-qkv-out`；本包以归档真相 **kv_swap** 为准。

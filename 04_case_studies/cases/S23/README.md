@@ -29,6 +29,6 @@ identical-mode collapse×17；`token_repeat`×48。
 
 Qwen3-8B，temp=0，eager；concurrent 48；util=0.40。
 
-## 5 · 学完能做什么
+## 5 · 别人按包能核对什么
 
 能检不等于能定界到权重元素。报 L1 即可，不要夸大 dump 能力。
