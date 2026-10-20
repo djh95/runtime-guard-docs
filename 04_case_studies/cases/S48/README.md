@@ -1,6 +1,6 @@
 # S48 · Residual negate（PASS）
 
-公开自洽个案包（不依赖私有 test 即可读完）。短例：[examples/S48_residual-negate.md](../../examples/S48_residual-negate.md)
+公开自洽个案包（不依赖私有 test 即可读完）。
 
 ## External five-bar
 

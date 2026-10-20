@@ -10,7 +10,7 @@
 
 ## 无内部仓权限时
 
-公开路径：本目录 skill 契约 + 手册 01–05 + `04` 的 15 短例。
+公开路径：本目录 skill 契约 + 手册 01–05 + `04` 的 `cases/Sxx/` 完整包。
 
 | 仍可做 | 须停止 / 跳过 |
 |--------|----------------|
@@ -68,7 +68,7 @@ Anomaly 定界（有权限时）：`tests/build-anomaly-env/fail-evidence/Sxx/`�
 ## 权威与同步
 
 - **Ownership：** skills 权威 = 本目录；test `analysis/skill/` = 镜像。  
-- **Ownership：** 04 分析全文 / FE / runs 权威 = `runtime-guard-test/docs/`；公开 `04` = 短例 + stub。  
+- **Ownership：** 04 分析全文 / FE / runs 权威 = `runtime-guard-test/docs/`；公开 `04` = `cases/Sxx/` 完整包。  
 - 回写镜像（有权限时）：
 
 ```bash

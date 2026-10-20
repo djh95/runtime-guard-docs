@@ -1,6 +1,6 @@
 # S22 · Spec resample 无 SALT（PASS · spec_acceptance）
 
-公开自洽个案包（不依赖私有 test 即可读完）。短例：[examples/S22_spec-resample-salt.md](../../examples/S22_spec-resample-salt.md)
+公开自洽个案包（不依赖私有 test 即可读完）。
 
 ## External five-bar
 

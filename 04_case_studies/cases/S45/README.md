@@ -1,6 +1,6 @@
 # S45 · Top-k on −logits → unique garbage（GAP）
 
-公开自洽个案包（不依赖私有 test 即可读完）。短例：[examples/S45_topk-neg-logits-gap.md](../../examples/S45_topk-neg-logits-gap.md)
+公开自洽个案包（不依赖私有 test 即可读完）。
 
 ## External five-bar
 

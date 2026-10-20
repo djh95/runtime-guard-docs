@@ -1,6 +1,6 @@
 # S25 · RoPE second-half drop（PASS · PR-rooted）
 
-公开自洽个案包（不依赖私有 test 即可读完）。短例：[examples/S25_rope-half-drop.md](../../examples/S25_rope-half-drop.md)
+公开自洽个案包（不依赖私有 test 即可读完）。
 
 ## External five-bar
 

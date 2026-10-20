@@ -1,6 +1,6 @@
 # S26 · RMSNorm fp32 weight-mul（PASS · PR-rooted）
 
-公开自洽个案包（不依赖私有 test 即可读完）。短例：[examples/S26_rmsnorm-fp32-mul.md](../../examples/S26_rmsnorm-fp32-mul.md)
+公开自洽个案包（不依赖私有 test 即可读完）。
 
 ## External five-bar
 

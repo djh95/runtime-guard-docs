@@ -1,6 +1,6 @@
 # S06 · MoE routing bias / topk→0（PASS · 唯一公开 MoE）
 
-公开自洽个案包（不依赖私有 test 即可读完）。短例：[examples/S06_moe-topk-zero.md](../../examples/S06_moe-topk-zero.md)
+公开自洽个案包（不依赖私有 test 即可读完）。
 
 ## External five-bar
 

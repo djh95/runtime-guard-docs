@@ -1,6 +1,6 @@
 # S07 · W8A8 scale collapse → 有限垃圾（GAP）
 
-公开自洽个案包（不依赖私有 test 即可读完）。短例：[examples/S07_w8a8-scale-collapse-gap.md](../../examples/S07_w8a8-scale-collapse-gap.md)
+公开自洽个案包（不依赖私有 test 即可读完）。
 
 ## External five-bar
 

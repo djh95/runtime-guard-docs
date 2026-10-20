@@ -76,27 +76,27 @@ Project Agent Store（本会话结果落点，非公开 Git）：
 
 ### 3.2 典型案例文档（15）
 
-`$RG_DOCS/04_case_studies/examples/`
+`$RG_DOCS/04_case_studies/cases/Sxx/`（`S10′` → **`S10p/`**；FE 目录仍是 `S10/`）
 
-| ID | 文件 |
-|----|------|
-| S01 | `S01_kv-skip-zero-gap.md` |
-| S10′ | `S10p_fullattn-recycle-zero.md`（注意 **p**；FE 目录是 `S10/`） |
-| S11 | `S11_mla-rope-pad-tail.md` |
-| S07 | `S07_w8a8-scale-collapse-gap.md` |
-| S23 | `S23_weight-zero-l1.md` |
-| S45 | `S45_topk-neg-logits-gap.md` |
-| S43 | `S43_embed-scale-blowup.md` |
-| S22 | `S22_spec-resample-salt.md` |
-| S06 | `S06_moe-topk-zero.md` |
-| S26 | `S26_rmsnorm-fp32-mul.md` |
-| S25 | `S25_rope-half-drop.md` |
-| S50 | `S50_swiglu-half-swap.md` |
-| S48 | `S48_residual-negate.md` |
-| S47 | `S47_attn-qkv-out.md` |
-| S33 | `S33_overflow-softcap.md` |
+| ID | 包 |
+|----|-----|
+| S01 | `cases/S01/` |
+| S10′ | `cases/S10p/` |
+| S11 | `cases/S11/` |
+| S07 | `cases/S07/` |
+| S23 | `cases/S23/` |
+| S45 | `cases/S45/` |
+| S43 | `cases/S43/` |
+| S22 | `cases/S22/` |
+| S06 | `cases/S06/` |
+| S26 | `cases/S26/` |
+| S25 | `cases/S25/` |
+| S50 | `cases/S50/` |
+| S48 | `cases/S48/` |
+| S47 | `cases/S47/` |
+| S33 | `cases/S33/` |
 
-索引：`04_case_studies/README.md` · keep-set：`04_case_studies/typical-cases-keep-set-20261019.md`
+索引：`04_case_studies/README.md`
 
 ### 3.3 Evidence / runs / 政策指针
 
@@ -117,7 +117,7 @@ FE 内常见文件：`layers.json` · `status.json` · `WHY_PASS.md` / `WHY_UNDE
 
 ## 4. 如何构造 / 复开 anomaly env（verify 优先离线）
 
-1. **优先离线：** 只读 §3.3 FE + runs + examples；用 `PYTHONPATH=$RG_TEST` 跑 analysis 脚本。  
+1. **优先离线：** 只读 §3.3 FE + runs + `cases/Sxx/`；用 `PYTHONPATH=$RG_TEST` 跑 analysis 脚本。  
 2. **协议：** 任何 live 复开必须遵守 `anomaly-PRINCIPLES.md`（origin-faithful；禁止 NaN/`fill_` 放大器）。  
 3. **Live 仅当：** FE 无可用 samples/report、或要确认「当前 skill 文案 vs 现网 detector」；走 160 builder，参考各场景 `SPEC.md` / overlay 与 `tests/build-anomaly-env/scripts/sNN_*_concurrent_repro.py`（若存在）。  
 4. **不要**为 verify 批量重跑 S51–S152 C 类矩阵。
@@ -128,7 +128,7 @@ FE 内常见文件：`layers.json` · `status.json` · `WHY_PASS.md` / `WHY_UNDE
 
 对 keep-set 每个 `scenario_id`：
 
-1. **读模版** `$RG_DOCS/04_case_studies/examples/Sxx_*.md` → 记下期望 detect / L / GAP / 对照 peer。  
+1. **读个案包** `$RG_DOCS/04_case_studies/cases/Sxx/` → 记下期望 detect / L / GAP / 对照 peer。  
 2. **读 FE** `$RG_TEST/tests/build-anomaly-env/fail-evidence/Sxx/`（S10′→`S10/`）：`layers.json`、WHY_*、samples。  
 3. **读历史 run** `$RG_TEST/docs/anomaly-skills-runs/Sxx-*.md`（或 batch 文件中对应段落）。  
 4. **跑 analysis（能跑则跑）**  
@@ -173,7 +173,7 @@ internal/skills-verify-results/2026-10-19/
 {
   "scenario_id": "S01",
   "evidence_path": "tests/build-anomaly-env/fail-evidence/S01/",
-  "example_doc": "04_case_studies/examples/S01_kv-skip-zero-gap.md",
+  "case_doc": "04_case_studies/cases/S01/",
   "skills_version": "v5.8",
   "verify_mode": "offline",
   "expected": {
@@ -268,7 +268,7 @@ internal/skills-verify-results/2026-10-19/
 |------|------|
 | 本文件（docs） | `06_agent_skills/VERIFY_HANDOFF.md` |
 | 本文件（store） | `docs/skills-verify-handoff-for-agents-20261019.md` |
-| 15 模版 | `04_case_studies/examples/` |
+| 15 个案包 | `04_case_studies/cases/Sxx/` |
 | Skills | `06_agent_skills/*/SKILL.md` |
 | FE | `runtime-guard-test/.../fail-evidence/Sxx/` |
 | Runs | `runtime-guard-test/docs/anomaly-skills-runs/` |

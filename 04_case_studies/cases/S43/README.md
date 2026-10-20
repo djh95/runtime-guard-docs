@@ -1,6 +1,6 @@
 # S43 · Embed ×100 → newline collapse（PASS）
 
-公开自洽个案包（不依赖私有 test 即可读完）。短例：[examples/S43_embed-scale-blowup.md](../../examples/S43_embed-scale-blowup.md)
+公开自洽个案包（不依赖私有 test 即可读完）。
 
 ## External five-bar
 

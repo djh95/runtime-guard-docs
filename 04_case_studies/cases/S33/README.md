@@ -1,6 +1,6 @@
 # S33 · Incomplete softcap（PASS）
 
-公开自洽个案包（不依赖私有 test 即可读完）。短例：[examples/S33_overflow-softcap.md](../../examples/S33_overflow-softcap.md)
+公开自洽个案包（不依赖私有 test 即可读完）。
 
 ## External five-bar
 

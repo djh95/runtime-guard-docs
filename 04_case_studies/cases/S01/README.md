@@ -1,7 +1,7 @@
 # S01 · KV skip-zero → 有限垃圾（detector GAP）
 
 公开、自洽的个案包（**不依赖**私有 `runtime-guard-test` 也能读完）。  
-对照短例：[examples/S01_kv-skip-zero-gap.md](../../examples/S01_kv-skip-zero-gap.md) · 同族 PASS：[examples/S10p_fullattn-recycle-zero.md](../../examples/S10p_fullattn-recycle-zero.md)
+同族 PASS：[cases/S10p/](../S10p/)
 
 ## External five-bar
 

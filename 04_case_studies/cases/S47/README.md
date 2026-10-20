@@ -1,6 +1,6 @@
 # S47 · Attn K/V swap（PASS）
 
-公开自洽个案包（不依赖私有 test 即可读完）。短例：[examples/S47_attn-qkv-out.md](../../examples/S47_attn-qkv-out.md)
+公开自洽个案包（不依赖私有 test 即可读完）。
 
 ## External five-bar
 

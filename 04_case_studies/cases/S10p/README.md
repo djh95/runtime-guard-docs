@@ -1,6 +1,6 @@
 # S10′ · FullAttn recycle-zero（PASS）
 
-公开自洽个案包（不依赖私有 test 即可读完）。短例：[examples/S10p_fullattn-recycle-zero.md](../../examples/S10p_fullattn-recycle-zero.md)
+公开自洽个案包（不依赖私有 test 即可读完）。
 
 ## External five-bar
 

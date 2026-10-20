@@ -1,6 +1,6 @@
 # S11 · MLA RoPE pad-tail（PASS）
 
-公开自洽个案包（不依赖私有 test 即可读完）。短例：[examples/S11_mla-rope-pad-tail.md](../../examples/S11_mla-rope-pad-tail.md)
+公开自洽个案包（不依赖私有 test 即可读完）。
 
 ## External five-bar
 

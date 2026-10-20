@@ -1,6 +1,6 @@
 # S50 · SwiGLU gate/up half-swap（PASS）
 
-公开自洽个案包（不依赖私有 test 即可读完）。短例：[examples/S50_swiglu-half-swap.md](../../examples/S50_swiglu-half-swap.md)
+公开自洽个案包（不依赖私有 test 即可读完）。
 
 ## External five-bar
 

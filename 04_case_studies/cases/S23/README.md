@@ -1,6 +1,6 @@
 # S23 · Weight layer zero（PASS · L1-only）
 
-公开自洽个案包（不依赖私有 test 即可读完）。短例：[examples/S23_weight-zero-l1.md](../../examples/S23_weight-zero-l1.md)
+公开自洽个案包（不依赖私有 test 即可读完）。
 
 ## External five-bar
 
