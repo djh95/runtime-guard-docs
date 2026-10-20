@@ -1,0 +1,35 @@
+{
+  "prompt": "Write one short English sentence about mountains. ref=35. context: w35_0 w35_1 w35_2 w35_3 w35_4 w35_5 w35_6 w35_7 w35_8 w35_9 w35_10 w35_11 w35_12 w35_13 w35_14 w35_15 w35_16 w35_17 w35_18 w35_19 w35_20 w35_21 w35_22 w35_23 w35_24 w35_25 w35_26 w35_27 w35_28 w35_29 w35_30 w35_31 w35_32 w35_33 w35_34 w35_35 w35_36 w35_37 w35_38 w35_39 w35_40 w35_41 w35_42 w35_43 w35_44 w35_45 w35_46 w35_47 w35_48 w35_49 w35_50 w35_51 w35_52 w35_53 w35_54 w35_55",
+  "completion": "555555555555555555555555555555555555555555555555",
+  "api_response": {
+    "id": "cmpl-a8b67a5d043ae725",
+    "object": "text_completion",
+    "created": 1792149009,
+    "model": "anomaly",
+    "choices": [
+      {
+        "index": 0,
+        "text": "555555555555555555555555555555555555555555555555",
+        "logprobs": null,
+        "finish_reason": "length",
+        "stop_reason": null,
+        "token_ids": null,
+        "prompt_logprobs": null,
+        "prompt_token_ids": null,
+        "routed_experts": null
+      }
+    ],
+    "service_tier": null,
+    "system_fingerprint": "vllm-dev-tp2-f63bfdbd",
+    "usage": {
+      "prompt_tokens": 341,
+      "total_tokens": 389,
+      "completion_tokens": 48,
+      "prompt_tokens_details": null,
+      "completion_tokens_details": null
+    },
+    "kv_transfer_params": null,
+    "ec_transfer_params": null,
+    "metrics": null
+  }
+}

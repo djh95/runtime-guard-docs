@@ -18,7 +18,7 @@
 
 输出塌成短语复读或一串 `xxxx`。`token_repeat` 命中很多（detect 79 / 80 请求）。
 
-**样本说明：** 本仓仍 **无** `samples/`（无 prompt+completion 原文）。`precision=20` 仅来自 `三层计数.json` 计数，**勿当作已归档坏输出原文**。detect=79 现有 [evidence/reports/report_sample.json](./evidence/reports/report_sample.json)（`token_repeat`，自 T181551）。
+**样本说明：** `evidence/samples/` 已归档标杆 run `T181551` 的 prompt+completion（`xxxx` 塌缩；含 `api_response`）。detect=79 另见 [evidence/reports/report_sample.json](./evidence/reports/report_sample.json)（`token_repeat`）。
 
 ## 2 · 根因
 
@@ -28,7 +28,7 @@ FullAttention 不进 `needs_kv_cache_zeroing` 管线，回收 block 时 partial-
 
 ## 3 · Guard 结果
 
-**PASS。** 期望 `token_repeat`。归档 **65 / 20 / 79**（precision 仍无原文 completion 样本；detect 有 report）。
+**PASS。** 期望 `token_repeat`。归档 **65 / 20 / 79**（precision 可用 `evidence/samples/` 核对；detect 有 report）。
 
 ## 4 · 复现技巧
 
@@ -45,8 +45,8 @@ Overlay：强制 `needs_kv_cache_zeroing=False`，在 `BlockPool.get_new_blocks`
 1. **L1 detect 停点**——detect：`token_repeat` 命中（report_sample；detect=79）。
 2. **L2 class-hint**——L2–L3 潜力（真 KV 脏读 / FullAttn 回收未清零）；不定界到元素/commit。
 3. **标杆 / Q1–Q5**——无 buggy+ref 标杆 → Q1–Q5 不适用 / KV=未知。
-4. **结合现象**——无 prompt+completion 样本；detect 以 `evidence/reports/` 为准。
-5. **结案要点**——PASS **65 / 20 / 79**。本仓无 `samples/`：`precision=20` 仅三层计数，非原文实锤。
+4. **结合现象**——坏输出见 `evidence/samples/`（prompt+completion）；detect 以 `evidence/reports/` 为准。
+5. **结案要点**——PASS **65 / 20 / 79**。precision 可用 samples 原文核对。
 
 ## 证据文件
 
@@ -56,7 +56,7 @@ Overlay：强制 `needs_kv_cache_zeroing=False`，在 `BlockPool.get_new_blocks`
 | `evidence/规格说明.md` | 复现规格（Origin / 锚点 / overlay / knobs / 期望 detector） |
 | `evidence/三层计数.json` | 三层明细（trigger / precision / detect） |
 | `evidence/跑批结果.json` | 跑批元数据 + 结案摘要 |
-| `evidence/samples/` | （无）precision 仅三层计数，见 README 定界节 |
+| `evidence/samples/` | 坏输出原文（prompt + completion；自 T181551） |
 | `evidence/reports/` | Guard detector 报告 |
 
 
