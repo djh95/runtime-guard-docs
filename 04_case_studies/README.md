@@ -133,4 +133,4 @@
 - **阅读 vs 标杆（分层）**
   - **阅读**：完整 prompt / completion 文本看 `evidence/samples/`（文意、坏输出形态、误判核对）。
   - **标杆（tokenize / 定界对比）**：以 report（或其它 Guard/服务端路径）里**实际捕获的 `prompt_token_ids`** 为准；不要用 sample 字符串再 encode。
-- **report 里 prompt / `prompt_token_ids` 为空**：异步下检测/落盘常在请求结束后，prompt 已被清掉（见名词表 **report 空 prompt**）。此时仍可用 samples **阅读**原文；**禁止**从字符串补造 ids 填进旧 report。应修 Guard 捕获，或从仍持有 ids 的路径抓取后再归档。
+- **report 里 prompt / `prompt_token_ids` 为空**：异步下检测/落盘常在请求结束后，prompt 已被清掉（见名词表 **report 空 prompt**）。此时仍可用 samples **阅读**原文；**禁止**从字符串补造 ids 填进旧 report。空 ids **不**表示无 `block_ids`；无 buggy+ref 时教学定界仍是 L1/L2，不是真 KV Q1–Q5。应修 Guard 捕获，或从仍持有 ids 的路径抓取后再归档。
