@@ -41,7 +41,7 @@ MoE 路由偏置或 mask 出错时，请求会进错专家。归档有 `token_re
 
 1. **L1 detect 停点**——detect：`token_repeat` 命中（归档 report×1；以 report 为准）。
 2. **L2 class-hint**——L2 class-hint：MoE 路由（bias/mask → 错专家）；KV finite ≠ 根因。
-3. **标杆 / Q1–Q5**——无 buggy+ref 标杆 → Q1–Q5 不适用 / KV=未知。
+3. **标杆 / Q1–Q5**——无 buggy+ref 标杆 → Q1–Q5 不适用 / KV=未知。归档 report 虽空 `prompt_token_ids`，仍有 `block_ids`（及 `dump_*` 字段）；**本包定界不靠真 KV 对比**，靠 L1+L2+现象（`KV?=否`）。
 4. **结合现象**——见 `evidence/samples/` · `evidence/reports/`。
 5. **结案要点**——PASS；DeepSeek-V2-Lite；三层以 README 钉点为准。
 
