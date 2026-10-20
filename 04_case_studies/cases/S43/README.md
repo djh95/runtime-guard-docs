@@ -34,9 +34,11 @@
 
 ## 定界分析
 
+（**L1** = 检测停点 / **L2** = 问题类停点；**不是** Transformer 层号。见 [④ 名词表 · L1/L2](../../README.md#名词怎么读先看这里)。）
+
 1. **现象与证据**——detector：`token_repeat`（newline collapse）。现象见 `evidence/samples/` · `evidence/reports/`。归档 report prompt 为空（异步落盘后已清）。
 2. **排除（应做）**——重放抓服务端 `prompt_token_ids` + 合并 `output_token_ids`，做标杆/异常 KV 对比以排除或重开 KV 线。**本案归档尚未附 KV 对比结论**。
-3. **定界结论**——停在 **L2**（问题类 = embed ×100；≠S23/S41）。**L1**：`token_repeat` 已检出。结案：PASS **16 / 40 / 48**。
+3. **定界结论**——停在 **L2（问题类停点）**：embed ×100；≠S23/S41。**L1（检测停点）**：`token_repeat` 已命中。结案：PASS **16 / 40 / 48**。
 
 ## 证据文件
 

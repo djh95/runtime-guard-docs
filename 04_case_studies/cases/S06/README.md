@@ -39,9 +39,11 @@ MoE 路由偏置或 mask 出错时，请求会进错专家。归档有 `token_re
 
 ## 定界分析
 
+（**L1** = 检测停点 / **L2** = 问题类停点；**不是** Transformer 层号。见 [④ 名词表 · L1/L2](../../README.md#名词怎么读先看这里)。）
+
 1. **现象与证据**——detector：`token_repeat` 命中（归档 `evidence/reports/`×1；以 report 为准）。坏输出 / 进错专家现象见 `evidence/samples/`。归档 report 的 `prompt_token_ids` / `prompt_text` 为空（异步落盘后已清），但仍有 `output_token_ids`、`block_ids` / `dump_*`。
 2. **排除（应做）**——**KV 排除定界**（勿因空 prompt 或规格 `KV?=否` 跳过）：(1) 同案 sample 的**同一 prompt 再 curl**，手动 dump 取得**服务端实际** `prompt_token_ids`（禁止离线再 tokenize）；(2) 与异常 report 的 **`output_token_ids` 合并**；(3) 抓标杆 KV，与异常 KV 对比。一致 → **排除 KV cache**，支撑转向 MoE/路由；不一致 → 重开 KV 线。`KV?=否` 只表示根因**预期**不在 KV。**本案归档尚未附 KV 对比结论**。
-3. **定界结论**——停在 **L2**（问题类 = MoE 路由 bias/mask → 错专家；KV finite ≠ 根因）。**L1**：`token_repeat` 已检出。包内未附 buggy+ref 对账前不宣称 Q1–Q5 细定界；排除路径见上。结案：PASS；DeepSeek-V2-Lite；三层以 README 钉点为准。
+3. **定界结论**——停在 **L2（问题类停点）**：MoE 路由（bias/mask → 错专家）；KV finite ≠ 根因。**L1（检测停点）**：`token_repeat` 已命中。包内未附 buggy+ref 对账前不宣称 Q1–Q5 细定界；排除路径见上。结案：PASS；DeepSeek-V2-Lite；三层以 README 钉点为准。
 
 ## 证据文件
 

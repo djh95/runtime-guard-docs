@@ -38,9 +38,11 @@ pad-tail 错位 ≠ 回收块未清零。可能撞上同一个 detector，但 ro
 
 ## 定界分析
 
+（**L1** = 检测停点 / **L2** = 问题类停点；**不是** Transformer 层号。见 [④ 名词表 · L1/L2](../../README.md#名词怎么读先看这里)。）
+
 1. **现象与证据**——detector：`token_repeat` 命中（detect=60）。坏输出（digit / collapse）见 `evidence/samples/`；detect 以 `evidence/reports/` 为准。归档 report prompt 为空（异步落盘后已清）。
 2. **排除（应做）**——空 prompt ≠ 不能做 KV 排除：同 prompt 再 curl 抓服务端 ids，与异常 `output_token_ids` 合并后抓标杆/异常 KV 对比（一致→排除 KV 再审 MLA RoPE；不一致→重开 KV）。**本案归档尚未附 KV 对比结论**。
-3. **定界结论**——停在 **L2**（问题类 = MLA RoPE pad-tail / 间接 KV；≠S25）。**L1**：`token_repeat` 已检出。结案：PASS **138 / 39 / 60**。
+3. **定界结论**——停在 **L2（问题类停点）**：MLA RoPE pad-tail（间接 KV）；≠S25。**L1（检测停点）**：`token_repeat` 已命中。结案：PASS **138 / 39 / 60**。
 
 ## 证据文件
 

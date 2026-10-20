@@ -48,9 +48,11 @@ Soft-inverse [ascend#7082](https://github.com/vllm-project/vllm-ascend/pull/7082
 
 ## 定界分析
 
+（**L1** = 检测停点 / **L2** = 问题类停点；**不是** Transformer 层号。见 [④ 名词表 · L1/L2](../../README.md#名词怎么读先看这里)。）
+
 1. **现象与证据**——detector：`token_repeat`×48（threshold=8）。现象见 `evidence/samples/` · `evidence/reports/`。归档 report prompt 为空（异步落盘后已清）。
 2. **排除（应做）**——空 prompt 时可重放抓 ids，与 `output_token_ids` 合并后做标杆/异常 KV 排除。**本案归档尚未附 KV 对比结论**。
-3. **定界结论**——停在 **L2**（问题类 = RoPE 后半维丢失；≠S11 pad 长度）。**L1**：`token_repeat` 已检出。结案：PASS **348 / 17 / 48**；河名句×48 并发。
+3. **定界结论**——停在 **L2（问题类停点）**：RoPE 后半维丢失；≠S11 pad 长度。**L1（检测停点）**：`token_repeat` 已命中。结案：PASS **348 / 17 / 48**；河名句×48 并发。
 
 ## 证据文件
 

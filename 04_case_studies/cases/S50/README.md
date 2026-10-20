@@ -26,7 +26,7 @@
 
 ## 4 · 复现技巧
 
-SwiGLU 算子 L2 代表。
+SwiGLU 算子问题类（定界 **L2**）代表。
 
 ## 5 · 教学要点
 
@@ -34,9 +34,11 @@ bang / NaN·Inf 塌缩可被 `logits_finite` 抓住。对照 **S07**（有限 lo
 
 ## 定界分析
 
+（**L1** = 检测停点 / **L2** = 问题类停点；**不是** Transformer 层号。见 [④ 名词表 · L1/L2](../../README.md#名词怎么读先看这里)。）
+
 1. **现象与证据**——detector：`logits_finite`。现象见 `evidence/samples/` · `evidence/reports/`（跨请求内容相同的 `!!!!`）。归档 report prompt 为空（异步落盘后已清）。
 2. **排除（应做）**——重放抓 ids + 标杆/异常 KV 对比做排除。**本案归档尚未附 KV 对比结论**。
-3. **定界结论**——停在 **L2**（问题类 = SwiGLU gate/up 对调；≠S39）。**L1**：`logits_finite` 已检出。结案：PASS **58 / 48 / 48**。
+3. **定界结论**——停在 **L2（问题类停点）**：SwiGLU gate/up 对调；≠S39。**L1（检测停点）**：`logits_finite` 已命中。结案：PASS **58 / 48 / 48**。
 
 ## 证据文件
 

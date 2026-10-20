@@ -26,7 +26,7 @@ CJK / Trail 塌缩；`token_repeat`×48。
 
 ## 4 · 复现技巧
 
-Attn 算子 L2 的对外保留案例 代表（K/V swap）。
+Attn 算子问题类（定界 **L2**）的对外保留案例代表（K/V swap）。
 
 ## 5 · 教学要点
 
@@ -34,9 +34,11 @@ Attn 算子 L2 的对外保留案例 代表（K/V swap）。
 
 ## 定界分析
 
+（**L1** = 检测停点 / **L2** = 问题类停点；**不是** Transformer 层号。见 [④ 名词表 · L1/L2](../../README.md#名词怎么读先看这里)。）
+
 1. **现象与证据**——detector：`token_repeat`（CJK / Trail 塌缩）。现象见 `evidence/samples/` · `evidence/reports/`。归档 report prompt 为空（异步落盘后已清）。
 2. **排除（应做）**——重放抓 ids + 标杆/异常 KV 对比做排除。**本案归档尚未附 KV 对比结论**。
-3. **定界结论**——停在 **L2**（问题类 = Attn 前 K/V 对调；≠S34/S35/S41）。**L1**：`token_repeat` 已检出。结案：PASS **58 / 37 / 48**。
+3. **定界结论**——停在 **L2（问题类停点）**：Attn 前 K/V 对调；≠S34/S35/S41。**L1（检测停点）**：`token_repeat` 已命中。结案：PASS **58 / 37 / 48**。
 
 ## 证据文件
 

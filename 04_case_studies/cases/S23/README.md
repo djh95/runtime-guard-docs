@@ -23,7 +23,7 @@
 
 ## 3 · Guard 结果
 
-**PASS。** 能检出（detect 48），但 skills **不定界到具体权重元素**——教学点是 **L1-only**。
+**PASS。** 能检出（detect 48），但 skills **不定界到具体权重元素**——教学点是 **L1-only**（停在检测停点，不到问题类细拆）。
 
 ## 4 · 复现技巧
 
@@ -31,13 +31,15 @@ Qwen3-8B，temp=0，eager；concurrent 48；util=0.40。
 
 ## 5 · 教学要点
 
-能检不等于能定界到权重元素。报 L1 即可，不要夸大 dump 能力。
+能检不等于能定界到权重元素。报 **L1（检测停点）** 即可，不要夸大 dump 能力。
 
 ## 定界分析
 
+（**L1** = 检测停点 / **L2** = 问题类停点；**不是** Transformer 层号。见 [④ 名词表 · L1/L2](../../README.md#名词怎么读先看这里)。）
+
 1. **现象与证据**——detector：`token_repeat` 命中（detect=48）。现象见 `evidence/samples/` · `evidence/reports/`（跨请求内容相同塌缩）。归档 report prompt 为空（异步落盘后已清）。
 2. **排除（应做）**——教学设计为 detect-only，不定界到权重元素；KV 排除路径仍可用（重放抓 ids + 标杆/异常 KV），但**非本案细定界目标**。**本案归档尚未附 KV 对比结论**。
-3. **定界结论**——停在 **L1**（仅检出；权重 corruption · detect-only，不定界到层/元素）。不宣称 L2 根因类细拆。结案：PASS；constructed always-on（post-load 置零一层 o_proj）。
+3. **定界结论**——停在 **L1（检测停点）**：仅检出（权重 corruption · detect-only，不定界到权重元素）。不宣称 **L2（问题类）** 细拆。结案：PASS；constructed always-on（post-load 置零一层 o_proj）。
 
 ## 证据文件
 

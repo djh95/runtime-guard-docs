@@ -44,9 +44,11 @@ status 里 precision 记成 1，但 samples + score 证实跨请求内容相同�
 
 ## 定界分析
 
+（**L1** = 检测停点 / **L2** = 问题类停点；**不是** Transformer 层号。见 [④ 名词表 · L1/L2](../../README.md#名词怎么读先看这里)。）
+
 1. **现象与证据**——detector：detect=0（期望 `logits_finite` miss——logits 仍有限，无 NaN/Inf）→ **乱码检测漏检**。跨请求内容相同的乱码见 `evidence/samples/`（identical+garbage）。
 2. **排除（已做 / 应做）**——已确认异常已出现且非「复现未出现」。本包无命中 report，故未附 KV dump 对账；若补抓异常 report，可走重放 ids + KV 排除（见名词表），**不要**因无 prompt 字段写「Q1–Q5 不适用」。
-3. **定界结论**——停在弱 **L2**（问题类提示 = W8A8 dequant / 跨请求相同乱码）。**L1**：未检出（detect=0）。结案：FAIL+GAP。
+3. **定界结论**——停在弱 **L2（问题类停点）**：W8A8 dequant / 跨请求相同乱码。**L1（检测停点）**：未检出（detect=0）。结案：FAIL+GAP。
 
 ## 证据文件
 
