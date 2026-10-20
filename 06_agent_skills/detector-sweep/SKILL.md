@@ -27,7 +27,7 @@ description: >-
 
 **勿启用：** `output_substring` / `token_logprob` / `slot_*` / `kv_state`。
 
-**已知 sweep 盲区（仍跑 samples）：** 有限 mixed-script 垃圾、跨请求完全相同 completion（S01/S07 class）——三键可能全空 report；压测后用 `score_completion_samples` 判 precision，标 GAP，不要把「无 report」当成「无异常」。
+**已知 sweep 盲区（仍跑 samples）：** 有限 mixed-script 垃圾、跨请求完全相同 completion（S07/S45 class；**S01 dense 为复现未出现，非本盲区**）——三键可能全空 report；压测后用 `score_completion_samples` 判 precision（排除 CJK 误标），有真实坏输出再标 GAP；不要把「无 report」当成「无异常」。
 
 **数值溢出 / softcap（S20 class）：** sweep 开齐 `token_repeat`+`logits_finite`；塌缩成 `!!!!`/token0 时以 `token_repeat` 命中为准，勿因 `logits_finite` 空报就结案。
 
@@ -49,7 +49,7 @@ description: >-
 
 **RoPE phase / embed scale（S42/S43）：** 开 `token_repeat`。S42≠S37/S40/S25/S28；S43 看 newline collapse。**S44 logits.zero_** 勿当 PASS（synthetic amplifier）。
 
-**Penalty flip / K/V swap（S46/S47）：** 开 `token_repeat`。S46≠S45/S44；S47≠S34/S35/S41。**S45 top-k on -logits** → unique garbage **FAIL+GAP**（同 S01/S07）；勿放大器硬凑。
+**Penalty flip / K/V swap（S46/S47）：** 开 `token_repeat`。S46≠S45/S44；S47≠S34/S35/S41。**S45 top-k on -logits** → unique garbage **FAIL+GAP**（同 S07；≠ S01 dense）；勿放大器硬凑。
 
 **Residual negate / attn×50 / SwiGLU half-swap（S48/S49/S50）：** S48/S50 **开 `logits_finite`**（主；`!!!!`）。S49 开 `token_repeat`（unique/`1.1.1…`）。S48≠S31/S38；S49≠S34/S41；S50≠S39。
 

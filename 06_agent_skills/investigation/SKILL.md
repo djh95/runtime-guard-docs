@@ -79,7 +79,7 @@ description: >-
 | RoPE phase negate（S42，`-cos_sin_cache`） | digit/`1.1.1…` 复读 | **`token_repeat`** | **L2**（wrong phase）；≠ S37 pos-zero ≠ S40 skip ≠ S25/S28 |
 | Embed scale ×100（S43） | 纯换行塌缩 / newline collapse | **`token_repeat`** | **L2**（wrong embed magnitude）；score=`newline_collapse`；≠ S23/S41 |
 | Logits `zero_()` before sample（S44） | `!!!!` token0 | — | **BLOCKED / invalid-synthetic**：force-write logits 发明症状（PRINCIPLES §2）；非 10-gate PASS / 非 skills win |
-| Top-k/top-p on `-logits`（S45，bottom nucleus） | **unique** mixed-script garbage；identical-mode 低估 | **当前均弱** | **FAIL+GAP**（同 S01/S07）；`token_repeat`/`logits_finite` miss；勿放大器硬凑 PASS |
+| Top-k/top-p on `-logits`（S45，bottom nucleus） | **unique** mixed-script garbage；identical-mode 低估 | **当前均弱** | **FAIL+GAP**（同 S07；≠ S01 dense 复现未出现）；`token_repeat`/`logits_finite` miss；勿放大器硬凑 PASS |
 | Penalty sign flip（S46，1/rep + neg freq/pres） | digit/`1.1.1…`/`0.0.0…` 复读塌缩 | **`token_repeat`** | **L2**（penalty polarity invert）；真实 sampling soft-inv；≠ S45 GAP ≠ S44 amplifier |
 | K/V swap before FA（S47） | 单字/短语复读塌缩（如 `郦…Trail`） | **`token_repeat`** | **L2**（K/V swapped into attn）；≠ S34 scale ≠ S35 causal ≠ S41 attn-out ×1000 |
 | Residual negate（S48，`-residual` before add-RMSNorm） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（wrong residual polarity）；≠ S31 drop ≠ S38 skip |
@@ -197,7 +197,7 @@ description: >-
 | Spec residual resample RNG 无 SALT（S22，#18657） | 接受率异常偏低（如 0–0.27）；文本可看似正常 | **`spec_acceptance` 为主**；辅 `token_repeat` | ≠ S05（NaN argmax）；≠ S20；需 MTP/eagle3 + `temperature>0`；precision 常为 **分布性**（勿只靠 samples 垃圾启发式） |
 | 权重腐蚀 always-on（S23，constructed） | 启动后恒定复读/塌缩 | **`token_repeat`** | **仅 L1 detect**；禁止宣称哪一层/哪个 weight；负对照=干净 ckpt |
 | 量化 scale always-on（S24，constructed） | W8A8 启动后恒定 `token_repeat` | **`token_repeat`** | **仅 L1**；≠ S07（路径触发+GAP）；**不能**指出哪条 scale |
-| 有限垃圾 / 跨请求全同 / unique garbage（S01,S07,S45） | mixed-script、identical、或 per-req unique garbled | **当前均弱** | **GAP**：见 `DETECTOR_GAPS.md`；S24/S46 能 detect 时勿与 S07/S45 混谈 |
+| 有限垃圾 / 跨请求全同 / unique garbage（S07,S45；**不含** dense-S01） | mixed-script、identical、或 per-req unique garbled | **当前均弱** | **GAP**（S07/S45）：见 `DETECTOR_GAPS.md`。**S01** dense 复判为 **FAIL（复现未出现）**（precision CJK 误标；patch 入口未切满量时 trigger 可 0）——勿再当 GAP |
 | NaN/Inf 数值炸（logits 仍可见） | non-finite logits | `logits_finite` | 有限垃圾 **不会** 命中；与 S20 塌缩路径区分 |
 
 有限垃圾 / identical-across-requests：**不要**宣称「未复现」；归档 samples + `score_completion_samples`，标 **GAP**，等未来 garbled / cross-req detector。

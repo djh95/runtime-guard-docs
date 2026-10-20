@@ -54,7 +54,7 @@
 - **S07**：precision 记成 1，实为 48 次请求内容相同的乱码（以 samples + score 为准）。
 - **S45**：`precision=4` 仍偏低估（各不相同乱码）；样本为准。计数来自二次盲跑对齐（双树写入 + temp=0.8）。
 - **S22 / S25 / S26 / S33**：表内 t/p/d 为二次盲跑修复后现行数；首轮盲跑失败多为配方/补丁路径问题（非检测器漏检），见各包复现节。
-- **S01 †**：复判（160 dense，CJK 排除后）precision=0；旧归档 136/25/0 的 25 为中文误计。hybrid/fp8 KV 在本 pin 上起服失败（`FP8_ATTENTION`），详见包内说明。
+- **S01 †**：分层验证（2026-10-20）——**主结论保留** FAIL（复现未出现）；**precision 误标**（旧 25 为 CJK；排除后 0）；**patch 入口未切换**（162 canonical 残缺未切满量 overlay）。hybrid/fp8 KV 在本 pin 上起服失败（`FP8_ATTENTION`），详见 [cases/S01/](./cases/S01/)。
 
 `S10′` 在仓库里的目录名是 **`S10p`**。相关 Skills 见 [06](../06_agent_skills/)（**v5.8**）。
 

@@ -60,13 +60,26 @@ Overlay 打上后服务仍 200。可见 completion 是通顺中英散文（华�
 
 若要真复现 origin：在**支持量化/hybrid KV**的栈上跑，并归档带 **prompt + completion** 的原始坏样本。dense + synth 只适合验证 trigger 路径。
 
-## 5 · 别人按包能核对什么
+## 5 · 分层验证（2026-10-20）
+
+三层分开核对后的结论（**主结论保留**）：
+
+| 层 / 项 | 结论 |
+|---------|------|
+| **主结论** | **保留** → **FAIL（复现未出现）** / repro-blocked；**不是** FAIL+GAP |
+| **precision** | **误标** → 旧 136/25/0 的 25、以及复判 runner 虚报，均为 CJK `ord>127` 启发式误计；排除后 **precision=0**；可见样本为通顺散文 |
+| **patch 入口** | **未切换** → 162 canonical 仍是残缺移植（≈28 行/1 文件），未切到 test 仓满量 overlay（251 行/5 文件）；技能侧旧 GAP 入口（如 `VERIFY_HANDOFF` keep-set 期望）此前也未切到本包复判结案——本轮对外文档一并改到与本包一致 |
+
+dense 满量 overlay 能刷 trigger（160：**154**），仍无真实坏输出；hybrid/fp8 KV 本 pin 起服失败。细节见 [evidence/WHY_UNDETECTED.md](./evidence/WHY_UNDETECTED.md)。
+
+## 6 · 别人按包能核对什么
 
 1. 会把「有 trigger」和「有坏输出」分开：本包 dense 复判只有前者。
-2. 会用排除 CJK 的评分看样本：通顺中文 ≠ `garbage_mixed_script`。
+2. 会用排除 CJK 的评分看样本：通顺中文 ≠ `garbage_mixed_script`（precision 误标）。
 3. 会对照 S10′：同属 KV 脏读族，recycle 能检；S01 在稠密栈上复现未出现。
 4. 会核对形态：hybrid/量化 KV 是前提；本机 fp8 KV 被硬件能力门挡住时如实记 blocker。
-5. 没有坏输出时不写 FAIL+GAP。
+5. 会核对 patch 入口：残缺 canonical ≠ 满量 overlay；入口未切满量时 trigger 可恒 0。
+6. 没有坏输出时不写 FAIL+GAP。
 
 ## 证据目录
 

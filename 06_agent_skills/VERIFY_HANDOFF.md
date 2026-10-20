@@ -234,7 +234,7 @@ internal/skills-verify-results/2026-10-19/
 
 | ID | Type | Expected detect | Expected level | 对照 / 备注 |
 |----|------|-----------------|----------------|-------------|
-| **S01** | KV·PD·pad | **miss（GAP）** | GAP（samples 弱 L2 OK） | vs S10′ 能检 |
+| **S01** | KV·PD·pad | **miss（复现未出现）** | **FAIL（复现未出现）**（非 GAP；precision 曾 CJK 误标；patch 入口须满量 overlay） | vs S10′ 能检；见 `cases/S01/` |
 | **S10′** | KV·PD·pad | `token_repeat` | **L2**（L3 潜力勿强制） | FE=`S10/` |
 | **S11** | KV·PD·pad | `token_repeat` | **L2** | ≠ recycle；pad-tail |
 | **S07** | Quant·weight | **miss（GAP）** | GAP | 同缺口≠S01 根因 |

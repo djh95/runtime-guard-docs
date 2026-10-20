@@ -37,7 +37,7 @@ rgpy.summarize_reports --report-dir ./runtime/report --limit 20
 
 也接受扁平 `report_*.json`，以及归档别名 `sample_report.json` / `report_sample.json`。
 
-**空 report 目录 ≠ 停：** 若有 completion samples（S01/S07 FAIL+GAP），改走 Step 1b。
+**空 report 目录 ≠ 停：** 若有 completion samples（S07 FAIL+GAP；或 S01 复判 samples），改走 Step 1b。
 
 ### Step 1b — 无 report 时的 precision / GAP 评分
 
@@ -64,7 +64,7 @@ rgpy.score_completion_samples --sample-dir ./samples --json-out samples_score.js
 - RoPE phase negate（S42）→ `token_repeat` + **L2**；≠ S37/S40/S25/S28。  
 - Embed ×100（S43）→ `token_repeat` + **L2**；precision 常 **`newline_collapse`**；≠ S23/S41。  
 - Logits `zero_()`（S44）→ **invalid-synthetic / BLOCKED**（放大器）；归档勿当 skills win。  
-- Top-k on `-logits`（S45）→ **FAIL+GAP**：unique `garbage_mixed_script` + detect=0（同 S01/S07）；identical-mode 低估勿判「无 precision」。  
+- Top-k on `-logits`（S45）→ **FAIL+GAP**：unique `garbage_mixed_script` + detect=0（同 S07；**≠ S01 dense 复现未出现**）；identical-mode 低估勿判「无 precision」。  
 - Penalty sign flip（S46）→ `token_repeat` + **L2**；digit/`1.1.1…`；≠ S45/S44。  
 - K/V swap（S47）→ `token_repeat` + **L2**；短语/单字塌缩；≠ S34/S35/S41。  
 - Residual negate（S48）→ **`logits_finite`** + **L2**；`!!!!`/`token0_collapse`；≠ S31 drop ≠ S38 skip。  
@@ -172,8 +172,8 @@ rgpy.score_completion_samples --sample-dir ./samples --json-out samples_score.js
 - RMSNorm-x-ones（S150）→ `token_repeat` + **L2**；≠ S73/S62/S78/S116。  
 - Logits-ones（S151）→ `token_repeat` + **L2**；≠ S122/S53/S65。  
 - RMSNorm-bias-zeros（S152）→ `token_repeat` + **L2**；≠ S100/S123/S96。  
-- `garbage_mixed_script` + detect=0 → **FAIL+GAP**（S01/S07/S45）。若已有 `token_repeat` report，勿因 samples 里偶发 garbage 标签宣称 GAP。  
-有 precision 且 detect=0 → 交付 **FAIL+GAP**（勿伪造 detector PASS）。
+- `garbage_mixed_script` + detect=0 → **FAIL+GAP**（S07/S45；**S01 dense 除外**——复判为 FAIL（复现未出现），旧 precision 为 CJK 误标）。若已有 `token_repeat` report，勿因 samples 里偶发 garbage 标签宣称 GAP。  
+有 **真实** precision 且 detect=0 → 交付 **FAIL+GAP**（勿伪造 detector PASS；CJK 误标不算真实 precision）。
 
 ### Step 2 — 按 req 关联
 
