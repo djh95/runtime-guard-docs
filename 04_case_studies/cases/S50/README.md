@@ -36,7 +36,7 @@ bang / NaN·Inf 塌缩可被 `logits_finite` 抓住。对照 **S07**（有限 lo
 
 （**L1** = 检测停点 / **L2** = 问题类停点；**不是** Transformer 层号。见 [④ 名词表 · L1/L2](../../README.md#名词怎么读先看这里)。）
 
-1. **现象与证据**——detector：`logits_finite`。现象见 `evidence/samples/` · `evidence/reports/`（跨请求内容相同的 `!!!!`）。归档 report prompt 为空（异步落盘后已清）。
+1. **现象与证据**——detector：`logits_finite`。现象见 `evidence/samples/` · `evidence/reports/`（跨请求内容相同的 `!!!!`）。归档 report prompt 为空（合修前旧归档；见名词表 **report 空 prompt**，非「clear 过早」）。
 2. **排除（应做）**——重放抓 ids + 标杆/异常 KV 对比做排除。**本案归档尚未附 KV 对比结论**。
 3. **定界结论**——停在 **L2（问题类停点）**：SwiGLU gate/up 对调；≠S39。**L1（检测停点）**：`logits_finite` 已命中。结案：PASS **58 / 48 / 48**。
 
@@ -49,7 +49,7 @@ bang / NaN·Inf 塌缩可被 `logits_finite` 抓住。对照 **S07**（有限 lo
 | `evidence/三层计数.json` | 三层明细（trigger / precision / detect） |
 | `evidence/跑批结果.json` | 跑批元数据 + 结案摘要 |
 | `evidence/samples/` | prompt + completion 样本 |
-| `evidence/reports/` | Guard detector 报告（归档 report prompt 为空：异步落盘后已清；可读 prompt 看 samples，见 [④ 名词表](../../README.md#名词怎么读先看这里)） |
+| `evidence/reports/` | Guard detector 报告（归档 report prompt 为空：合修前旧归档，见名词表 **report 空 prompt**；可读 prompt 看 samples，见 [④ 名词表](../../README.md#名词怎么读先看这里)） |
 
 
 ## 上游 PR 关系
