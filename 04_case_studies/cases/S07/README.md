@@ -7,7 +7,7 @@
 | 项 | 值 |
 |----|-----|
 | 结果 | **FAIL+GAP** |
-| 三层率 | **2624 / 1(identical×48) / 0** |
+| 三层率 | **2624 / 1（跨请求内容相同×48） / 0** |
 | Detector | `logits_finite`（miss） |
 | Origin | `both` |
 | Guard pin | G2 f2aefd068 |
@@ -17,7 +17,7 @@
 
 ## 1 · 现象
 
-这里能直接看到**真实的乱码 / 混合脚本垃圾输出**（不是评分把正常中文误判成异常），而且跨请求 identical×48。归档样本见 [evidence/samples/](./evidence/samples/)。这和 S01 那篇通顺散文不同。
+这里能直接看到**真实的乱码 / 混合脚本垃圾输出**（不是评分把正常中文误判成异常），而且是**跨请求内容相同的乱码**×48（见 [④ 名词表](../../README.md#名词怎么读先看这里)：多次独立请求输出同一段垃圾，不是每次随机不同）。归档样本见 [evidence/samples/](./evidence/samples/)。这和 S01 那篇通顺散文不同。
 
 ## 2 · 根因
 
@@ -25,13 +25,13 @@ W8A8 dequant scale 崩溃（在 `deq_scale` 上 zero + 1e20）。属于 quant / 
 
 ## 3 · Guard 结果
 
-**判定：FAIL+GAP。** `logits_finite` 已武装，detect=0——logits（采样前的分值）始终是有限数，没有 NaN/Inf；文字仍是乱码，故漏检。score 侧 `garbage_mixed_script`×48 且 identical_across。
+**判定：FAIL+GAP。** `logits_finite` 已武装，detect=0——logits（采样前的分值）始终是有限数，没有 NaN/Inf；文字仍是乱码，故漏检。score 侧 `garbage_mixed_script`×48 且跨请求内容相同。
 
 | 层 | 归档 |
 |----|------|
-| trigger / precision / detect | **2624 / 1(identical×48) / 0** |
+| trigger / precision / detect | **2624 / 1（跨请求内容相同×48） / 0** |
 
-status 里 precision 记成 1，但 samples + score 证实 identical×48 乱码——**以 samples + score 为准**。
+status 里 precision 记成 1，但 samples + score 证实跨请求内容相同的乱码×48——**以 samples + score 为准**。
 
 ## 4 · 复现
 
@@ -39,4 +39,4 @@ status 里 precision 记成 1，但 samples + score 证实 identical×48 乱码�
 
 ## 5 · 别人按包能核对什么
 
-与 S01 同属「logits 数值有限、文字仍是乱码」漏检族，根因不同（quant scale vs KV skip-zero）。需要 garbled-text / identical 类 detector。公开案例材料写全再对外。
+与 S01 同属「logits 数值有限、文字仍是乱码」漏检族，根因不同（quant scale vs KV skip-zero）。需要 garbled-text / 跨请求内容相同类 detector。公开案例材料写全再对外。

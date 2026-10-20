@@ -1,33 +1,29 @@
-# S01 · KV skip-zero → logits 有限乱码（detector GAP）
+# S01 · KV skip-zero → FAIL（复现未出现）
 
 这是一份公开、自洽的案例包：只靠本目录材料就能读完。
 
-同族里能检出来的对照包：[S10′（S10p）](../S10p/)。
+同族里**能检出来**的对照包：[S10′（S10p）](../S10p/)（recycle-zero → `token_repeat` PASS）。
 
 ## 归档钉点
 
 | 项 | 值 |
 |----|-----|
-| 结果 | **FAIL+GAP**（repro_mode=`origin_tuned`） |
-| 三层率 | **136 / 25 / 0**（trigger / precision / detect） |
-| 期望 detector | `logits_finite`（miss） |
+| 结案结论 | **FAIL（复现未出现）** / repro-blocked |
+| 三层率（2026-10-20 160 复判） | **154 / 0 / 0**（trigger / precision〔CJK 排除后〕/ detect） |
+| 旧归档三层 | 136 / 25 / 0（precision=25 为 CJK 误计，不可当真坏输出） |
+| 期望 detector | 乱码类；本轮**无可检坏输出**，故不构成 FAIL+GAP |
 | Guard pin | G2 · `f2aefd068c4bd299d91cf0a1fdf642a3f327308f` |
-| 模型 | Qwen3-8B · TP2 |
+| 模型 | Qwen3-8B · TP2 · 稠密 float16 |
 | 上游锚 | [vLLM#43990](https://github.com/vllm-project/vllm/pull/43990) · [#47574](https://github.com/vllm-project/vllm/pull/47574) |
 | Origin | `both` |
 
 ## 1 · 现象
 
-服务仍返回 200。logits（采样前的分值）始终是有限数，没有 NaN/Inf；文字仍可能是乱码或中英混杂的垃圾，故 `logits_finite` 漏检——或者在**错误评分**下，被记成 garbage。
+Overlay 打上后服务仍 200。可见 completion 是通顺中英散文（华为 NPU / vLLM 介绍），**不是**乱码。样本见 [evidence/samples/](./evidence/samples/)。
 
-本包能直接打开的样本见 [evidence/samples/](./evidence/samples/)。可见文本是通顺的中英散文（华为 NPU / vLLM 介绍），**并不是**乱码。按排除 CJK 后的评分，应标成普通中英混合，而不是 `garbage_mixed_script`。
+旧跑把 `ord(c)>127` 的中文算 weird，于是记成 `garbage_mixed_script`×N；排除 CJK 后 weird≈0 → **precision 应记 0**。没有坏输出时，**不要**写成 FAIL+GAP。
 
-那为什么还留这个案例？归档 `status.json` 写过 `precision_hits=25` 和一串 `garbage_mixed_script:completion_*.json` 文件名，那些 completion **没有随本包落盘**。案例要讲清两件事：
-
-1. **logits 数值有限仍可能是乱码**：logits（采样前的分值）没有 NaN/Inf 时 `logits_finite` 不报警，这是 detector 缺口（复读窗也盖不住这类症状）。
-2. **当时的 precision 不能直接当成「乱码已复现」的铁证**——多半是把正常中文误判成异常。
-
-真实的跨请求相同乱码见同缺口族 **S07**；同大类能被抓住的是 **S10′** 的 recycle-zero。
+同族对照：**S10′** 在同一 pin 上能打出复读/`xxxx` 并被 `token_repeat` 抓住（keep-set 160：**65 / 20 / 79**）。真·跨请求内容相同的乱码见 **S07**。
 
 ## 2 · 根因
 
@@ -35,49 +31,43 @@
 |------|-----|
 | Origin | `both`（vLLM 与 Ascend 同失败模式） |
 | 语义 | 新分配 KV block **未置零** → 读脏页 |
-| 典型栈 | **hybrid / 量化 KV**（不是任意稠密 bf16） |
+| 形态前提 | **hybrid / 量化 KV**（不是任意稠密 bf16） |
 
 上游：[#43990](https://github.com/vllm-project/vllm/pull/43990)、[#47574](https://github.com/vllm-project/vllm/pull/47574)；Ascend 对照 `_zero_block_ids` / `AscendKVBlockZeroer`。
 
-完整 overlay（约 251 行 / 5 文件）会：强制 `needs_kv_cache_zeroing`；skip `zero_block_ids`；并在 dense 路径做 **synth_block0**。synth_block0 抬高的是 **trigger 日志**，不等于已经读到脏 KV 乱码。早期残缺 overlay（2 文件 / +18 行）连路径都不完整。
+完整 overlay（约 251 行 / 5 文件）会：强制 `needs_kv_cache_zeroing`；skip `zero_block_ids`；并在 dense 路径做 **synth_block0**。synth_block0 抬高的是 **trigger 日志**，不等于已经读到脏 KV 乱码。
 
-## 3 · Guard 结果与缺口
+## 3 · Guard 结果
 
-归档启用 `logits_finite`（`item_sync`）。三层摘自 [evidence/layers.json](./evidence/layers.json) / [status.json](./evidence/status.json)：
+**判定：FAIL（复现未出现）。** 有 trigger、无真实坏输出、detect=0——缺的是「异常已出现」前提，故不是 GAP 结案。
 
-| 层 | 数 | 含义 |
-|----|---:|------|
-| trigger | **136** | `ANOMALY_TRIGGER`（skip_zero / synth_block0） |
-| precision | **25** | 旧启发式；笔记几乎全是 `garbage_mixed_script:…`（CJK 误计可疑） |
-| detect | **0** | 无 `report_*.json`；`logits_finite` miss |
+| 层 | 复判（160 · `T101951`） | 含义 |
+|----|------------------------:|------|
+| trigger | **154** | skip_zero / synth_block0 / force_should_init（路径打中） |
+| precision | **0** | CJK 排除后；旧启发式会虚报 25 |
+| detect | **0** | 无 `report_*.json` |
 
-缺口类型：logits 数值有限、文字却是乱码 / 跨请求相同 junk——现网无专用 detector。trigger=136 说明注入路径在跑。对照：S10′ recycle → `token_repeat` PASS；S01 → 漏检。
+对照：**S10′** = 有坏输出 + detect；**S01 dense** = 只有 trigger。证据分组见 [evidence/EVIDENCE_GROUPS.md](./evidence/EVIDENCE_GROUPS.md)。
 
-证据分组见 [evidence/EVIDENCE_GROUPS.md](./evidence/EVIDENCE_GROUPS.md)。
+## 4 · 复现：形态前提
 
-## 4 · 复现：当时 vs 现在
+| 维 | 要求 / 实测 |
+|----|-------------|
+| Origin 形态 | SPEC：**hybrid / 量化 KV** |
+| 160 dense（本复判） | Qwen3-8B float16 + 满量 overlay · cards `4,5` · `PRODUCT_TREE=B` → **0 坏输出** |
+| 162 dense（此前） | 七轮满量 overlay / 脏 HBM / 缩池 → **0 坏输出** |
+| hybrid/fp8 一次尝试 | `--kv-cache-dtype fp8` → Ascend `FP8_ATTENTION` 能力 assert，**起服失败**；不夸大、不另造放大器 |
 
-**结论：** 当初 precision=25 很大概率是把正常中文计成 garbage；真·脏 KV 要 **hybrid / 量化 KV**。稠密 bf16 + synth_block0 多半只刷 trigger、不易出坏输出——与后来 dense 多轮 0 bad 不矛盾。
-
-| 维 | 当时（归档 · 2026-10-16） | 现在（稠密 bf16 复核） |
-|----|-------------------------|-------------------------|
-| KV 形态 | SPEC 要求 hybrid / 量化 | 稠密 bf16（无 FP8/hybrid 页语义） |
-| 三层 | 136 / 25 / 0 | trigger 或有；**0 坏输出**；detect 0 |
-| 可见样本 | 通顺散文 | 无乱码样本 |
-| 评分 | `ord>127` 把中文算 weird | 应排除 CJK；散文 ≠ garbage |
-
-若要真复现 origin：用 hybrid/量化 KV（或当时同形态栈），并归档带 **prompt + completion** 的原始样本。dense + synth 只适合验证 trigger 路径。
+若要真复现 origin：在**支持量化/hybrid KV**的栈上跑，并归档带 **prompt + completion** 的原始坏样本。dense + synth 只适合验证 trigger 路径。
 
 ## 5 · 别人按包能核对什么
 
-1. 会判断：logits（采样前的分值）始终是有限数、没有 NaN/Inf 时，`logits_finite` 漏检，但文字仍可能是乱码。
-2. 会分开看三层计数：trigger ≠ precision ≠ detect；中间「25」还可能被评分污染。
-3. 会对照 S10′：同属 KV 脏读，recycle 能检；skip-zero 时 logits（采样前的分值）有限、文字仍乱码，会漏检。
-4. 会核对环境：dense+synth 只证明路径打中，不等于已经读到脏 KV 乱码；不要用强制 NaN / 填复读 token 造症状。
-5. 公开案例材料写全再对外；空壳页不够用。
-
-产品侧 detector GAP（garbled-text / cross-request-identical）另开任务，本包不承诺时间表。
+1. 会把「有 trigger」和「有坏输出」分开：本包 dense 复判只有前者。
+2. 会用排除 CJK 的评分看样本：通顺中文 ≠ `garbage_mixed_script`。
+3. 会对照 S10′：同属 KV 脏读族，recycle 能检；S01 在稠密栈上复现未出现。
+4. 会核对形态：hybrid/量化 KV 是前提；本机 fp8 KV 被硬件能力门挡住时如实记 blocker。
+5. 没有坏输出时不写 FAIL+GAP。
 
 ## 证据目录
 
-[evidence/](./evidence/) — 含多组 sample、trigger 摘录、report 空目录说明、precision 中文误报核对。
+[evidence/](./evidence/) — 复判 sample（prompt+completion）、trigger 摘录、CJK 核对、report 空目录说明。

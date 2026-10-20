@@ -30,10 +30,10 @@ FullAttention 不进 `needs_kv_cache_zeroing` 管线，回收 block 时 partial-
 
 ## 4 · 复现
 
-Overlay：强制 `needs_kv_cache_zeroing=False`，在 `BlockPool.get_new_blocks` 打 trigger。负载：concurrent 64 变长英文 + 16 条 identical temp=0；util=0.35；不开 APC。
+Overlay：强制 `needs_kv_cache_zeroing=False`，在 `BlockPool.get_new_blocks` 打 trigger。负载：concurrent 64 变长英文 + 16 条内容相同的 temp=0；util=0.35；不开 APC。
 
 **注意：** 更早顺序中文 run（`T180428`）曾假 precision（CJK 启发式）——不要当标杆。标杆是 `T181551` 英文负载。
 
 ## 5 · 别人按包能核对什么
 
-同大类 KV 脏读：**S10′ 能检**（recycle），**S01 漏检**（skip-zero → logits 数值有限、文字仍可能是乱码）。定界时不要只讲一个 detector。
+同大类 KV 脏读：**S10′ 能检**（recycle → `token_repeat`）；**S01** 在稠密栈上是 **FAIL（复现未出现）**（需 hybrid/量化 KV，dense 未见坏输出）。定界时不要只讲一个 detector。

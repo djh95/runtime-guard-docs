@@ -1,15 +1,8 @@
-# S01 ANOMALY_TRIGGER 摘录（来自 overlay 字符串 + 归档计数）
-
-归档 layers/status：trigger_events = 136（run 01_kv_block_nonzero-20261016T165931）。
-
-Overlay 会打出的触发文案（见 test 仓 01_kv_block_nonzero/patches/overlay.patch）：
-
-  ANOMALY_TRIGGER S01 kv_block_nonzero skip_zero_upstream ...
-  ANOMALY_TRIGGER S01 kv_block_nonzero synth_block0 ...
-  ANOMALY_TRIGGER S01 kv_block_nonzero skip_zero ...
-  ANOMALY_TRIGGER S01 kv_block_nonzero force_should_init_kv_zeroer ...
-
-说明：
-- trigger=136 表示路径在跑（skip_zero / synth_block0）。
-- synth_block0 抬高 trigger，不等于已经读到脏 KV 乱码。
-- 完整 server.log 未随公开包落盘；以 layers 计数 + 上述 trigger 文案为准。
+(Worker_TP0 pid=409205) 2026-10-20 10:21:00,305 - WARNING - ANOMALY_TRIGGER S01 kv_block_nonzero force_should_init_kv_zeroer needs=True v2=True
+(Worker_TP1 pid=409206) 2026-10-20 10:21:00,495 - WARNING - ANOMALY_TRIGGER S01 kv_block_nonzero force_should_init_kv_zeroer needs=True v2=True
+(EngineCore pid=409171) ANOMALY_TRIGGER S01 kv_block_nonzero synth_block0 count=1
+(EngineCore pid=409171) ANOMALY_TRIGGER S01 kv_block_nonzero synth_block0 count=2
+(Worker_TP1 pid=409206) 2026-10-20 10:21:17,827 - WARNING - ANOMALY_TRIGGER S01 kv_block_nonzero skip_zero_upstream n_blocks=1 ids_head=[0] count=1
+(Worker_TP0 pid=409205) 2026-10-20 10:21:17,828 - WARNING - ANOMALY_TRIGGER S01 kv_block_nonzero skip_zero_upstream n_blocks=1 ids_head=[0] count=1
+(Worker_TP1 pid=409206) 2026-10-20 10:21:18,019 - WARNING - ANOMALY_TRIGGER S01 kv_block_nonzero skip_zero_upstream n_blocks=1 ids_head=[0] count=2
+(EngineCore pid=409171) ANOMALY_TRIGGER S01 kv_block_nonzero synth_block0 count=3

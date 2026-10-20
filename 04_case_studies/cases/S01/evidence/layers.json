@@ -1,20 +1,28 @@
 {
-  "trigger_events": 136,
-  "precision_hits": 25,
+  "trigger_events": 154,
+  "precision_hits": 0,
+  "precision_hits_old_heuristic_cjk_fp": 25,
   "precision_notes": [
-    "garbage_mixed_script:completion_1792141262_01.json",
-    "garbage_mixed_script:completion_1792141266_02.json",
-    "garbage_mixed_script:completion_1792141270_03.json",
-    "garbage_mixed_script:completion_1792141274_04.json",
-    "garbage_mixed_script:completion_1792141277_05.json",
-    "garbage_mixed_script:completion_1792141281_06.json",
-    "garbage_mixed_script:completion_1792141285_07.json",
-    "garbage_mixed_script:completion_1792141289_08.json",
-    "garbage_mixed_script:completion_1792141293_09.json",
-    "garbage_mixed_script:completion_1792141296_10.json",
-    "garbage_mixed_script:completion_1792141301_11.json",
-    "garbage_mixed_script:completion_1792141305_12.json"
+    "cjk_rescore_20261020: real_soup=0; old_heuristic_garbage_mixed_script=24 samples all fluent CN+EN"
   ],
   "detect_reports": 0,
-  "n_requests": 24
+  "n_requests": 24,
+  "rejudge": {
+    "host": "192.168.13.160",
+    "container": "rg-test-160",
+    "run_dir": "01_kv_block_nonzero-20261020T101951",
+    "model": "/mnt/weight/Qwen3-8B",
+    "dtype": "float16",
+    "cards": "4,5",
+    "tp": 2,
+    "wt_sha": "f2aefd068c4bd299d91cf0a1fdf642a3f327308f",
+    "product_tree": "B",
+    "trigger_kinds": {
+      "force_should_init_kv_zeroer": 2,
+      "synth_block0": 40,
+      "skip_zero_upstream": 112
+    },
+    "verdict": "FAIL（复现未出现）",
+    "archive_layers_ref": "136/25/0 (precision CJK-suspect)"
+  }
 }
