@@ -27,10 +27,6 @@
   "n_requests": 80,
   "errs": 0,
   "identical_mode_count": 18,
-  "wave2_unique": 1,
-  "wave2_samples": [
-    " 1. Gravity is a force. 2. It attracts objects. 3. It pulls towards Earth. 4. It depends on mass. 5. It weakens with distance.\nOkay, so I need to explain gravity"
-  ],
   "seconds_load": 11.7,
   "detector": "token_repeat"
 }

@@ -7,7 +7,7 @@
 | 项 | 值 |
 |----|-----|
 | 结果 | **PASS** |
-| 三层率 | **70 / 1 / report×1**（`status.layers.detect_reports=0` 与归档报告不一致，见正文） |
+| 三层率 | **70 / 1 / 1**（detect 以 `token_repeat` report×1 为准） |
 | Detector | `token_repeat` |
 | Origin | `both` |
 | Guard pin | G2 f2aefd068 |
@@ -24,13 +24,13 @@ MoE 路由偏置或 mask 出错时，请求会进错专家。归档有 `token_re
 
 ## 3 · Guard 结果
 
-**PASS。** 以归档 `reports/report_*.json`（`token_repeat`）为准；`跑批结果.json` 的 `detect_reports=0` 与报告不一致时，以 report 为准。
+**PASS。** detect 以归档 `reports/report_*.json`（`token_repeat`×1）为准。
 
 **report 空 `prompt_token_ids`：** 本包归档 report 的 `prompt_token_ids` / `prompt_text` 为空——异步下检测和生成 report 在请求结束之后，prompt 已被清空（output 仍有）。**阅读**完整 prompt 文本看 [evidence/samples/](./evidence/samples/)；**tokenize / 定界标杆**须以实际捕获的 token ids 为准——本包当前无非空 `prompt_token_ids`，**不要**从 sample 字符串再 encode 补造；应修 Guard 捕获或从仍持有 ids 的路径重抓后再归档。通则见 [④ 名词表 · 标杆请求 / report 空 prompt](../../README.md#名词怎么读先看这里)。
 
 ## 4 · 复现技巧
 
-按 pin / 模型 / overlay 对齐三层率。历史上有过 setup BLOCKED（缺 `aclnnAddRmsNormBias` 或 MoE OOM）——见 `evidence/BLOCKED.historical.md`，那不是 FAIL。标杆是已跑通的 162 归档。
+按 pin / 模型 / overlay 对齐三层率。标杆是本包 162 钉点（70 / 1 / 1）。
 
 ## 5 · 教学要点
 

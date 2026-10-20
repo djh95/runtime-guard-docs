@@ -1,9 +1,8 @@
 {
   "trigger_events": 154,
   "precision_hits": 0,
-  "precision_hits_old_heuristic_cjk_fp": 25,
   "precision_notes": [
-    "cjk_rescore_20261020: real_soup=0; old_heuristic_garbage_mixed_script=24 samples all fluent CN+EN"
+    "cjk_excluded: fluent CN+EN samples; precision=0"
   ],
   "detect_reports": 0,
   "n_requests": 24,
@@ -22,7 +21,6 @@
       "synth_block0": 40,
       "skip_zero_upstream": 112
     },
-    "verdict": "FAIL（复现未出现）",
-    "archive_layers_ref": "136/25/0 (precision CJK-suspect)"
+    "verdict": "FAIL（复现未出现）"
   }
 }

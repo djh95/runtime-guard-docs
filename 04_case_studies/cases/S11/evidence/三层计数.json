@@ -48,12 +48,6 @@
   "n_requests": 60,
   "errs": 0,
   "identical_mode_count": 8,
-  "wave2_unique": 3,
-  "wave2_samples": [
-    "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
-    "\n\n    :param name: Name of the river.\n    :type name: str\n    :return: The river.\n    :rtype: River\n    \"\"\"\n    return River(name)\n\n\ndef create",
-    "\n\n    Returns:\n        A list of rivers.\n    \"\"\"\n    return [river for river in rivers if river.name == name]\n\n\ndef get_river_by_id(id: int) ->"
-  ],
   "seconds_load": 13.0,
   "detector": "token_repeat",
   "boot_armed": true

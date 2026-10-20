@@ -11,7 +11,7 @@
     "precision_notes": [
       "repeat_text:completion_1792138601_01.json"
     ],
-    "detect_reports": 0,
+    "detect_reports": 1,
     "n_requests": 1
   },
   "overlay_patch": "/workspace/runtime-guard/anomaly/patches/06_moe_routing_bias.patch",

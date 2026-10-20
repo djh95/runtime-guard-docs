@@ -10,7 +10,6 @@
 |----|-----|
 | 结案结论 | **FAIL（复现未出现）** / repro-blocked |
 | 三层率（2026-10-20 160 复判） | **154 / 0 / 0**（trigger / precision〔CJK 排除后〕/ detect） |
-| 旧归档三层 | 136 / 25 / 0（precision=25 为 CJK 误计，不可当真坏输出） |
 | 期望 detector | 乱码类；本轮**无可检坏输出**，故不构成 FAIL+GAP |
 | Guard pin | G2 · `f2aefd068c4bd299d91cf0a1fdf642a3f327308f` |
 | 模型 | Qwen3-8B · TP2 · 稠密 float16 |
@@ -22,7 +21,7 @@
 
 Overlay 打上后服务仍 200。可见 completion 是通顺中英散文（华为 NPU / vLLM 介绍），**不是**乱码。样本见 [evidence/samples/](./evidence/samples/)。
 
-**CJK 是什么：** 中日韩字符。旧评分把「含非 ASCII 的中文」当成 `garbage_mixed_script`，于是通顺中文被记成 precision 命中。排除 CJK 后 weird≈0 → **precision 应记 0**。没有坏输出时，**不要**写成 FAIL+GAP。CJK 排除后 weird≈0 → precision 记 0。
+**CJK 是什么：** 中日韩字符。评分须排除 CJK 后再计 weird——通顺中文 ≠ `garbage_mixed_script`。本包排除后 weird≈0 → **precision=0**。没有坏输出时，**不要**写成 FAIL+GAP。
 
 ### 为何 S01 复现不出、S10′ 可以
 
@@ -54,7 +53,7 @@ Overlay 打上后服务仍 200。可见 completion 是通顺中英散文（华�
 | 层 | 复判（160 · `T101951`） | 含义 |
 |----|------------------------:|------|
 | trigger | **154** | skip_zero / synth_block0 / force_should_init（路径打中） |
-| precision | **0** | CJK 排除后；旧启发式会虚报 25 |
+| precision | **0** | CJK 排除后；通顺中文不算坏输出 |
 | detect | **0** | 无 `report_*.json` |
 
 对照：**S10′** = 有坏输出 + detect；**S01 dense** = 只有 trigger。证据清单见文末「证据文件」表。
