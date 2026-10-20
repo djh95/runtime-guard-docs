@@ -88,11 +88,9 @@ Overlay 打上后服务仍 200。可见 completion 是通顺中英散文（华�
 
 ## 定界分析
 
-1. **L1 detect 停点**——detect=0：无可检坏输出（非漏检结案）。
-2. **L2 class-hint**——弱 L2——samples 为通顺中文，提示形态前提不满足（需 hybrid/量化 KV），不定界到元素/commit。
-3. **标杆 / Q1–Q5（KV 排除）**——空 prompt / 包内暂无 buggy+ref **不等于**「Q1–Q5 不适用」。有 report 即可：同 prompt 再 curl 抓服务端 `prompt_token_ids`，与异常 `output_token_ids` 合并后抓标杆 KV，对比异常 KV（一致→排除 KV；不一致→重开 KV 线）。**本案归档尚未附 KV 对比结论**；现行对外结案停在 L1+L2+现象。
-4. **结合现象**——见 `evidence/samples/`（通顺中文，非乱码）。
-5. **结案要点**——dense 上 FAIL（复现未出现）；CJK 排除后 precision=0；对照 S10′ PASS、S07 FAIL+GAP。
+1. **现象与证据**——detector：本轮 detect=0（无可检坏输出；非漏检结案）。`evidence/samples/` 为通顺中文，不是乱码。dense 栈未见目标坏输出。
+2. **排除（已做 / 应做）**——CJK 排除后 precision=0（通顺中文 ≠ 乱码）。形态上提示需 hybrid/量化 KV，稠密 bf16 前提不满足。若日后出现可检报告，仍可走重放抓 ids + KV 对账（见 [④ 名词表 · KV 排除定界](../../README.md#名词怎么读先看这里)）；**本案归档无命中 report，尚未附 KV 对比结论**。
+3. **定界结论**——停在弱 **L2**（问题类提示 = 需 hybrid/量化 KV 的 KV 未置零类；不定界到元素/commit）。**L1**：无可检停点（detect=0）。结案：dense 上 FAIL（复现未出现）；对照 S10′ PASS、S07 FAIL+GAP。
 
 ## 证据文件
 

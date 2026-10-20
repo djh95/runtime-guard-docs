@@ -35,11 +35,9 @@ Qwen3-8B，temp=0，eager；concurrent 48；util=0.40。
 
 ## 定界分析
 
-1. **L1 detect 停点**——detect：`token_repeat` 命中（detect=48）。
-2. **L2 class-hint**——**L1-only**（权重 corruption · detect-only；不定界到层/元素）。
-3. **标杆 / Q1–Q5（KV 排除）**——设计上不定界到权重元素（L1-only）；但仍可用重放抓 ids + KV 对比做**排除性**检查（`KV?=否` ≠ 跳过排除）。**本案归档尚未附 KV 对比结论**。
-4. **结合现象**——见 `evidence/samples/` · `evidence/reports/`。
-5. **结案要点**——PASS；constructed always-on（post-load 置零一层 o_proj）。
+1. **现象与证据**——detector：`token_repeat` 命中（detect=48）。现象见 `evidence/samples/` · `evidence/reports/`（跨请求内容相同塌缩）。归档 report prompt 为空（异步落盘后已清）。
+2. **排除（应做）**——教学设计为 detect-only，不定界到权重元素；KV 排除路径仍可用（重放抓 ids + 标杆/异常 KV），但**非本案细定界目标**。**本案归档尚未附 KV 对比结论**。
+3. **定界结论**——停在 **L1**（仅检出；权重 corruption · detect-only，不定界到层/元素）。不宣称 L2 根因类细拆。结案：PASS；constructed always-on（post-load 置零一层 o_proj）。
 
 ## 证据文件
 

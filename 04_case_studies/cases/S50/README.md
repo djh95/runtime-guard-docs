@@ -34,11 +34,9 @@ bang / NaN·Inf 塌缩可被 `logits_finite` 抓住。对照 **S07**（有限 lo
 
 ## 定界分析
 
-1. **L1 detect 停点**——detect：`logits_finite`。
-2. **L2 class-hint**——L2 class-hint：SwiGLU gate/up 对调；≠S39。
-3. **标杆 / Q1–Q5（KV 排除）**——空 prompt / 包内暂无 buggy+ref **不等于**「Q1–Q5 不适用」。有 report 即可：同 prompt 再 curl 抓服务端 `prompt_token_ids`，与异常 `output_token_ids` 合并后抓标杆 KV，对比异常 KV（一致→排除 KV；不一致→重开 KV 线）。**本案归档尚未附 KV 对比结论**；现行对外结案停在 L1+L2+现象。
-4. **结合现象**——见 `evidence/samples/` · `evidence/reports/`。
-5. **结案要点**——PASS **58 / 48 / 48**。
+1. **现象与证据**——detector：`logits_finite`。现象见 `evidence/samples/` · `evidence/reports/`（跨请求内容相同的 `!!!!`）。归档 report prompt 为空（异步落盘后已清）。
+2. **排除（应做）**——重放抓 ids + 标杆/异常 KV 对比做排除。**本案归档尚未附 KV 对比结论**。
+3. **定界结论**——停在 **L2**（问题类 = SwiGLU gate/up 对调；≠S39）。**L1**：`logits_finite` 已检出。结案：PASS **58 / 48 / 48**。
 
 ## 证据文件
 
