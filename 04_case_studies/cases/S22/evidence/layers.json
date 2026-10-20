@@ -1,33 +1,25 @@
 {
   "scenario": "S22",
-  "trigger": 130,
-  "precision": 45,
-  "precision_identical_mode": [
-    "1.2.3.4.5.6.7.8.9.10.11.12.13.14.15.16.17.18.19.",
-    1
-  ],
-  "precision_first8_mode": [
-    "0\nRivers",
-    4
-  ],
-  "detect_reports": 48,
+  "trigger": 126,
+  "precision": 0,
+  "detect_reports": 47,
   "detect_by": {
-    "token_repeat": 3,
-    "spec_acceptance": 45
+    "spec_acceptance": 47
   },
   "n_requests": 48,
   "n_errors": 0,
   "temperature": 0.8,
-  "elapsed_s": 21.6,
-  "host_cards": "4,5",
   "model": "/mnt/weight/Qwen3-8B",
   "draft": "/mnt/weight/Qwen3-8B-speculator.eagle3",
-  "detector": "both",
-  "run_dir": "/workspace/runtime-guard/canonical/results/anomaly-repro-20261016/22_spec_resample_rng_collide-20261017T101553",
+  "detector": "spec_acceptance",
   "verdict": "PASS",
-  "precision_note": "distributional: acceptance_rate 0-0.27 (not identical-text heuristic)",
-  "acceptance_rate_min": 0.0,
-  "acceptance_rate_max": 0.26666666666666666,
-  "acceptance_rate_mean": 0.0919,
-  "layers_trig_prec_detect": "130 / 45 / 48"
+  "precision_note": "distributional: acceptance_rate collapse scored via spec_acceptance detect; identical-text precision=0",
+  "layers_trig_prec_detect": "126 / 0 / 47",
+  "blind_run": {
+    "round": 2,
+    "date": "20261020",
+    "archive_layers_ref": "130/45/48",
+    "first_blind_blocker": "CRLF vs LF patch context (PATCH_FAIL)",
+    "verdict": "PASS 复现"
+  }
 }

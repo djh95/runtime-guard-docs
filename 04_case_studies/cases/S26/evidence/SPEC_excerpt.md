@@ -36,8 +36,23 @@
 
 ## Expected detector
 
-优先 `token_repeat`；`logits_finite` 可能偏弱。
+`token_repeat`（**threshold=8**）。
+
+## HOW_TO / 复现配方
+
+与 S25 相同：
+
+```
+prompt: Name one famous river. One short English sentence. id={i}.
+concurrency: 48
+max_tokens: 48
+temperature: 0
+token_repeat threshold: 8
+overlay: gen_s26_overlay.py（就地改 B）
+```
+
+首轮盲跑 detect=0 是错配方（中文回声 + 串行 8 + 阈值 16），不是漏检。
 
 ## Origin-faithful protocol
 
-需要记三层率。更细的历史配方不在本仓；本包以上表与归档证据为准。
+现行三层：**354 / 16 / 48**（二次盲跑）。需要记三层率。

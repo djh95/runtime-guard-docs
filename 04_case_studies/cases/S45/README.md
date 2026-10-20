@@ -7,15 +7,15 @@
 | 项 | 值 |
 |----|-----|
 | 结果 | **FAIL+GAP** |
-| 三层率 | **16 / unique(~47/48) / 0** |
-| Detector | `token_repeat` + `logits_finite`（均 miss） |
+| 三层率 | **16 / 4 / 0**（二次盲跑对齐后现行） |
+| Detector | `token_repeat` + `logits_finite`（均 miss）；**乱码检测漏检** |
 | Origin | `both`（constructed wrong-topk-direction） |
-| 模型 | Qwen3-8B |
-| Run | 离线归档 archive（WHY + samples） |
+| 模型 | Qwen3-8B；**temp=0.8**（勿用 0） |
+| Run | 二次盲跑对齐（漏检精确复现） |
 
 ## 1 · 现象
 
-**各不相同（unique）** 的混合脚本垃圾文字；logits（采样前的分值）始终是有限数，没有 NaN/Inf。内容相同计分会低估——`layers.json` 里 `precision=0` **不能单独**当成「没有 precision」。样本见 [evidence/samples/](./evidence/samples/)。
+**各不相同（unique）** 的混合脚本垃圾文字；采样前分值始终有限，没有 NaN/Inf。内容相同计分会低估——`precision=4` **不能单独**当成「几乎没有坏输出」。样本见 [evidence/samples/](./evidence/samples/)。
 
 ## 2 · 根因
 
@@ -23,7 +23,7 @@ top-k / top-p 作用在 `-logits` 上再取反——保留最低-k / 倒置 nucl
 
 ## 3 · Guard 结果
 
-**FAIL+GAP。** detect=0。诚实标注；不要标 INVALID，也不要用 amplifier-retune 刷检。
+**FAIL+GAP。** detect=0。异常已出现，但乱码检测漏检。诚实标注；不要标 INVALID，也不要用 amplifier-retune 刷检。
 
 ## 4 · 复现与双树写入（必读）
 
@@ -34,11 +34,11 @@ top-k / top-p 作用在 `-logits` 上再取反——保留最低-k / 倒置 nucl
 
 因此：
 
-- **正确（160）：** `gen_s45_overlay.py` 分别写 B + `canonical/vllm`。  
-- **错误：** 只 `git apply` 到 Ascend B → `sampler.py: No such file or directory`。
+- **正确：** `gen_s45_overlay.py` 分别写 **Ascend B** + **canonical/vllm**；**temp=0.8**。  
+- **错误：** 只 `git apply` 到 Ascend B → `sampler.py: No such file or directory`；或 temp=0（首轮盲跑曾因此对不上）。
 
-score：`garbage_mixed_script`×44；`precision_hits≈47`；unique=48。layers 用内容相同计分会低估。
+二次盲跑：双树写入 + temp=0.8 → **16 / 4 / 0**，漏检精确复现（与归档 GAP 一致）。
 
 ## 5 · 别人按包能核对什么
 
-第三种漏检形态：各不相同的乱码，且 logits（采样前的分值）始终有限、无 NaN/Inf（相对 S01/S07 的跨请求相同乱码）。对照 S43 PASS。环境上记住：**必须双树写入**。
+第三种漏检形态：各不相同的乱码，且采样前分值始终有限（相对 S01/S07 的跨请求相同乱码）。对照 S43 PASS。环境上记住：**必须双树写入 + temp=0.8**。

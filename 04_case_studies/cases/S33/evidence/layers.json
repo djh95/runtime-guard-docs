@@ -1,10 +1,10 @@
 {
   "scenario": "S33",
-  "trigger": 132,
-  "precision": 15,
+  "trigger": 130,
+  "precision": 17,
   "precision_identical_mode": [
     "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.",
-    15
+    17
   ],
   "detect_reports": 48,
   "detect_by": {
@@ -13,10 +13,15 @@
   "n_requests": 48,
   "n_errors": 0,
   "temperature": 0.0,
-  "elapsed_s": 9.5,
-  "host_cards": "8,9",
   "model": "/mnt/weight/Qwen3-8B",
-  "detector": "both",
-  "run_dir": "/workspace/runtime-guard/canonical/results/anomaly-repro-20261016/33_softcap_incomplete-20261017T130612",
-  "boot_ok": true
+  "detector": "token_repeat",
+  "verdict": "PASS",
+  "layers_trig_prec_detect": "130 / 17 / 48",
+  "blind_run": {
+    "round": 2,
+    "date": "20261020",
+    "archive_layers_ref": "132/15/48",
+    "first_blind_blocker": "dual-tree write missing + 中文回声 vs 河名句",
+    "verdict": "PASS（detect=48 精确）"
+  }
 }

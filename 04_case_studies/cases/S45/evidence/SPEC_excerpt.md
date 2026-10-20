@@ -14,7 +14,7 @@
 
 ## Status
 
-**FAIL+GAP** —— trigger 有；precision 是 unique garbage；`detect=0`（没有 local re-reads / nonfinite）。已 park；不要当成 PASS，也不要用 amplifier-retune。证据见 `WHY_UNDETECTED.md` + ≥3 个 samples。
+**FAIL+GAP** —— trigger 有；各不相同乱码；`detect=0`（**乱码检测漏检**）。不要当成 PASS，也不要用 amplifier-retune。证据见 `WHY_UNDETECTED.md` + samples。
 
 ## Overlay
 
@@ -23,8 +23,18 @@
 ## Trigger / knobs / forbidden
 
 1. **Trigger：** `ANOMALY_TRIGGER S45 topk_bottom_keep`
-2. **Allowed：** Qwen3-8B；`top_k`；concurrency
+2. **Allowed：** Qwen3-8B；`top_k`；concurrency；**temp=0.8**
 3. **Forbidden：** force-NaN；token `fill_`；logits.zero_
+
+## HOW_TO / 复现配方
+
+```
+overlay: gen_s45_overlay.py → 双树写入（Ascend platform.py + vllm sampler.py）
+temperature: 0.8（勿用 0）
+concurrency: 48
+```
+
+只打 Ascend B → 缺 sampler；temp=0 → 对不上。二次盲跑对齐后 **16 / 4 / 0** 漏检精确复现。
 
 ## Model
 
@@ -32,6 +42,4 @@
 
 ## Evidence
 
-本包 `WHY_FAIL.md` / `WHY_UNDETECTED.md` + `samples/`。
-
-更细的历史配方不在本仓；本包以上表与归档证据为准。
+本包 `WHY_FAIL.md` / `WHY_UNDETECTED.md` + `samples/`。现行三层：**16 / 4 / 0**。

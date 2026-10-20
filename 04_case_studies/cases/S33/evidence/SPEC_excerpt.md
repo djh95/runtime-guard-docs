@@ -28,6 +28,18 @@ Softcap / `final_logit_softcapping` 类（[vLLM#56579](https://github.com/vllm-p
 
 ## Expected detector
 
-`token_repeat`。归档 **PASS** 132/15/48。
+`token_repeat`。
 
-更细的历史配方不在本仓；本包以上表与归档证据为准。
+## HOW_TO / 复现配方
+
+```
+overlay: gen_s33_overlay.py → 双树写入（Ascend B + canonical vllm logits_processor.py）
+prompt: Name one famous river. One short English sentence. id={i}.
+concurrency: 48
+```
+
+只打 Ascend B → PATCH_FAIL；中文回声串行 → 打不出 `1.1.1…`。
+
+## Origin-faithful protocol
+
+现行三层：**130 / 17 / 48**（二次盲跑；detect=48 精确）。

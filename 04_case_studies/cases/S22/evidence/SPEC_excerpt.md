@@ -37,8 +37,21 @@ Rejection verification 与 residual categorical resample 共用同一 RNG `(seed
 
 ## Expected detector
 
-偏置足够强时：`token_repeat` / `spec_acceptance`；否则可能 **FAIL+GAP**，需要 recovered-token histogram + samples（分布性）。
+主：`spec_acceptance`；兼 `token_repeat`。
+
+## HOW_TO / 复现配方
+
+```
+model: Qwen3-8B + eagle3
+temperature: 0.8
+num_speculative_tokens: 3
+concurrency: 48
+eager / util=0.40
+overlay: gen_s22_overlay.py（锚点替换；自适应 CRLF/LF）
+```
+
+静态 `git apply` 遇 **CRLF 源 + LF patch** 会对不上 → 用锚点脚本或 `apply_anomaly_overlay.sh --ignore-whitespace`。
 
 ## Origin-faithful protocol
 
-更细的历史配方不在本仓；本包以上表与归档证据为准。
+现行三层：**126 / 0 / 47**（二次盲跑 PASS 复现）。

@@ -1,10 +1,10 @@
 {
   "scenario": "S26",
-  "trigger": 470,
-  "precision": 14,
+  "trigger": 354,
+  "precision": 16,
   "precision_identical_mode": [
     "1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.",
-    14
+    16
   ],
   "detect_reports": 48,
   "detect_by": {
@@ -13,10 +13,18 @@
   "n_requests": 48,
   "n_errors": 0,
   "temperature": 0.0,
-  "elapsed_s": 11.6,
-  "host_cards": "6,7",
   "model": "/mnt/weight/Qwen3-8B",
-  "detector": "both",
-  "run_dir": "/workspace/runtime-guard/canonical/results/anomaly-repro-20261016/26_rmsnorm_fp32_mul-20261017T115830",
-  "boot_ok": true
+  "detector": "token_repeat",
+  "token_repeat_threshold": 8,
+  "prompt_template": "Name one famous river. One short English sentence. id={i}.",
+  "concurrency": 48,
+  "verdict": "PASS",
+  "layers_trig_prec_detect": "354 / 16 / 48",
+  "blind_run": {
+    "round": 2,
+    "date": "20261020",
+    "archive_layers_ref": "470/14/48",
+    "first_blind_blocker": "wrong recipe: same as S25 (中文回声 + serial 8 + threshold 16); NOT detector miss",
+    "verdict": "PASS（detect=48 精确）"
+  }
 }

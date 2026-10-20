@@ -37,22 +37,23 @@
 | S11 | [cases/S11/](./cases/S11/) | PASS | MLA RoPE pad-tail 错位 | digit / collapse 垃圾 | `token_repeat` | 138 / 39 / 60 |
 | S07 | [cases/S07/](./cases/S07/) | FAIL+GAP | W8A8 dequant scale 崩溃 | 跨请求内容相同的乱码 | 期望 `logits_finite`→未检出；乱码检测漏检 | 2624 / 1 / 0 |
 | S23 | [cases/S23/](./cases/S23/) | PASS | 一层 `o_proj` 权重置零 | 跨请求内容相同塌缩 | `token_repeat` | 2 / 17 / 48 |
-| S45 | [cases/S45/](./cases/S45/) | FAIL+GAP | top-k 打在 −logits | 各不相同乱码 | 期望 `token_repeat`+`logits_finite`→未检出；乱码+重复检测都漏 | 16 / 0 / 0 |
+| S45 | [cases/S45/](./cases/S45/) | FAIL+GAP | top-k 打在 −logits | 各不相同乱码 | 期望 `token_repeat`+`logits_finite`→未检出；乱码检测漏检 | 16 / 4 / 0 |
 | S43 | [cases/S43/](./cases/S43/) | PASS | embedding ×100 | 换行塌缩 | `token_repeat` | 16 / 40 / 48 |
-| S22 | [cases/S22/](./cases/S22/) | PASS | Spec resample 无独立 salt | acceptance_rate 塌缩 | `spec_acceptance`（主） | 130 / 45 / 48 |
+| S22 | [cases/S22/](./cases/S22/) | PASS | Spec resample 无独立 salt | acceptance_rate 塌缩 | `spec_acceptance`（主） | 126 / 0 / 47 |
 | S06 | [cases/S06/](./cases/S06/) | PASS | MoE router bias / mask | 进错专家、复读文本 | `token_repeat` | 70 / 1 / 1† |
-| S26 | [cases/S26/](./cases/S26/) | PASS | RMSNorm fp32 错乘 | `1.1.1…` 复读 | `token_repeat` | 470 / 14 / 48 |
-| S25 | [cases/S25/](./cases/S25/) | PASS | RoPE 后半维丢失 | `1.1.1…` / `1.0.0…` 复读 | `token_repeat` | 462 / 15 / 48 |
+| S26 | [cases/S26/](./cases/S26/) | PASS | RMSNorm fp32 错乘 | `1.1.1…` 复读 | `token_repeat` | 354 / 16 / 48 |
+| S25 | [cases/S25/](./cases/S25/) | PASS | RoPE 后半维丢失 | `1.1.1…` / `1.0.0…` 复读 | `token_repeat` | 348 / 17 / 48 |
 | S50 | [cases/S50/](./cases/S50/) | PASS | SwiGLU gate/up 对调 | 跨请求内容相同的 `!!!!` | `logits_finite` | 58 / 48 / 48 |
 | S48 | [cases/S48/](./cases/S48/) | PASS | residual 极性取反 | 跨请求内容相同的 `!!!!` | `logits_finite` | 100 / 48 / 48 |
 | S47 | [cases/S47/](./cases/S47/) | PASS | Attn 前 K/V 对调 | CJK / Trail 塌缩 | `token_repeat` | 58 / 37 / 48 |
-| S33 | [cases/S33/](./cases/S33/) | PASS | softcap 缺 `*cap` rescale | `1.1.1…` 复读 | `token_repeat` | 132 / 15 / 48 |
+| S33 | [cases/S33/](./cases/S33/) | PASS | softcap 缺 `*cap` rescale | `1.1.1…` 复读 | `token_repeat` | 130 / 17 / 48 |
 
 计数摘自各包 `evidence/layers.json`（或归档已公布数）。脚注：
 
 - **S06 †**：`layers.json` / status 写 `detect_reports=0`，但同次归档有 `token_repeat` report×1；表内 detect 按 report 记 **1**。
 - **S07**：precision 记成 1，实为 48 次请求内容相同的乱码（以 samples + score 为准）。
-- **S45**：`precision=0` 是内容相同计分低估；样本仍是各不相同乱码。
+- **S45**：`precision=4` 仍偏低估（各不相同乱码）；样本为准。计数来自二次盲跑对齐（双树写入 + temp=0.8）。
+- **S22 / S25 / S26 / S33**：表内 t/p/d 为二次盲跑修复后现行数；首轮盲跑失败多为配方/补丁路径问题（非检测器漏检），见各包复现节。
 - **S01 †**：复判（160 dense，CJK 排除后）precision=0；旧归档 136/25/0 的 25 为中文误计。hybrid/fp8 KV 在本 pin 上起服失败（`FP8_ATTENTION`），详见包内说明。
 
 `S10′` 在仓库里的目录名是 **`S10p`**。相关 Skills 见 [06](../06_agent_skills/)（**v5.8**）。
