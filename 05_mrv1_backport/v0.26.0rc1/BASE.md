@@ -8,7 +8,7 @@
 | **BASE full** | `f2f74a16c3c50a76f4349d807918e83edec1e35c` |
 | **Runner** | **Model Runner V1 only**（本包不接 V2） |
 | **Patch** | `patches/0001-runtime-guard-mrv1-wiring.patch` |
-| **包版本** | `mrv1-rg.1`（见 ../CHANGELOG.md） |
+| **包版本** | `mrv1-rg.2`（见 ../CHANGELOG.md） |
 
 ```bash
 git checkout f2f74a16c3c50a76f4349d807918e83edec1e35c

@@ -48,7 +48,7 @@ index c93fb57f3..2f5cc6bde 100644
      )
      # Business validation (Plan B): pydantic did type/range/enum checks during
 diff --git a/vllm_ascend/logger.py b/vllm_ascend/logger.py
-index 10bf84dcf..5e92eadfd 100644
+index 10bf84dcf..445e15b15 100644
 --- a/vllm_ascend/logger.py
 +++ b/vllm_ascend/logger.py
 @@ -14,8 +14,11 @@ import logging
@@ -63,7 +63,7 @@ index 10bf84dcf..5e92eadfd 100644
  from vllm.logging_utils import ColoredFormatter, NewLineFormatter
  
  _FORMAT = "%(levelname)s %(asctime)s [%(fileinfo)s:%(lineno)d] %(message)s"
-@@ -25,6 +28,20 @@ _LOG_DIR = os.path.join(os.path.expanduser("~"), "ascend", "log", "vllm_ascend")
+@@ -25,6 +28,18 @@ _LOG_DIR = os.path.join(os.path.expanduser("~"), "ascend", "log", "vllm_ascend")
  _LOG_MAX_BYTES = 20 * 1024 * 1024
  
  
@@ -77,8 +77,6 @@ index 10bf84dcf..5e92eadfd 100644
 +    for method_name, method in _METHODS_TO_PATCH.items():
 +        setattr(logger, method_name, MethodType(method, logger))
 +    return cast(_VllmLogger, logger)
-+
-+
 +
 +
  def _use_color() -> bool:
@@ -9858,13 +9856,22 @@ index 000000000..2584b6e84
 +                return
 +            state.detection_stopped = True
 diff --git a/vllm_ascend/worker/model_runner_v1.py b/vllm_ascend/worker/model_runner_v1.py
-index 959af3410..ab28d47b4 100644
+index 959af3410..b44294595 100644
 --- a/vllm_ascend/worker/model_runner_v1.py
 +++ b/vllm_ascend/worker/model_runner_v1.py
-@@ -203,6 +203,14 @@ from vllm_ascend.worker.device_metadata import (
- )
- from vllm_ascend.worker.npu_input_batch import NPUInputBatch
- from vllm_ascend.worker.utils import AscendKVBlockZeroer
+@@ -104,7 +104,7 @@ from vllm.v1.spec_decode.ngram_proposer_gpu import copy_num_valid_draft_tokens
+ from vllm.v1.structured_output.utils import apply_grammar_bitmask
+ from vllm.v1.utils import record_function_or_nullcontext
+ from vllm.v1.worker import mamba_utils
+-from vllm.v1.worker.gpu_model_runner import AsyncGPUModelRunnerOutput, GPUModelRunner
++from vllm.v1.worker.gpu_model_runner import GPUModelRunner
+ from vllm.v1.worker.ubatch_utils import (
+     UBatchSlices,
+     maybe_create_ubatch_slices,
+@@ -149,6 +149,14 @@ from vllm_ascend.eplb.core.eplb_device_transfer_loader import D2DExpertWeightLoa
+ from vllm_ascend.eplb.core.eplb_worker import EplbProcess
+ from vllm_ascend.eplb.eplb_updator import EplbUpdator
+ from vllm_ascend.model_executor.offloader import create_offloader
 +from vllm_ascend.observability.runtime_guard.hooks import (
 +    build_v1_async_gpu_output,
 +    is_async_output_rank,
@@ -9873,9 +9880,9 @@ index 959af3410..ab28d47b4 100644
 +)
 +from vllm_ascend.observability.runtime_guard.io import accepted_token_counts
 +from vllm_ascend.observability.runtime_guard.processor import RuntimeGuardProcessor, SamplePhaseResult
- 
- from vllm_ascend.ascend_forward_context import (  # isort: skip
-     MoECommType,
+ from vllm_ascend.ops.rotary_embedding import set_cos_and_sin, update_cos_sin
+ from vllm_ascend.ops.triton.spec_decode.ngram import triton_ngram_spec_decode
+ from vllm_ascend.quantization.utils import enable_fa_quant
 @@ -360,6 +368,9 @@ class NPUModelRunner(GPUModelRunner):
          self.ascend_config = get_ascend_config()
          self.use_score_encoder_cache = is_score_encoder_cache_manager(self.vllm_config)

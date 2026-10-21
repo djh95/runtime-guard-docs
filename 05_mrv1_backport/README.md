@@ -17,7 +17,8 @@
 | `releases/v0.30.0` 且跑 **MRV2** | 用 [`05_v030_backport`](../05_v030_backport/)，**不要**打本目录的 `v0.30.0` |
 | 更早 / 未列出 | README「未适配」；勿硬套 |
 
-当前包版本与 BASE 见 **[CHANGELOG.md](./CHANGELOG.md)**。
+当前包版本与 BASE 见 **[CHANGELOG.md](./CHANGELOG.md)**。  
+上游 PR / commit 对照（main + 各 release）：**[PR_COMMIT_MAP.md](./PR_COMMIT_MAP.md)**。
 
 ## 接线包 ≠ anomaly pin
 

@@ -48,7 +48,7 @@ index 1783ceb2c..b5770486a 100644
      )
      # Business validation (Plan B): pydantic did type/range/enum checks during
 diff --git a/vllm_ascend/logger.py b/vllm_ascend/logger.py
-index 10bf84dcf..5e92eadfd 100644
+index 10bf84dcf..445e15b15 100644
 --- a/vllm_ascend/logger.py
 +++ b/vllm_ascend/logger.py
 @@ -14,8 +14,11 @@ import logging
@@ -63,7 +63,7 @@ index 10bf84dcf..5e92eadfd 100644
  from vllm.logging_utils import ColoredFormatter, NewLineFormatter
  
  _FORMAT = "%(levelname)s %(asctime)s [%(fileinfo)s:%(lineno)d] %(message)s"
-@@ -25,6 +28,20 @@ _LOG_DIR = os.path.join(os.path.expanduser("~"), "ascend", "log", "vllm_ascend")
+@@ -25,6 +28,18 @@ _LOG_DIR = os.path.join(os.path.expanduser("~"), "ascend", "log", "vllm_ascend")
  _LOG_MAX_BYTES = 20 * 1024 * 1024
  
  
@@ -77,8 +77,6 @@ index 10bf84dcf..5e92eadfd 100644
 +    for method_name, method in _METHODS_TO_PATCH.items():
 +        setattr(logger, method_name, MethodType(method, logger))
 +    return cast(_VllmLogger, logger)
-+
-+
 +
 +
  def _use_color() -> bool:
@@ -9859,13 +9857,21 @@ index 000000000..2584b6e84
 +                return
 +            state.detection_stopped = True
 diff --git a/vllm_ascend/worker/model_runner_v1.py b/vllm_ascend/worker/model_runner_v1.py
-index 46ee896cc..25d1a539a 100644
+index 46ee896cc..41a870917 100644
 --- a/vllm_ascend/worker/model_runner_v1.py
 +++ b/vllm_ascend/worker/model_runner_v1.py
-@@ -343,6 +343,15 @@ class ExecuteModelState(NamedTuple):
-     batch_desc: BatchDescriptor
+@@ -106,7 +106,6 @@ from vllm.v1.structured_output.utils import apply_grammar_bitmask
+ from vllm.v1.utils import record_function_or_nullcontext
+ from vllm.v1.worker import mamba_utils
+ from vllm.v1.worker.gpu_model_runner import (
+-    AsyncGPUModelRunnerOutput,
+     GPUModelRunner,
+ )
  
- 
+@@ -169,6 +168,14 @@ from vllm_ascend.eplb.core.eplb_device_transfer_loader import D2DExpertWeightLoa
+ from vllm_ascend.eplb.core.eplb_worker import EplbProcess
+ from vllm_ascend.eplb.eplb_updator import EplbUpdator
+ from vllm_ascend.model_executor.offloader import create_offloader
 +from vllm_ascend.observability.runtime_guard.hooks import (
 +    build_v1_async_gpu_output,
 +    is_async_output_rank,
@@ -9874,11 +9880,18 @@ index 46ee896cc..25d1a539a 100644
 +)
 +from vllm_ascend.observability.runtime_guard.io import accepted_token_counts
 +from vllm_ascend.observability.runtime_guard.processor import RuntimeGuardProcessor, SamplePhaseResult
+ from vllm_ascend.ops.fused_moe.force_eplb import build_force_eplb_topk
+ from vllm_ascend.ops.rotary_embedding import set_cos_and_sin, update_cos_sin
+ from vllm_ascend.ops.triton.spec_decode.ngram import triton_ngram_spec_decode
+@@ -343,6 +350,7 @@ class ExecuteModelState(NamedTuple):
+     batch_desc: BatchDescriptor
+ 
+ 
 +
  class NPUModelRunner(GPUModelRunner):
      # vLLM #51718 describes compatible KV cache groups as views over one
      # standardized backing allocation. The default runner preserves that
-@@ -409,6 +418,8 @@ class NPUModelRunner(GPUModelRunner):
+@@ -409,6 +417,8 @@ class NPUModelRunner(GPUModelRunner):
  
          self.kvpp = KVPPRuntime()
  
@@ -9887,7 +9900,7 @@ index 46ee896cc..25d1a539a 100644
          # Dump / PrecisionDebugger configuration now comes from AscendConfig
          dump_cfg = self.ascend_config.dump_config_path
          self.debugger = None
-@@ -2164,6 +2175,12 @@ class NPUModelRunner(GPUModelRunner):
+@@ -2164,6 +2174,12 @@ class NPUModelRunner(GPUModelRunner):
          return cut_tokens
  
      @torch.inference_mode()
@@ -9900,7 +9913,7 @@ index 46ee896cc..25d1a539a 100644
      def execute_model(
          self,
          scheduler_output: "SchedulerOutput",
-@@ -2728,200 +2745,235 @@ class NPUModelRunner(GPUModelRunner):
+@@ -2728,200 +2744,235 @@ class NPUModelRunner(GPUModelRunner):
          # Clear ephemeral state.
          self.execute_model_state = None
  
@@ -10309,7 +10322,7 @@ index 46ee896cc..25d1a539a 100644
          )
          self.input_batch.set_async_sampled_token_ids(
              async_output.sampled_token_ids_cpu,
-@@ -2929,6 +2981,7 @@ class NPUModelRunner(GPUModelRunner):
+@@ -2929,6 +2980,7 @@ class NPUModelRunner(GPUModelRunner):
          )
          return async_output
  

@@ -2,6 +2,31 @@
 
 格式：新版本写在最上方。每条写清：**包版本、各 release BASE、SOURCE、怎么得到、含哪些功能、冒烟**。
 
+上游 PR / commit 对照（living）：**[PR_COMMIT_MAP.md](./PR_COMMIT_MAP.md)**。
+
+## mrv1-rg.2 — 2026-10-21
+
+### 版本与来源
+
+| 项 | 值 |
+|----|-----|
+| **包版本** | `mrv1-rg.2` |
+| **Guard SOURCE** | `9343c9859` + 各 release tip 适配（见 PR） |
+| **上游 PR** | `#19337`（v0.23）`#19338`（v0.26）`#19339`（v0.27）`#19340`（v0.28）`#19341`（v0.30 MRV1） |
+| **怎么得到** | PR tip 稳定后：`v0.23` / `v0.27` / `v0.28` 用 `git show <pr-tip>` 重导（仍 `git apply --check` 于 docs BASE）；`v0.26` / `v0.30` tip 与 BASE 冲突面不同，**离线 patch 字节保持 rg.1**（仍钉 BASE）；PR tip 为 tip-adapted |
+| **相对 rg.1** | `v0.23` / `v0.27` / `v0.28` patch 字节更新（ruff / tip 上下文）；`v0.26` / `v0.30` 离线 patch **未改** |
+
+### 各 release BASE
+
+与 `mrv1-rg.1` 相同（见下行历史表）。冒烟：五档 `apply_patch.sh` 于干净 BASE **OK**。
+
+### 已知限制（新增）
+
+- `v0.26` / `v0.30`：**PR tip ≠ BASE patch 字节**（tip 上 `model_runner_v1` / `worker` 已漂移）；离线仍打 BASE；合入 tip 请用对应 PR。  
+- v0.30 MRV1 `#19341` 与 MRV2 `#18450` **互斥**。
+
+---
+
 ## mrv1-rg.1 — 2026-10-21
 
 ### 版本与来源

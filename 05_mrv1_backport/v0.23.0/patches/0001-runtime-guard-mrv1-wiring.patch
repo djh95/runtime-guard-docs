@@ -19,7 +19,7 @@ index dda80f68c..05fb7bd09 100644
          self.ascend_log_path = additional_config.get(
              "ascend_log_path",
 diff --git a/vllm_ascend/logger.py b/vllm_ascend/logger.py
-index 10bf84dcf..5e92eadfd 100644
+index 10bf84dcf..445e15b15 100644
 --- a/vllm_ascend/logger.py
 +++ b/vllm_ascend/logger.py
 @@ -14,8 +14,11 @@ import logging
@@ -34,7 +34,7 @@ index 10bf84dcf..5e92eadfd 100644
  from vllm.logging_utils import ColoredFormatter, NewLineFormatter
  
  _FORMAT = "%(levelname)s %(asctime)s [%(fileinfo)s:%(lineno)d] %(message)s"
-@@ -25,6 +28,20 @@ _LOG_DIR = os.path.join(os.path.expanduser("~"), "ascend", "log", "vllm_ascend")
+@@ -25,6 +28,18 @@ _LOG_DIR = os.path.join(os.path.expanduser("~"), "ascend", "log", "vllm_ascend")
  _LOG_MAX_BYTES = 20 * 1024 * 1024
  
  
@@ -48,8 +48,6 @@ index 10bf84dcf..5e92eadfd 100644
 +    for method_name, method in _METHODS_TO_PATCH.items():
 +        setattr(logger, method_name, MethodType(method, logger))
 +    return cast(_VllmLogger, logger)
-+
-+
 +
 +
  def _use_color() -> bool:
@@ -9842,13 +9840,22 @@ index 000000000..2584b6e84
 +                return
 +            state.detection_stopped = True
 diff --git a/vllm_ascend/worker/model_runner_v1.py b/vllm_ascend/worker/model_runner_v1.py
-index 70ef1d79a..cdf395f1e 100644
+index 92691e8c7..6c526b80c 100644
 --- a/vllm_ascend/worker/model_runner_v1.py
 +++ b/vllm_ascend/worker/model_runner_v1.py
-@@ -171,6 +171,14 @@ from vllm_ascend.utils import (
- from vllm_ascend.worker.npu_input_batch import NPUInputBatch
- from vllm_ascend.worker.pcp_utils import PCPAsyncSpecDecodeRebuildResult, PCPManager
- from vllm_ascend.worker.utils import AscendKVBlockZeroer, copy_snapshot_to_gpu
+@@ -94,7 +94,7 @@ from vllm.v1.worker import mamba_utils
+ from vllm.v1.worker.cp_utils import (
+     get_total_cp_world_size,
+ )
+-from vllm.v1.worker.gpu_model_runner import AsyncGPUModelRunnerOutput, GPUModelRunner
++from vllm.v1.worker.gpu_model_runner import GPUModelRunner
+ from vllm.v1.worker.ubatch_utils import (
+     UBatchSlices,
+     maybe_create_ubatch_slices,
+@@ -126,6 +126,14 @@ from vllm_ascend.eplb.adaptor.vllm_adaptor import VllmEplbAdaptor
+ from vllm_ascend.eplb.core.eplb_device_transfer_loader import D2DExpertWeightLoader
+ from vllm_ascend.eplb.core.eplb_worker import EplbProcess
+ from vllm_ascend.eplb.eplb_updator import EplbUpdator
 +from vllm_ascend.observability.runtime_guard.hooks import (
 +    build_v1_async_gpu_output,
 +    is_async_output_rank,
@@ -9857,9 +9864,9 @@ index 70ef1d79a..cdf395f1e 100644
 +)
 +from vllm_ascend.observability.runtime_guard.io import accepted_token_counts
 +from vllm_ascend.observability.runtime_guard.processor import RuntimeGuardProcessor, SamplePhaseResult
- 
- from vllm_ascend.ascend_forward_context import (  # isort: skip
-     MoECommType,
+ from vllm_ascend.ops.rotary_embedding import set_cos_and_sin, update_cos_sin
+ from vllm_ascend.patch.worker.patch_draft_quarot import patch_load_weights
+ from vllm_ascend.quantization.utils import enable_fa_quant
 @@ -337,6 +345,9 @@ class NPUModelRunner(GPUModelRunner):
          self.ascend_config = get_ascend_config()
          set_weight_prefetch_method(self.ascend_config.weight_prefetch_config)
@@ -9883,7 +9890,7 @@ index 70ef1d79a..cdf395f1e 100644
      def execute_model(
          self,
          scheduler_output: "SchedulerOutput",
-@@ -2445,166 +2462,193 @@ class NPUModelRunner(GPUModelRunner):
+@@ -2446,166 +2463,193 @@ class NPUModelRunner(GPUModelRunner):
          # Clear ephemeral state.
          self.execute_model_state = None
  
@@ -10216,7 +10223,7 @@ index 70ef1d79a..cdf395f1e 100644
          )
          self.input_batch.set_async_sampled_token_ids(
              async_output.sampled_token_ids_cpu,
-@@ -2612,6 +2656,7 @@ class NPUModelRunner(GPUModelRunner):
+@@ -2613,6 +2657,7 @@ class NPUModelRunner(GPUModelRunner):
          )
          return async_output
  
@@ -10225,7 +10232,7 @@ index 70ef1d79a..cdf395f1e 100644
      def _sample(self, logits, spec_decode_metadata):
          # Sample the next token and get logprobs if needed.
 diff --git a/vllm_ascend/worker/worker.py b/vllm_ascend/worker/worker.py
-index 44be7c7d2..0e212f524 100644
+index 2af382688..a6e2197dc 100644
 --- a/vllm_ascend/worker/worker.py
 +++ b/vllm_ascend/worker/worker.py
 @@ -61,6 +61,7 @@ from vllm_ascend.cpu_binding import bind_cpus
@@ -10236,7 +10243,7 @@ index 44be7c7d2..0e212f524 100644
  from vllm_ascend.ops.triton.triton_utils import init_device_properties_triton
  from vllm_ascend.profiler.torch_npu_profiler import TorchNPUProfilerWrapper
  from vllm_ascend.utils import (
-@@ -982,6 +983,9 @@ class NPUWorker(WorkerBase):
+@@ -984,6 +985,9 @@ class NPUWorker(WorkerBase):
      def reset_encoder_cache(self) -> None:
          self.model_runner.reset_encoder_cache()
  
