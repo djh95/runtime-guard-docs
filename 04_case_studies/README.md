@@ -118,6 +118,14 @@
 
 `S10′` 在仓库里的目录名是 **`S10p`**。相关 Skills 见 [06](../06_agent_skills/)（**v5.9**）。
 
+## 评估汇总（去刷分）
+
+| 编号 | 文档 | 备注 |
+|------|------|------|
+| A6 | [guard-skills-evaluation-20261018.md](./guard-skills-evaluation-20261018.md) | 去刷分评估 + 作用分 ≈0.53（合并取代旧 raw / PR-weighted / 作用分三文） |
+
+满量能力矩阵、mining 政策、verify-loop 等分析全文在内部仓 `runtime-guard-test/docs/`（需权限）；公开 `04` 只保留本 keep-set + 上述合并评估。
+
 ## 样本字段
 
 `evidence/samples/` 里的样本 JSON 使用：
