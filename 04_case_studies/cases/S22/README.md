@@ -49,7 +49,7 @@ Spec 路径要用对 detector（主看 `spec_acceptance`）。acceptance 塌缩�
 （**L1** = 检测停点 / **L2** = 问题类停点；**不是** Transformer 层号。见 [④ 名词表 · L1/L2](../../README.md#名词怎么读先看这里)。）
 
 1. **现象与证据**——detector：主靠 `spec_acceptance`（detect=47）。现象见 `evidence/samples/` · `evidence/reports/`（`token_repeat` 条 prompt 为空、`spec_acceptance` 条有）。
-2. **排除（应做）**——分布性 / resample 类：仍可用重放 ids + KV 对比做排除性定界（一致则支撑非 KV）。**本案归档尚未附 KV 对比结论**。
+2. **排除（应做）**——分布性 / resample 类：仍可用重放 ids + KV 对比做排除性定界（一致则支撑非 KV）。**本案例归档尚未附 KV 对比结论**。
 3. **定界结论**——停在 **L2（问题类停点）**：spec resample RNG/SALT；≠S05 NaN。**L1（检测停点）**：`spec_acceptance` 已命中。结案：PASS；CRLF 源需锚点脚本 / ignore-whitespace。
 
 ## 证据文件

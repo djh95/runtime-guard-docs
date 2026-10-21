@@ -10,6 +10,7 @@
 | 三层率 | **58 / 37 / 48** |
 | Detector | `token_repeat` |
 | Origin | `both`（constructed） |
+| Guard pin | G2 · `f2aefd068c4bd299d91cf0a1fdf642a3f327308f` |
 | Run | 47_kv_swap-20261017T164919 @ builder 机 cards 10,11 |
 
 ## 1 · 现象
@@ -37,7 +38,7 @@ Attn 算子问题类（定界 **L2**）的对外保留案例代表（K/V swap）
 （**L1** = 检测停点 / **L2** = 问题类停点；**不是** Transformer 层号。见 [④ 名词表 · L1/L2](../../README.md#名词怎么读先看这里)。）
 
 1. **现象与证据**——detector：`token_repeat`（CJK / Trail 塌缩）。现象见 `evidence/samples/` · `evidence/reports/`。归档 report prompt 为空（合修前旧归档；见名词表 **report 空 prompt**，非「clear 过早」）。
-2. **排除（应做）**——重放抓 ids + 标杆/异常 KV 对比做排除。**本案归档尚未附 KV 对比结论**。
+2. **排除（应做）**——重放抓 ids + 标杆/异常 KV 对比做排除。**本案例归档尚未附 KV 对比结论**。
 3. **定界结论**——停在 **L2（问题类停点）**：Attn 前 K/V 对调；≠S34/S35/S41。**L1（检测停点）**：`token_repeat` 已命中。结案：PASS **58 / 37 / 48**。
 
 ## 证据文件

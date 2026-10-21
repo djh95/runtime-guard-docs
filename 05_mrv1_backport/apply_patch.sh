@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 # Apply MRV1 Runtime Guard wiring onto a clean BASE tree.
+# Patches are generated against docs BASE (see <release>/BASE.md / CHANGELOG) —
+# NOT against open PR tip trees. v0.26 / v0.30 tips may differ; do not checkout
+# PR tip then apply these patches. See PR_COMMIT_MAP.md「如何读本表」.
 # Usage:
 #   apply_patch.sh --release v0.23.0 /path/to/vllm-ascend
 #   apply_patch.sh /path/to/vllm-ascend          # auto-detect from describe/branch

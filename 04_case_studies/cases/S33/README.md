@@ -10,6 +10,7 @@
 | 三层率 | **130 / 17 / 48**（现行；detect=48/48；trigger/precision 随并发浮动，detect 为判定口径） |
 | Detector | `token_repeat` |
 | Origin | `both`（constructed softcap class） |
+| Guard pin | G2 · `f2aefd068c4bd299d91cf0a1fdf642a3f327308f` |
 | 模型 | Qwen3-8B |
 | Run | 双树 + 河名句 |
 
@@ -47,7 +48,7 @@ softcap 族要写清 incomplete 与 unstable overflow 的差别，避免和 S20 
 （**L1** = 检测停点 / **L2** = 问题类停点；**不是** Transformer 层号。见 [④ 名词表 · L1/L2](../../README.md#名词怎么读先看这里)。）
 
 1. **现象与证据**——detector：`token_repeat`×48。现象见 `evidence/samples/` · `evidence/reports/`。
-2. **排除（应做）**——空 prompt / 包内暂无 buggy+ref **不等于**「Q1–Q5 不适用」。有 report 即可：同 prompt 再 curl 抓服务端 `prompt_token_ids`，与异常 `output_token_ids` 合并后抓标杆 KV，对比异常 KV（一致→排除 KV；不一致→重开 KV 线）。**本案归档尚未附 KV 对比结论**。
+2. **排除（应做）**——空 prompt / 包内暂无 buggy+ref **不等于**「Q1–Q5 不适用」。有 report 即可：同 prompt 再 curl 抓服务端 `prompt_token_ids`，与异常 `output_token_ids` 合并后抓标杆 KV，对比异常 KV（一致→排除 KV；不一致→重开 KV 线）。**本案例归档尚未附 KV 对比结论**。
 3. **定界结论**——停在 **L2（问题类停点）**：softcap 缺 `*cap` rescale；≠S20 overflow/`!!!!`。**L1（检测停点）**：`token_repeat` 已命中。结案：PASS **130 / 17 / 48**；须双树写入。
 
 ## 证据文件

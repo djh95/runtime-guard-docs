@@ -41,7 +41,7 @@
 
 **人读优先级：** `README.md` ≫ `规格说明.md` · `overlay.patch`。
 
-**一案只留最终钉点**一套数字 / 样本 / report。
+**一个案例只留最终钉点**一套数字 / 样本 / report。
 
 ### 必选 / 条件
 
@@ -67,11 +67,11 @@
 | **样本** | 保存的请求 / 回复证据；应含 prompt + 输出，用来**读文意、核对坏没坏 / 是否误判**。仅有 prompt **字符串**的 sample **不能**当作可靠 tokenize 标杆（发出去的字符串 + 回来的 completion，再 encode 的结果可能与服务端不一致；处理 prompt 与处理 sample 的 tokenizer 也可能不同）。 |
 | **标杆请求（token ids）** | 需要可复现 tokenize / 定界对比时，请求侧以服务端或 Guard **实际捕获的 `prompt_token_ids`** 为准，**用 token ids 去抓 / 归档**，禁止「只存字符串、事后再 encode」当标杆。report 里 prompt 已空时：把**同一 prompt 再 curl**，手动 dump 取服务端实际 ids（仍禁止离线再 tokenize）。 |
 | **report 空 prompt** | report 里 `prompt_token_ids` / `prompt_text` 可能为空（output 仍常有）。**常见根因（热重载路径，S06 时序实测）**：首包 `scheduled_new_reqs` prefill 波上 `needs_sample_phase_hooks()` 仍为 false，Bug #9 预缓存整段被跳过，Store **从未写入** prompt；snapshot 时未必已 finished / clear。**不要**写成「请求结束后 clear / reap 过早导致本条空 prompt」——`clear`→zombie 是代码上的另一充分路径，但**不是** S06 空 report 的实测路径。**不是**请求没带 prompt，也不是脱敏。合入 [vllm-ascend#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) 后预缓存不再绑 hooks，同路径应写出非空 ids；本仓 keep-set **旧归档**可能仍为空（合修前样本）。空 ids **不等于**没有 `block_ids` / 不能武装 `dump_kv`，也**不等于**「Q1–Q5 不适用」——有 report 即可：**同 prompt 再 curl** 抓服务端 ids，与异常 `output_token_ids` 合并后做 **KV 排除定界**。**阅读**原文 → samples；**不要**从字符串补造 ids 填进旧 report。 |
-| **KV 排除定界** | 有异常 report 时的可执行路径：重放抓**实际** prompt token ids → 合并异常 **output token ids** → 抓标杆 KV → 对比异常 KV。**一致 → 排除 KV cache**（再转向规格所指的非 KV 类，如 MoE 路由）；**不一致 → 重开 KV 线**。规格字段 **`KV?=否`** 只表示根因**预期**不在 KV，**不是**跳过该排除步骤。包内若尚未附对账结果，应写明「路径可用；本案归档尚未附 KV 对比结论」，**不要**写「Q1–Q5 不适用」，也**不要**编造未跑的对比数字。 |
+| **KV 排除定界** | 有异常 report 时的可执行路径：重放抓**实际** prompt token ids → 合并异常 **output token ids** → 抓标杆 KV → 对比异常 KV。**一致 → 排除 KV cache**（再转向规格所指的非 KV 类，如 MoE 路由）；**不一致 → 重开 KV 线**。规格字段 **`KV?=否`** 只表示根因**预期**不在 KV，**不是**跳过该排除步骤。包内若尚未附对账结果，应写明「路径可用；本案例归档尚未附 KV 对比结论」，**不要**写「Q1–Q5 不适用」，也**不要**编造未跑的对比数字。 |
 | **三层计数** | **trigger**（注入路径打中次数）/ **precision**（输出被判异常的次数，≠ 模型精度）/ **detect**（Guard 报告命中次数）。三者不相等；见各包 `三层计数.json`。 |
 | **三层计数.json** | 三层明细（trigger / precision / detect、备注、detector 名等）。索引表数字通常摘自这里。 |
 | **跑批结果.json** | 跑批元数据 + 结案摘要（场景名、verdict、模型、run 路径、三层摘要）。和 `三层计数.json` 一起读。 |
-| **Guard pin** | 做异常案例实验时**钉死的 Runtime Guard / 产品树提交**（常见记作 G2 + git SHA，如 `f2aefd068…`，对应 A+#18644 一类合入点）。作用是各案、各次复现用同一套 Guard 代码，数字可比；`跑批结果.json` 里的 `wt_sha` 即该 pin。不是「别针」或硬件概念。**不是仓库当前最新 commit，而是实验钉死的那一颗**（例 G2=`f2aefd068…`，见跑批 `wt_sha`）。本 keep-set 默认 **MRV2 + 该 pin**。 |
+| **Guard pin** | 做异常案例实验时**钉死的 Runtime Guard / 产品树提交**（常见记作 G2 + git SHA，如 `f2aefd068…`，对应 A+#18644 一类合入点）。作用是各案例、各次复现用同一套 Guard 代码，数字可比；`跑批结果.json` 里的 `wt_sha` 即该 pin。不是「别针」或硬件概念。**不是仓库当前最新 commit，而是实验钉死的那一颗**（例 G2=`f2aefd068…`，见跑批 `wt_sha`）。本 keep-set 默认 **MRV2 + 该 pin**。 |
 | **复现模式（repro_mode）** | 这一跑**怎么打出异常**：概念上是「基线负载」vs「把**合法 knobs**（并发 / 温度 / util / prompt 形态等）调高以抬复现率」。**仍须**遵守 **origin-faithful**（禁止 NaN / fill 等伪造症状）。**不是**表里的 **Origin** 字段（异常落在哪棵代码树），也**不是** **Guard pin**（钉哪版 Guard）。本仓 `跑批结果.json` / `规格说明.md` 实际出现的枚举只有 **`origin_tuned`**：在 origin-faithful 前提下，用合法 knobs 抬高复现率后的钉点跑法（S23 规格写作 `origin_tuned`（minimal construct），是同值旁注，不是新枚举）。规格表若只列字段无长解释，含义见本 README。 |
 | **规格说明.md** | 案例规格：Origin、上游锚点、overlay、knobs、`repro_mode`、期望 detector——**只管复现**；`repro_mode` 白话见上表 **复现模式**。 |
 | **overlay / overlay.patch** | 制造异常用的代码补丁；完整补丁在 `evidence/`。 |
@@ -83,7 +83,7 @@
 | **跨请求内容相同的乱码** | 多次独立请求得到的异常输出彼此相同（同一段垃圾重复出现），不是每次随机不同。常见于 S07。对照：各请求乱码各不相同（如 S45）。 |
 | **内容相同计分** | 用「多条回复是否同一段文字」来估 precision 的做法；各请求内容不同时会低估（如 S45 记成 0）。 |
 | **复现技巧** | 对外文档里「怎么跑才能对齐本包结论」的步骤与负载（旧称「复现配方」，已不用）。过程旧文称 **历史记录**，不称「历史配方」。 |
-| **L1 / L2 定界** | **粗定界结论标签**（写在定界节**末尾**；**不是** Transformer 网络的第几层）。**L1** = **检测停点**：哪个 detector 命中了（或为何没检出）——常写作「L1（`token_repeat` 命中）」之类。**L2** = **问题类停点**：现象/根因归到哪一类故障（如 MoE 路由、RoPE、权重置零），不定界到具体元素或 commit。有 buggy+ref 对比后再走 [02](../02_problem_localization/README.md) 的 **Q1–Q5 细定界**（首坏 token/层、KV 是否异常等）；L1/L2 是粗停点，Q1–Q5 是有标杆后的细定界，不是互相替代的「适用/不适用」开关。定界节推荐顺序：① 现象与证据 → ② 排除（如 **KV 排除定界**；空 prompt 可重放抓 ids）→ ③ **定界结论**（L1/L2）。包内尚未附对账时写清排除路径并标注「本案归档尚未附 KV 对比结论」——**不要**因空 prompt / `KV?=否` 写「Q1–Q5 不适用」。 |
+| **L1 / L2 定界** | **粗定界结论标签**（写在定界节**末尾**；**不是** Transformer 网络的第几层）。**L1** = **检测停点**：哪个 detector 命中了（或为何没检出）——常写作「L1（`token_repeat` 命中）」之类。**L2** = **问题类停点**：现象/根因归到哪一类故障（如 MoE 路由、RoPE、权重置零），不定界到具体元素或 commit。有 buggy+ref 对比后再走 [02](../02_problem_localization/README.md) 的 **Q1–Q5 细定界**（首坏 token/层、KV 是否异常等）；L1/L2 是粗停点，Q1–Q5 是有标杆后的细定界，不是互相替代的「适用/不适用」开关。定界节推荐顺序：① 现象与证据 → ② 排除（如 **KV 排除定界**；空 prompt 可重放抓 ids）→ ③ **定界结论**（L1/L2）。包内尚未附对账时写清排除路径并标注「本案例归档尚未附 KV 对比结论」——**不要**因空 prompt / `KV?=否` 写「Q1–Q5 不适用」。 |
 
 ## 对外保留的 15 个典型案例
 
@@ -105,7 +105,7 @@
 | S47 | [cases/S47/](./cases/S47/) | PASS | Attn 前 K/V 对调 | CJK / Trail 塌缩 | `token_repeat` | 58 / 37 / 48 |
 | S33 | [cases/S33/](./cases/S33/) | PASS | softcap 缺 `*cap` rescale | `1.1.1…` 复读 | `token_repeat` | 130 / 17 / 48 |
 
-计数摘自各包 `evidence/三层计数.json`（每案一份最新对外结果）。脚注：
+计数摘自各包 `evidence/三层计数.json`（每个案例一份最新对外结果）。脚注：
 
 - **S06 †**：detect 按归档 `token_repeat` report×1 记 **1**（与 `三层计数.json` / 跑批结果一致）；表内为数字，PASS 说明见 [cases/S06](./cases/S06/) 备注。
 - **S07**：precision 记成 1，实为 48 次请求内容相同的乱码（以 samples + score 为准）。

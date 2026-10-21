@@ -49,7 +49,7 @@ Soft-inverse [vLLM#42379](https://github.com/vllm-project/vllm/pull/42379)：`As
 （**L1** = 检测停点 / **L2** = 问题类停点；**不是** Transformer 层号。见 [④ 名词表 · L1/L2](../../README.md#名词怎么读先看这里)。）
 
 1. **现象与证据**——detector：`token_repeat`×48（threshold=8）。现象见 `evidence/samples/` · `evidence/reports/`。归档 report prompt 为空（合修前旧归档；见名词表 **report 空 prompt**，非「clear 过早」）。
-2. **排除（应做）**——空 prompt 时可重放抓 ids，与 `output_token_ids` 合并后做标杆/异常 KV 排除。**本案归档尚未附 KV 对比结论**。
+2. **排除（应做）**——空 prompt 时可重放抓 ids，与 `output_token_ids` 合并后做标杆/异常 KV 排除。**本案例归档尚未附 KV 对比结论**。
 3. **定界结论**——停在 **L2（问题类停点）**：RMSNorm dtype / fp32-mul；≠S25/S31。**L1（检测停点）**：`token_repeat` 已命中。结案：PASS **354 / 16 / 48**；复现技巧同 S25。
 
 ## 证据文件

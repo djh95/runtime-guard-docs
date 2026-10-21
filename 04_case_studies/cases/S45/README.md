@@ -10,6 +10,7 @@
 | 三层率 | **16 / 4 / 0**（现行；trigger/precision 随并发浮动，detect 为判定口径） |
 | Detector | `token_repeat` + `logits_finite`（均 miss）；**乱码检测漏检** |
 | Origin | `both`（constructed wrong-topk-direction） |
+| Guard pin | G2 · `f2aefd068c4bd299d91cf0a1fdf642a3f327308f` |
 | 模型 | Qwen3-8B；**temp=0.8**（勿用 0） |
 | Run | 按复现技巧复现（双树 + temp=0.8） |
 

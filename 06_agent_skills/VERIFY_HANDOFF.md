@@ -128,7 +128,7 @@ FE 内常见文件：`layers.json` · `status.json` · `WHY_PASS.md` / `WHY_UNDE
 
 对 keep-set 每个 `scenario_id`：
 
-1. **读个案包** `$RG_DOCS/04_case_studies/cases/Sxx/` → 记下期望 detect / L / GAP / 对照 peer。  
+1. **读案例包** `$RG_DOCS/04_case_studies/cases/Sxx/` → 记下期望 detect / L / GAP / 对照 peer。  
 2. **读 FE** `$RG_TEST/tests/build-anomaly-env/fail-evidence/Sxx/`（S10′→`S10/`）：`layers.json`、WHY_*、samples。  
 3. **读历史 run** `$RG_TEST/docs/anomaly-skills-runs/Sxx-*.md`（或 batch 文件中对应段落）。  
 4. **跑 analysis（能跑则跑）**  
@@ -268,7 +268,7 @@ internal/skills-verify-results/2026-10-19/
 |------|------|
 | 本文件（docs） | `06_agent_skills/VERIFY_HANDOFF.md` |
 | 本文件（store） | `docs/skills-verify-handoff-for-agents-20261019.md` |
-| 15 个案包 | `04_case_studies/cases/Sxx/` |
+| 15 个案例包 | `04_case_studies/cases/Sxx/` |
 | Skills | `06_agent_skills/*/SKILL.md` |
 | FE（内部私有；满量） | `$RG_TEST/tests/build-anomaly-env/fail-evidence/Sxx/`；对外对照用本仓 `04_case_studies/cases/Sxx/evidence/` |
 | Runs（内部私有） | `$RG_TEST/docs/anomaly-skills-runs/`（公开仓不附满量归档） |

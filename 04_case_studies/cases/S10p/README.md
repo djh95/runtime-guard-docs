@@ -45,7 +45,7 @@ Overlay：强制 `needs_kv_cache_zeroing=False`，在 `BlockPool.get_new_blocks`
 （**L1** = 检测停点 / **L2** = 问题类停点；**不是** Transformer 层号。见 [④ 名词表 · L1/L2](../../README.md#名词怎么读先看这里)。）
 
 1. **现象与证据**——detector：`token_repeat` 命中（`evidence/reports/`；detect=79）。坏输出（复读 / `xxxx` 塌缩）见 `evidence/samples/`（prompt+completion）。
-2. **排除（应做）**——预期问题类在真 KV 脏读 / FullAttn 回收未清零：应用重放抓服务端 `prompt_token_ids`（空 report prompt 时同 prompt 再 curl）+ 合并 `output_token_ids`，做 buggy vs 标杆 KV 对账以**确认** KV 线（不是「Q1–Q5 不适用」）。**本案归档尚未附 KV 对比结论**。
+2. **排除（应做）**——预期问题类在真 KV 脏读 / FullAttn 回收未清零：应用重放抓服务端 `prompt_token_ids`（空 report prompt 时同 prompt 再 curl）+ 合并 `output_token_ids`，做 buggy vs 标杆 KV 对账以**确认** KV 线（不是「Q1–Q5 不适用」）。**本案例归档尚未附 KV 对比结论**。
 3. **定界结论**——停在 **L2（问题类停点）**：真 KV 脏读 / FullAttn 回收未清零（有进一步细定界潜力，不定界到元素/commit）。**L1（检测停点）**：`token_repeat` 已命中。结案：PASS **65 / 20 / 79**；precision 可用 samples 原文核对。
 
 ## 证据文件

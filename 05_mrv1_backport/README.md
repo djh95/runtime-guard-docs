@@ -18,7 +18,9 @@
 | 更早 / 未列出 | README「未适配」；勿硬套 |
 
 当前包版本与 BASE 见 **[CHANGELOG.md](./CHANGELOG.md)**。  
-上游 PR / commit 对照（main + 各 release）：**[PR_COMMIT_MAP.md](./PR_COMMIT_MAP.md)**。
+上游 PR / commit 对照（main + 各 release）：**[PR_COMMIT_MAP.md](./PR_COMMIT_MAP.md)**（含 **TBD** 含义、离线 patch vs open PR tip）。
+
+> **只打 CHANGELOG / `BASE.md` 上的 BASE。** `patches/` 相对 docs BASE 生成；open MRV1 PR tip（尤其 **v0.26** / **v0.30**）可能已漂移——**不要**先 checkout PR tip 再打本仓 patch。合 tip 用对应 PR；离线复现用 BASE + `apply_patch.sh`。
 
 ## 接线包 ≠ anomaly pin
 
