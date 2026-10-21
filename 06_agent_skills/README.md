@@ -2,7 +2,7 @@
 
 面向 Cursor / Agent：按现象启用 detectors、抓现场、离线对账、有标杆时做 KV 定界。
 
-> **权威：** 本目录 `runtime-guard-docs/06_agent_skills/`（含 [SKILLS_METADATA.md](./SKILLS_METADATA.md) **v5.8**）。  
+> **权威：** 本目录 `runtime-guard-docs/06_agent_skills/`（含 [SKILLS_METADATA.md](./SKILLS_METADATA.md) **v5.9**）。  
 > **镜像：** 内部仓 `runtime-guard-test/analysis/skill/`（rsync 同步；可短暂滞后）。  
 > 离线脚本（**可选 / 内部**）：`runtime-guard-test/analysis/scripts/`（需权限）。  
 > 产品实现：`vllm_ascend/observability/runtime_guard/`（[#16849](https://github.com/vllm-project/vllm-ascend/pull/16849) + [#18644](https://github.com/vllm-project/vllm-ascend/pull/18644)）。  
@@ -29,6 +29,8 @@
 | `runtime-guard-config-recommender` | 原子 · 在线 | **正式配置唯一来源**（排障 / 业务默认） |
 | `runtime-guard-analysis` | 原子 · 离线 | 已有 report（±dump）：汇总 / 关联 / verify / inspect |
 | `runtime-guard-ref-kv-dump` | 原子 · 离线+起服 | verify PASS 后 force-feed 抓 ref + 两表对比 |
+| `apply-mrv1-patch` | 运维 · 接线 | 多 release × **MRV1** Guard → [`05_mrv1_backport`](../05_mrv1_backport/) |
+| `apply-v030-mrv2-patch` | 运维 · 接线 | **v0.30 × MRV2** Guard → [`05_v030_backport`](../05_v030_backport/) |
 
 **隔离：** 在线配置 skill 不做读盘；离线 skill 不输出 `runtime_config`。  
 **门闩：** `ref-kv-dump` 前必须 `verify_request_kv` PASS。  
@@ -58,12 +60,13 @@ Anomaly 定界（有权限时）：`tests/build-anomaly-env/fail-evidence/Sxx/`�
 |----|------|
 | 已合入 detector | `token_repeat` / `logits_finite` / `spec_acceptance` |
 | **未合入**（勿启用） | `output_substring` / `token_logprob` / `slot_*` / `kv_state` |
-| Runner | **仅 Model Runner v2** |
+| Runner | 产品 main / `05_v030`：**MRV2**；历史 release 接线：`05_mrv1` → **MRV1** |
 | 热更 | 启动参数 `runtime_config_hot_reload=true`（**不是** JSON 里的 `reload_interval_seconds`） |
 | 停检 | `report.max_per_req`（**不是** `stop_after_alert`） |
 | Dump | 仅 native `dump_kv`；无 msprobe |
 | 默认全关 | **全关旁路**（static idle：detector/dump/热更全关；代码侧 `needs_sample_phase_hooks()` 为假时跳过 sample 壳） |
-| `releases/v0.30.0` backport | 见 [05](https://github.com/djh95/runtime-guard-docs/blob/main/05_v030_backport/README.md)（BASE 见 CHANGELOG）；含 #18450 Perf idle；**不含** main #18644 鲁棒修复集合 |
+| `releases/v0.30.0` MRV2 backport | 见 [05_v030](https://github.com/djh95/runtime-guard-docs/blob/main/05_v030_backport/README.md)（skill `apply-v030-mrv2-patch`）；**不含** #18644 |
+| 多 release MRV1 backport | 见 [05_mrv1](https://github.com/djh95/runtime-guard-docs/blob/main/05_mrv1_backport/README.md)（skill `apply-mrv1-patch`）；含 v0.30 MRV1，与 05_v030 互斥 |
 
 ## 权威与同步
 

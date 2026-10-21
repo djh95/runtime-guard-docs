@@ -1,4 +1,6 @@
-# ⑤ 版本 patch（`releases/v0.30.0` 发布线 / 未合入 Guard 时）
+# ⑤ 支持 0.30 MRV2 — `releases/v0.30.0` Guard 接线
+
+> Skill：`apply-v030-mrv2-patch`。同发布线若要 **MRV1**，用 [`05_mrv1_backport/v0.30.0`](../05_mrv1_backport/)（skill `apply-mrv1-patch`），**勿与本包叠打**。
 
 ## 何时需要
 

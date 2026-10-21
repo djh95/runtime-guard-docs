@@ -1,13 +1,14 @@
 # Runtime-Guard Skills Metadata
 
-版本：v5.8  
-Skill 列表（**不改名**）：`investigation` · `detector-sweep` · `config-recommender` · `analysis` · `ref-kv-dump`
+版本：v5.9  
+Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `analysis` · `ref-kv-dump` · **`apply-mrv1-patch`** · **`apply-v030-mrv2-patch`**
 
 ## Changelog（摘要）
 
 按波次归纳；细案 ID / FE 在内部仓 `runtime-guard-test`，不在此逐条堆叠。
 
-- **v5.8（现行）** — ones/zeros 收尾（约 S147–S152）：多为 `token_repeat` + L2；与近邻 mag/polarity 案区分。
+- **v5.9（现行）** — 接线 skills：`apply-mrv1-patch`（`05_mrv1_backport`）· `apply-v030-mrv2-patch`（`05_v030_backport`）；排障五件套不变。  
+- **v5.8** — ones/zeros 收尾（约 S147–S152）：多为 `token_repeat` + L2；与近邻 mag/polarity 案区分。
 - **v5.0–v5.7** — soft-inv C 矩阵扩展：hidden / embed / QKV / residual / RMSNorm / SwiGLU 的 ones·zeros 族。
 - **v4.x** — abs / scale / skip / half-swap 波；偶发走 `logits_finite`；部分 precision=0 仍可 detect PASS。
 - **v3.x** — mag/polarity 算子族（×÷ / negate）铺开 residual · RMSNorm · SwiGLU · attn。
@@ -34,6 +35,8 @@ Skill 列表（**不改名**）：`investigation` · `detector-sweep` · `config
 | config-recommender | 原子 · 在线配置 | 正式排障 / 业务默认配置唯一来源 |
 | analysis | 原子 · 离线读盘 | report/dump 汇总、关联、verify、inspect |
 | ref-kv-dump | 原子 · 标杆+对比 | force-feed 抓 ref + KV 首分歧 |
+| apply-mrv1-patch | 运维 · 接线 | 多 release × MRV1 → `05_mrv1_backport` |
+| apply-v030-mrv2-patch | 运维 · 接线 | v0.30 × MRV2 → `05_v030_backport` |
 
 原子 skill 可独立调用；**勿从原子 skill 反调 investigation**（靠 description / README 约定，非强制）。
 
