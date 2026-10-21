@@ -13,7 +13,7 @@
 | 使用 / 运维启服 | [01 如何启动 Guard](./01_enable_and_start/README.md) | [03 检测算法](./03_detectors/README.md) 按需 |
 | 一线维护 / 排障 | [01](./01_enable_and_start/README.md) → [02 问题定位分析](./02_problem_localization/README.md) | [04 实例](./04_case_studies/README.md)（`cases/Sxx` 完整包） |
 | Agent / 自动化排障 | [06 Agent Skills](./06_agent_skills/README.md) | [02](./02_problem_localization/README.md) + **内部私有** `$RG_TEST` 脚本（有权限时） |
-| 开发 / 算法理解 | [03 检测算法](./03_detectors/README.md) | 源码链接（文内 GitHub） |
+| 开发 / 算法理解 | [03 检测算法](./03_detectors/README.md) | [07 架构 UML 十四图](./07_architecture/guard-runtime-config-uml-14.md) |
 | `releases/v0.30.0` × **MRV2** | [05_v030 MRV2](./05_v030_backport/README.md) | skill `apply-v030-mrv2-patch`；BASE 见 CHANGELOG |
 | 历史/常用 release × **MRV1**（含 v0.30 MRV1） | [05_mrv1 MRV1](./05_mrv1_backport/README.md) | skill `apply-mrv1-patch`；与 05_v030 勿叠打 |
 
@@ -28,6 +28,7 @@ README.md                          ← 本页（总目录）
 05_mrv1_backport/                  ← ⑤ 支持 MRV1（多 release 接线）
 05_v030_backport/                  ← ⑤ 支持 0.30 MRV2（仅 V2）
 06_agent_skills/                   ← ⑥ Skills v5.9 权威；test analysis/skill/ 为镜像
+07_architecture/                   ← ⑦ 架构 UML（Guard + runtime_config 十四图）
 ```
 
 ## 相对原思路的完善点
