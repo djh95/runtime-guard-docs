@@ -7,7 +7,7 @@
 | 项 | 值 |
 |----|-----|
 | 结果 | **PASS** |
-| 三层率 | **126 / 0 / 47**（现行） |
+| 三层率 | **126 / 0 / 47**（现行；trigger/precision 随并发浮动，detect 为判定口径） |
 | Detector | `spec_acceptance`（主）+ `token_repeat` |
 | Origin | `ascend-only`（+ vLLM#61161 cousin） |
 | Guard pin | G2 f2aefd068（已缺 RESAMPLE_NOISE_SALT） |

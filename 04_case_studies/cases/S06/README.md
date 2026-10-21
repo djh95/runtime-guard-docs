@@ -7,12 +7,13 @@
 | 项 | 值 |
 |----|-----|
 | 结果 | **PASS** |
-| 三层率 | **70 / 1 / 1**（detect 以 `token_repeat` report×1 为准） |
+| 三层率 | **70 / 1 / 1** |
 | Detector | `token_repeat` |
 | Origin | `both` |
 | Guard pin | G2 f2aefd068 |
 | 模型 | DeepSeek-V2-Lite |
 | Run | 06_moe_routing_bias-20261016T081459 @ skills 机 cards 0,1 |
+| 备注 | detect=1 来自归档 `token_repeat` report×1（与 `evidence/三层计数.json` 一致）；PASS 以该数字为准 |
 
 ## 1 · 现象
 

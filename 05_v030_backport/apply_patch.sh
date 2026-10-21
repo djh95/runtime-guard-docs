@@ -44,5 +44,5 @@ for p in "${patches[@]}"; do
 done
 
 echo "OK: all patches applied. Rebuild/install, then follow:"
-echo "  docs/wiki/runtime_guard/01_enable_and_start.md"
+echo "  01_enable_and_start/README.md  (runtime-guard-docs repo)"
 echo "Record: git rev-parse HEAD && ls ${PATCH_DIR}"

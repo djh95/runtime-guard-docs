@@ -7,7 +7,7 @@
 | 项 | 值 |
 |----|-----|
 | 结果 | **FAIL+GAP** |
-| 三层率 | **16 / 4 / 0**（现行） |
+| 三层率 | **16 / 4 / 0**（现行；trigger/precision 随并发浮动，detect 为判定口径） |
 | Detector | `token_repeat` + `logits_finite`（均 miss）；**乱码检测漏检** |
 | Origin | `both`（constructed wrong-topk-direction） |
 | 模型 | Qwen3-8B；**temp=0.8**（勿用 0） |

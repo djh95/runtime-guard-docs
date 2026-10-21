@@ -105,15 +105,16 @@
 | S47 | [cases/S47/](./cases/S47/) | PASS | Attn 前 K/V 对调 | CJK / Trail 塌缩 | `token_repeat` | 58 / 37 / 48 |
 | S33 | [cases/S33/](./cases/S33/) | PASS | softcap 缺 `*cap` rescale | `1.1.1…` 复读 | `token_repeat` | 130 / 17 / 48 |
 
-计数摘自各包 `evidence/三层计数.json`。脚注：
+计数摘自各包 `evidence/三层计数.json`（每案一份最新对外结果）。脚注：
 
-- **S06 †**：detect 按归档 `token_repeat` report×1 记 **1**（与 `三层计数.json` / 跑批结果一致）。
+- **S06 †**：detect 按归档 `token_repeat` report×1 记 **1**（与 `三层计数.json` / 跑批结果一致）；表内为数字，PASS 说明见 [cases/S06](./cases/S06/) 备注。
 - **S07**：precision 记成 1，实为 48 次请求内容相同的乱码（以 samples + score 为准）。
 - **S10′**：`precision=20` 可对照 `cases/S10p/evidence/samples/`（T181551）；detect=79 见 `evidence/reports/report_sample.json`。
 - **S11**：`precision=39` 可对照 `cases/S11/evidence/samples/`（T190840）。
+- **S23**：trigger=2 为 boot 置零（TP2 每卡一次），precision/detect 按请求计，故可 **precision > trigger**；结案看 detect=48。见 [cases/S23](./cases/S23/)。
 - **S45**：`precision=4` 仍偏低估（各不相同乱码）；样本为准。复现技巧：双树写入 + temp=0.8 → **16 / 4 / 0**。
-- **S22 / S25 / S26 / S33**：表内为现行 t/p/d；复现要点见各包（S22：锚点脚本避 CRLF/LF；S25/S26：河名句×48 并发 + threshold=8；S33：双树 + 河名句）。
-- **S01 †**：CJK 排除后 **precision=0**；dense 满量 overlay trigger=154 仍无坏输出。见 [cases/S01/](./cases/S01/)。**与 S10′ 对照**：同属 KV 脏读族，但 S01 需 hybrid/量化 KV 才有目标症状；S10′ 在 dense FullAttn 回收路径上即可打出塌缩并被 `token_repeat` 检出。
+- **S22 / S25 / S26 / S33 / S45**：表内为现行 t/p/d；**trigger/precision 随并发浮动，detect 为判定口径**。复现要点见各包（S22：锚点脚本避 CRLF/LF；S25/S26：河名句×48 并发 + threshold=8；S33：双树 + 河名句）。
+- **S01 †**：CJK / 早期脚本曾把通顺中文计成 precision 疑误判；现行 **排除 CJK 后 precision=0**；dense 满量 overlay trigger=154 仍无坏输出。见 [cases/S01/](./cases/S01/)。**与 S10′ 对照**：同属 KV 脏读族，但 S01 需 hybrid/量化 KV 才有目标症状；S10′ 在 dense FullAttn 回收路径上即可打出塌缩并被 `token_repeat` 检出。
 
 `S10′` 在仓库里的目录名是 **`S10p`**。相关 Skills 见 [06](../06_agent_skills/)（**v5.9**）。
 

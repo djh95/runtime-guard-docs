@@ -7,7 +7,7 @@
 | 项 | 值 |
 |----|-----|
 | 结果 | **PASS** |
-| 三层率 | **130 / 17 / 48**（现行；detect=48/48） |
+| 三层率 | **130 / 17 / 48**（现行；detect=48/48；trigger/precision 随并发浮动，detect 为判定口径） |
 | Detector | `token_repeat` |
 | Origin | `both`（constructed softcap class） |
 | 模型 | Qwen3-8B |

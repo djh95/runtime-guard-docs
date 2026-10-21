@@ -21,7 +21,7 @@
 
 Overlay 打上后服务仍 200。可见 completion 是通顺中英散文（华为 NPU / vLLM 介绍），**不是**乱码。样本见 [evidence/samples/](./evidence/samples/)。
 
-**CJK 是什么：** 中日韩字符。评分须排除 CJK 后再计 weird——通顺中文 ≠ `garbage_mixed_script`。本包排除后 weird≈0 → **precision=0**。没有坏输出时，**不要**写成 FAIL+GAP。
+**CJK 是什么：** 中日韩字符。早期评分曾把通顺中文计成 `garbage_mixed_script`（**precision≈CJK / early-script 疑误判**）；现行须排除 CJK 后再计 weird——通顺中文 ≠ 乱码。本包排除后 weird≈0 → **precision=0**（不另造数字）。没有坏输出时，**不要**写成 FAIL+GAP。
 
 ### 为何 S01 复现不出、S10′ 可以
 

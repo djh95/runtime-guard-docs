@@ -109,5 +109,5 @@ for p in "${patches[@]}"; do
 done
 
 echo "OK: MRV1 Guard wiring applied for ${RELEASE}."
-echo "Rebuild/install, then follow docs 01_enable_and_start (use Model Runner V1)."
+echo "Rebuild/install, then follow 01_enable_and_start/README.md (runtime-guard-docs; use Model Runner V1)."
 echo "Record: git rev-parse HEAD && ls ${PATCH_DIR}"

@@ -13,6 +13,8 @@
 | 模型 | Qwen3-8B layer=15 o_proj |
 | Run | 23_weight_layer_corrupt-20261017T104359 @ builder 机 cards 10,11 |
 
+> **口径：** trigger=2 是 boot 时 `ANOMALY_TRIGGER`（TP2 每卡一次置零），不是「每请求触发」；precision / detect 按请求计，故可出现 **precision > trigger**。结案以 **detect=48** 为准。
+
 ## 1 · 现象
 
 跨请求内容相同塌缩×17；`token_repeat`×48。
