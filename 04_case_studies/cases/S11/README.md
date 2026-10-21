@@ -12,7 +12,7 @@
 | Origin | `ascend-only` |
 | Guard pin | G2 f2aefd068 |
 | 模型 | DeepSeek-V2-Lite MLA bf16 |
-| Run | 11_mla_rope_pad-20261016T190840 @ 160 cards 4,5 |
+| Run | 11_mla_rope_pad-20261016T190840 @ builder 机 cards 4,5 |
 
 ## 1 · 现象
 

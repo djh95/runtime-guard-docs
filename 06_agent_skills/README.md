@@ -3,8 +3,8 @@
 面向 Cursor / Agent：按现象启用 detectors、抓现场、离线对账、有标杆时做 KV 定界。
 
 > **权威：** 本目录 `runtime-guard-docs/06_agent_skills/`（含 [SKILLS_METADATA.md](./SKILLS_METADATA.md) **v5.9**）。  
-> **镜像：** 内部仓 `runtime-guard-test/analysis/skill/`（rsync 同步；可短暂滞后）。  
-> 离线脚本（**可选 / 内部**）：`runtime-guard-test/analysis/scripts/`（需权限）。  
+> **镜像：** **内部私有**仓 `$RG_TEST/analysis/skill/`（rsync 同步；可短暂滞后；勿发公开 blob）。  
+> 离线脚本（**可选 / 内部私有**）：`$RG_TEST/analysis/scripts/`（需权限；无权限跳过）。  
 > 产品实现：`vllm_ascend/observability/runtime_guard/`（[#16849](https://github.com/vllm-project/vllm-ascend/pull/16849) + [#18644](https://github.com/vllm-project/vllm-ascend/pull/18644)）。  
 > 人读流程仍以 [02 问题定位](../02_problem_localization/README.md) 为准；skill 负责可执行编排。
 
@@ -14,7 +14,7 @@
 
 | 仍可做 | 须停止 / 跳过 |
 |--------|----------------|
-| 读 METADATA / 各 skill README；用 sweep / recommender 产出配置 | 勿假设能 clone `runtime-guard-test` |
+| 读 METADATA / 各 skill README；用 sweep / recommender 产出配置 | 勿假设能 clone **内部私有** `runtime-guard-test` |
 | 人工读 `report_*.json`；交付停在「类 + 现场」 | 勿跑 `analysis.scripts.*`；勿宣称 verify/ref 已完成 |
 | 按 02 无标杆停点交接 | FE / 满量 runs / 大体积分析 —— **内部可选** |
 
@@ -38,7 +38,7 @@
 
 ## 脚本怎么跑（可选 · 内部仓）
 
-需已 clone **内部** `runtime-guard-test`。无权限则跳过本节（见上「无内部仓权限时」）。入口**仅**：
+需已 clone **内部私有** `runtime-guard-test`（SSH/本地路径；勿贴公开 HTTPS blob）。无权限则跳过本节（见上「无内部仓权限时」）。入口**仅**：
 
 ```bash
 export RG_TEST=/path/to/runtime-guard-test
@@ -50,7 +50,7 @@ PYTHONPATH="$RG_TEST" python -m analysis.scripts.<name> --help
 `prepare_ref_inputs` / `request_from_report` / `locate_first_divergence` / `compare_kv_similarity` /  
 `compare_per_layer` / `stitch_kv`。
 
-Anomaly 定界（有权限时）：`tests/build-anomaly-env/fail-evidence/Sxx/`；契约见 [SKILLS_METADATA.md](./SKILLS_METADATA.md)（**v5.8**）。
+Anomaly 定界（有权限时）：内部 FE 树 `$RG_TEST/tests/build-anomaly-env/fail-evidence/Sxx/`；对外对照用本仓 `04_case_studies/cases/Sxx/evidence/`。契约见 [SKILLS_METADATA.md](./SKILLS_METADATA.md)（**v5.9**）。
 
 **给其他 Agent 的离线复核包（15 典型 keep-set）：** [VERIFY_HANDOFF.md](./VERIFY_HANDOFF.md)。
 
@@ -71,7 +71,7 @@ Anomaly 定界（有权限时）：`tests/build-anomaly-env/fail-evidence/Sxx/`�
 ## 权威与同步
 
 - **Ownership：** skills 权威 = 本目录；test `analysis/skill/` = 镜像。  
-- **Ownership：** 04 分析全文 / FE / runs 权威 = `runtime-guard-test/docs/`；公开 `04` = `cases/Sxx/` 完整包。  
+- **Ownership：** 04 分析全文 / FE / runs 权威 = **内部私有** `$RG_TEST/docs/`；公开 `04` = 本仓 `cases/Sxx/` 完整包（含 `evidence/`）。  
 - 回写镜像（有权限时）：
 
 ```bash

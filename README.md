@@ -4,7 +4,7 @@
 > 面向：内部/外部开发、业务使用方、一线维护。  
 > 目标：会启、会用、能抓现场、能做**问题初步定界**（不是根因定位工具链）。  
 > **公开可读：** 启停手册、检测说明、**15×`cases/Sxx`**、skills 契约（`06`，**v5.9**）。  
-> **需内部仓权限：** 离线脚本 / FE / 满量 runs / 大体积分析矩阵 → **`runtime-guard-test`**（克隆后用本地路径；对外 HTTPS blob 会 404，勿当公开资源）。
+> **需内部仓权限：** 离线脚本 / FE / 满量 runs / 大体积分析矩阵 → **内部私有**仓 **`runtime-guard-test`**（有权限用本地/`$RG_TEST` 路径；**勿**发 `https://github.com/…/runtime-guard-test/…` 公开 blob，匿名会 404）。
 
 ## 读法（按角色）
 
@@ -12,7 +12,7 @@
 |------|------|------|
 | 使用 / 运维启服 | [01 如何启动 Guard](./01_enable_and_start/README.md) | [03 检测算法](./03_detectors/README.md) 按需 |
 | 一线维护 / 排障 | [01](./01_enable_and_start/README.md) → [02 问题定位分析](./02_problem_localization/README.md) | [04 实例](./04_case_studies/README.md)（`cases/Sxx` 完整包） |
-| Agent / 自动化排障 | [06 Agent Skills](./06_agent_skills/README.md) | [02](./02_problem_localization/README.md) + 内部仓 `runtime-guard-test` 脚本 |
+| Agent / 自动化排障 | [06 Agent Skills](./06_agent_skills/README.md) | [02](./02_problem_localization/README.md) + **内部私有** `$RG_TEST` 脚本（有权限时） |
 | 开发 / 算法理解 | [03 检测算法](./03_detectors/README.md) | 源码链接（文内 GitHub） |
 | `releases/v0.30.0` × **MRV2** | [05_v030 MRV2](./05_v030_backport/README.md) | skill `apply-v030-mrv2-patch`；BASE 见 CHANGELOG |
 | 历史/常用 release × **MRV1**（含 v0.30 MRV1） | [05_mrv1 MRV1](./05_mrv1_backport/README.md) | skill `apply-mrv1-patch`；与 05_v030 勿叠打 |
@@ -35,7 +35,7 @@ README.md                          ← 本页（总目录）
 1. **启动与运维合一**：① 不只写命令，补路径/拓扑/热更/误区（一线最常踩坑）。  
 2. **② 先讲清「能做什么 / 停在哪」**：定界 ≠ 定位；偶发抓现场 vs 必现但无标杆；输出交付模板。  
 3. **③ 算法一文一 detector**：参数、阶段、误报/漏报、与 dump 的关系分开维护。  
-4. **④ 实例与流程解耦**：流程稳定在 ②；公开 `04` = **15×`cases/Sxx` 完整包**；满量 FE/runs/大矩阵只在私有 **runtime-guard-test**（公开不放「见 test」空壳）。  
+4. **④ 实例与流程解耦**：流程稳定在 ②；公开 `04` = **15×`cases/Sxx` 完整包**（证据在包内 `evidence/`）；满量 FE/runs/大矩阵只在**内部私有** `runtime-guard-test`（公开不放「见 test」空壳 / 不链公开 blob）。  
 5. **⑤ 接线两包**：MRV1 → [`05_mrv1_backport`](./05_mrv1_backport/)；0.30 MRV2 → [`05_v030_backport`](./05_v030_backport/)。更高版本先确认原生是否已支持。  
 6. **⑥ Agent Skills**：排障五件套 + 两个接线 skill；人读仍以 ② 为准。
 

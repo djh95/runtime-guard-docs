@@ -12,7 +12,7 @@ description: >-
 
 **类型：原子 · 离线。** 只读磁盘；不改 live config、不起服、不 force-feed。
 
-脚本仓：内部 `runtime-guard-test` · 定界人读：[02](https://github.com/djh95/runtime-guard-docs/blob/main/02_problem_localization/README.md)  
+脚本仓：**内部私有** `runtime-guard-test`（`$RG_TEST`；勿发公开 HTTPS blob） · 定界人读：[02](https://github.com/djh95/runtime-guard-docs/blob/main/02_problem_localization/README.md)  
 契约：[SKILLS_METADATA.md](./SKILLS_METADATA.md)
 
 ```bash
@@ -21,7 +21,7 @@ alias rgpy='PYTHONPATH="$RG_TEST" python -m analysis.scripts'
 ```
 
 默认 `--report-dir`：`./runtime/report`（可问用户确认）。  
-Anomaly 证据树：`tests/build-anomaly-env/fail-evidence/Sxx/`（`status.json` / `layers.json` / `WHY_*.md` / reports|samples）。
+Anomaly 证据树（内部 FE）：`$RG_TEST/tests/build-anomaly-env/fail-evidence/Sxx/`；公开对照：本仓 `04_case_studies/cases/Sxx/evidence/`（`status`/`layers`/reports|samples 等）。
 
 ## 流程
 

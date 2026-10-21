@@ -10,7 +10,7 @@
 | 三层率 | **58 / 48 / 48** |
 | Detector | `logits_finite` |
 | Origin | `both`（constructed） |
-| Run | 50_swiglu_swap_halves-20261017T171204 @ 160 cards 12,13 |
+| Run | 50_swiglu_swap_halves-20261017T171204 @ builder 机 cards 12,13 |
 
 ## 1 · 现象
 

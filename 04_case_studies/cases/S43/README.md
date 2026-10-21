@@ -10,7 +10,7 @@
 | 三层率 | **16 / 40 / 48** |
 | Detector | `token_repeat` |
 | Origin | `both`（constructed） |
-| Run | 43_embed_scale_blowup-20261017T153923 @ 160 cards 10,11 |
+| Run | 43_embed_scale_blowup-20261017T153923 @ builder 机 cards 10,11 |
 
 ## 1 · 现象
 

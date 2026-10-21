@@ -10,7 +10,7 @@
 | 三层率 | **100 / 48 / 48** |
 | Detector | `logits_finite` |
 | Origin | `both`（constructed） |
-| Run | 48_residual_negate-20261017T165947 @ 160 cards 8,9 |
+| Run | 48_residual_negate-20261017T165947 @ builder 机 cards 8,9 |
 
 ## 1 · 现象
 

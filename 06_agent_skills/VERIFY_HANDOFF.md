@@ -2,7 +2,7 @@
 title: Skills verify handoff — 15 typical anomaly cases
 date: 2026-10-19
 audience: other agents (offline skills verification)
-skills_pin: v5.8 / SKILLS_METADATA.md
+skills_pin: v5.9 / SKILLS_METADATA.md
 keep_set: typical-cases-keep-set-20261019.md (N=15)
 ---
 
@@ -17,7 +17,7 @@ keep_set: typical-cases-keep-set-20261019.md (N=15)
 | 用已落盘 evidence + 历史 runs，按 5 个 skill 契约复盘 | 新挖 bug / 扩 C 类 soft-inv 刷分 |
 | 对照「期望 detect / L 级 / GAP」判 PASS·FAIL | 为刷 PASS 改 overlay / 造 NaN·`fill_` |
 | 写清 gaps + 一句 skill lever 建议 | 宣称 L4 / 根因 commit |
-| 结果落到约定路径（见 §6） | 占 **160** 卡做 builder 重跑（默认） |
+| 结果落到约定路径（见 §6） | 占 **builder 机** 卡做 builder 重跑（默认） |
 
 **成功标准：** 15/15 各有一条 JSON + 一篇短 MD；另有一份 rollup；本 Project 能据此改 `investigation` / `analysis` 而不必重读 FE 原文。
 
@@ -27,12 +27,12 @@ keep_set: typical-cases-keep-set-20261019.md (N=15)
 
 | 角色 | 主机习惯 | 做什么 | 不要做什么 |
 |------|----------|--------|------------|
-| **Skills / verify** | **162**（skills host） | 读仓、跑离线脚本、写 verify 结果 | **不要抢 160 卡** |
-| **Builder / live repro** | **160** | 起服、打 overlay、写 FE | verify 默认**不**在这里重做 |
+| **Skills / verify** | **skills 机** | 读仓、跑离线脚本、写 verify 结果 | **不要抢 builder 机卡** |
+| **Builder / live repro** | **builder 机** | 起服、打 overlay、写 FE | verify 默认**不**在这里重做 |
 
-**本轮默认 = 纯离线**（162 或任意能 clone 两仓的机器即可；**不需要 NPU** 也能完成 analysis 读盘路径）。
+**本轮默认 = 纯离线**（skills 机或任意能 clone 两仓的机器即可；**不需要 NPU** 也能完成 analysis 读盘路径）。
 
-仅当 FE 缺 report/samples、或要对齐「现网 skill 是否仍能检出」时，才申请 **160** 按 PRINCIPLES **live 复开**（见 §4）。
+仅当 FE 缺 report/samples、或要对齐「现网 skill 是否仍能检出」时，才申请 **builder 机** 按 PRINCIPLES **live 复开**（见 §4）。
 
 ### 仓库
 
@@ -48,7 +48,7 @@ export RG_TEST=/path/to/runtime-guard-test
 export PYTHONPATH="$RG_TEST"
 ```
 
-- Skills **公开权威**：`$RG_DOCS/06_agent_skills/`（SKILLS_METADATA **v5.8**）。内部镜像：`$RG_TEST/analysis/skill/`（可 rsync 回写；勿假设时刻 bit-identical）。
+- Skills **公开权威**：`$RG_DOCS/06_agent_skills/`（SKILLS_METADATA **v5.9**）。内部镜像：`$RG_TEST/analysis/skill/`（可 rsync 回写；勿假设时刻 bit-identical）。
 - 离线脚本：`$RG_TEST/analysis/scripts/`（`summarize_reports` / `score_completion_samples` / `verify_request_kv` / …）。
 - 模型权重 / 卡号：离线复核**不依赖**；live 复开时沿用各 FE `status.json` / SPEC 中的 MODEL·TOPO（常见 Qwen3-8B TP2、DeepSeek-V2-Lite MLA 等）——**以 FE 为准，勿臆造**。
 
@@ -71,7 +71,7 @@ Project Agent Store（本会话结果落点，非公开 Git）：
 | **config-recommender** | `06_agent_skills/config-recommender/SKILL.md` | 仅 live；离线可对照 FE 里当时 config 是否合理 |
 | **ref-kv-dump** | `06_agent_skills/ref-kv-dump/SKILL.md` | 仅当 FE 有完整 dump **且**要验 L3；keep-set 多数停 L1/L2，**默认不做** |
 
-契约：`06_agent_skills/SKILLS_METADATA.md`（当前 **v5.8**）。  
+契约：`06_agent_skills/SKILLS_METADATA.md`（当前 **v5.9**）。  
 镜像：`$RG_TEST/analysis/skill/`。
 
 ### 3.2 典型案例文档（15）
@@ -108,7 +108,7 @@ Project Agent Store（本会话结果落点，非公开 Git）：
 | Principles | `$RG_DOCS/04_case_studies/anomaly-PRINCIPLES.md`（镜像 test `tests/build-anomaly-env/PRINCIPLES.md`） |
 | Mining policy | `$RG_TEST/docs/anomaly-mining-policy-pr-rooted-20261018.md` |
 | Verify loop 旧笔记 | `$RG_TEST/docs/anomaly-skills-verify-loop-20261017.md` |
-| Builder handoff（160↔162） | `$RG_TEST/docs/anomaly-skills-handoff.md` |
+| Builder handoff（builder 机↔skills 机） | `$RG_TEST/docs/anomaly-skills-handoff.md`（内部私有） |
 | Overlay / MATRIX | `$RG_TEST/tests/build-anomaly-env/{README,MATRIX,INJECTION,PRINCIPLES}.md` + 各 `NN_* / SPEC` |
 
 FE 内常见文件：`layers.json` · `status.json` · `WHY_PASS.md` / `WHY_UNDETECTED.md` · `sample_*.json` · 尝试子目录（含 report/dump 痕迹）。
@@ -119,7 +119,7 @@ FE 内常见文件：`layers.json` · `status.json` · `WHY_PASS.md` / `WHY_UNDE
 
 1. **优先离线：** 只读 §3.3 FE + runs + `cases/Sxx/`；用 `PYTHONPATH=$RG_TEST` 跑 analysis 脚本。  
 2. **协议：** 任何 live 复开必须遵守 `anomaly-PRINCIPLES.md`（origin-faithful；禁止 NaN/`fill_` 放大器）。  
-3. **Live 仅当：** FE 无可用 samples/report、或要确认「当前 skill 文案 vs 现网 detector」；走 160 builder，参考各场景 `SPEC.md` / overlay 与 `tests/build-anomaly-env/scripts/sNN_*_concurrent_repro.py`（若存在）。  
+3. **Live 仅当：** FE 无可用 samples/report、或要确认「当前 skill 文案 vs 现网 detector」；走 builder 机，参考各场景 `SPEC.md` / overlay 与 `tests/build-anomaly-env/scripts/sNN_*_concurrent_repro.py`（若存在）。  
 4. **不要**为 verify 批量重跑 S51–S152 C 类矩阵。
 
 ---
@@ -174,7 +174,7 @@ internal/skills-verify-results/2026-10-19/
   "scenario_id": "S01",
   "evidence_path": "tests/build-anomaly-env/fail-evidence/S01/",
   "case_doc": "04_case_studies/cases/S01/",
-  "skills_version": "v5.8",
+  "skills_version": "v5.9",
   "verify_mode": "offline",
   "expected": {
     "detect": false,
@@ -213,7 +213,7 @@ internal/skills-verify-results/2026-10-19/
 ```json
 {
   "date": "2026-10-19",
-  "skills_version": "v5.8",
+  "skills_version": "v5.9",
   "keep_set_n": 15,
   "summary": {
     "match_expected": 0,
@@ -270,5 +270,5 @@ internal/skills-verify-results/2026-10-19/
 | 本文件（store） | `docs/skills-verify-handoff-for-agents-20261019.md` |
 | 15 个案包 | `04_case_studies/cases/Sxx/` |
 | Skills | `06_agent_skills/*/SKILL.md` |
-| FE | `runtime-guard-test/.../fail-evidence/Sxx/` |
-| Runs | `runtime-guard-test/docs/anomaly-skills-runs/` |
+| FE（内部私有；满量） | `$RG_TEST/tests/build-anomaly-env/fail-evidence/Sxx/`；对外对照用本仓 `04_case_studies/cases/Sxx/evidence/` |
+| Runs（内部私有） | `$RG_TEST/docs/anomaly-skills-runs/`（公开仓不附满量归档） |

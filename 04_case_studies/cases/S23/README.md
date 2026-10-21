@@ -11,7 +11,7 @@
 | Detector | `token_repeat` |
 | Origin | `both`（constructed weight-fault） |
 | 模型 | Qwen3-8B layer=15 o_proj |
-| Run | 23_weight_layer_corrupt-20261017T104359 @ 160 cards 10,11 |
+| Run | 23_weight_layer_corrupt-20261017T104359 @ builder 机 cards 10,11 |
 
 ## 1 · 现象
 

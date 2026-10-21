@@ -15,7 +15,7 @@ description: >-
 
 手册：[02](https://github.com/djh95/runtime-guard-docs/blob/main/02_problem_localization/README.md) · [01](https://github.com/djh95/runtime-guard-docs/blob/main/01_enable_and_start/README.md) · [03](https://github.com/djh95/runtime-guard-docs/blob/main/03_detectors/README.md)  
 契约：[SKILLS_METADATA.md](./SKILLS_METADATA.md)  
-脚本仓：内部 `runtime-guard-test`  
+脚本仓：**内部私有** `runtime-guard-test`（`$RG_TEST`；勿发公开 HTTPS blob）  
 产品：`vllm_ascend/observability/runtime_guard/`（[#16849](https://github.com/vllm-project/vllm-ascend/pull/16849)/[#18644](https://github.com/vllm-project/vllm-ascend/pull/18644)）
 
 **Dump 只有 native `dump_kv`。** 禁止 msprobe / PrecisionDebugger / 自造 dumper。

@@ -144,7 +144,7 @@
 
 ### Step 4 — 对账（有 analysis 脚本时）
 
-离线脚本在 **内部仓** `runtime-guard-test` 的 `analysis/scripts/`（需权限；**不在** `vllm_ascend` 产品树）。与 [06 Agent Skills](../06_agent_skills/README.md) 相同入口——**仅**此形式：
+离线脚本在 **内部私有**仓 `runtime-guard-test` 的 `analysis/scripts/`（需权限；本地/`$RG_TEST`；**勿**发公开 HTTPS blob；**不在** `vllm_ascend` 产品树）。与 [06 Agent Skills](../06_agent_skills/README.md) 相同入口——**仅**此形式：
 
 ```bash
 export RG_TEST=/path/to/runtime-guard-test
@@ -162,7 +162,7 @@ PYTHONPATH="$RG_TEST" python -m analysis.scripts.verify_request_kv --report ... 
 | 按 §5 填交付模板，标杆=无 | 勿伪造 verify PASS / 首分歧结论 |
 | 可选保留单侧 dump，待有权限再对账 | 勿把「看过 JSON」写成脚本对账通过 |
 
-有 `runtime-guard-test` clone 后再用上方入口续 Step 4–6。
+有 **内部私有** `runtime-guard-test` clone 后再用上方入口续 Step 4–6。
 
 ### Step 5 — 有标杆：同 token 序列抓 ref
 

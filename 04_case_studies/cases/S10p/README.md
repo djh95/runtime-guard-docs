@@ -12,7 +12,7 @@
 | Origin | `both` |
 | Guard pin | G2 f2aefd068 |
 | 模型 | Qwen3-8B（英文并发负载） |
-| Run | 10_fullattn_recycle_zero-20261016T181551 @ 160 cards 4,5 |
+| Run | 10_fullattn_recycle_zero-20261016T181551 @ builder 机 cards 4,5 |
 
 ## 1 · 现象
 

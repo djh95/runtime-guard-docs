@@ -10,7 +10,7 @@
 | 三层率 | **58 / 37 / 48** |
 | Detector | `token_repeat` |
 | Origin | `both`（constructed） |
-| Run | 47_kv_swap-20261017T164919 @ 160 cards 10,11 |
+| Run | 47_kv_swap-20261017T164919 @ builder 机 cards 10,11 |
 
 ## 1 · 现象
 

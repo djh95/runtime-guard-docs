@@ -9,7 +9,7 @@
 | 项 | 值 |
 |----|-----|
 | 结案结论 | **FAIL（复现未出现）** / repro-blocked |
-| 三层率（2026-10-20 160 复判） | **154 / 0 / 0**（trigger / precision〔CJK 排除后〕/ detect） |
+| 三层率（2026-10-20 builder 机复判） | **154 / 0 / 0**（trigger / precision〔CJK 排除后〕/ detect） |
 | 期望 detector | 乱码类；本轮**无可检坏输出**，故不构成 FAIL+GAP |
 | Guard pin | G2 · `f2aefd068c4bd299d91cf0a1fdf642a3f327308f` |
 | 模型 | Qwen3-8B · TP2 · 稠密 float16 |
@@ -50,7 +50,7 @@ Overlay 打上后服务仍 200。可见 completion 是通顺中英散文（华�
 
 **判定：FAIL（复现未出现）。** 有 trigger、无真实坏输出、detect=0——缺的是「异常已出现」前提，故不是 GAP 结案。
 
-| 层 | 复判（160 · `T101951`） | 含义 |
+| 层 | 复判（builder 机 · `T101951`） | 含义 |
 |----|------------------------:|------|
 | trigger | **154** | skip_zero / synth_block0 / force_should_init（路径打中） |
 | precision | **0** | CJK 排除后；通顺中文不算坏输出 |
@@ -63,10 +63,10 @@ Overlay 打上后服务仍 200。可见 completion 是通顺中英散文（华�
 | 维 | 要求 / 实测 |
 |----|-------------|
 | Origin 形态 | SPEC：**hybrid / 量化 KV** |
-| 160 dense（本复判，满量 overlay） | Qwen3-8B float16 · cards `4,5` · `PRODUCT_TREE=B` → trigger=**154**，**0 坏输出** |
+| builder 机 dense（本复判，满量 overlay） | Qwen3-8B float16 · cards `4,5` · `PRODUCT_TREE=B` → trigger=**154**，**0 坏输出** |
 | hybrid/fp8 一次尝试 | `--kv-cache-dtype fp8` → Ascend `FP8_ATTENTION` 能力 assert，**起服失败**；不夸大、不另造放大器 |
 
-说明：162 上若仍用残缺 canonical 入口（≈28 行/1 文件），trigger 可恒 0——那是入口未切满量，与本包满量复判（trigger=154、仍无坏输出）不是同一回事。
+说明：skills 机上若仍用残缺 canonical 入口（≈28 行/1 文件），trigger 可恒 0——那是入口未切满量，与本包满量复判（trigger=154、仍无坏输出）不是同一回事。
 
 若要真复现 origin：在**支持量化/hybrid KV**的栈上跑，并归档带 **prompt + completion** 的原始坏样本。dense + synth 只适合验证 trigger 路径。
 
