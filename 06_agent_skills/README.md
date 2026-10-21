@@ -65,7 +65,7 @@ Anomaly 定界（有权限时）：`tests/build-anomaly-env/fail-evidence/Sxx/`�
 | 停检 | `report.max_per_req`（**不是** `stop_after_alert`） |
 | Dump | 仅 native `dump_kv`；无 msprobe |
 | 默认全关 | **全关旁路**（static idle：detector/dump/热更全关；代码侧 `needs_sample_phase_hooks()` 为假时跳过 sample 壳） |
-| `releases/v0.30.0` MRV2 backport | 见 [05_v030](https://github.com/djh95/runtime-guard-docs/blob/main/05_v030_backport/README.md)（skill `apply-v030-mrv2-patch`）；**不含** #18644 |
+| `releases/v0.30.0` MRV2 backport | 见 [05_v030](https://github.com/djh95/runtime-guard-docs/blob/main/05_v030_backport/README.md)（skill `apply-v030-mrv2-patch`；`v0.30-rg.3` SOURCE `#18450` @ `96046a3f0`，**含** #18644 对齐） |
 | 多 release MRV1 backport | 见 [05_mrv1](https://github.com/djh95/runtime-guard-docs/blob/main/05_mrv1_backport/README.md)（skill `apply-mrv1-patch`）；含 v0.30 MRV1，与 05_v030 互斥 |
 
 ## 权威与同步

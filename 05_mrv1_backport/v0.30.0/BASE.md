@@ -3,7 +3,7 @@
 | 项 | 值 |
 |----|-----|
 | **Release 目录** | `v0.30.0` |
-| **上游 checkout** | same BASE as 05_v030_backport / v0.30-rg.2 (6d25ba2b3 on releases/v0.30.0, Guard pre-merge) |
+| **上游 checkout** | same BASE as 05_v030_backport / v0.30-rg.3 (6d25ba2b3 on releases/v0.30.0, Guard pre-merge) |
 | **BASE short** | `6d25ba2b3` |
 | **BASE full** | `6d25ba2b3c123bf963966cd583e985979d7a8a7d` |
 | **Runner** | **Model Runner V1 only**（本包不接 V2） |

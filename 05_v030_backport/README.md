@@ -17,17 +17,18 @@
 
 | 方式 | 说明 |
 |------|------|
-| **当前采用** | https://github.com/vllm-project/vllm-ascend/pull/18450 相对其 BASE 的完整 `git diff`（含功能 cherry-pick + static idle 性能 commit） |
+| **当前采用** | https://github.com/vllm-project/vllm-ascend/pull/18450 相对其 BASE 的完整 `git diff`（含功能 cherry-pick + hot-shell / #18644 对齐 commit） |
 | **不推荐** | `main` tip × 路径白名单 → `v0.30.0rc1`（易夹带 main 语境，与 CI 消解结果不一致） |
 
 维护者一键重导：
 
-> 注意：执行前本地 vllm-ascend 仓库需要配置好上游 origin 远程；生成 patch 后务必同步更新 CHANGELOG.md。
+> 注意：执行前本地 vllm-ascend 仓库需要拉到 PR tip（fork 或 `gh pr checkout 18450`）；生成 patch 后务必同步更新 CHANGELOG.md。
 
 ```bash
 export VLLM_ASCEND_GIT=/path/to/vllm-ascend
-git -C "$VLLM_ASCEND_GIT" fetch origin cherry-pick/pr-16849-to-releases-v0.30.0
-bash generate_patch_bundle.sh --from-pr 18450
+# 确保 tip = #18450 head（例 96046a3f0）
+bash generate_patch_bundle.sh --base 6d25ba2b3 --source 96046a3f0
+# 或：bash generate_patch_bundle.sh --from-pr 18450
 # 然后更新 CHANGELOG.md
 ```
 
@@ -45,7 +46,7 @@ bash generate_patch_bundle.sh --from-pr 18450
 ## 使用方（一线 / 集成）
 
 ```bash
-# 1. 检出与 CHANGELOG「BASE」一致的干净树（v0.30-rg.2 示例）
+# 1. 检出与 CHANGELOG「BASE」一致的干净树（v0.30-rg.3 示例）
 git clone https://github.com/vllm-project/vllm-ascend.git
 cd vllm-ascend
 git checkout 6d25ba2b3   # 见 CHANGELOG；勿想当然用旧 rc1 除非该包写明
@@ -61,18 +62,17 @@ bash /path/to/runtime-guard-docs/05_v030_backport/apply_patch.sh "$(pwd)"
 
 ## 对应功能（摘要）
 
-以 CHANGELOG 最新包为准；v0.30-rg.2 含：
+以 CHANGELOG 最新包为准；**v0.30-rg.3** 含：
 
 1. **控制面**：detect / report / `dump_kv`（来自 #16849 cherry-pick）  
-2. **Static idle 性能**：默认全关时跳过热路径壳（PR #18450 上追加的 Perf commit）
+2. **Static idle / fully-off 性能**：默认全关时跳过热路径壳（PR #18450 第二 commit）  
+3. **main #18644 鲁棒对齐**：经同一 tip commit 带入（qsl 边界、空 list、None accepted、`group_rank` 等）
 
 ## 能力与限制（打完 patch 后）
 
 - 需要 **MRV2**；拓扑以 `releases/v0.30.0` worker 为准。  
 - Analysis 离线脚本若不在包内，细定界仍要 analysis 工作区（见 [02](../02_problem_localization/README.md)）。  
-- 与 `main` 后续 hardening（若未进 #18450）可能仍有差距——以 PR tip / CHANGELOG 为准，不假装「已等同最新 main」。
-
-> 重要：该 backport 补丁包基于 #18450，**不包含 main 分支 #18644 的鲁棒性修复集合**（qsl 边界、空 list、None accepted、`group_rank` 等边界修复）。
+- 以 PR tip / CHANGELOG 为准；`v0.30-rg.3` SOURCE = `#18450` @ `96046a3f0`（含 #18644 对齐）。
 
 ## 相关
 
@@ -80,5 +80,5 @@ bash /path/to/runtime-guard-docs/05_v030_backport/apply_patch.sh "$(pwd)"
 - 定界：[../02_problem_localization/README.md](../02_problem_localization/README.md)  
 - Cherry-pick PR：https://github.com/vllm-project/vllm-ascend/pull/18450  
 - 功能源 PR：https://github.com/vllm-project/vllm-ascend/pull/16849  
-- main 分支鲁棒增强 PR（backport 包不含）：https://github.com/vllm-project/vllm-ascend/pull/18644  
+- main 分支鲁棒增强（本包 tip 已对齐）：https://github.com/vllm-project/vllm-ascend/pull/18644  
 - 上游文档（main）：https://github.com/vllm-project/vllm-ascend/blob/main/docs/source/user_guide/feature_guide/runtime_guard.md

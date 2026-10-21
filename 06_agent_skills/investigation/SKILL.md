@@ -215,7 +215,7 @@ description: >-
 
 可**复述**下游给出的 JSON；**禁止**自己编造 window / 阈值 / `auto_max_times` / cooldown / `on_trigger`。
 
-启服与热更细节见手册 01；源码路径须含 `observability/runtime_guard/`（MRV2）。`releases/v0.30.0` / rc 线无 Guard 时先看 [05](https://github.com/djh95/runtime-guard-docs/blob/main/05_v030_backport/README.md)（BASE 见 CHANGELOG；**不含** #18644 鲁棒集合）。
+启服与热更细节见手册 01；源码路径须含 `observability/runtime_guard/`（MRV2）。`releases/v0.30.0` / rc 线无 Guard 时先看 [05](https://github.com/djh95/runtime-guard-docs/blob/main/05_v030_backport/README.md)（BASE 见 CHANGELOG；`v0.30-rg.3` tip 已对齐 #18644）。
 
 ## 目标（定界，非定位）
 

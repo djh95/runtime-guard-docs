@@ -25,7 +25,7 @@ description: >-
 
 ## Steps
 
-1. 读 CHANGELOG，checkout **BASE**（现行 `v0.30-rg.2` → `6d25ba2b3`）。  
+1. 读 CHANGELOG，checkout **BASE**（现行 `v0.30-rg.3` → `6d25ba2b3`；SOURCE `#18450` @ `96046a3f0`，含 #18644）。  
 2. 确认未叠打 `05_mrv1_backport/v0.30.0`。  
 3. 执行：
 

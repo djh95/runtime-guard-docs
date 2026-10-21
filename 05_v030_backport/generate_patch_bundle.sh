@@ -48,11 +48,29 @@ if [[ -n "${PR}" ]]; then
   case "${PR}" in
     18450)
       # Head branch of https://github.com/vllm-project/vllm-ascend/pull/18450
-      SOURCE="${SOURCE:-origin/cherry-pick/pr-16849-to-releases-v0.30.0}"
-      if ! git rev-parse --verify "${SOURCE}^{commit}" >/dev/null 2>&1; then
-        echo "Fetching PR head…" >&2
-        git fetch origin cherry-pick/pr-16849-to-releases-v0.30.0:refs/remotes/origin/cherry-pick/pr-16849-to-releases-v0.30.0
-        SOURCE="origin/cherry-pick/pr-16849-to-releases-v0.30.0"
+      # Prefer local/fork tip: upstream origin often has no long-lived head branch.
+      SOURCE="${SOURCE:-}"
+      if [[ -z "${SOURCE}" ]]; then
+        for cand in \
+          cherry-pick/pr-16849-to-releases-v0.30.0 \
+          origin/cherry-pick/pr-16849-to-releases-v0.30.0 \
+          djh/cherry-pick/pr-16849-to-releases-v0.30.0; do
+          if git rev-parse --verify "${cand}^{commit}" >/dev/null 2>&1; then
+            SOURCE="${cand}"
+            break
+          fi
+        done
+      fi
+      if [[ -z "${SOURCE}" ]] || ! git rev-parse --verify "${SOURCE}^{commit}" >/dev/null 2>&1; then
+        echo "Fetching PR #18450 head via gh…" >&2
+        if command -v gh >/dev/null 2>&1; then
+          OID="$(gh pr view 18450 --repo vllm-project/vllm-ascend --json headRefOid -q .headRefOid)"
+          git fetch origin "${OID}"
+          SOURCE="${OID}"
+        else
+          echo "Need local tip, djh/origin remote branch, or gh for PR #18450." >&2
+          exit 2
+        fi
       fi
       # First Guard commit on that PR is the feature cherry-pick; its parent is BASE.
       FEATURE="$(git log --reverse --format='%H' --grep='Add runtime_guard control plane' "${SOURCE}" -1)"
