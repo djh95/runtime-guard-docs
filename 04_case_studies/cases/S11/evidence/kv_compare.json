@@ -1,0 +1,294 @@
+{
+  "case": "S11",
+  "host": "builder",
+  "cos_thresh": 0.99,
+  "kv_match": false,
+  "first_mismatch_idx": 0,
+  "first_mismatch_role": "prompt",
+  "first_mismatch_span": "prompt",
+  "first_mismatch_min_cos": 0.3192683404290528,
+  "first_mismatch_layer": "model.layers.4.self_attn.attn",
+  "later_slots_recover": false,
+  "output_first_token_cos": 0.020733060701296616,
+  "pd_only": false,
+  "conclusion": "KV不一致→重开 KV 线",
+  "n_tokens": 20,
+  "n_prompt": 14,
+  "n_layers_matched": 54,
+  "source": {
+    "buggy_run": "/workspace/runtime-guard/canonical/results/anomaly-repro-20261016/11_mla_rope_pad-20261019T225610",
+    "buggy_report": "/workspace/runtime-guard/canonical/results/anomaly-repro-20261016/11_mla_rope_pad-20261019T225610/report/token_repeat/report_20261019_225736_668_cmpl-9df315517c1ea95c-0-a25dfbb8_pid398465.json",
+    "feed_report": "/home/d00824595/keepset-kv-compare-20261022/out/cases/S11/scratch/merged_report_20261019_225736_668_cmpl-9df315517c1ea95c-0-a25dfbb8_pid398465.json",
+    "buggy_rank": "/workspace/runtime-guard/canonical/results/anomaly-repro-20261016/11_mla_rope_pad-20261019T225610/dump/token_repeat/cmpl-9df315517c1ea95c-0-a25dfbb8/wave_8/dp0_tp0_pp0_cp0",
+    "ref_rank": "/home/d00824595/keepset-kv-compare-20261022/ref_runs/qwen3-8b-ref-20261022T170234/dump/manual_trigger/cmpl-b8956d991bc59df7-0-9c7ad209/wave_4/dp0_tp0_pp0_cp0",
+    "req_id": "cmpl-9df315517c1ea95c-0-a25dfbb8",
+    "incident_type": "token_repeat",
+    "empty_prompt_recurled": true
+  },
+  "per_token_min_cos_head": [
+    {
+      "idx": 0,
+      "role": "prompt",
+      "min_cos": 0.319268
+    },
+    {
+      "idx": 1,
+      "role": "prompt",
+      "min_cos": 0.203604
+    },
+    {
+      "idx": 2,
+      "role": "prompt",
+      "min_cos": 0.006801
+    },
+    {
+      "idx": 3,
+      "role": "prompt",
+      "min_cos": 0.02141
+    },
+    {
+      "idx": 4,
+      "role": "prompt",
+      "min_cos": -0.338865
+    },
+    {
+      "idx": 5,
+      "role": "prompt",
+      "min_cos": 0.032474
+    },
+    {
+      "idx": 6,
+      "role": "prompt",
+      "min_cos": 0.026316
+    },
+    {
+      "idx": 7,
+      "role": "prompt",
+      "min_cos": -0.284255
+    },
+    {
+      "idx": 8,
+      "role": "prompt",
+      "min_cos": -0.01943
+    },
+    {
+      "idx": 9,
+      "role": "prompt",
+      "min_cos": 0.128765
+    },
+    {
+      "idx": 10,
+      "role": "prompt",
+      "min_cos": -0.000988
+    },
+    {
+      "idx": 11,
+      "role": "prompt",
+      "min_cos": 0.028998
+    },
+    {
+      "idx": 12,
+      "role": "prompt",
+      "min_cos": -0.184954
+    },
+    {
+      "idx": 13,
+      "role": "prompt",
+      "min_cos": 0.151988
+    },
+    {
+      "idx": 14,
+      "role": "out[0]",
+      "min_cos": 0.020733
+    },
+    {
+      "idx": 15,
+      "role": "out[1]",
+      "min_cos": 0.200121
+    },
+    {
+      "idx": 16,
+      "role": "out[2]",
+      "min_cos": 0.019919
+    },
+    {
+      "idx": 17,
+      "role": "out[3]",
+      "min_cos": 0.070364
+    },
+    {
+      "idx": 18,
+      "role": "out[4]",
+      "min_cos": -0.024524
+    },
+    {
+      "idx": 19,
+      "role": "out[5]",
+      "min_cos": 0.117553
+    }
+  ],
+  "analysis": {
+    "n_tokens": 20,
+    "n_prompt": 14,
+    "cos_thresh": 0.99,
+    "layers": [
+      "layer_27",
+      "layer_28",
+      "layer_29",
+      "layer_30",
+      "…"
+    ],
+    "first_bad": {
+      "token_idx": 0,
+      "token_id": 1744,
+      "role": "prompt",
+      "min_cos": 0.3192683404290528,
+      "min_layer": "model.layers.4.self_attn.attn"
+    },
+    "per_token": [
+      {
+        "token_idx": 0,
+        "token_id": 1744,
+        "role": "prompt",
+        "min_cos": 0.3192683404290528,
+        "min_layer": "model.layers.4.self_attn.attn"
+      },
+      {
+        "token_idx": 1,
+        "token_id": 634,
+        "role": "prompt",
+        "min_cos": 0.20360443380225546,
+        "min_layer": "model.layers.16.self_attn.attn"
+      },
+      {
+        "token_idx": 2,
+        "token_id": 9679,
+        "role": "prompt",
+        "min_cos": 0.006801361545526518,
+        "min_layer": "layer_38"
+      },
+      {
+        "token_idx": 3,
+        "token_id": 8144,
+        "role": "prompt",
+        "min_cos": 0.021410142681732063,
+        "min_layer": "model.layers.10.self_attn.attn"
+      },
+      {
+        "token_idx": 4,
+        "token_id": 13,
+        "role": "prompt",
+        "min_cos": -0.3388653743837198,
+        "min_layer": "model.layers.0.self_attn.attn"
+      },
+      {
+        "token_idx": 5,
+        "token_id": 3474,
+        "role": "prompt",
+        "min_cos": 0.032473915785322056,
+        "min_layer": "model.layers.4.self_attn.attn"
+      },
+      {
+        "token_idx": 6,
+        "token_id": 2577,
+        "role": "prompt",
+        "min_cos": 0.026316373664270202,
+        "min_layer": "model.layers.16.self_attn.attn"
+      },
+      {
+        "token_idx": 7,
+        "token_id": 3517,
+        "role": "prompt",
+        "min_cos": -0.2842552201903319,
+        "min_layer": "model.layers.0.self_attn.attn"
+      },
+      {
+        "token_idx": 8,
+        "token_id": 4976,
+        "role": "prompt",
+        "min_cos": -0.01942983951300874,
+        "min_layer": "layer_38"
+      },
+      {
+        "token_idx": 9,
+        "token_id": 13,
+        "role": "prompt",
+        "min_cos": 0.1287646011453558,
+        "min_layer": "model.layers.0.self_attn.attn"
+      },
+      {
+        "token_idx": 10,
+        "token_id": 1985,
+        "role": "prompt",
+        "min_cos": -0.000988330977159323,
+        "min_layer": "model.layers.0.self_attn.attn"
+      },
+      {
+        "token_idx": 11,
+        "token_id": 28,
+        "role": "prompt",
+        "min_cos": 0.028998073600348673,
+        "min_layer": "model.layers.16.self_attn.attn"
+      },
+      {
+        "token_idx": 12,
+        "token_id": 15,
+        "role": "prompt",
+        "min_cos": -0.18495364156609706,
+        "min_layer": "model.layers.2.self_attn.attn"
+      },
+      {
+        "token_idx": 13,
+        "token_id": 13,
+        "role": "prompt",
+        "min_cos": 0.1519881116593294,
+        "min_layer": "model.layers.8.self_attn.attn"
+      },
+      {
+        "token_idx": 14,
+        "token_id": 62,
+        "role": "out[0]",
+        "min_cos": 0.020733060701296616,
+        "min_layer": "model.layers.0.self_attn.attn"
+      },
+      {
+        "token_idx": 15,
+        "token_id": 16,
+        "role": "out[1]",
+        "min_cos": 0.20012105112952314,
+        "min_layer": "model.layers.8.self_attn.attn"
+      },
+      {
+        "token_idx": 16,
+        "token_id": 15,
+        "role": "out[2]",
+        "min_cos": 0.019919192497561484,
+        "min_layer": "model.layers.4.self_attn.attn"
+      },
+      {
+        "token_idx": 17,
+        "token_id": 15,
+        "role": "out[3]",
+        "min_cos": 0.07036375519916736,
+        "min_layer": "model.layers.6.self_attn.attn"
+      },
+      {
+        "token_idx": 18,
+        "token_id": 15,
+        "role": "out[4]",
+        "min_cos": -0.024524461414272967,
+        "min_layer": "model.layers.6.self_attn.attn"
+      },
+      {
+        "token_idx": 19,
+        "token_id": 15,
+        "role": "out[5]",
+        "min_cos": 0.11755251201489572,
+        "min_layer": "model.layers.6.self_attn.attn"
+      }
+    ],
+    "layers_count": 54
+  },
+  "status": "done",
+  "manual_n_end": 3
+}

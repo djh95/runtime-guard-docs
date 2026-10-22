@@ -40,21 +40,22 @@ pad-tail 错位 ≠ 回收块未清零。可能撞上同一个 detector，但 ro
 
 ### 事实
 
-- 现象：digit / collapse 垃圾（如 `1010…`；`evidence/samples/`）。
-- 三层：138 / 39 / 60；detector：`token_repeat`。
-- 归档 report：`prompt_token_ids` 为空；有 `output_token_ids`。
-- 尚未做 KV 对比（未抓标杆/异常 KV 或未写入本包）。
+- builder 机实跑 KV 对比（cos_thresh=0.99；n_prompt=14 n_cmp_tokens=20；matched_layers=54）。
+- 原 report `prompt_token_ids` 为空；同 prompt re-curl 后与异常 `output_token_ids` 合并再抓标杆。
+- 首不一致：idx=0 role=prompt span=prompt min_cos=0.319268 @ model.layers.4.self_attn.attn。
+- 后续是否恢复≈1：False；output 首 token 余弦=0.020733；仅 PD 复现：False。
 
 ### 推断
 
-- 可确认：塌缩异常已出现，且 `token_repeat` 已检出。
-- 坏输出推不出「MLA RoPE pad-tail」——构造见「根因」。
-- 空 prompt 仍可同 prompt 再 curl 抓 ids 后做 KV 排除；本包无对账 → 推不出污染时机。
+- 对账不一致 → **重开 KV 线**（写坏 / 传坏 / 脏读等仍可能）。
+- 坏输出仍不可直接写成具体根因。
+- 首不一致在 prompt 段 → 偏向 prefill 侧污染时机（需结合是否恢复、仅 PD）。
 
 ### 结论
 
-- 已定界到：塌缩异常 + `token_repeat` 检出。
-- 尚未定界到 MLA RoPE pad-tail；分析不出 / 证据不足。
+- 已定界到：KV 与标杆不一致（重开 KV 线）。
+- 尚未定界到具体写/传路径；分析不出 / 证据不足。
+
 
 ## 证据文件
 
@@ -66,6 +67,7 @@ pad-tail 错位 ≠ 回收块未清零。可能撞上同一个 detector，但 ro
 | `evidence/跑批结果.json` | 跑批元数据 + 结案摘要 |
 | `evidence/samples/` | 坏输出原文（prompt + completion；自 T190840） |
 | `evidence/reports/` | Guard detector 报告（归档 report prompt 为空：合修前旧归档，见名词表 **report 空 prompt**；可读 prompt 看 samples，见 [④ 名词表](../../README.md#名词怎么读先看这里)） |
+| `evidence/kv_compare.json` | 最新 KV 标杆对比摘要（余弦 / 首不一致 / 结论） |
 
 
 ## 上游 PR 关系

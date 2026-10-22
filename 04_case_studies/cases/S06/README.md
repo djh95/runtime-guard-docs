@@ -43,22 +43,21 @@ Overlay / 上游 PR 意图：错误 router bias / mask 类（非 bit-exact CUDA�
 
 ### 事实
 
-- 现象：短 CJK 复读后接 `etc` 长复读（`evidence/samples/`）。
-- 三层：70 / 1 / 1。
-- detector：`token_repeat`×1；`output_token_ids` 长 10；`prompt_token_ids` 为空；有 `block_ids`。
-- 尚未做 KV 对比（未抓标杆/异常 KV 或未写入本包）。
+- builder 机实跑 KV 对比（cos_thresh=0.99；n_prompt=17 n_cmp_tokens=25；matched_layers=54）。
+- 首不一致：idx=0 role=prompt span=prompt min_cos=-0.308082 @ layer_48。
+- 后续是否恢复≈1：False；output 首 token 余弦=0.041545；仅 PD 复现：False。
 
 ### 推断
 
-- 可确认：复读异常已出现，且 `token_repeat` 已检出。
-- 空 `prompt_token_ids` 不等于不能做 KV 排除；同 prompt 再 curl 抓服务端 ids 后可对账，本包未归档该步。
-- 坏输出推不出「进错专家 / MoE topk」——构造意图见「案例背景/构造」。
-- 无首不一致索引、后续是否恢复、output 首 token 余弦、是否仅 PD 等对账事实 → 推不出污染时机，也不能排除或确认 KV。
+- 对账不一致 → **重开 KV 线**（写坏 / 传坏 / 脏读等仍可能）。
+- 坏输出仍不可直接写成具体根因。
+- 首不一致在 prompt 段 → 偏向 prefill 侧污染时机（需结合是否恢复、仅 PD）。
 
 ### 结论
 
-- 已定界到：异常输出 + `token_repeat` 检出。
-- 尚未定界到 MoE 路由 / 错专家；分析不出 / 证据不足。
+- 已定界到：KV 与标杆不一致（重开 KV 线）。
+- 尚未定界到具体写/传路径；分析不出 / 证据不足。
+
 
 ## 证据文件
 
@@ -70,6 +69,7 @@ Overlay / 上游 PR 意图：错误 router bias / mask 类（非 bit-exact CUDA�
 | `evidence/跑批结果.json` | 跑批元数据 + 结案摘要 |
 | `evidence/samples/` | prompt + completion 样本（**阅读 / 现象核对**；非 tokenize 标杆） |
 | `evidence/reports/` | Guard detector 报告（本包归档 **`prompt_token_ids` 为空**：合 #19285 前样本；阅读看 samples；标杆 ids 可重放抓取——见定界节与 [④ 名词表](../../README.md#名词怎么读先看这里)） |
+| `evidence/kv_compare.json` | 最新 KV 标杆对比摘要（余弦 / 首不一致 / 结论） |
 
 
 ## 上游 PR 关系
