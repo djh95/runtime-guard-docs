@@ -192,6 +192,8 @@ PYTHONPATH="$RG_TEST" python -m analysis.scripts.verify_request_kv --report ... 
 | **Q4 异常点之后？** | 邻域恢复→写入后污染；一路坏→写入时即错或持续错误源 |
 | **Q5 类型（cos）？** | 断崖→0≈污染/串 block；平台 ~0.8–0.9≈计算误差；nan/inf≈数值炸 |
 
+写进定界正文时：先写清 **首个不一致属于 prompt 还是 output、后续是否恢复、output 首 token 余弦、是否仅 PD 复现**，再推「何时脏 / 是否传写交接」——**禁止**从坏输出直接跳根因。完整方法示例（示意数字，非 keep-set 实测）见 [04 · KV/余弦事实怎么推时机](../04_case_studies/README.md#kv余弦事实怎么推时机方法示例)。
+
 **交付模板（定界，非定位）：**
 
 ```text
