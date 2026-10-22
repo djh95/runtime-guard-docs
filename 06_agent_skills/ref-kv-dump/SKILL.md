@@ -32,6 +32,12 @@ Report 须含 `prompt_token_ids` / `output_token_ids`（`save_sensitive_info: tr
 2. 字符串重 tokenize ≠ report token ids。  
 3. 禁止标杆自行 greedy 生成。
 
+## 抓前：清空本轮 `kv_cache` 工作目录
+
+**新开一轮抓 dump / 对账之前**，先清空（或移走）本轮将写入的 `kv_cache` 根目录（及本地对照副本），再启服/发请求。  
+目的：避免把**上一跑残留**的 `.pt` / wave 目录误当成本次 buggy 或 ref。  
+（对照：对账**进行中**勿删正在用的 dump；归档完成后再清。）
+
 ## 抓 ref
 
 ```bash
@@ -53,9 +59,18 @@ python "$SCRIPTS/request_from_report.py" \
 
 也可用 `ref_inputs.json` 的 `force_feed_token_ids`。  
 4. 可选：`--feed history` / 末 token / `--feed full`。  
-5. 收集：`runtime/report/kv_cache/<type>/<ref_req_id>/wave_N/<rank_tag>/`。
+5. 收集：`runtime/report/kv_cache/<type>/<ref_req_id>/wave_N/<rank_tag>/`（确认是**本轮清空后新写出**的路径）。
 
-## 对比（两表）
+## 对比（两表）— 先形状，再有效 token
+
+Dump 布局是 **整 block 保存**：`[n_blocks, block_size, H, D]`（`block_ids` 顺序）。  
+block 内**未写入的 token 槽常为 0**；若把整 block / 超额 slot 算进余弦，零槽会污染相似度（虚高、全 NaN、或假分歧）。
+
+**对比前硬步骤：**
+
+1. **先比形状** — buggy vs ref 各层 `shape` 一致（含 `n_blocks` / `block_size` / heads）；不一致 → 停，查 TP stitch / 错目录 / 不同 MODE，**勿直接算 cos**。  
+2. **只比有效 token** — `n_tokens` = report 实际 `prompt + output` 长度（或脚本 `--written-only` / 等价「写到的最后槽+1」）；**禁止**按 `n_blocks * block_size` 全容量比。  
+3. 再跑两表：
 
 ```bash
 python "$SCRIPTS/compare_kv_similarity.py" \
@@ -74,6 +89,8 @@ python "$SCRIPTS/compare_per_layer.py" \
 - **Table 1**：per-token min-cos → 首坏 token  
 - **Table 2**：该 token 的 per-layer → 首坏层  
 
+`stitch_kv` 对照时优先 `--written-only`（或显式 `--max-tokens`），勿默认全 block 比。
+
 解读交 investigation **十问** / 手册 [02 §5](../../02_problem_localization/README.md#5-kv-定界十问检查单有-buggyref-时按序)。
 
 | 信号 | 含义 |
@@ -86,17 +103,19 @@ python "$SCRIPTS/compare_per_layer.py" \
 | cos 断崖→0 | 污染/串 block |
 | 平台 ~0.8–0.9 | 偏计算误差 |
 | **全 NaN `min_cos`** | **不是**定位信号 — 见下节；勿读 `first_mismatch_idx`/层名 |
+| **shape 不一致** | 错 dump / 未 stitch / 拓扑或 MODE 不一致 — 先修对齐 |
 
 **TP>1：** 对齐 `tp_rank` / `num_kv_heads`；必要时 `stitch_kv`。  
-**归档前保留**服务端 buggy/ref dump；对比产物写入 keep-set 后再按配额清临时全量（可留 `.pt` 小样）。
+**生命周期：** 抓前清空工作目录 → 抓后/对账中保留本轮 dump → keep-set 归档后再按配额清临时全量（可留 `.pt` 小样）。
 
 ## 有效对账前提（踩坑硬纪律）
 
 1. **同一次异常请求** — buggy report、buggy dump、ref dump、`kv_compare` 必须对齐同一 `req_id`/wave。禁止拿「有 dump 的旧跑」配「新 detect 钉点」。**detect=0 也不授权**混用历史 dump。  
 2. **先有有效异常** — 目标形态已复现；dump 覆盖足够 output（勿把 **弱窗** 如仅 o=1 / 非异常 completion 当有效异常 KV）。未满足 → 停，交 investigation 写 **复现未抓到** / 未做有效对账。  
-3. **全 NaN ≠ token0@layer** — 若 Table1 几乎全 NaN：脚本可能把 idx=0 + 首层名当占位；**禁止**写成「首坏 token0 @ layer_L」。NaN 多因对齐/切片后向量零范数，**不是**「第 L 层 KV 填了 NaN」。处理：检查 `block_ids`/切片/TP stitch → 重 dump 直至出现**有限** cos，再写首分歧。  
-4. **多组验证** — 同一 overlay 至少两组独立异常请求，cos 结论同向再归档③/④。  
-5. **空 `prompt_token_ids`** — 勿字符串重 tokenize；同 prompt re-curl 抓服务端 ids，与异常 `output_token_ids` 合并后再 force-feed（见 investigation）。
+3. **先形状、有效 token** — 见上节；勿把 block 尾部未用 0 槽算进相似度。  
+4. **全 NaN ≠ token0@layer** — 若 Table1 几乎全 NaN：脚本可能把 idx=0 + 首层名当占位；**禁止**写成「首坏 token0 @ layer_L」。NaN 多因对齐/切片后向量零范数（含误用空槽），**不是**「第 L 层 KV 填了 NaN」。处理：查 shape / `block_ids` / 有效 `n_tokens` / TP stitch → 重 dump 直至出现**有限** cos，再写首分歧。  
+5. **多组验证** — 同一 overlay 至少两组独立异常请求，cos 结论同向再归档③/④。  
+6. **空 `prompt_token_ids`** — 勿字符串重 tokenize；同 prompt re-curl 抓服务端 ids，与异常 `output_token_ids` 合并后再 force-feed（见 investigation）。
 
 ## forbidden
 
@@ -104,7 +123,8 @@ python "$SCRIPTS/compare_per_layer.py" \
 - 重复实现 `verify_request_kv`  
 - 输出 runtime_config JSON；使用 msprobe  
 - 用弱 dump / 全 NaN 对比结果写 keep-set ③/④ 或层定位  
-- 混用不同 run 的 report 与 dump
+- 混用不同 run 的 report 与 dump（含未清空目录导致的残留）  
+- 跳过 shape 检查；按整 block 容量（含未用 0 槽）算余弦
 
 ## Related
 

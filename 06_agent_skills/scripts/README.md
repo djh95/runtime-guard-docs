@@ -20,3 +20,5 @@ python "$SCRIPTS/correlate_incident.py" --help
 ```
 
 与 [02 问题定位](../../02_problem_localization/README.md) Step 4、[analysis skill](../analysis/SKILL.md)、[ref-kv-dump](../ref-kv-dump/SKILL.md) 同一套入口。
+
+**KV 对比注意：** 新抓前清空本轮 `kv_cache` 工作目录。对比时**先核对层 shape**；dump 为整 block，未用槽常为 0——只用 report 有效 token 数（或 `stitch_kv --written-only` / `--max-tokens`），勿按 `n_blocks * block_size` 全容量算余弦。

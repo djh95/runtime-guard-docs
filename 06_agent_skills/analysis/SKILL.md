@@ -110,9 +110,11 @@ python "$SCRIPTS/inspect_kv_dump.py" --path ./runtime/report/kv_cache/<type>/<re
 ## 证据完整性（踩坑硬纪律）
 
 - **钉点同跑：** `verify_request_kv` 的 report 与 `--kv-dir` 必须同属一次请求；交付里写明 `req_id` + wave。勿把「目录里碰巧有的 `.pt`」配到另一份 report。  
+- **抓前清空工作目录：** 新一轮 dump 前清本轮 `kv_cache` 根，避免 verify 扫到旧 wave。对账进行中勿删本轮路径。  
 - **detect=0 ≠ 旧 dump 可用：** 无本轮命中时，可用 `manual_dump` **当场**抓同请求 KV；**禁止**拿历史/他案 dump 顶替。  
 - **弱 dump 标明：** output 极短（如 o=1）、或 completion 非目标异常形态 → 在摘要写「弱窗 / 非有效异常 KV」；**不要**据此宣称可进 ref 定界。  
 - **空 prompt ids：** 摘要如实写空；勿从字符串补造 ids（交 investigation re-curl）。  
+- **交给 ref 前：** 抽查层 `shape`；提醒对比只用 report 有效 token 数（整 block 尾部 0 槽不算）— 细则在 `ref-kv-dump`。  
 - **PASS/FAIL 仅 verify 门闩** — keep-set 案例总评用结案四档（见 `investigation`），本 skill 的 PASS/FAIL 不升格为整案结案。
 
 ## 落盘约定
@@ -133,7 +135,8 @@ runtime/report/
 - 拉起推理服务、force-feed、KV buggy↔ref 对比  
 - 在 NPU 上 `load` `.pt`；用 msprobe 工具读 native dump  
 - 把未合入 detector 当已合入  
-- 混用不同 run 的 report 与 dump；把弱 dump / 空 ids 补造成可定界证据
+- 混用不同 run 的 report 与 dump；把弱 dump / 空 ids 补造成可定界证据  
+- 在未清目录的残留 wave 上宣称 verify PASS
 
 ## Related
 

@@ -280,8 +280,9 @@ description: >-
 3. **全 NaN 余弦 ≠ 定位** — per-token `min_cos` 全 NaN 时，**禁止**把脚本占位的 `first_mismatch_idx` / 层名写成「token0@layer_L」类定界；NaN 常=抽取向量零范数，不是「第 L 层 KV 全是 NaN」。重抓能出有限 cos 再写③/④（细则见 `ref-kv-dump`）。  
 4. **无证据留空** — 不可信混档 / 清空实测后：删 samples/reports/三层/跑批/`kv_compare`，结案与定界**留空**；勿保留半截旧结论或编造数字。  
 5. **多组验证** — 写③/④前至少再跑一组（同 overlay、独立请求）确认 cos 结论同向；单次弱窗不作定论。  
-6. **服务器保留 dump** — 对账前勿清服务端 `kv_cache`；归档后再按配额清理。  
-7. **压测时限** — 单场景最长约 **1h**；超时未复现 → **未复现**（附 knobs/负载），勿空耗或放大器硬凑。
+6. **`kv_cache` 生命周期** — **抓前清空**本轮工作目录（防旧 dump 混入）；**对账中保留**本轮产物；归档后再清。细则见 `ref-kv-dump`。  
+7. **KV 对比：先形状、只比有效 token** — dump 是整 block；未用槽常为 0，勿按全容量算 cos（虚高/NaN/假分歧）。委派 `ref-kv-dump` 时遵守该纪律。  
+8. **压测时限** — 单场景最长约 **1h**；超时未复现 → **未复现**（附 knobs/负载），勿空耗或放大器硬凑。
 
 ### KV/余弦时机方法示例（示意数字，非某包实测）
 
@@ -321,7 +322,8 @@ S45：勿用伪造 NaN/填 token / amplifier-retune 刷成 PASS；有异常+dete
 - 从本流程跳过 `verify_request_kv` 直接宣称可做层定界  
 - 把「十问不适用」写进空 prompt 案例结案  
 - 混用不同 run 的 report/dump/`kv_compare`；用全 NaN / 弱 dump 伪写层定位  
-- 用 PASS/FAIL/GAP 当 keep-set 案例 headline 结案
+- 用 PASS/FAIL/GAP 当 keep-set 案例 headline 结案  
+- 未清 `kv_cache` 就开新抓；跳过 shape、把 block 未用 0 槽算进相似度
 
 ## Related
 
