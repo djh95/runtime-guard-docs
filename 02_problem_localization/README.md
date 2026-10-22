@@ -54,7 +54,7 @@
 | 现象 | 典型入口 | 说明 |
 |------|----------|------|
 | 输出复读 / 局部卡词 | `token_repeat` | 最轻；适合先开 |
-| 采样前 NaN/Inf、突然乱码伴数值炸 | `logits_finite` | 给「数值是否已坏」的强信号；**命中后跳过 KV**，转 skill **`msprobe-dump`**（statistics · eager · 禁图模式） |
+| 采样前 NaN/Inf、突然乱码伴数值炸 | `logits_finite` | 给「数值是否已坏」的强信号；**命中后仍先 `dump_kv`**（有效槽有限/Inf；未用槽分级：有限非 0≈卫生，Inf/NaN≈可影响结果）；skill **`msprobe-dump`** 殿后（statistics · eager · 禁图） |
 | Spec 接受率/长度异常 | `spec_acceptance` | 需 MTP/Eagle 等 speculative |
 | 怀疑 KV / PD 传写出问题 | `dump_kv` +（有标杆时）对比 | 适用于有限异常 / `token_repeat` 等；detector 给坐标，定界靠对比 |
 | **偶发、难复现** | 热更 + report/dump | 命中即抓，不必先有稳定复现脚本 |

@@ -63,7 +63,7 @@ keep-set 案例的 **headline 结案**只用下面四档；**不要**再用 PASS
 | 档 | 含义 |
 |----|------|
 | **未复现** | 目标异常形态没有出现（有 trigger 也不够；通顺输出 ≠ 目标乱码）。 |
-| **复现未抓到** | 异常已现或应现，但**没有有效异常 KV dump** 可做对账（适用于本应做 KV 的路径，如 `token_repeat`）。mere detect=0 **不是**本档——若 manual dump 已抓到异常 KV 并完成对账，按③/④。**`logits_finite` 命中后跳过 KV、转 msprobe 不算本档。** |
+| **复现未抓到** | 异常已现或应现，但**没有有效异常 KV dump** 可做对账（含 `logits_finite`：有 report 却无可用 dump）。mere detect=0 **不是**本档——若 manual dump 已抓到异常 KV 并完成对账，按③/④。**勿**因 logits 命中就跳过 KV、改用 msprobe 顶替本档。 |
 | **KV 一致→排除 KV** | 有效异常↔标杆对账，对比窗匹配 → **排除 KV cache** 为本请求坏输出的必要原因。 |
 | **KV 不一致→定界** | 有效对账不匹配 → **重开 KV 线**；摘要十问事实（首不一致在 prompt/output、是否恢复、out0 余弦、是否仅 PD…），不从坏输出跳根因。弱窗对账（如 o=1）仍可归本档，但须注明力度有限。 |
 

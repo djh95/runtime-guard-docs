@@ -5,7 +5,8 @@ description: >-
   same-model/topology/MODE server, capture native dump_kv ref, and compare
   buggy vs ref (first divergence / per-layer). Requires PASS evidence; do not
   reimplement verify or emit runtime_config JSON. Guard KV path only
-  (native dump_kv); if logits_finite already hit, skip this skill → msprobe.
+  (native dump_kv). Also used after logits_finite: finite/unused-zero first;
+  msprobe is last, not a substitute.
 ---
 
 # Reference KV via native dump_kv
@@ -77,13 +78,23 @@ python "$SCRIPTS/request_from_report.py" \
 ## 对比（两表）— 先形状，再有效 token
 
 Dump 布局是 **整 block 保存**：`[n_blocks, block_size, H, D]`（`block_ids` 顺序）。  
-block 内**未写入的 token 槽常为 0**；若把整 block / 超额 slot 算进余弦，零槽会污染相似度（虚高、全 NaN、或假分歧）。
+block 内**未写入的 token 槽应为 0**；若把整 block / 超额 slot 算进余弦，零槽会污染相似度（虚高、全 NaN、或假分歧）。
+
+**未用槽分级（必区分）：**
+
+| 未用槽状态 | 含义 | 对结果 |
+|------------|------|--------|
+| 全 0 | 正常 | — |
+| **有限非 0** | 脏写/未清（卫生问题，类 S30 轻） | **一般不致坏结果**；记附注，勿当余弦噪声丢掉，也**勿**单凭此断定输出由此坏 |
+| **Inf / NaN** | 数值污染进未用区 | **可影响结果**（严重）；与有效槽非有限同级关注 |
 
 **对比前硬步骤：**
 
 1. **先比形状** — buggy vs ref 各层 `shape` 一致（含 `n_blocks` / `block_size` / heads）；不一致 → 停，查 TP stitch / 错目录 / 不同 MODE，**勿直接算 cos**。  
-2. **只比有效 token** — 与 feed 对齐：默认 history 用 **`n_prompt + n_output - 1`**；full feed 才用 `n_prompt + n_output`；或 `--written-only`。**禁止**按 `n_blocks * block_size` 全容量比。  
-3. 再跑两表：
+2. **有效槽有限性（`logits_finite` / 数值炸必做）** — 对 `n_used` 槽计 Inf/NaN；Inf 比单纯 cos 低更重。有效槽已非有限 → 记事实（可归「不一致」类信号），**禁止**用 NaN cos 写层名。  
+3. **未用槽分级** — 见上表；分别报 `unused_nonzero_finite` 与 `unused_nonfinite`，勿混为一谈。  
+4. **只比有效 token（有限时）** — 与 feed 对齐：默认 history 用 **`n_prompt + n_output - 1`**；full feed 才用 `n_prompt + n_output`；或 `--written-only`。**禁止**按 `n_blocks * block_size` 全容量比。  
+5. 有限后再跑两表：
 
 ```bash
 python "$SCRIPTS/compare_kv_similarity.py" \
@@ -115,7 +126,10 @@ python "$SCRIPTS/compare_per_layer.py" \
 | 从某层起坏 | 该层计算/写出 |
 | cos 断崖→0 | 污染/串 block |
 | 平台 ~0.8–0.9 | 偏计算误差 |
-| **全 NaN `min_cos`** | **不是**定位信号 — 见下节；勿读 `first_mismatch_idx`/层名 |
+| **全 NaN `min_cos`** | **不是层定位** — 见下节；勿读 `first_mismatch_idx`/层名；须另报有效槽 Inf/NaN，并**分级**报未用槽 |
+| **有效槽 Inf/NaN** | 数值溢出已进/经 KV；偏计算写入或上游炸 |
+| **未用槽有限非 0** | 脏写/卫生；**通常不致坏结果**；附注即可 |
+| **未用槽 Inf/NaN** | 可影响结果；严重数值信号 |
 | **仅末 token 分歧**（history feed 且按 p+o 全长比） | **多半 feed 跨度错** — 改 `n_tokens=p+o-1` 复核；勿定界到层 |
 | **shape 不一致** | 错 dump / 未 stitch / 拓扑或 MODE 不一致 — 先修对齐 |
 
@@ -127,20 +141,23 @@ python "$SCRIPTS/compare_per_layer.py" \
 1. **同一次异常请求** — buggy report、buggy dump、ref dump、`kv_compare` 必须对齐同一 `req_id`/wave。禁止拿「有 dump 的旧跑」配「新 detect 钉点」。**detect=0 也不授权**混用历史 dump。  
 2. **先有有效异常** — 目标形态已复现；dump 覆盖足够 output（勿把 **弱窗** 如仅 o=1 / 非异常 completion 当有效异常 KV）。未满足 → 停，交 investigation 写 **复现未抓到** / 未做有效对账。  
 3. **先形状、有效 token** — 见上节；history feed 用 `p+o-1`；勿把 block 尾部未用 0 槽算进相似度。  
-4. **全 NaN / 仅末位假分歧 ≠ 层定位** — Table1 全 NaN 或 **只有最后一个 output** 分歧时，先查 feed 跨度与空槽；**禁止**写成「首坏 token0 @ layer_L」。NaN 多因对齐/切片零范数或比多了末 token。  
-5. **多组验证** — 同一 overlay 至少两组独立异常请求，cos 结论同向再归档③/④。  
-6. **空 `prompt_token_ids`** — 勿字符串重 tokenize。优先树含 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285)（prompt 预缓存不门禁 sample hooks）再抓；否则同 prompt **re-curl** 抓服务端 ids，与异常 `output_token_ids` 合并后再 force-feed。
+4. **全 NaN / 仅末位假分歧 ≠ 层定位** — Table1 全 NaN 或 **只有最后一个 output** 分歧时，先查 feed 跨度、空槽、**有效槽是否已非有限**；**禁止**写成「首坏 token0 @ layer_L」。有效槽 Inf/NaN 仍是可归档事实（非「复现未抓到」）。  
+5. **标杆未炸** — `logits_finite` 路径下 ref 必须未触发该 detector；炸过的 dump 不可当标杆。  
+6. **多组验证** — 同一 overlay 至少两组独立异常请求，结论同向再归档③/④。  
+7. **空 `prompt_token_ids`** — 勿字符串重 tokenize。优先树含 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285)（prompt 预缓存不门禁 sample hooks）再抓；否则同 prompt **re-curl** 抓服务端 ids，与异常 `output_token_ids` 合并后再 force-feed。  
+8. **短 output** — 只削弱层定位余弦；**不**等于跳过有限性/未用槽检查。
 
 ## forbidden
 
 - 无 verify PASS 仍执行  
 - 重复实现 `verify_request_kv`  
-- 输出 runtime_config JSON；使用 msprobe  
-- 用弱 dump / 全 NaN / **history 下按 p+o 全长** 的末位假分歧写 keep-set ③/④ 或层定位  
-- 混用不同 run 的 report 与 dump（含未清空目录导致的残留）  
-- 跳过 shape 检查；按整 block 容量（含未用 0 槽）算余弦  
-- 用本地 tokenize 字符串冒充服务端 `prompt_token_ids`
+- 输出 runtime_config JSON；用 msprobe **冒充** KV 对比源  
+- **`logits_finite` 后跳过本 skill** 直接 msprobe  
+- 用弱 dump / 全 NaN cos / **history 下按 p+o 全长** 的末位假分歧写层定位  
+- 把未用槽「有限非 0」与「Inf/NaN」混写成同等严重；忽略有效槽 Inf；混用不同 run  
+- 跳过 shape 检查；按整 block 容量（含未用槽）算余弦  
+- 用本地 tokenize 字符串冒充服务端 `prompt_token_ids`；用已炸请求当标杆
 
 ## Related
 
-`analysis`（门闩）· `investigation`（十问交付）· `config-recommender`（arm dump 配置）
+`analysis`（门闩）· `investigation`（十问交付）· `config-recommender`（arm dump 配置）· `msprobe-dump`（殿后）
