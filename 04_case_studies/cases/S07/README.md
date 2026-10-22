@@ -46,21 +46,21 @@ status 里 precision 记成 1，但 samples + score 证实跨请求内容相同�
 
 ### 事实
 
+- 现象：有限分值乱码 + detector miss（FAIL+GAP）；归档 dump 侧可用配对为旧 `logits_finite`（`output_token_ids` 仅 1 枚）。
 - builder 机实跑 KV 对比（cos_thresh=0.99；n_prompt=16 n_cmp_tokens=16；matched_layers=72）。
 - 原 report `prompt_token_ids` 为空；同 prompt re-curl 后与异常 `output_token_ids` 合并再抓标杆。
 - 首不一致：idx=0 role=prompt span=prompt min_cos=NaN @ layer_36。
-- 后续是否恢复≈1：False；output 首 token 余弦=n/a；仅 PD 复现：False。
+- 后续是否恢复≈1：False；output 首 token 余弦=n/a（对比窗口无 output 槽）；仅 PD 复现：False。
 
 ### 推断
 
-- 对账不一致 → **重开 KV 线**（写坏 / 传坏 / 脏读等仍可能）。
+- 弱 dump 对账不一致 → **重开 KV 线**，但排除/坐实力度受限于 o=1 + re-curl ids，不能直接写成 W8A8 dequant 根因。
 - 坏输出仍不可直接写成具体根因。
-- 首不一致在 prompt 段 → 偏向 prefill 侧污染时机（需结合是否恢复、仅 PD）。
 
 ### 结论
 
-- 已定界到：KV 与标杆不一致（重开 KV 线）。
-- 尚未定界到具体写/传路径；分析不出 / 证据不足。
+- 已定界到：identical+garbage 形态 + detector miss；弱 dump 与标杆不一致。
+- 尚未定界到 W8A8 dequant / 具体写传路径；分析不出 / 证据不足。
 
 
 ## 证据文件
@@ -72,6 +72,7 @@ status 里 precision 记成 1，但 samples + score 证实跨请求内容相同�
 | `evidence/三层计数.json` | 三层明细（trigger / precision / detect） |
 | `evidence/跑批结果.json` | 跑批元数据 + 结案摘要 |
 | `evidence/samples/` | prompt + completion 样本 |
+| `evidence/kv_compare.json` | 最新 KV 标杆对比摘要（余弦 / 首不一致 / 结论） |
 
 
 ## 上游 PR 关系

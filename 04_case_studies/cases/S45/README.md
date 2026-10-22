@@ -71,6 +71,7 @@ top-k / top-p 作用在 `-logits` 上再取反——保留最低-k / 倒置 nucl
 | `evidence/规格说明.md` | 复现规格（Origin / 锚点 / overlay / knobs / 期望 detector） |
 | `evidence/三层计数.json` | 三层明细（trigger / precision / detect） |
 | `evidence/跑批结果.json` | 跑批元数据 + 结案摘要 |
+| `evidence/kv_compare.json` | 最新 KV 标杆对比摘要（余弦 / 首不一致 / 结论） |
 | `evidence/samples/` | prompt + completion 样本 |
 
 
