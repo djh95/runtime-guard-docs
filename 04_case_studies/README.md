@@ -16,7 +16,7 @@
       README.md                     # 【必选 · 外层唯一主文件】
                                     #   结案标签 + 三层表 + detector 一句
                                     #   + 现象 / 案例背景·构造 / Guard + 复现技巧 + 教学要点
-                                    #   + 定界分析（事实 → 推断 → 结论；末行 L1/L2 标签）
+                                    #   + 定界分析（事实 → 推论 → 结论；L1/L2 至多文末可选）
                                     #   + 证据文件表 + 上游 PR 关系 + Origin
       evidence/
         overlay.patch               # 【必选】静态补丁
@@ -31,7 +31,7 @@
 
 | 路径 | 作用 |
 |------|------|
-| `cases/Sxx/README.md` | **人读主入口**：结案 + 三层 + detector + **定界分析**（事实→推断→结论；末行 L1/L2）+ 现象/案例背景·构造/复现技巧/证据表/上游 PR |
+| `cases/Sxx/README.md` | **人读主入口**：结案 + 三层 + detector + **定界分析**（事实→推论→结论；L1/L2 至多文末可选）+ 现象/案例背景·构造/复现技巧/证据表/上游 PR |
 | `evidence/overlay.patch` | 制造异常的代码补丁（包内必有） |
 | `evidence/规格说明.md` | **只写怎么复现**（Origin、锚点、overlay、knobs、期望 detector）；不定界长文 |
 | `evidence/三层计数.json` | 机读三层数字；人读以 README 表为准 |
