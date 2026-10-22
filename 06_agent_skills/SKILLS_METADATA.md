@@ -1,7 +1,7 @@
 # Runtime-Guard Skills Metadata
 
-版本：v5.9  
-Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `analysis` · `ref-kv-dump` · **`apply-mrv1-patch`** · **`apply-v030-mrv2-patch`**
+版本：v5.10  
+Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `analysis` · `ref-kv-dump` · **`build-anomaly-env`** · **`apply-mrv1-patch`** · **`apply-v030-mrv2-patch`**
 
 ## Changelog（摘要）
 
@@ -9,7 +9,8 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 
 离线脚本入口：本仓 [`scripts/`](./scripts/)。
 
-- **v5.9（现行）** — 接线 skills：`apply-mrv1-patch`（`05_mrv1_backport`）· `apply-v030-mrv2-patch`（`05_v030_backport`）；排障五件套不变。  
+- **v5.10（现行）** — 构造 skill：`build-anomaly-env`（origin-faithful overlay / 三层率 / HARD·DEFER；术语主页）；排障五件套 + 接线 skills 不变。  
+- **v5.9** — 接线 skills：`apply-mrv1-patch`（`05_mrv1_backport`）· `apply-v030-mrv2-patch`（`05_v030_backport`）；排障五件套不变。  
 - **v5.8** — ones/zeros 收尾；多为 `token_repeat` + 问题类提示（L2）。
 - **v5.0–v5.7** — soft-inverse（按上游修复反向注入）矩阵扩展。
 - **v4.x** — abs / scale / skip / half-swap 波；偶发走 `logits_finite`。
@@ -37,6 +38,7 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 | config-recommender | 原子 · 在线配置 | 正式排障 / 业务默认配置唯一来源 |
 | analysis | 原子 · 离线读盘 | report/dump 汇总、关联、verify、inspect |
 | ref-kv-dump | 原子 · 标杆+对比 | force-feed（按报告 token id 原样喂干净服务）抓 ref + KV 首分歧 |
+| build-anomaly-env | 构造 · 评测基建 | origin-faithful overlay 场景；三层率；禁合成放大器 |
 | apply-mrv1-patch | 运维 · 接线 | 多 release × MRV1 → `05_mrv1_backport` |
 | apply-v030-mrv2-patch | 运维 · 接线 | v0.30 × MRV2 → `05_v030_backport` |
 
@@ -151,6 +153,32 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 
 ---
 
+## 6. build-anomaly-env
+
+**触发：** 要挖/建 anomaly 评测环境（overlay），或抬 origin-faithful 复现率。
+
+**can_do**
+
+- 按真实修复 PR 挖 typed 候选；写 overlay-only 故障（测试仓 `tests/build-anomaly-env/`）  
+- 列 allowed/forbidden knobs；用合法 knobs 抬 trigger/precision；记 original vs tuned rate  
+- 强制三层分计 + bug 路径开火日志；打包 SPEC / overlay / 上游 PR / 样本 / 三层  
+- HARD/DEFER 难 bug，改挖新候选；`synthetic/` 仅阳性对照
+
+**forbidden**
+
+- NaN 强写 / token fill / 伪造症状放大器；改 canonical 当场景  
+- 以 GSM8K/golden 当成功；用 soft-inv 刷分顶替 HARD  
+- 在本 skill 展开十问定界（→ `investigation` / `ref-kv-dump`）
+
+**逻辑输入：** bug/PR 锚点, Origin 标签, 拓扑/模型, 时限  
+**逻辑输出：** SPEC, overlay, 三层率, samples, HARD|就绪, keep-set 打包提示
+
+**依赖：** 复现后定界可交 investigation / ref-kv；无强制上游 skill。
+
+**术语：** **origin-faithful** 释义主页在本 skill（审计 #36）。
+
+---
+
 ## 维护规则
 
 | 变更 | 改谁 |
@@ -158,6 +186,7 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 | 已有 detector 算法 / 推荐阈值 | `config-recommender`（+ 手册 03） |
 | 新增已合入 detector | `config-recommender` + `detector-sweep` |
 | report JSON schema | `analysis`（+ 必要时 recommender 字段说明） |
+| anomaly 构造纪律 / origin-faithful | `build-anomaly-env` |
 | 仅文档措辞、代码参数不变 | 只改手册，skill 可不改 |
 
 脚本 CLI 变更 → 同步本目录（权威）→ 内部仓 `analysis/skill/` 镜像（见 06 README 同步命令）。
