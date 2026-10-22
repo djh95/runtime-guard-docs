@@ -48,21 +48,21 @@ Spec 路径要用对 detector（主看 `spec_acceptance`）。acceptance 塌缩�
 
 ### 事实
 
-- 现象：acceptance_rate 塌缩相关（`evidence/samples/` · `evidence/reports/`）。
-- 三层：126 / 0 / 47；主 detector：`spec_acceptance`×47。
-- 归档 report：`spec_acceptance` 条 `prompt_token_ids` 非空（len=14）；另有条为空；均有 `output_token_ids`。
-- 尚未做 KV 对比（未抓标杆/异常 KV 或未写入本包）。
+- builder 机实跑 KV 对比（cos_thresh=0.99；n_prompt=14 n_cmp_tokens=17；matched_layers=71）。
+- 标杆 vs 异常：对比窗口内**全程一致**（min-over-layers cos ≥ thresh）；output 首 token 余弦=0.999993。
+- 首不一致：无。
 
 ### 推断
 
-- 可确认：`spec_acceptance` 已检出。
-- acceptance 塌缩推不出「spec resample 无独立 salt」——构造见「根因」。
-- 无对账事实 → 不能排除或确认 KV，也推不出污染时机。
+- 对账一致 → **排除 KV cache** 作为本请求坏输出的必要原因。
+- 坏输出仍不能从文本推出构造根因；转向非 KV 类（算子/采样/权重等，见案例背景）。
+- 无首不一致 → 推不出「prefill 中途 / 传写 / decode 前」等污染时机窗口。
 
 ### 结论
 
-- 已定界到：`spec_acceptance` 检出。
-- 尚未定界到 resample salt；分析不出 / 证据不足。
+- 已定界到：可排除 KV cache（本请求对比窗口）。
+- 尚未定界到具体算子/构造根因；分析不出 / 证据不足。
+
 
 ## 证据文件
 
@@ -74,6 +74,7 @@ Spec 路径要用对 detector（主看 `spec_acceptance`）。acceptance 塌缩�
 | `evidence/跑批结果.json` | 跑批元数据 + 结案摘要 |
 | `evidence/samples/` | prompt + completion 样本 |
 | `evidence/reports/` | Guard detector 报告（`token_repeat` 条 prompt 为空、`spec_acceptance` 条有；空因见 [④ 名词表](../../README.md#名词怎么读先看这里)，可读 prompt 亦可看 samples） |
+| `evidence/kv_compare.json` | 最新 KV 标杆对比摘要（余弦 / 首不一致 / 结论） |
 
 
 ## 上游 PR 关系

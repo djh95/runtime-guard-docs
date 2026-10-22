@@ -50,21 +50,18 @@ top-k / top-p 作用在 `-logits` 上再取反——保留最低-k / 倒置 nucl
 
 ### 事实
 
-- 现象：各不相同的有限乱码（`evidence/samples/`）；logits 仍有限，无 NaN/Inf。
-- 三层：16 / 4 / 0；`token_repeat` 与 `logits_finite` 均未命中；无命中 report。
-- 无 `prompt_token_ids` 快照。
-- 尚未做 KV 对比（未抓标杆/异常 KV 或未写入本包）。
+- 本轮 KV 对比未完成：现有 anomaly-repro/origin run 均无可用 *.pt dump（已查 45_topk_bottom_keep-*）
+- 尚未做 KV 对比（无可用余弦/首不一致事实）。
 
 ### 推断
 
-- 可确认：unique-garbage 已出现，且乱码检测漏检。
-- 坏输出推不出「top-k 打在 −logits」——构造见「根因」。
-- 无对账事实 → 推不出污染时机；有 report 后可走重放 ids + KV 排除。
+- 无对账事实 → 推不出污染时机，也不能排除或确认 KV。
+- 坏输出推不出构造根因。
 
 ### 结论
 
-- 已定界到：unique-garbage 形态出现；detector 未命中。
-- 尚未定界到 top-k −logits；分析不出 / 证据不足。
+- 尚未定界到具体污染类；分析不出 / 证据不足。
+
 
 ## 证据文件
 

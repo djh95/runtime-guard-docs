@@ -90,21 +90,22 @@ Overlay 打上后服务仍 200。可见 completion 是通顺中英散文（华�
 
 ### 事实
 
-- 现象：dense 栈 completion 为通顺中英散文，不是乱码；CJK 排除后 precision=0。
-- 三层：154 / 0 / 0；detect=0；无命中 report。
-- 无 `prompt_token_ids` 快照。
-- 尚未做 KV 对比（未抓标杆/异常 KV 或未写入本包）。
+- builder 机实跑 KV 对比（cos_thresh=0.99；n_prompt=16 n_cmp_tokens=16；matched_layers=72）。
+- 原 report `prompt_token_ids` 为空；同 prompt re-curl 后与异常 `output_token_ids` 合并再抓标杆。
+- 首不一致：idx=0 role=prompt span=prompt min_cos=0.233433 @ model.layers.13.self_attn.attn。
+- 后续是否恢复≈1：False；output 首 token 余弦=n/a；仅 PD 复现：False。
 
 ### 推断
 
-- 可确认：dense 上目标异常未出现，故不是漏检结案。
-- 无坏输出、无对账事实 → 推不出「KV 未置零」细因，也推不出污染时机。
-- 构造/形态前提见「根因」；不由本包定界推出。
+- 对账不一致 → **重开 KV 线**（写坏 / 传坏 / 脏读等仍可能）。
+- 坏输出仍不可直接写成具体根因。
+- 首不一致在 prompt 段 → 偏向 prefill 侧污染时机（需结合是否恢复、仅 PD）。
 
 ### 结论
 
-- 已定界到：dense 复现未出现；无可检停点。
-- 尚未定界到 KV 未置零类；分析不出 / 证据不足。
+- 已定界到：KV 与标杆不一致（重开 KV 线）。
+- 尚未定界到具体写/传路径；分析不出 / 证据不足。
+
 
 ## 证据文件
 

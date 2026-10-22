@@ -46,21 +46,22 @@ status 里 precision 记成 1，但 samples + score 证实跨请求内容相同�
 
 ### 事实
 
-- 现象：跨请求内容相同的有限乱码×48（`evidence/samples/`）；logits 仍有限，无 NaN/Inf。
-- 三层：2624 / 1 / 0；期望 `logits_finite` 未命中；无命中 report。
-- 无 `prompt_token_ids` 快照。
-- 尚未做 KV 对比（未抓标杆/异常 KV 或未写入本包）。
+- builder 机实跑 KV 对比（cos_thresh=0.99；n_prompt=16 n_cmp_tokens=16；matched_layers=72）。
+- 原 report `prompt_token_ids` 为空；同 prompt re-curl 后与异常 `output_token_ids` 合并再抓标杆。
+- 首不一致：idx=0 role=prompt span=prompt min_cos=NaN @ layer_36。
+- 后续是否恢复≈1：False；output 首 token 余弦=n/a；仅 PD 复现：False。
 
 ### 推断
 
-- 可确认：有限 logits 下的乱码已出现，且乱码检测漏检。
-- 坏输出推不出「W8A8 dequant scale」——构造见「根因」。
-- 无对账事实 → 推不出污染时机；有 report 后可走重放 ids + KV 排除。
+- 对账不一致 → **重开 KV 线**（写坏 / 传坏 / 脏读等仍可能）。
+- 坏输出仍不可直接写成具体根因。
+- 首不一致在 prompt 段 → 偏向 prefill 侧污染时机（需结合是否恢复、仅 PD）。
 
 ### 结论
 
-- 已定界到：identical+garbage 形态出现；detector 未命中。
-- 尚未定界到 W8A8 dequant；分析不出 / 证据不足。
+- 已定界到：KV 与标杆不一致（重开 KV 线）。
+- 尚未定界到具体写/传路径；分析不出 / 证据不足。
+
 
 ## 证据文件
 
