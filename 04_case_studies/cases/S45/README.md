@@ -50,17 +50,22 @@ top-k / top-p 作用在 `-logits` 上再取反——保留最低-k / 倒置 nucl
 
 ### 事实
 
-- 本轮 KV 对比未完成：现有 anomaly-repro/origin run 均无可用 *.pt dump（已查 45_topk_bottom_keep-*）
-- 尚未做 KV 对比（无可用余弦/首不一致事实）。
+- detect=0（乱码检测漏检）→ 归档 anomaly-repro 无 detector 触发的 `*.pt`；本轮用 **manual_dump** 重抓异常侧 KV 后完成对账（见 `evidence/kv_compare.json`）。
+- 本包已归档 KV 对比（cos_thresh=0.99；n_prompt=14 n_cmp_tokens=14；matched_layers=72）。
+- 标杆 vs 异常：对比窗口内**全程一致**（min-over-layers cos = 1.0）；首不一致：无。
+- 对比窗 caveat：manual_dump 早拍，report `output_token_ids` 仅 o=1 → history 窗=**prompt only**（无 out0 余弦）。
 
 ### 推断
 
-- 无对账事实 → 推不出污染时机，也不能排除或确认 KV。
-- 坏输出推不出构造根因。
+- 对账一致 → **排除 KV cache** 作为本请求坏输出的必要原因（转向采样/非 KV 类；与 top-k 打在 −logits 的构造预期一致）。
+- 坏输出仍不能从文本推出构造根因。
+- 无首不一致 → 推不出「prefill 中途 / 传写 / decode 前」等污染时机窗口。
+- o=1 早拍使 output 槽位未入窗；排除力度以 prompt 窗为准，不把「全序列 output KV 已验」写死。
 
 ### 结论
 
-- 尚未定界到具体污染类；分析不出 / 证据不足。
+- 已定界到：可排除 KV cache（本请求 prompt 对比窗口）。
+- 尚未定界到具体算子/构造根因；分析不出 / 证据不足。
 
 
 ## 证据文件

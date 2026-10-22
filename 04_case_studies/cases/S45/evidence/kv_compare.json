@@ -1,7 +1,211 @@
 {
   "case": "S45",
-  "status": "blocked",
-  "reason": "现有 anomaly-repro/origin run 均无可用 *.pt dump（已查 45_topk_bottom_keep-*）",
-  "kv_match": null,
-  "conclusion": null
+  "host": "builder",
+  "cos_thresh": 0.99,
+  "kv_match": true,
+  "first_mismatch_idx": null,
+  "first_mismatch_role": null,
+  "first_mismatch_span": null,
+  "first_mismatch_min_cos": null,
+  "first_mismatch_layer": null,
+  "later_slots_recover": null,
+  "output_first_token_cos": null,
+  "pd_only": false,
+  "conclusion": "KV一致→排除 KV cache",
+  "n_tokens": 14,
+  "n_prompt": 14,
+  "n_layers_matched": 72,
+  "source": {
+    "buggy_run": "45_topk_bottom_keep-kvrecap-20261022T173952",
+    "buggy_report": "45_topk_bottom_keep-kvrecap-20261022T173952/report/manual_trigger/report_20261022_174131_547_cmpl-ad7b9779272e0d11-0-be5cd383_pid789871.json",
+    "feed_report": "45_topk_bottom_keep-kvrecap-20261022T173952/report/manual_trigger/report_20261022_174131_547_cmpl-ad7b9779272e0d11-0-be5cd383_pid789871.json",
+    "buggy_rank": "45_topk_bottom_keep-kvrecap-20261022T173952/dump/manual_trigger/cmpl-ad7b9779272e0d11-0-be5cd383/wave_2/dp0_tp0_pp0_cp0",
+    "ref_rank": "ref_runs/qwen3-8b-s45-ref-20261022T173952/dump/manual_trigger/cmpl-b31530199cb0e27b-0-9a2c991b/wave_2/dp0_tp0_pp0_cp0",
+    "req_id": "cmpl-ad7b9779272e0d11-0-be5cd383",
+    "incident_type": "manual_trigger",
+    "empty_prompt_recurled": false,
+    "capture": "manual_dump_recapture"
+  },
+  "per_token_min_cos_head": [
+    {
+      "idx": 0,
+      "role": "prompt",
+      "min_cos": 1.0
+    },
+    {
+      "idx": 1,
+      "role": "prompt",
+      "min_cos": 1.0
+    },
+    {
+      "idx": 2,
+      "role": "prompt",
+      "min_cos": 1.0
+    },
+    {
+      "idx": 3,
+      "role": "prompt",
+      "min_cos": 1.0
+    },
+    {
+      "idx": 4,
+      "role": "prompt",
+      "min_cos": 1.0
+    },
+    {
+      "idx": 5,
+      "role": "prompt",
+      "min_cos": 1.0
+    },
+    {
+      "idx": 6,
+      "role": "prompt",
+      "min_cos": 1.0
+    },
+    {
+      "idx": 7,
+      "role": "prompt",
+      "min_cos": 1.0
+    },
+    {
+      "idx": 8,
+      "role": "prompt",
+      "min_cos": 1.0
+    },
+    {
+      "idx": 9,
+      "role": "prompt",
+      "min_cos": 1.0
+    },
+    {
+      "idx": 10,
+      "role": "prompt",
+      "min_cos": 1.0
+    },
+    {
+      "idx": 11,
+      "role": "prompt",
+      "min_cos": 1.0
+    },
+    {
+      "idx": 12,
+      "role": "prompt",
+      "min_cos": 1.0
+    },
+    {
+      "idx": 13,
+      "role": "prompt",
+      "min_cos": 1.0
+    }
+  ],
+  "analysis": {
+    "n_tokens": 14,
+    "n_prompt": 14,
+    "cos_thresh": 0.99,
+    "layers_count": 72,
+    "first_bad": null,
+    "per_token": [
+      {
+        "token_idx": 0,
+        "token_id": 675,
+        "role": "prompt",
+        "min_cos": 0.9999999999999998,
+        "min_layer": "layer_58"
+      },
+      {
+        "token_idx": 1,
+        "token_id": 825,
+        "role": "prompt",
+        "min_cos": 0.9999999999999998,
+        "min_layer": "layer_47"
+      },
+      {
+        "token_idx": 2,
+        "token_id": 11245,
+        "role": "prompt",
+        "min_cos": 0.9999999999999998,
+        "min_layer": "model.layers.12.self_attn.attn"
+      },
+      {
+        "token_idx": 3,
+        "token_id": 14796,
+        "role": "prompt",
+        "min_cos": 0.9999999999999998,
+        "min_layer": "layer_36"
+      },
+      {
+        "token_idx": 4,
+        "token_id": 13,
+        "role": "prompt",
+        "min_cos": 0.9999999999999998,
+        "min_layer": "layer_39"
+      },
+      {
+        "token_idx": 5,
+        "token_id": 3776,
+        "role": "prompt",
+        "min_cos": 0.9999999999999998,
+        "min_layer": "layer_36"
+      },
+      {
+        "token_idx": 6,
+        "token_id": 2805,
+        "role": "prompt",
+        "min_cos": 0.9999999999999998,
+        "min_layer": "layer_42"
+      },
+      {
+        "token_idx": 7,
+        "token_id": 6364,
+        "role": "prompt",
+        "min_cos": 0.9999999999999998,
+        "min_layer": "layer_41"
+      },
+      {
+        "token_idx": 8,
+        "token_id": 11652,
+        "role": "prompt",
+        "min_cos": 0.9999999999999998,
+        "min_layer": "layer_39"
+      },
+      {
+        "token_idx": 9,
+        "token_id": 13,
+        "role": "prompt",
+        "min_cos": 0.9999999999999998,
+        "min_layer": "layer_55"
+      },
+      {
+        "token_idx": 10,
+        "token_id": 877,
+        "role": "prompt",
+        "min_cos": 0.9999999999999998,
+        "min_layer": "layer_37"
+      },
+      {
+        "token_idx": 11,
+        "token_id": 28,
+        "role": "prompt",
+        "min_cos": 0.9999999999999998,
+        "min_layer": "layer_43"
+      },
+      {
+        "token_idx": 12,
+        "token_id": 15,
+        "role": "prompt",
+        "min_cos": 0.9999999999999998,
+        "min_layer": "layer_39"
+      },
+      {
+        "token_idx": 13,
+        "token_id": 13,
+        "role": "prompt",
+        "min_cos": 0.9999999999999998,
+        "min_layer": "layer_53"
+      }
+    ]
+  },
+  "status": "done",
+  "capture_note": "detect=0 GAP；异常侧用 manual_dump 抓 KV（非 detector on_trigger）",
+  "compare_window_note": "manual_dump 早拍 report o=1 → history 对比窗=prompt only（n_cmp=14）；无 out0 余弦"
 }
