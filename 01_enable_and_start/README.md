@@ -55,7 +55,7 @@ vllm serve <MODEL> --additional-config '{
 - `hot_reload` 默认 `false` → 启动后改 JSON **无效**，改策略需重启。  
 - 适合：策略稳定、不想被人热改。
 
-### C. 值班 / 排障（热更新）
+### C. 运行中修改配置（热更新）
 
 ```bash
 vllm serve <MODEL> --additional-config '{
@@ -82,11 +82,11 @@ vllm serve <MODEL> --additional-config '{
 }
 ```
 
-**Manual dump（水位，不是剩余次数）：**
+**Manual dump（总次数 / 目标总次数）：**
 
-- JSON 里 `dump.manual_dump = N` 是 **目标水位**；进程**从不写回** `false`/`0`。  
-- 进程内 `done`（已拍次数）只在**内存**；当 `done ≥ N` 就停。  
-- 再拍一次：热更把 N **抬高**（推荐 `1` → `2` → `3`），勿一次设很大的 `N`。  
+- JSON 里 `dump.manual_dump = N` 是 **目标总次数**（不是剩余次数）；进程**从不写回** `false`/`0`。  
+- 进程内 dump 次数只在内存；大于等于 N 就停止 dump。  
+- 继续 dump 需要改配置文件增大 N（推荐 `1` → `2` → `3`）；勿一次设很大的 N。  
 - 需要 `runtime_config_hot_reload=true`。
 
 ---
@@ -118,7 +118,7 @@ runtime/
 | 单卡 | 绝对路径；默认关时为 static idle（见开篇） |
 | TP>1 | 检测/报告只在 last-PP TP0；同 stage 其它 TP 经 **due bus** 同步配置/dump 名单；dump 要凑齐各 `tp*` |
 | PP>1 | 检测/dump 只在 last PP；非 last-PP 可 **file poll** JSON，但别在早期 PP 找报告 |
-| DP>1 | 各副本独立报告/dump；共享 JSON 时内存 `done` 每进程独立（盘上水位 `N` 共享、不写回） |
+| DP>1 | 各副本独立报告/dump；共享 JSON 时内存 `done` 每进程独立（盘上目标总次数 `N` 共享、不写回） |
 | 多机 | 可启动后改路径，但 **last-PP 的 TP 组路径要统一**；各 rank 配置到达方式见附录 A.2（due bus / file poll） |
 | MoE | 开功能后 Python 占比更明显；默认关即可 |
 | Spec / MTP | 才需要 `spec_acceptance` |
@@ -147,7 +147,7 @@ runtime/
 4. 只用某一个 `tp*` 的 `.pt` 当完整 KV。  
 5. v1 runner → Guard 未接线。  
 6. 仍在 `releases/v0.30.0` / rc 线（或更新版本仍无 Guard）却直接配 `runtime_*` → 参数被忽略或报错；先打 [05 patch](../05_v030_backport/README.md)。  
-7. 再拍需热更抬高水位 `N`（JSON 里的 `manual_dump` 不会被进程改掉）。
+7. 继续 dump 需热更增大目标总次数 `N`（JSON 里的 `manual_dump` 不会被进程改掉）。
 
 ---
 
@@ -169,7 +169,7 @@ runtime/
 | `tp*` dump | last-PP 上每个 TP 各写一份 KV 分片；要凑齐才能拼完整 |
 | file poll | 非 last-PP worker、以及 API 等非 worker 路径：本地轮询 `runtime_config_path` 读 JSON |
 | static idle | detector/dump/热更全关时的旁路，开销可忽略 |
-| `manual_dump=N` / `done` | 盘上水位目标 vs 进程内存已拍次数；**JSON 不写回** |
+| `manual_dump=N` / `done` | 盘上目标总次数 vs 进程内存已 dump 次数；**JSON 不写回** |
 
 ### A.2 多机 / 多 rank 配置怎么到齐
 
@@ -211,7 +211,7 @@ runtime/
 
 - **TP>1**：报告只看 TP0；同 stage 其它 TP 走 due bus；dump 检查是否凑齐各 `tp*`。  
 - **PP>1**：只在最后一段找报告/dump；更早 PP 可 poll 配置、但没有 report 是预期。  
-- **DP>1**：各副本各写各的；共享水位 `N` 时每人内存 `done` 独立 → 大约可拍 `num_DP×N` 次。  
+- **DP>1**：各副本各写各的；共享目标总次数 `N` 时每人内存 `done` 独立 → 大约可 dump `num_DP×N` 次。  
 - **MoE**：默认关；开观测后 host CPU 更显眼。  
 - **Spec/MTP**：才开 `spec_acceptance`。  
 - **Async**：检测挂在 `AscendAsyncOutput.get_output()`；业务 finish 可能早于 dump 落盘。

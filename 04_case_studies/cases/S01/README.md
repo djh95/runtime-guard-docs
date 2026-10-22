@@ -93,7 +93,7 @@ Overlay 打上后服务仍 200。可见 completion 是通顺中英散文（华�
 - 现象：dense 栈 completion 为通顺中英散文，不是乱码；CJK 排除后 precision=0。
 - 三层：154 / 0 / 0；detect=0；无命中 report。
 - 无 `prompt_token_ids` 快照。
-- KV 对账路径可用；归档尚未附结论。
+- 尚未做 KV 对比（未抓标杆/异常 KV 或未写入本包）。
 
 ### 推断
 
@@ -105,7 +105,6 @@ Overlay 打上后服务仍 200。可见 completion 是通顺中英散文（华�
 
 - 已定界到：dense 复现未出现；无可检停点。
 - 尚未定界到 KV 未置零类；分析不出 / 证据不足。
-- L1=无可检停点；L2=证据不足。
 
 ## 证据文件
 

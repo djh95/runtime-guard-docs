@@ -21,7 +21,7 @@
 
 ## 2 · 案例背景/构造
 
-Overlay / 上游 PR 意图：错误 router bias / mask 类（非 bit-exact CUDA）→ 错专家。对外保留案例 **只留这一例** MoE。上游：[#38989](https://github.com/vllm-project/vllm/pull/38989)、[#60946](https://github.com/vllm-project/vllm/pull/60946)。**构造已知 ≠ 定界从坏输出推出。**
+Overlay / 上游 PR 意图：错误 router bias / mask 类（非 bit-exact CUDA）→ 错专家。对外保留案例 **只留这一例** MoE。上游：[#38989](https://github.com/vllm-project/vllm/pull/38989)、[#60946](https://github.com/vllm-project/vllm/pull/60946)。**本案例构造预期根因不在 KV。** 构造已知 ≠ 定界从坏输出推出。
 
 ## 3 · Guard 结果
 
@@ -46,8 +46,7 @@ Overlay / 上游 PR 意图：错误 router bias / mask 类（非 bit-exact CUDA�
 - 现象：短 CJK 复读后接 `etc` 长复读（`evidence/samples/`）。
 - 三层：70 / 1 / 1。
 - detector：`token_repeat`×1；`output_token_ids` 长 10；`prompt_token_ids` 为空；有 `block_ids`。
-- 规格 `KV?=否` 只表示构造预期根因不在 KV，不是已跑排除结果。
-- KV 对账路径可用；归档尚未附结论。
+- 尚未做 KV 对比（未抓标杆/异常 KV 或未写入本包）。
 
 ### 推断
 
@@ -60,7 +59,6 @@ Overlay / 上游 PR 意图：错误 router bias / mask 类（非 bit-exact CUDA�
 
 - 已定界到：异常输出 + `token_repeat` 检出。
 - 尚未定界到 MoE 路由 / 错专家；分析不出 / 证据不足。
-- L1=`token_repeat` 已命中；L2=证据不足。
 
 ## 证据文件
 

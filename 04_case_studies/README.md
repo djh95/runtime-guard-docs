@@ -16,7 +16,7 @@
       README.md                     # 【必选 · 外层唯一主文件】
                                     #   结案标签 + 三层表 + detector 一句
                                     #   + 现象 / 案例背景·构造 / Guard + 复现技巧 + 教学要点
-                                    #   + 定界分析（事实 → 推论 → 结论；L1/L2 至多文末可选）
+                                    #   + 定界分析（事实 → 推论 → 结论；勿写检出/问题类粗标签行）
                                     #   + 证据文件表 + 上游 PR 关系 + Origin
       evidence/
         overlay.patch               # 【必选】静态补丁
@@ -31,7 +31,7 @@
 
 | 路径 | 作用 |
 |------|------|
-| `cases/Sxx/README.md` | **人读主入口**：结案 + 三层 + detector + **定界分析**（事实→推论→结论；L1/L2 至多文末可选）+ 现象/案例背景·构造/复现技巧/证据表/上游 PR |
+| `cases/Sxx/README.md` | **人读主入口**：结案 + 三层 + detector + **定界分析**（事实→推论→结论；勿写检出/问题类粗标签行）+ 现象/案例背景·构造/复现技巧/证据表/上游 PR |
 | `evidence/overlay.patch` | 制造异常的代码补丁（包内必有） |
 | `evidence/规格说明.md` | **只写怎么复现**（Origin、锚点、overlay、knobs、期望 detector）；不定界长文 |
 | `evidence/三层计数.json` | 机读三层数字；人读以 README 表为准 |
@@ -60,11 +60,9 @@
 
 定界节必须有**推理逻辑**，顺序固定：
 
-1. **事实** — 只列包内可核对项：现象文本、三层计数、report / detector、`prompt_token_ids` 是否空、是否已做同 prompt re-curl、KV 对比是否已归档（未归档就写「路径可用；归档尚未附结论」）。少括号旁注，短 bullet；不编造未跑的 KV 数字。
+1. **事实** — 只列包内可核对项：现象文本、三层计数、report / detector、`prompt_token_ids` 是否空、是否已做同 prompt re-curl、KV 对比是否已归档（未做就写「尚未做 KV 对比（未抓标杆/异常 KV 或未写入本包）」；已做则写实数事实）。少括号旁注，短 bullet；不编造未跑的 KV 数字。
 2. **推论**（可写作「推断」）— 只写事实支撑得住的允许/排除；不够就写推不出什么。
-3. **结论** — 写清**已定界到** / **尚未定界到**；定界不出写「分析不出 / 尚未定界到… / 证据不足」。**禁止**把 overlay / 上游 PR 已知根因写成定界已证。
-
-**L1/L2：** 优先不写。若保留，仅作文末一行「定界停在哪」**可选**标签——**禁止**当分析骨架或首条 bullet。
+3. **结论** — 写清**已定界到** / **尚未定界到**；定界不出写「分析不出 / 尚未定界到… / 证据不足」。**禁止**把 overlay / 上游 PR 已知根因写成定界已证。勿在文末另起「检出停点 / 问题类停点」粗标签行。
 
 **禁止**
 
@@ -114,7 +112,7 @@
 | **样本** | 保存的请求 / 回复证据；应含 prompt + 输出，用来**读文意、核对坏没坏 / 是否误判**。仅有 prompt **字符串**的 sample **不能**当作可靠 tokenize 标杆（发出去的字符串 + 回来的 completion，再 encode 的结果可能与服务端不一致；处理 prompt 与处理 sample 的 tokenizer 也可能不同）。 |
 | **标杆请求（token ids）** | 需要可复现 tokenize / 定界对比时，请求侧以服务端或 Guard **实际捕获的 `prompt_token_ids`** 为准，**用 token ids 去抓 / 归档**，禁止「只存字符串、事后再 encode」当标杆。report 里 prompt 已空时：把**同一 prompt 再 curl**，手动 dump 取服务端实际 ids（仍禁止离线再 tokenize）。 |
 | **report 空 prompt** | report 里 `prompt_token_ids` / `prompt_text` 可能为空（output 仍常有）。**常见根因（热重载路径，S06 时序实测）**：首包 `scheduled_new_reqs` prefill 波上 `needs_sample_phase_hooks()` 仍为 false，Bug #9 预缓存整段被跳过，Store **从未写入** prompt；snapshot 时未必已 finished / clear。**不要**写成「请求结束后 clear / reap 过早导致本条空 prompt」——`clear`→zombie 是代码上的另一充分路径，但**不是** S06 空 report 的实测路径。**不是**请求没带 prompt，也不是脱敏。合入 [vllm-ascend#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) 后预缓存不再绑 hooks，同路径应写出非空 ids；本仓 keep-set **旧归档**可能仍为空（合修前样本）。空 ids **不等于**没有 `block_ids` / 不能武装 `dump_kv`，也**不等于**「Q1–Q5 不适用」——有 report 即可：**同 prompt 再 curl** 抓服务端 ids，与异常 `output_token_ids` 合并后做 **KV 排除定界**。**阅读**原文 → samples；**不要**从字符串补造 ids 填进旧 report。 |
-| **KV 排除定界** | 有异常 report 时的可执行路径：重放抓**实际** prompt token ids → 合并异常 **output token ids** → 抓标杆 KV → 对比异常 KV。**一致 → 排除 KV cache**（再转向规格所指的非 KV 类，如 MoE 路由）；**不一致 → 重开 KV 线**。规格字段 **`KV?=否`** 只表示根因**预期**不在 KV，**不是**跳过该排除步骤。包内若尚未附对账结果，应写明「路径可用；本案例归档尚未附 KV 对比结论」，**不要**写「Q1–Q5 不适用」，也**不要**编造未跑的对比数字。 |
+| **KV 排除定界** | 有异常 report 时的可执行路径：重放抓**实际** prompt token ids → 合并异常 **output token ids** → 抓标杆 KV → 对比异常 KV。**一致 → 排除 KV cache**（再转向规格所指的非 KV 类，如 MoE 路由）；**不一致 → 重开 KV 线**。规格里「构造预期：根因是否在 KV」只记构造预期，**不是**跳过该排除步骤。包内未做对比时写「尚未做 KV 对比（未抓标杆/异常 KV 或未写入本包）」；已做则写实数事实。**不要**写「Q1–Q5 不适用」，也**不要**编造未跑的对比数字。 |
 | **三层计数** | **trigger**（注入路径打中次数）/ **precision**（输出被判异常的次数，≠ 模型精度）/ **detect**（Guard 报告命中次数）。三者不相等；见各包 `三层计数.json`。 |
 | **三层计数.json** | 三层明细（trigger / precision / detect、备注、detector 名等）。索引表数字通常摘自这里。 |
 | **跑批结果.json** | 跑批元数据 + 结案摘要（场景名、verdict、模型、run 路径、三层摘要）。和 `三层计数.json` 一起读。 |
@@ -130,8 +128,6 @@
 | **跨请求内容相同的乱码** | 多次独立请求得到的异常输出彼此相同（同一段垃圾重复出现），不是每次随机不同。常见于 S07。对照：各请求乱码各不相同（如 S45）。 |
 | **内容相同计分** | 用「多条回复是否同一段文字」来估 precision 的做法；各请求内容不同时会低估（如 S45 记成 0）。 |
 | **复现技巧** | 对外文档里「怎么跑才能对齐本包结论」的步骤与负载（旧称「复现配方」，已不用）。过程旧文称 **历史记录**，不称「历史配方」。 |
-| **L1 / L2 定界** | **可选**粗标签（**不是** Transformer 层号；**不是**分析骨架）。优先不写；若写，仅作文末一行「定界停在哪」。**L1** = 检测停点；**L2** = 问题类停点——**仅当事实→推论已支撑到该类**才可标；否则写「尚未定界到… / 分析不出」，**不可**把构造已知根因贴成 L2。定界正文见 **定界写作标准**：事实 → 推论 → 结论。细定界仍走 [02](../02_problem_localization/README.md) **Q1–Q5**。包内尚未附对账时写「路径可用；归档尚未附结论」——**不要**因空 prompt / `KV?=否` 写「Q1–Q5 不适用」。 |
-
 ## 对外保留的 15 个典型案例
 
 | ID | 包 | 结案结论 | 根因 | 现象 | 检测器 | trigger / precision / detect |
@@ -192,4 +188,4 @@
 - **阅读 vs 标杆（分层）**
   - **阅读**：完整 prompt / completion 文本看 `evidence/samples/`（文意、坏输出形态、误判核对）。
   - **标杆（tokenize / 定界对比）**：以 report（或其它 Guard/服务端路径）里**实际捕获的 `prompt_token_ids`** 为准；不要用 sample 字符串再 encode。
-- **report 里 prompt / `prompt_token_ids` 为空**：见名词表 **report 空 prompt**（hooks=false 跳过预缓存等；**不是**「clear 过早」独断说法）。旧归档可能仍为空；合 #19285 后同路径应非空。仍可用 samples **阅读**原文；**禁止**从字符串补造 ids 填进旧 report。空 ids **不**表示无 `block_ids`，也**不**表示不能做 KV 排除——走 **KV 排除定界**。包内无对账结果时写「路径可用；归档尚未附结论」，勿写「Q1–Q5 不适用」。
+- **report 里 prompt / `prompt_token_ids` 为空**：见名词表 **report 空 prompt**（hooks=false 跳过预缓存等；**不是**「clear 过早」独断说法）。旧归档可能仍为空；合 #19285 后同路径应非空。仍可用 samples **阅读**原文；**禁止**从字符串补造 ids 填进旧 report。空 ids **不**表示无 `block_ids`，也**不**表示不能做 KV 排除——走 **KV 排除定界**。包内未做对比时写「尚未做 KV 对比（未抓标杆/异常 KV 或未写入本包）」，勿写「Q1–Q5 不适用」。

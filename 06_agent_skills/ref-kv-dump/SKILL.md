@@ -15,7 +15,12 @@ description: >-
 勿在本 skill 重复实现 verify。勿输出 `runtime_config`（起服/arm dump 配置来自 `config-recommender` 或用户已有 live JSON）。
 
 契约：[SKILLS_METADATA.md](./SKILLS_METADATA.md) · 定界：[02 §5](https://github.com/djh95/runtime-guard-docs/blob/main/02_problem_localization/README.md)  
-脚本：`PYTHONPATH=$RG_TEST python -m analysis.scripts.<name>`
+脚本：本仓 `../scripts/`（`python "$SCRIPTS/<name>.py"`；不需 `$RG_TEST`）
+
+```bash
+export RG_DOCS=/path/to/runtime-guard-docs
+SCRIPTS="$RG_DOCS/06_agent_skills/scripts"
+```
 
 Report 须含 `prompt_token_ids` / `output_token_ids`（`save_sensitive_info: true`）。
 
@@ -28,7 +33,7 @@ Report 须含 `prompt_token_ids` / `output_token_ids`（`save_sensitive_info: tr
 ## 抓 ref
 
 ```bash
-PYTHONPATH="$RG_TEST" python -m analysis.scripts.prepare_ref_inputs \
+python "$SCRIPTS/prepare_ref_inputs.py" \
   --report <report_*.json> --out ref_inputs.json
 ```
 
@@ -37,7 +42,7 @@ PYTHONPATH="$RG_TEST" python -m analysis.scripts.prepare_ref_inputs \
 3. Force-feed：
 
 ```bash
-PYTHONPATH="$RG_TEST" python -m analysis.scripts.request_from_report \
+python "$SCRIPTS/request_from_report.py" \
   --report <report_*.json> \
   --url http://127.0.0.1:8000/v1/completions \
   --model <served-model-name>
@@ -51,16 +56,16 @@ PYTHONPATH="$RG_TEST" python -m analysis.scripts.request_from_report \
 ## 对比（两表）
 
 ```bash
-PYTHONPATH="$RG_TEST" python -m analysis.scripts.compare_kv_similarity \
+python "$SCRIPTS/compare_kv_similarity.py" \
   --buggy-dir <bad_kv_dir> --ref-dir <ref_kv_dir> \
   --buggy-report <buggy.json> --ref-report <ref.json> \
   --block-size 128 --cos-thresh 0.99
 
-PYTHONPATH="$RG_TEST" python -m analysis.scripts.locate_first_divergence \
+python "$SCRIPTS/locate_first_divergence.py" \
   --buggy-dir <bad_kv_dir> --ref-dir <ref_kv_dir> \
   --report <buggy.json> --block-size 128 --cos-thresh 0.99
 
-PYTHONPATH="$RG_TEST" python -m analysis.scripts.compare_per_layer \
+python "$SCRIPTS/compare_per_layer.py" \
   --buggy-dir <bad_kv_dir> --ref-dir <ref_kv_dir> --report <buggy.json>
 ```
 

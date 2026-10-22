@@ -40,7 +40,7 @@ CJK / Trail 塌缩；`token_repeat`×48。
 - 现象：CJK / Trail 塌缩（`evidence/samples/`）。
 - 三层：58 / 37 / 48；detector：`token_repeat`×48。
 - 归档 report：`prompt_token_ids` 为空；有 `output_token_ids`。
-- KV 对账路径可用；归档尚未附结论。
+- 尚未做 KV 对比（未抓标杆/异常 KV 或未写入本包）。
 
 ### 推断
 
@@ -52,7 +52,6 @@ CJK / Trail 塌缩；`token_repeat`×48。
 
 - 已定界到：塌缩异常 + `token_repeat` 检出。
 - 尚未定界到 K/V 对调；分析不出 / 证据不足。
-- L1=`token_repeat` 已命中；L2=证据不足。
 
 ## 证据文件
 
@@ -70,4 +69,4 @@ CJK / Trail 塌缩；`token_repeat`×48。
 
 | PR / 链接 | 角色 |
 |-----------|------|
-| （constructed K/V swap） | 无单一上游修复 PR；Attn L2 代表 |
+| （constructed K/V swap） | 无单一上游修复 PR；Attn 类代表 |

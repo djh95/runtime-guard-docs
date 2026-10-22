@@ -4,7 +4,8 @@
 > 面向：内部/外部开发、业务使用方、一线维护。  
 > 目标：会启、会用、能抓现场、能做**问题初步定界**（不是根因定位工具链）。  
 > **公开可读：** 启停手册、检测说明、`04` keep-set（约 **15×`cases/Sxx/`** 完整包 + 索引/名词/定界口径）、skills 契约（`06`，**v5.9**）。  
-> **需内部仓权限：** 离线脚本 / FE / 满量 runs / 大体积分析矩阵 → **内部私有**仓 **`runtime-guard-test`**（有权限用本地/`$RG_TEST` 路径；**勿**发 `https://github.com/…/runtime-guard-test/…` 公开 blob，匿名会 404）。
+> **离线脚本（对外）：** 本仓 [`06_agent_skills/scripts/`](./06_agent_skills/scripts/)（不需 `$RG_TEST`）。  
+> **需内部仓权限：** FE / 满量 runs / 大体积分析矩阵 → **内部私有**仓 **`runtime-guard-test`**（有权限用本地/`$RG_TEST` 路径；**勿**发公开 blob）。
 
 ## 读法（按角色）
 
@@ -12,7 +13,7 @@
 |------|------|------|
 | 使用 / 运维启服 | [01 如何启动 Guard](./01_enable_and_start/README.md) | [03 检测算法](./03_detectors/README.md) 按需 |
 | 一线维护 / 排障 | [01](./01_enable_and_start/README.md) → [02 问题定位分析](./02_problem_localization/README.md) | [04 实例](./04_case_studies/README.md)（`cases/Sxx` 完整包） |
-| Agent / 自动化排障 | [06 Agent Skills](./06_agent_skills/README.md) | [02](./02_problem_localization/README.md) + **内部私有** `$RG_TEST` 脚本（有权限时） |
+| Agent / 自动化排障 | [06 Agent Skills](./06_agent_skills/README.md) | [02](./02_problem_localization/README.md) + [`06/.../scripts/`](./06_agent_skills/scripts/) |
 | 开发 / 算法理解 | [03 检测算法](./03_detectors/README.md) | [07 架构 UML 十四图](./07_architecture/guard-runtime-config-uml-14.md) |
 | `releases/v0.30.0` × **MRV2** | [05_v030 MRV2](./05_v030_backport/README.md) | skill `apply-v030-mrv2-patch`；BASE 见 CHANGELOG |
 | 历史/常用 release × **MRV1**（含 v0.30 MRV1） | [05_mrv1 MRV1](./05_mrv1_backport/README.md) | skill `apply-mrv1-patch`；与 05_v030 勿叠打 |

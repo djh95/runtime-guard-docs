@@ -49,7 +49,7 @@ export PYTHONPATH="$RG_TEST"
 ```
 
 - Skills **公开权威**：`$RG_DOCS/06_agent_skills/`（SKILLS_METADATA **v5.9**）。内部镜像：`$RG_TEST/analysis/skill/`（可 rsync 回写；勿假设时刻 bit-identical）。
-- 离线脚本：`$RG_TEST/analysis/scripts/`（`summarize_reports` / `score_completion_samples` / `verify_request_kv` / …）。
+- 离线脚本（对外）：`$RG_DOCS/06_agent_skills/scripts/`（`summarize_reports` / `score_completion_samples` / `verify_request_kv` / …）。
 - 模型权重 / 卡号：离线复核**不依赖**；live 复开时沿用各 FE `status.json` / SPEC 中的 MODEL·TOPO（常见 Qwen3-8B TP2、DeepSeek-V2-Lite MLA 等）——**以 FE 为准，勿臆造**。
 
 Project Agent Store（本会话结果落点，非公开 Git）：
@@ -117,7 +117,7 @@ FE 内常见文件：`layers.json` · `status.json` · `WHY_PASS.md` / `WHY_UNDE
 
 ## 4. 如何构造 / 复开 anomaly env（verify 优先离线）
 
-1. **优先离线：** 只读 §3.3 FE + runs + `cases/Sxx/`；用 `PYTHONPATH=$RG_TEST` 跑 analysis 脚本。  
+1. **优先离线：** 只读 §3.3 FE + runs + `cases/Sxx/`；用 `$RG_DOCS/06_agent_skills/scripts/*.py` 跑 analysis 脚本。  
 2. **协议：** 任何 live 复开必须遵守 `anomaly-PRINCIPLES.md`（origin-faithful；禁止 NaN/`fill_` 放大器）。  
 3. **Live 仅当：** FE 无可用 samples/report、或要确认「当前 skill 文案 vs 现网 detector」；走 builder 机，参考各场景 `SPEC.md` / overlay 与 `tests/build-anomaly-env/scripts/sNN_*_concurrent_repro.py`（若存在）。  
 4. **不要**为 verify 批量重跑 S51–S152 C 类矩阵。
@@ -133,13 +133,13 @@ FE 内常见文件：`layers.json` · `status.json` · `WHY_PASS.md` / `WHY_UNDE
 3. **读历史 run** `$RG_TEST/docs/anomaly-skills-runs/Sxx-*.md`（或 batch 文件中对应段落）。  
 4. **跑 analysis（能跑则跑）**  
    ```bash
-   PYTHONPATH="$RG_TEST" python -m analysis.scripts.score_completion_samples --sample-dir <FE samples 目录>
+   python "$RG_DOCS/06_agent_skills/scripts/score_completion_samples.py" --sample-dir <FE samples 目录>
    # 若有 report JSON：
-   PYTHONPATH="$RG_TEST" python -m analysis.scripts.summarize_reports --report-dir <report_dir>
+   python "$RG_DOCS/06_agent_skills/scripts/summarize_reports.py" --report-dir <report_dir>
    ```  
 5. **按 investigation 契约自评**（不必真起服）：  
    - detect 是否命中期望 detector（或 GAP 期望 miss）  
-   - L1–L4 是否与期望一致（多数 L2；S23=L1；GAP=弱 L2 / 无 online detect）  
+   - 检出 / 定界是否与期望一致（S23=检出停点、不定界到权重元素；GAP=无 online detect）  
    - class-hint 与 **≠ peers** 是否写对（对照 capability / investigation 表）  
 6. **判 verdict：** `match_expected` | `false_gap` | `wrong_class` | `overclaim_L` | `missing_differentiator` | `stale_evidence`  
 7. **写一条结果**（§6 schema）+ 一句 `suggested_skill_lever`。  

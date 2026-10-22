@@ -3,22 +3,20 @@
 面向 Cursor / Agent：按现象启用 detectors、抓现场、离线对账、有标杆时做 KV 定界。
 
 > **权威：** 本目录 `runtime-guard-docs/06_agent_skills/`（含 [SKILLS_METADATA.md](./SKILLS_METADATA.md) **v5.9**）。  
+> **离线脚本（对外）：** [scripts/](./scripts/)（本仓；不需 `$RG_TEST`）。  
 > **镜像：** **内部私有**仓 `$RG_TEST/analysis/skill/`（rsync 同步；可短暂滞后；勿发公开 blob）。  
-> 离线脚本（**可选 / 内部私有**）：`$RG_TEST/analysis/scripts/`（需权限；无权限跳过）。  
 > 产品实现：`vllm_ascend/observability/runtime_guard/`（[#16849](https://github.com/vllm-project/vllm-ascend/pull/16849) + [#18644](https://github.com/vllm-project/vllm-ascend/pull/18644)）。  
 > 人读流程仍以 [02 问题定位](../02_problem_localization/README.md) 为准；skill 负责可执行编排。
 
 ## 无内部仓权限时
 
-公开路径：本目录 skill 契约 + 手册 01–05 + `04` 的 `cases/Sxx/` 完整包。
+公开路径：本目录 skill 契约 + [scripts/](./scripts/) + 手册 01–05 + `04` 的 `cases/Sxx/` 完整包。
 
 | 仍可做 | 须停止 / 跳过 |
 |--------|----------------|
 | 读 METADATA / 各 skill README；用 sweep / recommender 产出配置 | 勿假设能 clone **内部私有** `runtime-guard-test` |
-| 人工读 `report_*.json`；交付停在「类 + 现场」 | 勿跑 `analysis.scripts.*`；勿宣称 verify/ref 已完成 |
+| 跑本仓 `06_agent_skills/scripts/*.py`；人工读 `report_*.json` | 勿宣称未跑的 verify/ref 已完成 |
 | 按 02 无标杆停点交接 | FE / 满量 runs / 大体积分析 —— **内部可选** |
-
-有权限后再跑下方脚本入口。
 
 ## Skills
 
@@ -36,13 +34,14 @@
 **门闩：** `ref-kv-dump` 前必须 `verify_request_kv` PASS。  
 原子 skill 可独立调用；勿从原子 skill 反调 investigation。
 
-## 脚本怎么跑（可选 · 内部仓）
+## 脚本怎么跑（本仓）
 
-需已 clone **内部私有** `runtime-guard-test`（SSH/本地路径；勿贴公开 HTTPS blob）。无权限则跳过本节（见上「无内部仓权限时」）。入口**仅**：
+入口见 [scripts/README.md](./scripts/README.md)：
 
 ```bash
-export RG_TEST=/path/to/runtime-guard-test
-PYTHONPATH="$RG_TEST" python -m analysis.scripts.<name> --help
+export RG_DOCS=/path/to/runtime-guard-docs
+SCRIPTS="$RG_DOCS/06_agent_skills/scripts"
+python "$SCRIPTS/summarize_reports.py" --help
 ```
 
 常用：`summarize_reports` / `correlate_incident` / `verify_request_kv` / `inspect_kv_dump` /  
@@ -50,7 +49,7 @@ PYTHONPATH="$RG_TEST" python -m analysis.scripts.<name> --help
 `prepare_ref_inputs` / `request_from_report` / `locate_first_divergence` / `compare_kv_similarity` /  
 `compare_per_layer` / `stitch_kv`。
 
-Anomaly 定界（有权限时）：内部 FE 树 `$RG_TEST/tests/build-anomaly-env/fail-evidence/Sxx/`；对外对照用本仓 `04_case_studies/cases/Sxx/evidence/`。契约见 [SKILLS_METADATA.md](./SKILLS_METADATA.md)（**v5.9**）。
+Anomaly 对外对照：本仓 `04_case_studies/cases/Sxx/evidence/`。满量 FE（有权限时）在内部仓。契约见 [SKILLS_METADATA.md](./SKILLS_METADATA.md)（**v5.9**）。
 
 **给其他 Agent 的离线复核包（15 典型 keep-set）：** [VERIFY_HANDOFF.md](./VERIFY_HANDOFF.md)。
 

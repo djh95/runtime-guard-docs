@@ -20,7 +20,7 @@
 
 ## 2 · 根因
 
-Soft-inverse [vLLM#42379](https://github.com/vllm-project/vllm/pull/42379)：`AscendRMSNorm.forward_oot` 用 fp32-mul 再 cast（错误公式）。属定界 **L2（问题类）** dtype/cast。
+Soft-inverse [vLLM#42379](https://github.com/vllm-project/vllm/pull/42379)：`AscendRMSNorm.forward_oot` 用 fp32-mul 再 cast（错误公式）。属 dtype/cast 问题类（构造已知；定界须另有对账事实）。
 
 ## 3 · Guard 结果
 
@@ -51,7 +51,7 @@ Soft-inverse [vLLM#42379](https://github.com/vllm-project/vllm/pull/42379)：`As
 - 现象：`1.1.1…` 复读塌缩（`evidence/samples/`）。
 - 三层：354 / 16 / 48；detector：`token_repeat`×48。
 - 归档 report：`prompt_token_ids` 为空；有 `output_token_ids`。
-- KV 对账路径可用；归档尚未附结论。
+- 尚未做 KV 对比（未抓标杆/异常 KV 或未写入本包）。
 
 ### 推断
 
@@ -63,7 +63,6 @@ Soft-inverse [vLLM#42379](https://github.com/vllm-project/vllm/pull/42379)：`As
 
 - 已定界到：复读异常 + `token_repeat` 检出。
 - 尚未定界到 RMSNorm dtype；分析不出 / 证据不足。
-- L1=`token_repeat` 已命中；L2=证据不足。
 
 ## 证据文件
 

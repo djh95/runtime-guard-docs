@@ -50,7 +50,7 @@ softcap 族要写清 incomplete 与 unstable overflow 的差别，避免和 S20 
 - 现象：`1.1.1…` 复读（`evidence/samples/`）。
 - 三层：130 / 17 / 48；detector：`token_repeat`×48。
 - 归档 report：`prompt_token_ids` 非空（len=14）；有 `output_token_ids`。
-- KV 对账路径可用；归档尚未附结论。
+- 尚未做 KV 对比（未抓标杆/异常 KV 或未写入本包）。
 
 ### 推断
 
@@ -62,7 +62,6 @@ softcap 族要写清 incomplete 与 unstable overflow 的差别，避免和 S20 
 
 - 已定界到：复读异常 + `token_repeat` 检出。
 - 尚未定界到 softcap rescale；分析不出 / 证据不足。
-- L1=`token_repeat` 已命中；L2=证据不足。
 
 ## 证据文件
 

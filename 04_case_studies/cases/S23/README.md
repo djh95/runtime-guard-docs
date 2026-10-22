@@ -1,4 +1,4 @@
-# S23 · Weight layer zero（PASS · L1-only）
+# S23 · Weight layer zero（PASS · 检出停点（不定界到权重元素））
 
 公开自洽案例包。
 
@@ -26,7 +26,7 @@
 
 ## 3 · Guard 结果
 
-**PASS。** 能检出（detect 48），但 skills **不定界到具体权重元素**——教学点是 **L1-only**（停在检测停点，不到问题类细拆）。
+**PASS。** 能检出（detect 48），但 skills **不定界到具体权重元素**——教学点是停在检出，不到权重元素细拆。
 
 ## 4 · 复现技巧
 
@@ -34,7 +34,7 @@ Qwen3-8B，temp=0，eager；concurrent 48；util=0.40。
 
 ## 5 · 教学要点
 
-能检不等于能定界到权重元素。报 **L1（检测停点）** 即可，不要夸大 dump 能力。
+能检不等于能定界到权重元素。写清已检出即可，不要夸大 dump 能力。
 
 ## 定界分析
 
@@ -43,7 +43,7 @@ Qwen3-8B，temp=0，eager；concurrent 48；util=0.40。
 - 现象：跨请求内容相同塌缩（`evidence/samples/`）。
 - 三层：2 / 17 / 48；detector：`token_repeat`×48。
 - 归档 report：`prompt_token_ids` 为空；有 `output_token_ids`。
-- KV 对账路径可用；归档尚未附结论。
+- 尚未做 KV 对比（未抓标杆/异常 KV 或未写入本包）。
 
 ### 推断
 
@@ -55,7 +55,6 @@ Qwen3-8B，temp=0，eager；concurrent 48；util=0.40。
 
 - 已定界到：异常输出 + `token_repeat` 检出；不定界到权重元素。
 - 尚未定界到具体权重元素；分析不出 / 证据不足。
-- L1=`token_repeat` 已命中；L2=不宣称。
 
 ## 证据文件
 
@@ -73,4 +72,4 @@ Qwen3-8B，temp=0，eager；concurrent 48；util=0.40。
 
 | PR / 链接 | 角色 |
 |-----------|------|
-| （constructed weight-fault） | 无单一上游「修复 PR」；教学用 L1 权重置零 |
+| （constructed weight-fault） | 无单一上游「修复 PR」；教学用权重置零 |

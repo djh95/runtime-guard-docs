@@ -3,7 +3,7 @@
 本文回答三件事：
 
 1. Runtime Guard **整体是什么、能解决哪类问题**  
-2. 现场怎么走（从启检测到初步定界）  
+2. **如何操作**（从启检测到初步定界）  
 3. **定界到哪一步为止**——什么叫「能定界、无法定位」
 
 案例模版与分析附录见 [04_case_studies](../04_case_studies/README.md)（15 典型 + 政策/能力文档），不堵本流程。
@@ -34,12 +34,12 @@
               → 阶段/token/层 定界              → 类与现场，难到层
 ```
 
-| 模块 | 作用 | 不做什么 |
-|------|------|----------|
-| Detector | 把「异常类」变成可检索事件 | 不证明根因 |
-| Report | 结构化现场（类型、req、token 窗口等） | 不替代日志全集 |
-| `dump_kv` | 落 **本请求** 相关 KV block（last-PP×TP） | 不是全 cache、不是 op 级 dump |
-| 离线对比（有标杆时） | 首坏 token / 首坏层级 **定界** | 不自动指出是哪行代码 / 哪个算子 bug |
+| 模块 | 作用 |
+|------|------|
+| Detector | 检测异常包括：`token_repeat`（复读/卡词）、`logits_finite`（采样前 NaN/Inf）、`spec_acceptance`（Spec 接受率/长度异常）等，写成可检索 report 事件 |
+| Report | 结构化现场（类型、req、token 窗口等） |
+| `dump_kv` | 落 **本请求** 相关 KV block（last-PP×TP）；不是全 cache、不是 op 级 dump |
+| 离线对比（有标杆时） | 首坏 token / 首坏层级 **定界**；不自动指出是哪行代码 / 哪个算子 bug |
 
 **一句话：** Guard 是 **观测 + 抓现场 +（有条件时）定界** 工具，不是自动根因定位器。
 
@@ -74,12 +74,8 @@
 
 一线常见卡点：问题 **已验证必现**，却 **没有清洁对照环境**（无法起一份「确认正确」的同模型同拓扑服务，或无法 force-feed 同一 token 序列）。
 
-| 你仍能做的 | 你做不到的 |
-|------------|------------|
-| 开 detector 确认 **异常类**（复读 / 非有限 logits / spec 漂移） | **无法**做 buggy vs ref 的 KV 首分歧 |
-| 落 report，固定 req / 时间 / 配置 / 输出片段 | **无法**可靠回答「从哪一层开始坏」 |
-| 开 `dump_kv` 保留单侧现场，供事后有标杆再比 | 单侧 `.pt` **不能**单独证明是写坏还是算坏 |
-| 用报告里的 token ids 作为以后标杆复现的输入 | 把「必现」误当成已经完成定位 |
+无标杆时仍可：开 detector 确认异常类、落 report、可选单侧 `dump_kv` 供事后对比、用报告 token ids 作以后标杆输入。  
+无标杆时不能：做 buggy vs ref 的 KV 首分歧，或可靠回答「从哪一层开始坏」。单侧 `.pt` 不能单独证明是写坏还是算坏。
 
 **结论：** 无标杆时，Guard 的交付停在 **「问题类 + 可归档现场」**；这是合格的 **初步定界**，不是根因定位。标杆就绪后再走 §4 Step 6–8。
 
@@ -94,10 +90,7 @@
 | **定界（细）** | 限定到 prefill/decode、首坏 token、首坏层、污染 vs 计算平台 | ✅ **仅当** 有对账通过的 buggy+ref dump |
 | **定位** | 指到具体算子、kernel、某次提交、某条分支 | ❌ **不在范围**；需调试器 / 单测 / code review |
 
-对内对外话术建议：
-
-- 对业务：**「已定界到 …；根因需开发继续查。」**  
-- 对开发：**交付 Q1–Q5 结论模板（见 §5），不要承诺「已定位」。**
+细定界交付用下方 **Q1–Q5** 模板；不要把「已定界」说成「已定位到根因」。
 
 ---
 
@@ -138,31 +131,23 @@
 
 ### Step 3 — 压测抓真命中
 
+- 有多份 report / sample 时：**优先查看看起来就错误的**（乱码 / 异常样本），不要优先看起来正常的。  
 - 先信 detector，再用输出反查；勿因「看起来正常」直接否命中。  
 - `report.save_sensitive_info: true` 才能把 token ids 留给后续 force-feed。  
 - 误报目录及时清理腾盘。
 
-### Step 4 — 对账（有 analysis 脚本时）
+### Step 4 — 对账（本仓离线脚本）
 
-离线脚本在 **内部私有**仓 `runtime-guard-test` 的 `analysis/scripts/`（需权限；本地/`$RG_TEST`；**勿**发公开 HTTPS blob；**不在** `vllm_ascend` 产品树）。与 [06 Agent Skills](../06_agent_skills/README.md) 相同入口——**仅**此形式：
+离线脚本在本仓 [06_agent_skills/scripts/](../06_agent_skills/scripts/)（与 [06 Agent Skills](../06_agent_skills/README.md) 同入口）。**不需要** `$RG_TEST`：
 
 ```bash
-export RG_TEST=/path/to/runtime-guard-test
-PYTHONPATH="$RG_TEST" python -m analysis.scripts.summarize_reports --report-dir {REPORT}
-PYTHONPATH="$RG_TEST" python -m analysis.scripts.verify_request_kv --report ... --kv-dir {KV_RANK_DIR}
+export RG_DOCS=/path/to/runtime-guard-docs
+SCRIPTS="$RG_DOCS/06_agent_skills/scripts"
+python "$SCRIPTS/summarize_reports.py" --report-dir {REPORT}
+python "$SCRIPTS/verify_request_kv.py" --report ... --kv-dir {KV_RANK_DIR}
 ```
 
 `PASS` 再抓标杆；`FAIL` 先修路径 / 配额 / `on_trigger`。
-
-#### 无内部仓权限时（Step 4 停点）
-
-| 仍可做 | 须停止 |
-|--------|--------|
-| 人工打开 `report_*.json`（类型 / req / token 窗口） | 勿跑 `python -m analysis.scripts.*` |
-| 按 §5 填交付模板，标杆=无 | 勿伪造 verify PASS / 首分歧结论 |
-| 可选保留单侧 dump，待有权限再对账 | 勿把「看过 JSON」写成脚本对账通过 |
-
-有 **内部私有** `runtime-guard-test` clone 后再用上方入口续 Step 4–6。
 
 ### Step 5 — 有标杆：同 token 序列抓 ref
 
@@ -216,7 +201,7 @@ PYTHONPATH="$RG_TEST" python -m analysis.scripts.verify_request_kv --report ... 
 | 只有 tp0 | 其它 last-PP TP 是否同波；日志 `[runtime_guard dump_kv]` |
 | 无更早 PP 层 | **预期**（不 dump 非 last PP） |
 | 热更无效 | `runtime_config_hot_reload`；路径；reload 拒绝日志 |
-| Manual 不触发 | 是否有 scheduled tokens；本进程 `done` 是否已 ≥ 水位 `N` |
+| Manual 不触发 | 是否有 scheduled tokens；本进程 `done` 是否已 ≥ 目标总次数 `N` |
 
 日志关键字：`[runtime_guard sync]` / `manual_trigger` / `dump_kv` / `action`。
 

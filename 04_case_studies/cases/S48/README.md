@@ -40,7 +40,7 @@ Residual 极性案例。禁止 force-NaN / token fill。
 - 现象：跨请求内容相同的 `!!!!`（`evidence/samples/`）。
 - 三层：100 / 48 / 48；detector：`logits_finite`×48。
 - 归档 report：`prompt_token_ids` 为空；有 `output_token_ids`。
-- KV 对账路径可用；归档尚未附结论。
+- 尚未做 KV 对比（未抓标杆/异常 KV 或未写入本包）。
 
 ### 推断
 
@@ -52,7 +52,6 @@ Residual 极性案例。禁止 force-NaN / token fill。
 
 - 已定界到：`!!!!` 类异常 + `logits_finite` 检出。
 - 尚未定界到 residual 极性；分析不出 / 证据不足。
-- L1=`logits_finite` 已命中；L2=证据不足。
 
 ## 证据文件
 

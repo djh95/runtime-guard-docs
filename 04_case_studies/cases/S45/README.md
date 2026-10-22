@@ -53,7 +53,7 @@ top-k / top-p 作用在 `-logits` 上再取反——保留最低-k / 倒置 nucl
 - 现象：各不相同的有限乱码（`evidence/samples/`）；logits 仍有限，无 NaN/Inf。
 - 三层：16 / 4 / 0；`token_repeat` 与 `logits_finite` 均未命中；无命中 report。
 - 无 `prompt_token_ids` 快照。
-- KV 对账路径可用；归档尚未附结论。
+- 尚未做 KV 对比（未抓标杆/异常 KV 或未写入本包）。
 
 ### 推断
 
@@ -65,7 +65,6 @@ top-k / top-p 作用在 `-logits` 上再取反——保留最低-k / 倒置 nucl
 
 - 已定界到：unique-garbage 形态出现；detector 未命中。
 - 尚未定界到 top-k −logits；分析不出 / 证据不足。
-- L1=未检出；L2=证据不足。
 
 ## 证据文件
 

@@ -53,7 +53,7 @@ Soft-inverse [ascend#7082](https://github.com/vllm-project/vllm-ascend/pull/7082
 - 现象：`1.1.1…` / `1.0.0…` 复读（`evidence/samples/`）。
 - 三层：348 / 17 / 48；detector：`token_repeat`×48。
 - 归档 report：`prompt_token_ids` 为空；有 `output_token_ids`。
-- KV 对账路径可用；归档尚未附结论。
+- 尚未做 KV 对比（未抓标杆/异常 KV 或未写入本包）。
 
 ### 推断
 
@@ -65,7 +65,6 @@ Soft-inverse [ascend#7082](https://github.com/vllm-project/vllm-ascend/pull/7082
 
 - 已定界到：复读异常 + `token_repeat` 检出。
 - 尚未定界到 RoPE 后半维；分析不出 / 证据不足。
-- L1=`token_repeat` 已命中；L2=证据不足。
 
 ## 证据文件
 

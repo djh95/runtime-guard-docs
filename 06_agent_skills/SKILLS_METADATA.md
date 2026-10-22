@@ -7,6 +7,8 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 
 按波次归纳；细案例 ID / FE 在**内部私有**仓 `runtime-guard-test`（勿发公开 HTTPS blob），不在此逐条堆叠。
 
+离线脚本对外入口：本仓 [`scripts/`](./scripts/)（不需 `$RG_TEST`）。
+
 - **v5.9（现行）** — 接线 skills：`apply-mrv1-patch`（`05_mrv1_backport`）· `apply-v030-mrv2-patch`（`05_v030_backport`）；排障五件套不变。  
 - **v5.8** — ones/zeros 收尾（约 S147–S152）：多为 `token_repeat` + L2；与近邻 mag/polarity 案区分。
 - **v5.0–v5.7** — soft-inv C 矩阵扩展：hidden / embed / QKV / residual / RMSNorm / SwiGLU 的 ones·zeros 族。

@@ -47,7 +47,7 @@ Overlay：强制 `needs_kv_cache_zeroing=False`，在 `BlockPool.get_new_blocks`
 - 现象：复读 / `xxxx` 塌缩（`evidence/samples/`）。
 - 三层：65 / 20 / 79；detector：`token_repeat`。
 - 归档 report：`prompt_token_ids` 非空（len=32）；有 `output_token_ids`。
-- KV 对账路径可用；归档尚未附结论。
+- 尚未做 KV 对比（未抓标杆/异常 KV 或未写入本包）。
 
 ### 推断
 
@@ -59,7 +59,6 @@ Overlay：强制 `needs_kv_cache_zeroing=False`，在 `BlockPool.get_new_blocks`
 
 - 已定界到：复读/塌缩异常 + `token_repeat` 检出。
 - 尚未定界到 FullAttn 回收未清零；分析不出 / 证据不足。
-- L1=`token_repeat` 已命中；L2=证据不足。
 
 ## 证据文件
 

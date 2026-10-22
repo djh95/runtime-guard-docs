@@ -12,16 +12,16 @@ description: >-
 
 **类型：原子 · 离线。** 只读磁盘；不改 live config、不起服、不 force-feed。
 
-脚本仓：**内部私有** `runtime-guard-test`（`$RG_TEST`；勿发公开 HTTPS blob） · 定界人读：[02](https://github.com/djh95/runtime-guard-docs/blob/main/02_problem_localization/README.md)  
-契约：[SKILLS_METADATA.md](./SKILLS_METADATA.md)
+脚本：本仓 [`../scripts/`](../scripts/)（不需 `$RG_TEST`） · 定界人读：[02](https://github.com/djh95/runtime-guard-docs/blob/main/02_problem_localization/README.md)  
+契约：[SKILLS_METADATA.md](../SKILLS_METADATA.md)
 
 ```bash
-export RG_TEST=/path/to/runtime-guard-test
-alias rgpy='PYTHONPATH="$RG_TEST" python -m analysis.scripts'
+export RG_DOCS=/path/to/runtime-guard-docs
+SCRIPTS="$RG_DOCS/06_agent_skills/scripts"
 ```
 
 默认 `--report-dir`：`./runtime/report`（可问用户确认）。  
-Anomaly 证据树（内部 FE）：`$RG_TEST/tests/build-anomaly-env/fail-evidence/Sxx/`；公开对照：本仓 `04_case_studies/cases/Sxx/evidence/`（`status`/`layers`/reports|samples 等）。
+公开对照：本仓 `04_case_studies/cases/Sxx/evidence/`（reports|samples 等）。
 
 ## 流程
 
@@ -32,7 +32,7 @@ Anomaly 证据树（内部 FE）：`$RG_TEST/tests/build-anomaly-env/fail-eviden
 ### Step 1 — 汇总
 
 ```bash
-rgpy.summarize_reports --report-dir ./runtime/report --limit 20
+python "$SCRIPTS/summarize_reports.py" --report-dir ./runtime/report --limit 20
 ```
 
 也接受扁平 `report_*.json`，以及归档别名 `sample_report.json` / `report_sample.json`。
@@ -42,7 +42,7 @@ rgpy.summarize_reports --report-dir ./runtime/report --limit 20
 ### Step 1b — 无 report 时的 precision / GAP 评分
 
 ```bash
-rgpy.score_completion_samples --sample-dir ./samples --json-out samples_score.json
+python "$SCRIPTS/score_completion_samples.py" --sample-dir ./samples --json-out samples_score.json
 ```
 
 关注：`identical_across_requests`、`garbage_mixed_script`、`token0_collapse` / `repeat` / `phrase_repeat`、`detector_gap_hint`。  
@@ -178,7 +178,7 @@ rgpy.score_completion_samples --sample-dir ./samples --json-out samples_score.js
 ### Step 2 — 按 req 关联
 
 ```bash
-rgpy.correlate_incident --report-dir ./runtime/report --req-id <req_id>
+python "$SCRIPTS/correlate_incident.py" --report-dir ./runtime/report --req-id <req_id>
 ```
 
 关注 `dump_attempted` / `block_ids` / `kv_cache/.../<req_id>/wave_*/<rank_tag>/`。  
@@ -187,11 +187,11 @@ rgpy.correlate_incident --report-dir ./runtime/report --req-id <req_id>
 ### Step 3 — report ↔ KV 对账（ref 硬门闩）
 
 ```bash
-rgpy.verify_request_kv \
+python "$SCRIPTS/verify_request_kv.py" \
   --report ./runtime/report/<type>/report_....json \
   --report-dir ./runtime/report
 # 或：
-rgpy.verify_request_kv --report <report.json> --kv-dir <wave_N>/<rank_tag>
+python "$SCRIPTS/verify_request_kv.py" --report <report.json> --kv-dir <wave_N>/<rank_tag>
 ```
 
 `--kv-dir` 语义是 **rank 目录**（直接含 `.pt`）。明确输出 **PASS / FAIL**（及失败原因）。  
@@ -202,7 +202,7 @@ rgpy.verify_request_kv --report <report.json> --kv-dir <wave_N>/<rank_tag>
 ### Step 4 — 抽查单个 `.pt`（按需）
 
 ```bash
-rgpy.inspect_kv_dump --path ./runtime/report/kv_cache/<type>/<req_id>/wave_N/<rank_tag>/<file>.pt
+python "$SCRIPTS/inspect_kv_dump.py" --path ./runtime/report/kv_cache/<type>/<req_id>/wave_N/<rank_tag>/<file>.pt
 ```
 
 跨 TP 前核对 `tp_rank` / `num_kv_heads`；层名 natural sort。  

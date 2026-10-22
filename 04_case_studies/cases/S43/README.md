@@ -40,7 +40,7 @@
 - 现象：换行塌缩（`evidence/samples/`）。
 - 三层：16 / 40 / 48；detector：`token_repeat`×48。
 - 归档 report：`prompt_token_ids` 为空；有 `output_token_ids`。
-- KV 对账路径可用；归档尚未附结论。
+- 尚未做 KV 对比（未抓标杆/异常 KV 或未写入本包）。
 
 ### 推断
 
@@ -52,7 +52,6 @@
 
 - 已定界到：塌缩异常 + `token_repeat` 检出。
 - 尚未定界到 embed ×100；分析不出 / 证据不足。
-- L1=`token_repeat` 已命中；L2=证据不足。
 
 ## 证据文件
 

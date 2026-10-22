@@ -51,7 +51,7 @@ Spec 路径要用对 detector（主看 `spec_acceptance`）。acceptance 塌缩�
 - 现象：acceptance_rate 塌缩相关（`evidence/samples/` · `evidence/reports/`）。
 - 三层：126 / 0 / 47；主 detector：`spec_acceptance`×47。
 - 归档 report：`spec_acceptance` 条 `prompt_token_ids` 非空（len=14）；另有条为空；均有 `output_token_ids`。
-- KV 对账路径可用；归档尚未附结论。
+- 尚未做 KV 对比（未抓标杆/异常 KV 或未写入本包）。
 
 ### 推断
 
@@ -63,7 +63,6 @@ Spec 路径要用对 detector（主看 `spec_acceptance`）。acceptance 塌缩�
 
 - 已定界到：`spec_acceptance` 检出。
 - 尚未定界到 resample salt；分析不出 / 证据不足。
-- L1=`spec_acceptance` 已命中；L2=证据不足。
 
 ## 证据文件
 

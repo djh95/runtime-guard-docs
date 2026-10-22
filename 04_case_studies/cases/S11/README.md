@@ -43,7 +43,7 @@ pad-tail 错位 ≠ 回收块未清零。可能撞上同一个 detector，但 ro
 - 现象：digit / collapse 垃圾（如 `1010…`；`evidence/samples/`）。
 - 三层：138 / 39 / 60；detector：`token_repeat`。
 - 归档 report：`prompt_token_ids` 为空；有 `output_token_ids`。
-- KV 对账路径可用；归档尚未附结论。
+- 尚未做 KV 对比（未抓标杆/异常 KV 或未写入本包）。
 
 ### 推断
 
@@ -55,7 +55,6 @@ pad-tail 错位 ≠ 回收块未清零。可能撞上同一个 detector，但 ro
 
 - 已定界到：塌缩异常 + `token_repeat` 检出。
 - 尚未定界到 MLA RoPE pad-tail；分析不出 / 证据不足。
-- L1=`token_repeat` 已命中；L2=证据不足。
 
 ## 证据文件
 
