@@ -23,10 +23,10 @@
 
 | Key | 类型 | 含义 |
 |-----|------|------|
-| `runtime_config_path` | str | live JSON 路径；默认 `<cwd>/runtime/config/runtime_config.json` |
+| `runtime_config_path` | str | live JSON 路径；默认 `<当前工作目录>/runtime/config/runtime_config.json` |
 | `runtime_config_hot_reload` | bool | **仅启动参数**；`true` 才允许启动后改 JSON 生效 |
 | `runtime_config` | dict | 启动 overlay，合并进默认后 **覆盖写** 到 path |
-| `runtime_report_dir` | str | 报告根；默认 `<cwd>/runtime/report` |
+| `runtime_report_dir` | str | 报告根；默认 `<当前工作目录>/runtime/report` |
 | `runtime_dump_dir` | str | 种子 `dump.dump_dir`；之后 JSON 热更可改 |
 
 **重要：** worker leader 每次启动会按「默认 ← overlay」**覆盖写** JSON。需要热更时：**先启动，再改文件**。
@@ -66,7 +66,7 @@ vllm serve <MODEL> --additional-config '{
 }'
 ```
 
-启动后编辑 live JSON（支持 JSONC：注释、尾逗号）。路径请用**绝对路径**（容器 / systemd 下 cwd 常变）。
+启动后编辑 live JSON（支持 JSONC：注释、尾逗号）。路径请用**绝对路径**（容器 / systemd 下当前工作目录常变）。
 
 **命中并 dump 的最小热更片段：**
 
@@ -123,7 +123,7 @@ runtime/
 | MoE | 开功能后 Python 占比更明显；默认关即可 |
 | Spec / MTP | 才需要 `spec_acceptance` |
 | Async scheduling | after-sample 在 `AscendAsyncOutput.get_output()`；finish 可能早于 dump |
-| 容器 / K8s | cwd 常变、本地盘重启可能清空 → config/report/dump 放持久卷（PVC/hostPath），配置写绝对路径；多 Pod 共用同一挂载根时按 Pod（或 hostname/UID）分子目录防覆盖。热更须改本 Pod 读到的那份 JSON（见附录 A.3） |
+| 容器 / K8s | 当前工作目录常变、本地盘重启可能清空 → config/report/dump 放持久卷（PVC/hostPath，挂到宿主机或共享存储），配置写绝对路径；多个容器实例（Pod）共用同一挂载根时，按副本（或主机名/实例 ID）分子目录防覆盖。热更须改本实例读到的那份 JSON（见附录 A.3） |
 | Offline `LLM()` | Python 离线 API（对比 `vllm serve`）；同样用 `additional_config` 注入；须 v2 runner（见附录） |
 
 检测器细节见 [03_detectors](../03_detectors/README.md)。更细的拓扑白话见下方 **附录**。
@@ -189,13 +189,13 @@ runtime/
 
 ### A.3 容器 / K8s（白话）
 
-容器里的「当前目录」经常变，重启后本地盘可能清空。
+容器里进程的**当前工作目录**经常变，重启后本地盘可能清空。
 
-1. **挂卷（PVC/hostPath）**：把 `/data/runtime` 之类挂到宿主机或共享存储，否则 report/dump 丢。  
+1. **持久卷（PVC/hostPath）**：把 `/data/runtime` 之类挂到宿主机或共享存储，否则 report/dump 丢。  
 2. **绝对路径**：配置写成 `/data/runtime/config/runtime_config.json`，不要靠相对路径。  
-3. **按 Pod 分子目录**：多副本若共用同一挂载根，会互相覆盖。用  
-   `/data/runtime/pod-a/report`、`/data/runtime/pod-b/report`（或带 hostname/pod UID）。  
-4. 热更时确认：**这个 Pod 的进程**读的是它自己那份 JSON。
+3. **按副本分子目录**：多个容器实例（Pod）若共用同一挂载根，会互相覆盖。用  
+   `/data/runtime/pod-a/report`、`/data/runtime/pod-b/report`（或带主机名/实例 ID）。  
+4. 热更时确认：**这个容器实例的进程**读的是它自己那份 JSON。
 
 ### A.4 Offline `LLM()` 是什么？
 
