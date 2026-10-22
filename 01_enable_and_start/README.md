@@ -123,7 +123,7 @@ runtime/
 | MoE | 开功能后 Python 占比更明显；默认关即可 |
 | Spec / MTP | 才需要 `spec_acceptance` |
 | Async scheduling | after-sample 在 `AscendAsyncOutput.get_output()`；finish 可能早于 dump |
-| 容器 / K8s | 持久卷 + 绝对路径；按 Pod 分子目录，防互相覆盖（见附录） |
+| 容器 / K8s | cwd 常变、本地盘重启可能清空 → config/report/dump 放持久卷（PVC/hostPath），配置写绝对路径；多 Pod 共用同一挂载根时按 Pod（或 hostname/UID）分子目录防覆盖。热更须改本 Pod 读到的那份 JSON（见附录 A.3） |
 | Offline `LLM()` | Python 离线 API（对比 `vllm serve`）；同样用 `additional_config` 注入；须 v2 runner（见附录） |
 
 检测器细节见 [03_detectors](../03_detectors/README.md)。更细的拓扑白话见下方 **附录**。
