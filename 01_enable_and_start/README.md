@@ -169,7 +169,7 @@ runtime/
 | `tp*` dump | last-PP 上每个 TP 各写一份 KV 分片；要凑齐才能拼完整 |
 | file poll | 非 last-PP worker、以及 API 等非 worker 路径：本地轮询 `runtime_config_path` 读 JSON |
 | static idle | detector/dump/热更全关时的旁路，开销可忽略 |
-| `manual_dump=N` / `done` | 盘上目标总次数 vs 进程内存已 dump 次数；**JSON 不写回** |
+| `manual_dump=N` / 已拍次数 | 盘上 `manual_dump = N` = **目标总次数**（水位）；「已拍次数」是进程内存里已 dump 的次数（内部变量常叫 `done`）。进程**从不**把已拍次数或 N 写回 JSON（见 §2 Manual dump） |
 
 ### A.2 多机 / 多 rank 配置怎么到齐
 
@@ -211,7 +211,7 @@ runtime/
 
 - **TP>1**：报告只看 TP0；同 stage 其它 TP 走 due bus；dump 检查是否凑齐各 `tp*`。  
 - **PP>1**：只在最后一段找报告/dump；更早 PP 可 poll 配置、但没有 report 是预期。  
-- **DP>1**：各副本各写各的；共享目标总次数 `N` 时每人内存 `done` 独立 → 大约可 dump `num_DP×N` 次。  
+- **DP>1**：各副本各写各的；共享目标总次数 `N` 时每人内存「已拍次数」独立 → 大约可 dump `num_DP×N` 次。  
 - **MoE**：默认关；开观测后 host CPU 更显眼。  
 - **Spec/MTP**：才开 `spec_acceptance`。  
 - **Async**：检测挂在 `AscendAsyncOutput.get_output()`；业务 finish 可能早于 dump 落盘。
