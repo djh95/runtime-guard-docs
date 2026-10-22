@@ -28,7 +28,6 @@ Overlay / 上游 PR 意图：错误 router bias / mask 类（非 bit-exact CUDA�
 
 **检出。** detect 以归档 `reports/report_*.json`（`token_repeat`×1）为准。
 
-**report 空 `prompt_token_ids`（旧归档）：** 合修前样本可能空 ids。阅读看 [evidence/samples/](./evidence/samples/)；需要标杆时同 prompt 再请求取服务端 ids；**勿**从 sample 字符串再 encode。空 prompt ≠ 不能做 KV 排除定界。通则见 [④ 名词表 · report 空 prompt](../../README.md#名词怎么读先看这里)。
 
 ## 4 · 复现技巧
 
@@ -62,7 +61,7 @@ Overlay / 上游 PR 意图：错误 router bias / mask 类（非 bit-exact CUDA�
 | `evidence/三层计数.json` | 三层明细（trigger / precision / detect） |
 | `evidence/跑批结果.json` | 跑批元数据 + 结案摘要 |
 | `evidence/samples/` | prompt + completion 样本（**阅读 / 现象核对**；非 tokenize 标杆） |
-| `evidence/reports/` | Guard detector 报告（本包归档 **`prompt_token_ids` 为空**：合 #19285 前样本；阅读看 samples；标杆 ids 可重放抓取——见定界节与 [④ 名词表](../../README.md#名词怎么读先看这里)） |
+| `evidence/reports/` | Guard detector 报告 |
 | `evidence/kv_compare.json` | 最新 KV 标杆对比摘要（余弦 / 首不一致 / 结论） |
 
 ## 上游 PR 关系

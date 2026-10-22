@@ -78,9 +78,8 @@ keep-set 案例的 **headline 结案**只用下面四档；**不要**再用 PASS
 | **PASS / FAIL / GAP（历史·检测侧）** | **已退役为结案总评。** 旧文里 PASS≈检出、FAIL≈未过关总称、GAP/FAIL+GAP≈有异常未检出（漏检类）。现只可作 **detector / verify 侧**用语（如 skills 验 detector），**不要**再当案例 headline 结案。无异常时不要写「漏检/GAP」。 |
 | **复现失败** | 打了 patch / overlay，但目标异常**没有出现** → 结案档 **未复现**（注明形态/注入/负载等原因）。不要写成漏检。 |
 | **样本** | 保存的请求 / 回复证据；应含 prompt + 输出，用来**读文意、核对坏没坏 / 是否误判**。仅有 prompt **字符串**的 sample **不能**当作可靠 tokenize 标杆（发出去的字符串 + 回来的 completion，再 encode 的结果可能与服务端不一致；处理 prompt 与处理 sample 的 tokenizer 也可能不同）。 |
-| **标杆请求（token ids）** | 需要可复现 tokenize / 定界对比时，请求侧以服务端或 Guard **实际捕获的 `prompt_token_ids`** 为准，**用 token ids 去抓 / 归档**，禁止「只存字符串、事后再 encode」当标杆。report 里 prompt 已空时：把**同一 prompt 再 curl**，手动 dump 取服务端实际 ids（仍禁止离线再 tokenize）。 |
-| **report 空 prompt** | 旧归档里 `prompt_token_ids` 可能为空（合 [vllm-ascend#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) 前样本）。对外三句：① 阅读原文看 `samples/`；② 需要标杆 ids 时**同 prompt 再请求**取服务端实际 ids；③ **勿**用字符串再 encode 填进旧 report。空 ids ≠ 不能做 KV 排除定界。 |
-| **KV 排除定界** | 有异常 report 时的可执行路径：重放抓**实际** prompt token ids → 合并异常 **output token ids** → 抓标杆 KV → 对比异常 KV。**一致 → 排除 KV cache**（再转向规格所指的非 KV 类，如 MoE 路由）；**不一致 → 重开 KV 线**。规格里「构造预期：根因是否在 KV」只记构造预期，**不是**跳过该排除步骤。包内未做对比时写「尚未做 KV 对比（未抓标杆/异常 KV 或未写入本包）」；已做则写实数事实。空 `prompt_token_ids` 仍可走本路径（同 prompt re-curl）。 |
+| **标杆请求（token ids）** | 需要可复现 tokenize / 定界对比时，请求侧以服务端或 Guard **实际捕获的 `prompt_token_ids`** 为准，**用 token ids 去抓 / 归档**，禁止「只存字符串、事后再 encode」当标杆。 |
+| **KV 排除定界** | 有异常 report 时的可执行路径：重放抓**实际** prompt token ids → 合并异常 **output token ids** → 抓标杆 KV → 对比异常 KV。**一致 → 排除 KV cache**（再转向规格所指的非 KV 类，如 MoE 路由）；**不一致 → 重开 KV 线**。规格里「构造预期：根因是否在 KV」只记构造预期，**不是**跳过该排除步骤。包内未做对比时写「尚未做 KV 对比（未抓标杆/异常 KV 或未写入本包）」；已做则写实数事实。 |
 | **三层计数** | **trigger**（注入路径打中次数）/ **precision**（输出被判异常的次数，≠ 模型精度）/ **detect**（Guard 报告命中次数）。三者不相等；见各包 `三层计数.json`。 |
 | **三层计数.json** | 三层明细（trigger / precision / detect、备注、detector 名等）。索引表数字通常摘自这里。 |
 | **跑批结果.json** | 跑批元数据 + 结案摘要（场景名、verdict、模型、run 路径、三层摘要）。和 `三层计数.json` 一起读。 |
@@ -151,4 +150,3 @@ keep-set 案例的 **headline 结案**只用下面四档；**不要**再用 PASS
 - **阅读 vs 标杆（分层）**
   - **阅读**：完整 prompt / completion 文本看 `evidence/samples/`（文意、坏输出形态、误判核对）。
   - **标杆（tokenize / 定界对比）**：以 report（或其它 Guard/服务端路径）里**实际捕获的 `prompt_token_ids`** 为准；不要用 sample 字符串再 encode。
-- **report 里 prompt / `prompt_token_ids` 为空**：见名词表 **report 空 prompt**。旧归档可能仍为空；用 samples 阅读；标杆 ids 同 prompt 再请求；勿字符串补造。空 ids 仍可走 **KV 排除定界**。

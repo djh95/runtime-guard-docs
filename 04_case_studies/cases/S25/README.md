@@ -48,7 +48,6 @@ Soft-inverse [ascend#7082](https://github.com/vllm-project/vllm-ascend/pull/7082
 
 - 现象：`1.1.1…` 复读（`evidence/samples/`）。
 - 三层：462 / 15 / 48；detector：`token_repeat`×48。
-- 归档 report：`prompt_token_ids` 为空（合修前）；本轮对比用非空 ids 的异常 dump（len prompt=14）。
 - 本包已归档 KV 对比（cos_thresh=0.99；n_prompt=14 n_cmp_tokens=20；layers=72）。
 - 标杆 vs 异常：对比窗口**全程一致**（min-over-layers cos ≥ thresh）；output 首 token 余弦=0.999993。
 - 首不一致：无。
@@ -73,7 +72,7 @@ Soft-inverse [ascend#7082](https://github.com/vllm-project/vllm-ascend/pull/7082
 | `evidence/三层计数.json` | 三层明细（trigger / precision / detect） |
 | `evidence/跑批结果.json` | 跑批元数据 + 结案摘要 |
 | `evidence/samples/` | prompt + completion 样本 |
-| `evidence/reports/` | Guard detector 报告（归档 report prompt 为空：合修前旧归档，见名词表 **report 空 prompt**；可读 prompt 看 samples，见 [④ 名词表](../../README.md#名词怎么读先看这里)） |
+| `evidence/reports/` | Guard detector 报告 |
 | `evidence/kv_compare.json` | 最新 KV 标杆对比摘要（余弦 / 首不一致 / 结论） |
 
 ## 上游 PR 关系

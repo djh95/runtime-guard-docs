@@ -47,9 +47,7 @@ softcap 改在 **vLLM** 的 `logits_processor.py`，同时 Ascend `platform.py` 
 
 - 现象：`1.1.1…` 复读（`evidence/samples/`）。
 - 三层：130 / 17 / 48；detector：`token_repeat`×48。
-- 归档 report：`prompt_token_ids` 非空（len=14）；本轮 dump 条为空 prompt，已同 prompt re-curl 合并。
 - 本包已归档 KV 对比（cos_thresh=0.99；n_prompt=14 n_cmp_tokens=21；layers=72）。
-- 原 dump 条 `prompt_token_ids` 空；同 prompt re-curl 后与异常 `output_token_ids` 合并再抓标杆。
 - 标杆 vs 异常：对比窗口**全程一致**（min-over-layers cos ≥ thresh）；output 首 token 余弦=0.999994。
 - 首不一致：无。
 

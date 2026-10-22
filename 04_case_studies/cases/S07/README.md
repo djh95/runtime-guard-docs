@@ -44,13 +44,12 @@ status 里 precision 记成 1，但 samples + score 证实跨请求内容相同�
 
 - 现象：有限分值乱码 + 乱码漏检；归档 dump 侧可用配对为旧 `logits_finite`（`output_token_ids` 仅 1 枚）。
 - 本包已归档 KV 对比（cos_thresh=0.99；n_prompt=16 n_cmp_tokens=16；matched_layers=72）。
-- 原 report `prompt_token_ids` 为空；同 prompt re-curl 后与异常 `output_token_ids` 合并再抓标杆。
 - 首不一致：idx=0 role=prompt span=prompt min_cos=NaN @ layer_36。
 - 后续是否恢复≈1：False；output 首 token 余弦=n/a（对比窗口无 output 槽）；仅 PD 复现：False。
 
 ### 推断
 
-- 弱 dump 对账不一致 → **重开 KV 线**，但排除/坐实力度受限于 o=1 + re-curl ids，不能直接写成 W8A8 dequant 根因。
+- 弱 dump 对账不一致 → **重开 KV 线**，但排除/坐实力度受限于 o=1 弱窗，不能直接写成 W8A8 dequant 根因。
 - 坏输出仍不可直接写成具体根因。
 
 ### 结论

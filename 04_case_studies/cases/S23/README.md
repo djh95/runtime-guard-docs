@@ -39,7 +39,6 @@ Qwen3-8B，temp=0，eager；concurrent 48；util=0.40。
 
 - 现象：复读塌缩（`evidence/samples/`）。
 - 三层见 `evidence/三层计数.json`；detector：`token_repeat`。
-- 归档 report：`prompt_token_ids` 为空；本轮对比用非空 ids dump（len prompt=14）。
 - 本包已归档 KV 对比（cos_thresh=0.99；n_prompt=14 n_cmp_tokens=20；layers=72）。
 - 首不一致：idx=1 role=prompt span=prompt min_cos=0.983096 @ model.layers.35.self_attn.attn。
 - 后续是否恢复≈1：False；output 首 token 余弦=0.892670；仅 PD：False。
@@ -64,7 +63,7 @@ Qwen3-8B，temp=0，eager；concurrent 48；util=0.40。
 | `evidence/三层计数.json` | 三层明细（trigger / precision / detect） |
 | `evidence/跑批结果.json` | 跑批元数据 + 结案摘要 |
 | `evidence/samples/` | prompt + completion 样本 |
-| `evidence/reports/` | Guard detector 报告（归档 report prompt 为空：合修前旧归档，见名词表 **report 空 prompt**；可读 prompt 看 samples，见 [④ 名词表](../../README.md#名词怎么读先看这里)） |
+| `evidence/reports/` | Guard detector 报告 |
 | `evidence/kv_compare.json` | 最新 KV 标杆对比摘要（余弦 / 首不一致 / 结论） |
 
 ## 上游 PR 关系
