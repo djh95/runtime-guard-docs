@@ -110,7 +110,7 @@ keep-set 案例的 **headline 结案**只用下面四档；**不要**再用 PASS
 | S45 | [cases/S45/](./cases/S45/) | KV 一致→排除 KV | 乱码漏检 | top-k 打在 −logits | 各不相同乱码 | 期望 `token_repeat`+`logits_finite`→未检出 | 16 / 4 / 0 |
 | S43 | [cases/S43/](./cases/S43/) | KV 不一致→定界 | 检出 | embedding ×100 | 换行塌缩 | `token_repeat` | 16 / 40 / 48 |
 | S22 | [cases/S22/](./cases/S22/) | KV 一致→排除 KV | 检出 | Spec resample 无独立 salt | acceptance_rate 塌缩 | `spec_acceptance`（主） | 126 / 0 / 47 |
-| S06 | [cases/S06/](./cases/S06/) | KV 不一致→定界 | 检出 | MoE router bias / mask（构造） | 复读/乱码文本 | `token_repeat` | 70 / 1 / 1† |
+| S06 | [cases/S06/](./cases/S06/) | KV 不一致→定界 | 检出 | MoE router bias / mask（构造） | 复读/乱码文本 | `token_repeat` | 70 / 2 / 1† |
 | S26 | [cases/S26/](./cases/S26/) | KV 不一致→定界 | 检出 | RMSNorm fp32 错乘 | `1.1.1…` 复读 | `token_repeat` | 354 / 16 / 48 |
 | S25 | [cases/S25/](./cases/S25/) | KV 一致→排除 KV | 检出 | RoPE 后半维丢失 | `1.1.1…` / `1.0.0…` 复读 | `token_repeat` | 348 / 17 / 48 |
 | S50 | [cases/S50/](./cases/S50/) | KV 不一致→定界 | 检出 | SwiGLU gate/up 对调 | 跨请求内容相同的 `!!!!` | `logits_finite` | 58 / 48 / 48 |
@@ -120,7 +120,7 @@ keep-set 案例的 **headline 结案**只用下面四档；**不要**再用 PASS
 
 计数摘自各包 `evidence/三层计数.json`（每个案例一份最新对外结果）。脚注：
 
-- **S06 †**：detect 按归档 `token_repeat` report×1 记 **1**（与 `三层计数.json` / 跑批结果一致）；表内为数字；检出说明见 [cases/S06](./cases/S06/) 备注。
+- **S06 †**：钉点 run `20261020T190354`；detect 按 `token_repeat` report×1 记 **1**（report `prompt_token_ids` 非空；与 KV 对账同跑）；三层 **70 / 2 / 1** 见 `三层计数.json` / 跑批结果。
 - **S07**：precision 记成 1，实为 48 次请求内容相同的乱码（以 samples + score 为准）。
 - **S10′**：`precision=20` 可对照 `cases/S10p/evidence/samples/`（T181551）；detect=79 见 `evidence/reports/report_sample.json`。
 - **S11**：`precision=39` 可对照 `cases/S11/evidence/samples/`（T190840）。

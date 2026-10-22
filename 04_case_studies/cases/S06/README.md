@@ -8,17 +8,17 @@
 |----|-----|
 | 结案 | **KV 不一致→定界** |
 | 检测 | **检出** |
-| 三层率 | **70 / 1 / 1** |
+| 三层率 | **70 / 2 / 1** |
 | Detector | `token_repeat` |
 | Origin | `both` |
 | Guard pin | G2 f2aefd068 |
 | 模型 | DeepSeek-V2-Lite |
-| Run | 06_moe_routing_bias-20261016T081459|
-| 备注 | detect=1 来自归档 `token_repeat` report×1（与 `evidence/三层计数.json` 一致）；检出以该数字为准 |
+| Run | 06_moe_routing_bias-20261020T190354 |
+| 备注 | detect=1 来自钉点 `token_repeat` report×1（`prompt_token_ids` 非空 len=17；与 KV 对账同一跑次）；与 `三层计数.json` 一致 |
 
 ## 1 · 现象
 
-归档样本为复读 / 乱码文本（如「惠惠感…」后接 `etc` 塌缩）；有 `token_repeat` 报告。样本见 [evidence/samples/](./evidence/samples/)。
+归档样本为复读塌缩（如「学德任任任…」）；有 `token_repeat` 报告（含非空 `prompt_token_ids`）。样本见 [evidence/samples/](./evidence/samples/)。
 
 ## 2 · 案例背景/构造
 
@@ -31,7 +31,7 @@ Overlay / 上游 PR 意图：错误 router bias / mask 类（非 bit-exact CUDA�
 
 ## 4 · 复现技巧
 
-按 pin / 模型 / overlay 对齐三层率。标杆是本包钉点（70 / 1 / 1）。
+按 pin / 模型 / overlay 对齐三层率。标杆是本包钉点（70 / 2 / 1 · run `20261020T190354`）。
 
 ## 5 · 定界分析
 ### 事实
