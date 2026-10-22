@@ -100,7 +100,7 @@ keep-set 案例的 **headline 结案**只用下面四档；**不要**再用 PASS
 | **复现技巧** | 「怎么跑才能对齐本包结论」的步骤与负载（并发 / prompt / 双树写入等）。**不含** origin-faithful / 禁止 NaN·token fill——那是**构建异常环境 / overlay 构造**纪律，写在 `规格说明.md` 与根因/构造节。旧称「复现配方」已不用；过程旧文称 **历史记录**。 |
 ## 对外保留的 15 个典型案例
 
-> **2026-10-22 清空实测：** 15 包已删除全部 `samples/`、`reports/`、`三层计数.json`、`跑批结果.json`、`kv_compare.json`。结案 / 检测 / 三层 / 定界均为空（视同尚未实测）。仅保留 `overlay.patch` + `规格说明.md`。重测后按同一次请求回填，禁止混用旧跑。
+> **2026-10-22 清空实测后重测中：** 基线清空于 `381af71`（仅 overlay+规格）。已回填包见下表实数；其余仍为空。重测按同一次异常请求回填，禁止混用旧跑。
 
 | ID | 包 | 结案 | 检测 | 根因（构造） | 现象 | 检测器（期望） | trigger / precision / detect |
 |----|-----|------|------|--------------|------|----------------|------------------------------|
@@ -114,15 +114,15 @@ keep-set 案例的 **headline 结案**只用下面四档；**不要**再用 PASS
 | S22 | [cases/S22/](./cases/S22/) | （空） | （空） | Spec resample 无独立 salt | （空） | `spec_acceptance` | （空） |
 | S06 | [cases/S06/](./cases/S06/) | （空） | （空） | MoE router bias / mask（构造） | （空） | `token_repeat` | （空） |
 | S26 | [cases/S26/](./cases/S26/) | （空） | （空） | RMSNorm fp32 错乘 | （空） | `token_repeat` | （空） |
-| S25 | [cases/S25/](./cases/S25/) | （空） | （空） | RoPE 后半维丢失 | （空） | `token_repeat` | （空） |
+| S25 | [cases/S25/](./cases/S25/) | **KV 一致→排除 KV** | **检出** | RoPE 后半维丢失 | `1.1.1…` 数字复读 | `token_repeat` | **462 / 15 / 48** |
 | S50 | [cases/S50/](./cases/S50/) | （空） | （空） | SwiGLU gate/up 对调 | （空） | `logits_finite` | （空） |
 | S48 | [cases/S48/](./cases/S48/) | （空） | （空） | residual 极性取反 | （空） | `logits_finite` | （空） |
 | S47 | [cases/S47/](./cases/S47/) | （空） | （空） | Attn 前 K/V 对调 | （空） | `token_repeat` | （空） |
 | S33 | [cases/S33/](./cases/S33/) | （空） | （空） | softcap 缺 `*cap` rescale | （空） | `token_repeat` | （空） |
 
-计数摘自各包实测回填后的 `evidence/三层计数.json`（**当前均未回填，表内为空**）。
+计数摘自各包实测回填后的 `evidence/三层计数.json`（已回填者见表；其余为空）。
 
-脚注：无。重测后按包追加。
+脚注：S25 钉点 dump 临时合入 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) 以取得非空 `prompt_token_ids`；KV 对比跨度 `p+o-1`（两组 match）。详见 [cases/S25/](./cases/S25/)。
 
 
 `S10′` 在仓库里的目录名是 **`S10p`**。相关 Skills 见 [06](../06_agent_skills/)（**v5.9**）。
