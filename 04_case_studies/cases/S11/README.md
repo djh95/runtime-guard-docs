@@ -1,67 +1,56 @@
-# S11 · MLA RoPE pad-tail（复现未抓到）
+# S11 · MLA RoPE pad-tail
 
-公开自洽案例包。
+公开案例包（**尚未实测归档**）。本目录只保留构造材料；**无** samples / reports / 三层 / 跑批 / KV 对账。
 
 ## 归档钉点
 
 | 项 | 值 |
 |----|-----|
-| 结案 | **复现未抓到** |
-| 检测 | **检出** |
-| 三层率 | **138 / 39 / 60** |
-| Detector | `token_repeat` |
-| Origin | `ascend-only` |
-| Guard pin | G2 f2aefd068 |
-| 模型 | DeepSeek-V2-Lite MLA bf16 |
-| Run | 11_mla_rope_pad-20261016T190840|
+| 结案 | （空 · 尚未实测） |
+| 检测 | （空） |
+| 三层率 | （空） |
+| Detector（期望） | `token_repeat` |
+| Origin / 构造 | 见 [evidence/规格说明.md](./evidence/规格说明.md) |
+| Guard pin | （空） |
+| 模型 / Run | （空） |
 
 ## 1 · 现象
 
-常见 digit / collapse 垃圾（如 `1010…`）。`token_repeat` 命中 60/60。
+（空 · 尚未实测，无样本）
 
-**样本说明：** `evidence/samples/` 已归档标杆 run `T190840` 的 prompt+completion 文本（digit / zero 塌缩；含 `api_response`）——供**阅读 / precision 核对**。tokenize 标杆以 report 内实际 `prompt_token_ids` 为准；**不要**从 sample 字符串再 encode。detect 见 [report_sample.json](./evidence/reports/report_sample.json)。通则见 [④ 名词表](../../README.md#名词怎么读先看这里)。
+## 2 · 案例背景 / 构造
 
-## 2 · 根因
-
-对 [ascend#18798](https://github.com/vllm-project/vllm-ascend/pull/18798) 做逆修复：graph-pad 下把 cos/sin 的 **pad-tail** 喂给 query RoPE（本 pin 上 KV slice 保持正确）。不是 recycle（S10′）。禁止 NaN / fill。
+MLA RoPE pad-tail 错位。细节与 knobs 见 [evidence/规格说明.md](./evidence/规格说明.md)；补丁见 [evidence/overlay.patch](./evidence/overlay.patch)。
 
 ## 3 · Guard 结果
 
-**检出。** 归档 **138 / 39 / 60**。结案档：**复现未抓到**。
+（空 · 尚未实测，无 report）
 
 ## 4 · 复现技巧
 
-DeepSeek-V2-Lite；concurrent 48 变长英文 + 12 条 temp=0；util=0.40；不开 APC。
+见规格说明中的 knobs / 环境要求。按规格构造环境后实测，再回填钉点与证据。
 
 ## 5 · 定界分析
 
 ### 事实
 
-- 现象 / 检测见上文钉点与 samples（或 reports）。
-- **有效 KV 对账：无。** 本包曾归档的 `kv_compare.json` 及其中「首不一致 / 层号 / 余弦」结论**全部撤回**（新旧跑次混用、空 prompt、弱窗、全 NaN 占位等问题，不可信）。
+（空）
 
 ### 推断
 
-- 在重做**同一次异常请求**的有效异常 dump ↔ 标杆对账之前，**不能**得出「排除 KV」或「KV 不一致定界」。
-- 坏输出 / 构造预期 ≠ 已证根因。
+（空）
 
 ### 结论
 
-- 结案档：**复现未抓到**（有异常或检出证据，但无有效异常 KV 可对账）。
-- **尚未做有效 KV 对账**；分析不出 / 证据不足。
-
+（空 · 尚未实测）
 
 ## 6 · 证据文件
+
 | 文件 | 用途 |
 |------|------|
 | `evidence/overlay.patch` | 制造异常的静态补丁 |
 | `evidence/规格说明.md` | 复现规格（Origin / 锚点 / overlay / knobs / 期望 detector） |
-| `evidence/三层计数.json` | 三层明细（trigger / precision / detect） |
-| `evidence/跑批结果.json` | 跑批元数据 + 结案摘要 |
-| `evidence/samples/` | 坏输出原文（prompt + completion；自 T190840） |
-| `evidence/reports/` | Guard detector 报告 |
 
 ## 7 · 上游 PR 关系
-| PR / 链接 | 角色 |
-|-----------|------|
-| [ascend#18798](https://github.com/vllm-project/vllm-ascend/pull/18798) | **根因修复**（MLA RoPE pad-tail）；本包做 soft-inverse（按上游修复反向注入） |
+
+见 [evidence/规格说明.md](./evidence/规格说明.md)（若有锚点）。本 README 不重复实测结论。

@@ -1,9 +1,0 @@
-{
-  "id": "S33",
-  "verdict": "PASS",
-  "layers": "130 / 17 / 48",
-  "detector": "token_repeat",
-  "model": "Qwen3-8B",
-  "notes": "dual-tree + river concurrent",
-  "layers_ref": "evidence/三层计数.json"
-}

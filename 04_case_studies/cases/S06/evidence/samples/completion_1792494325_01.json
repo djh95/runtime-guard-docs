@@ -1,9 +1,0 @@
-{
-  "prompt": "用三句话介绍华为昇腾NPU与vLLM推理的关系。",
-  "completion": "学德任任任任任任任",
-  "api_response": {
-    "id": "cmpl-aa000c6b9d777c6a-0-b79938e2",
-    "source_report": "report_20261020_190527_181_cmpl-aa000c6b9d777c6a-0-b79938e2_pid439837.json",
-    "note": "from detect report detail of run 20261020T190354"
-  }
-}

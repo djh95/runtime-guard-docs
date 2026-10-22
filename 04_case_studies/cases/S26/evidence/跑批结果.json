@@ -1,9 +1,0 @@
-{
-  "id": "S26",
-  "verdict": "PASS",
-  "layers": "354 / 16 / 48",
-  "detector": "token_repeat",
-  "model": "Qwen3-8B",
-  "notes": "same load as S25",
-  "layers_ref": "evidence/三层计数.json"
-}

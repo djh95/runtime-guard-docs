@@ -1,9 +1,0 @@
-{
-  "id": "S48",
-  "verdict": "PASS",
-  "layers": "100 / 48 / 48",
-  "detector": "logits_finite",
-  "model": "Qwen3-8B",
-  "notes": "residual negate constructed",
-  "layers_ref": "evidence/三层计数.json"
-}
