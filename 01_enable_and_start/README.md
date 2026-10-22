@@ -14,8 +14,8 @@
 
 **版本支持：**
 
-- **`releases/v0.30.0` 发布线**（含 `v0.30.0rc*`；仓库无正式 tag `v0.30.0`）一律不支持 Runtime Guard，须先打本手册 [05_v030_backport](../05_v030_backport/README.md) 的 patch（BASE 见 [CHANGELOG](../05_v030_backport/CHANGELOG.md)），再按本文启动。
-- **更晚的版本**：先打开上面三个链接，把 URL 里的 `main` 换成你的 **tag / 分支**（例如 `v0.31.0`）。若文档 404 或源码中没有 `runtime_guard`，同样先打 [05 patch](../05_v030_backport/README.md)（或该版本对应的后续 patch 包），再启动。
+- **`releases/v0.30.0` 分支**（含 `v0.30.0rc*`；仓库无正式 tag `v0.30.0`）一律不支持 Runtime Guard，须先打 patch 再按本文启动：**MRV2** 用 [05_v030_backport](../05_v030_backport/README.md)；**MRV1** 用 [05_mrv1_backport](../05_mrv1_backport/README.md) 的 `v0.30.0` 档（BASE 见各包 CHANGELOG；两包勿叠打）。
+- **其它仍无 Guard 的版本**（更早已适配档，或更晚 tag/分支）：先打开上面三个链接，把 URL 里的 `main` 换成你的 **tag / 分支**（例如 `v0.31.0`）。若文档 404 或源码中没有 `runtime_guard`，同样先打对应 05 patch——多 release **MRV1** 用 [05_mrv1_backport](../05_mrv1_backport/README.md)；**v0.30 MRV2** 用 [05_v030_backport](../05_v030_backport/README.md)——再启动。
 
 ---
 
@@ -145,8 +145,8 @@ runtime/
 2. `hot_reload=false` 却改 live JSON → 无效。  
 3. 在非 last PP / 非 TP0 找 report。  
 4. 只用某一个 `tp*` 的 `.pt` 当完整 KV。  
-5. v1 runner → Guard 未接线。  
-6. 仍在 `releases/v0.30.0` / rc 线（或更新版本仍无 Guard）却直接配 `runtime_*` → 参数被忽略或报错；先打 [05 patch](../05_v030_backport/README.md)。  
+5. 使用 Model Runner v1 → Guard 未接线。  
+6. 当前树仍无 Guard（如 `releases/v0.30.0` / `v0.30.0rc*` 分支，或其它更早/更晚版本）却直接配 `runtime_*` → 参数被忽略或报错；须先打对应 05 patch（**MRV1**：[05_mrv1_backport](../05_mrv1_backport/README.md)；**v0.30 MRV2**：[05_v030_backport](../05_v030_backport/README.md)）。  
 7. 继续 dump 需热更增大目标总次数 `N`（JSON 里的 `manual_dump` 不会被进程改掉）。
 
 ---
@@ -205,7 +205,7 @@ runtime/
 | **Offline `LLM()`** | 在 Python 里 `from vllm import LLM`（或 Ascend 等价入口）**进程内**直接 `generate`，不对外开服务 |
 
 两者启用 Guard 的开关入口相同：都通过 **`additional_config`**（以及其中的 `runtime_config_*` / `runtime_config`）注入，**不是另一套独立开关**。  
-仍然必须是 **Model Runner v2**；v1 未接线，配了也不会出 report。`releases/v0.30.0` / rc 线先打 [05 patch](../05_v030_backport/README.md)。
+仍然必须是 **Model Runner v2**；v1 未接线，配了也不会出 report。无 Guard 的版本（含 `releases/v0.30.0` / rc 分支）须先打对应 05 patch（**MRV1**：[05_mrv1_backport](../05_mrv1_backport/README.md)；**v0.30 MRV2**：[05_v030_backport](../05_v030_backport/README.md)）。
 
 ### A.5 其它拓扑一行版
 
