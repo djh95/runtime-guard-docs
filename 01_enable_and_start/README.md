@@ -107,7 +107,7 @@ runtime/
 |------|------|
 | Report JSON | last-PP **TP0** |
 | KV `.pt` | last-PP **全部 TP** |
-| 非 last PP | 不参与 dump bus；报告不在这些 rank 上找 |
+| 非 last PP | PP>1 时只有 last PP 写报告并参与 dump；更早的 PP 没有报告属正常，勿在其上查找 |
 
 ---
 
@@ -115,10 +115,10 @@ runtime/
 
 | 场景 | 注意 |
 |------|------|
-| 单卡 | 绝对路径；默认关时为 static idle（见开篇） |
+| 单卡 | 只有一个 rank（即 last-PP TP0），报告与 dump 都在这张卡上找即可 |
 | TP>1 | 检测/报告只在 last-PP TP0；同 stage 其它 TP 经 **due bus** 同步配置/dump 名单；dump 要凑齐各 `tp*` |
 | PP>1 | 检测/dump 只在 last PP；非 last-PP 可 **file poll** JSON，但别在早期 PP 找报告 |
-| DP>1 | 各副本独立报告/dump；共享 JSON 时内存 `done` 每进程独立（盘上目标总次数 `N` 共享、不写回） |
+| DP>1 | 各副本各自写报告/dump；共享同一 JSON 时目标总次数 `N` 共用且进程不写回，内存「已拍次数」各自独立 → 大约最多 dump 到 `num_DP×N` 次 |
 | 多机 | 可启动后改路径，但 **last-PP 的 TP 组路径要统一**；各 rank 配置到达方式见附录 A.2（due bus / file poll） |
 | MoE | 开功能后 Python 占比更明显；默认关即可 |
 | Spec / MTP | 才需要 `spec_acceptance` |
