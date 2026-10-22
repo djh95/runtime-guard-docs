@@ -105,7 +105,7 @@ keep-set 案例的 **headline 结案**只用下面四档；**不要**再用 PASS
 | S01 | [cases/S01/](./cases/S01/) | 未复现 | 无可检（非漏检） | KV 新块未置零（需 hybrid/量化 KV） | dense 未见坏输出 | 本轮无可检坏输出 | 154 / 0† / 0 |
 | S10′ | [cases/S10p/](./cases/S10p/) | KV 一致→排除 KV | 检出 | FullAttn 回收块未清零 | 复读 / `xxxx` 塌缩 | `token_repeat` | 65 / 20 / 79 |
 | S11 | [cases/S11/](./cases/S11/) | KV 不一致→定界 | 检出 | MLA RoPE pad-tail 错位 | digit / collapse 垃圾 | `token_repeat` | 138 / 39 / 60 |
-| S07 | [cases/S07/](./cases/S07/) | KV 不一致→定界（弱窗） | 乱码漏检 | W8A8 dequant scale 崩溃 | 跨请求内容相同的乱码 | 期望 `logits_finite`→未检出 | 2624 / 1 / 0 |
+| S07 | [cases/S07/](./cases/S07/) | 复现未抓到 | 乱码漏检 | W8A8 dequant scale 崩溃 | 跨请求内容相同的乱码 | 期望 `logits_finite`→未检出（0 report） | 2624 / 1 / 0 |
 | S23 | [cases/S23/](./cases/S23/) | KV 不一致→定界 | 检出 | 一层 `o_proj` 权重置零 | 跨请求内容相同塌缩 | `token_repeat` | 2 / 17 / 48 |
 | S45 | [cases/S45/](./cases/S45/) | KV 一致→排除 KV | 乱码漏检 | top-k 打在 −logits | 各不相同乱码 | 期望 `token_repeat`+`logits_finite`→未检出 | 16 / 4 / 0 |
 | S43 | [cases/S43/](./cases/S43/) | KV 不一致→定界 | 检出 | embedding ×100 | 换行塌缩 | `token_repeat` | 16 / 40 / 48 |
@@ -121,7 +121,7 @@ keep-set 案例的 **headline 结案**只用下面四档；**不要**再用 PASS
 计数摘自各包 `evidence/三层计数.json`（每个案例一份最新对外结果）。脚注：
 
 - **S06 †**：钉点 run `20261020T190354`；detect 按 `token_repeat` report×1 记 **1**（report `prompt_token_ids` 非空；与 KV 对账同跑）；三层 **70 / 2 / 1** 见 `三层计数.json` / 跑批结果。
-- **S07**：precision 记成 1，实为 48 次请求内容相同的乱码（以 samples + score 为准）。
+- **S07**：precision 记成 1，实为 48 次请求内容相同的乱码（以 samples + score 为准）。detect=0 → **无有效异常 KV**；结案 **复现未抓到**（勿把旧 NaN 对账当定界）。
 - **S10′**：`precision=20` 可对照 `cases/S10p/evidence/samples/`（T181551）；detect=79 见 `evidence/reports/report_sample.json`。
 - **S11**：`precision=39` 可对照 `cases/S11/evidence/samples/`（T190840）。
 - **S23**：trigger=2 为 boot 置零（TP2 每卡一次），precision/detect 按请求计，故可 **precision > trigger**；结案看 detect=48。见 [cases/S23](./cases/S23/)。
