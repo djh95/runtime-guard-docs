@@ -49,19 +49,22 @@ softcap 族要写清 incomplete 与 unstable overflow 的差别，避免和 S20 
 
 - 现象：`1.1.1…` 复读（`evidence/samples/`）。
 - 三层：130 / 17 / 48；detector：`token_repeat`×48。
-- 归档 report：`prompt_token_ids` 非空（len=14）；有 `output_token_ids`。
-- 尚未做 KV 对比（未抓标杆/异常 KV 或未写入本包）。
+- 归档 report：`prompt_token_ids` 非空（len=14）；本轮 dump 条为空 prompt，已同 prompt re-curl 合并。
+- builder 机 KV 对比（cos_thresh=0.99；n_prompt=14 n_cmp_tokens=21；layers=72）。
+- 原 dump 条 `prompt_token_ids` 空；同 prompt re-curl 后与异常 `output_token_ids` 合并再抓标杆。
+- 标杆 vs 异常：对比窗口**全程一致**（min-over-layers cos ≥ thresh）；output 首 token 余弦=0.999994。
+- 首不一致：无。
 
 ### 推断
 
-- 可确认：复读异常已出现，且 `token_repeat` 已检出。
-- 坏输出推不出「softcap 缺 *cap rescale」——构造见「根因」。
-- 无对账事实 → 推不出污染时机；勿因缺 buggy+ref 写「Q1–Q5 不适用」。
+- 对账一致 → **排除 KV cache** 作为本请求坏输出的必要原因。
+- 坏输出仍不能从文本推出构造根因；转向非 KV 类（见案例背景/构造）。
+- 无首不一致 → 推不出污染时机窗口。
 
 ### 结论
 
-- 已定界到：复读异常 + `token_repeat` 检出。
-- 尚未定界到 softcap rescale；分析不出 / 证据不足。
+- 已定界到：可排除 KV cache（本请求对比窗口）。
+- 尚未定界到具体算子/构造根因；分析不出 / 证据不足。
 
 ## 证据文件
 
@@ -73,6 +76,7 @@ softcap 族要写清 incomplete 与 unstable overflow 的差别，避免和 S20 
 | `evidence/跑批结果.json` | 跑批元数据 + 结案摘要 |
 | `evidence/samples/` | prompt + completion 样本 |
 | `evidence/reports/` | Guard detector 报告 |
+| `evidence/kv_compare.json` | 最新 KV 标杆对比摘要（余弦 / 首不一致 / 结论） |
 
 
 ## 上游 PR 关系

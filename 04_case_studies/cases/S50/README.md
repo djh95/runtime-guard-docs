@@ -37,21 +37,24 @@ bang / NaN·Inf 塌缩可被 `logits_finite` 抓住。对照 **S07**（有限 lo
 
 ### 事实
 
-- 现象：跨请求内容相同的 `!!!!`（`evidence/samples/`）。
-- 三层：58 / 48 / 48；detector：`logits_finite`×48。
-- 归档 report：`prompt_token_ids` 为空；有 `output_token_ids`。
-- 尚未做 KV 对比（未抓标杆/异常 KV 或未写入本包）。
+- 现象：非有限 logits / 异常输出（`evidence/samples/`）。
+- 三层见包内计数；detector：`logits_finite`。
+- 归档 report：`prompt_token_ids` 为空；本轮 re-curl 合并后对比。
+- builder 机 KV 对比（cos_thresh=0.99；n_prompt=14 n_cmp_tokens=14；layers=72）。
+- 原 dump 条 `prompt_token_ids` 空；同 prompt re-curl 后与异常 `output_token_ids` 合并再抓标杆。
+- 首不一致：idx=0 role=prompt span=prompt min_cos=n/a @ layer_36。
+- 后续是否恢复≈1：False；output 首 token 余弦=n/a；仅 PD：False。
 
 ### 推断
 
-- 可确认：塌缩异常已出现，且 `logits_finite` 已检出。
-- 坏输出推不出「SwiGLU gate/up 对调」——构造见「根因」。
-- 无对账事实 → 推不出污染时机，也不能排除或确认 KV。
+- 对账不一致 → **重开 KV 线**。
+- 坏输出仍不可直接写成具体根因。
+- 首不一致在 prompt 段 → 偏向 prefill 侧（需结合是否恢复、仅 PD）。
 
 ### 结论
 
-- 已定界到：异常输出 + `logits_finite` 检出。
-- 尚未定界到 SwiGLU gate/up；分析不出 / 证据不足。
+- 已定界到：KV 与标杆不一致（重开 KV 线）。
+- 尚未定界到具体写/传路径；分析不出 / 证据不足。
 
 ## 证据文件
 
@@ -63,6 +66,7 @@ bang / NaN·Inf 塌缩可被 `logits_finite` 抓住。对照 **S07**（有限 lo
 | `evidence/跑批结果.json` | 跑批元数据 + 结案摘要 |
 | `evidence/samples/` | prompt + completion 样本 |
 | `evidence/reports/` | Guard detector 报告（归档 report prompt 为空：合修前旧归档，见名词表 **report 空 prompt**；可读 prompt 看 samples，见 [④ 名词表](../../README.md#名词怎么读先看这里)） |
+| `evidence/kv_compare.json` | 最新 KV 标杆对比摘要（余弦 / 首不一致 / 结论） |
 
 
 ## 上游 PR 关系

@@ -1,0 +1,222 @@
+{
+  "case": "S48",
+  "host": "builder",
+  "cos_thresh": 0.99,
+  "kv_match": false,
+  "first_mismatch_idx": 0,
+  "first_mismatch_role": "prompt",
+  "first_mismatch_span": "prompt",
+  "first_mismatch_min_cos": null,
+  "first_mismatch_layer": "layer_36",
+  "later_slots_recover": false,
+  "output_first_token_cos": null,
+  "pd_only": false,
+  "conclusion": "KV不一致→重开 KV 线",
+  "n_tokens": 14,
+  "n_prompt": 14,
+  "n_layers_matched": 72,
+  "source": {
+    "buggy_run": "/workspace/runtime-guard/canonical/results/anomaly-repro-20261016/48_residual_negate-20261019T224114",
+    "buggy_report": "/workspace/runtime-guard/canonical/results/anomaly-repro-20261016/48_residual_negate-20261019T224114/report/logits_finite/report_20261019_224227_178_cmpl-9be232a2b0988714-0-a68cdc9b_pid388210.json",
+    "feed_report": "/home/d00824595/keepset-kv-compare-20261022/out/cases/S48/scratch/merged_report_20261019_224227_178_cmpl-9be232a2b0988714-0-a68cdc9b_pid388210.json",
+    "buggy_rank": "/workspace/runtime-guard/canonical/results/anomaly-repro-20261016/48_residual_negate-20261019T224114/dump/logits_finite/cmpl-9be232a2b0988714-0-a68cdc9b/wave_2/dp0_tp0_pp0_cp0",
+    "ref_rank": "/home/d00824595/keepset-kv-compare-20261022/ref_runs/qwen3-8b-ref-20261022T165528/dump/manual_trigger/cmpl-a10cddc9a618edbe-0-8c63ce2f/wave_10/dp0_tp0_pp0_cp0",
+    "req_id": "cmpl-9be232a2b0988714-0-a68cdc9b",
+    "incident_type": "logits_finite",
+    "empty_prompt_recurled": true
+  },
+  "per_token_min_cos_head": [
+    {
+      "idx": 0,
+      "role": "prompt",
+      "min_cos": null
+    },
+    {
+      "idx": 1,
+      "role": "prompt",
+      "min_cos": null
+    },
+    {
+      "idx": 2,
+      "role": "prompt",
+      "min_cos": null
+    },
+    {
+      "idx": 3,
+      "role": "prompt",
+      "min_cos": null
+    },
+    {
+      "idx": 4,
+      "role": "prompt",
+      "min_cos": null
+    },
+    {
+      "idx": 5,
+      "role": "prompt",
+      "min_cos": null
+    },
+    {
+      "idx": 6,
+      "role": "prompt",
+      "min_cos": null
+    },
+    {
+      "idx": 7,
+      "role": "prompt",
+      "min_cos": null
+    },
+    {
+      "idx": 8,
+      "role": "prompt",
+      "min_cos": null
+    },
+    {
+      "idx": 9,
+      "role": "prompt",
+      "min_cos": null
+    },
+    {
+      "idx": 10,
+      "role": "prompt",
+      "min_cos": null
+    },
+    {
+      "idx": 11,
+      "role": "prompt",
+      "min_cos": null
+    },
+    {
+      "idx": 12,
+      "role": "prompt",
+      "min_cos": null
+    },
+    {
+      "idx": 13,
+      "role": "prompt",
+      "min_cos": null
+    }
+  ],
+  "analysis": {
+    "n_tokens": 14,
+    "n_prompt": 14,
+    "cos_thresh": 0.99,
+    "layers": [
+      "layer_36",
+      "layer_37",
+      "layer_38",
+      "layer_39",
+      "…"
+    ],
+    "first_bad": {
+      "token_idx": 0,
+      "token_id": 675,
+      "role": "prompt",
+      "min_cos": null,
+      "min_layer": "layer_36"
+    },
+    "per_token": [
+      {
+        "token_idx": 0,
+        "token_id": 675,
+        "role": "prompt",
+        "min_cos": null,
+        "min_layer": "layer_36"
+      },
+      {
+        "token_idx": 1,
+        "token_id": 825,
+        "role": "prompt",
+        "min_cos": null,
+        "min_layer": "layer_36"
+      },
+      {
+        "token_idx": 2,
+        "token_id": 11245,
+        "role": "prompt",
+        "min_cos": null,
+        "min_layer": "layer_36"
+      },
+      {
+        "token_idx": 3,
+        "token_id": 14796,
+        "role": "prompt",
+        "min_cos": null,
+        "min_layer": "layer_36"
+      },
+      {
+        "token_idx": 4,
+        "token_id": 13,
+        "role": "prompt",
+        "min_cos": null,
+        "min_layer": "layer_36"
+      },
+      {
+        "token_idx": 5,
+        "token_id": 3776,
+        "role": "prompt",
+        "min_cos": null,
+        "min_layer": "layer_36"
+      },
+      {
+        "token_idx": 6,
+        "token_id": 2805,
+        "role": "prompt",
+        "min_cos": null,
+        "min_layer": "layer_36"
+      },
+      {
+        "token_idx": 7,
+        "token_id": 6364,
+        "role": "prompt",
+        "min_cos": null,
+        "min_layer": "layer_36"
+      },
+      {
+        "token_idx": 8,
+        "token_id": 11652,
+        "role": "prompt",
+        "min_cos": null,
+        "min_layer": "layer_36"
+      },
+      {
+        "token_idx": 9,
+        "token_id": 13,
+        "role": "prompt",
+        "min_cos": null,
+        "min_layer": "layer_36"
+      },
+      {
+        "token_idx": 10,
+        "token_id": 877,
+        "role": "prompt",
+        "min_cos": null,
+        "min_layer": "layer_36"
+      },
+      {
+        "token_idx": 11,
+        "token_id": 28,
+        "role": "prompt",
+        "min_cos": null,
+        "min_layer": "layer_36"
+      },
+      {
+        "token_idx": 12,
+        "token_id": 15,
+        "role": "prompt",
+        "min_cos": null,
+        "min_layer": "layer_36"
+      },
+      {
+        "token_idx": 13,
+        "token_id": 13,
+        "role": "prompt",
+        "min_cos": null,
+        "min_layer": "layer_36"
+      }
+    ],
+    "layers_count": 72
+  },
+  "status": "done",
+  "manual_n_end": 9
+}

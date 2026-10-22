@@ -40,21 +40,23 @@ Qwen3-8B，temp=0，eager；concurrent 48；util=0.40。
 
 ### 事实
 
-- 现象：跨请求内容相同塌缩（`evidence/samples/`）。
-- 三层：2 / 17 / 48；detector：`token_repeat`×48。
-- 归档 report：`prompt_token_ids` 为空；有 `output_token_ids`。
-- 尚未做 KV 对比（未抓标杆/异常 KV 或未写入本包）。
+- 现象：复读塌缩（`evidence/samples/`）。
+- 三层见 `evidence/三层计数.json`；detector：`token_repeat`。
+- 归档 report：`prompt_token_ids` 为空；本轮对比用非空 ids dump（len prompt=14）。
+- builder 机 KV 对比（cos_thresh=0.99；n_prompt=14 n_cmp_tokens=20；layers=72）。
+- 首不一致：idx=1 role=prompt span=prompt min_cos=0.983096 @ model.layers.35.self_attn.attn。
+- 后续是否恢复≈1：False；output 首 token 余弦=0.892670；仅 PD：False。
 
 ### 推断
 
-- 可确认：塌缩异常已出现，且 `token_repeat` 已检出。
-- 坏输出推不出具体权重地址 / 「一层 o_proj 置零」——构造见「根因」；本案例教学为 detect-only。
-- 无对账事实 → 推不出污染时机。
+- 对账不一致 → **重开 KV 线**。
+- 坏输出仍不可直接写成具体根因。
+- 首不一致在 prompt 段 → 偏向 prefill 侧（需结合是否恢复、仅 PD）。
 
 ### 结论
 
-- 已定界到：异常输出 + `token_repeat` 检出；不定界到权重元素。
-- 尚未定界到具体权重元素；分析不出 / 证据不足。
+- 已定界到：KV 与标杆不一致（重开 KV 线）。
+- 尚未定界到具体写/传路径；分析不出 / 证据不足。
 
 ## 证据文件
 
@@ -66,6 +68,7 @@ Qwen3-8B，temp=0，eager；concurrent 48；util=0.40。
 | `evidence/跑批结果.json` | 跑批元数据 + 结案摘要 |
 | `evidence/samples/` | prompt + completion 样本 |
 | `evidence/reports/` | Guard detector 报告（归档 report prompt 为空：合修前旧归档，见名词表 **report 空 prompt**；可读 prompt 看 samples，见 [④ 名词表](../../README.md#名词怎么读先看这里)） |
+| `evidence/kv_compare.json` | 最新 KV 标杆对比摘要（余弦 / 首不一致 / 结论） |
 
 
 ## 上游 PR 关系

@@ -37,21 +37,24 @@
 
 ### 事实
 
-- 现象：换行塌缩（`evidence/samples/`）。
-- 三层：16 / 40 / 48；detector：`token_repeat`×48。
-- 归档 report：`prompt_token_ids` 为空；有 `output_token_ids`。
-- 尚未做 KV 对比（未抓标杆/异常 KV 或未写入本包）。
+- 现象：换行塌缩 / 复读（`evidence/samples/`）。
+- 三层见包内计数；detector：`token_repeat`。
+- 归档 report：`prompt_token_ids` 为空；本轮 re-curl 合并后对比。
+- builder 机 KV 对比（cos_thresh=0.99；n_prompt=14 n_cmp_tokens=18；layers=72）。
+- 原 dump 条 `prompt_token_ids` 空；同 prompt re-curl 后与异常 `output_token_ids` 合并再抓标杆。
+- 首不一致：idx=0 role=prompt span=prompt min_cos=-0.295200 @ model.layers.20.self_attn.attn。
+- 后续是否恢复≈1：False；output 首 token 余弦=-0.237587；仅 PD：False。
 
 ### 推断
 
-- 可确认：塌缩异常已出现，且 `token_repeat` 已检出。
-- 坏输出推不出「embed ×100」——构造见「根因」。
-- 无对账事实 → 推不出污染时机。
+- 对账不一致 → **重开 KV 线**。
+- 坏输出仍不可直接写成具体根因。
+- 首不一致在 prompt 段 → 偏向 prefill 侧（需结合是否恢复、仅 PD）。
 
 ### 结论
 
-- 已定界到：塌缩异常 + `token_repeat` 检出。
-- 尚未定界到 embed ×100；分析不出 / 证据不足。
+- 已定界到：KV 与标杆不一致（重开 KV 线）。
+- 尚未定界到具体写/传路径；分析不出 / 证据不足。
 
 ## 证据文件
 
@@ -63,6 +66,7 @@
 | `evidence/跑批结果.json` | 跑批元数据 + 结案摘要 |
 | `evidence/samples/` | prompt + completion 样本 |
 | `evidence/reports/` | Guard detector 报告（归档 report prompt 为空：合修前旧归档，见名词表 **report 空 prompt**；可读 prompt 看 samples，见 [④ 名词表](../../README.md#名词怎么读先看这里)） |
+| `evidence/kv_compare.json` | 最新 KV 标杆对比摘要（余弦 / 首不一致 / 结论） |
 
 
 ## 上游 PR 关系

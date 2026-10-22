@@ -1,0 +1,460 @@
+{
+  "case": "S10p",
+  "host": "builder",
+  "cos_thresh": 0.99,
+  "kv_match": true,
+  "first_mismatch_idx": null,
+  "first_mismatch_role": null,
+  "first_mismatch_span": null,
+  "first_mismatch_min_cos": null,
+  "first_mismatch_layer": null,
+  "later_slots_recover": null,
+  "output_first_token_cos": 0.9999946828884647,
+  "pd_only": false,
+  "conclusion": "KV一致→排除 KV cache",
+  "n_tokens": 36,
+  "n_prompt": 32,
+  "n_layers_matched": 72,
+  "source": {
+    "buggy_run": "/workspace/runtime-guard/canonical/results/anomaly-repro-20261016/10_fullattn_recycle_zero-20261019T225431",
+    "buggy_report": "/workspace/runtime-guard/canonical/results/anomaly-repro-20261016/10_fullattn_recycle_zero-20261019T225431/report/token_repeat/report_20261019_225552_366_cmpl-b05b2e55ebc7a1ca-0-8fcb9711_pid397333.json",
+    "feed_report": "/workspace/runtime-guard/canonical/results/anomaly-repro-20261016/10_fullattn_recycle_zero-20261019T225431/report/token_repeat/report_20261019_225552_366_cmpl-b05b2e55ebc7a1ca-0-8fcb9711_pid397333.json",
+    "buggy_rank": "/workspace/runtime-guard/canonical/results/anomaly-repro-20261016/10_fullattn_recycle_zero-20261019T225431/dump/token_repeat/cmpl-b05b2e55ebc7a1ca-0-8fcb9711/wave_8/dp0_tp0_pp0_cp0",
+    "ref_rank": "/home/d00824595/keepset-kv-compare-20261022/ref_runs/qwen3-8b-ref-20261022T165528/dump/manual_trigger/cmpl-b6a148060cd79945-0-aa742db4/wave_4/dp0_tp0_pp0_cp0",
+    "req_id": "cmpl-b05b2e55ebc7a1ca-0-8fcb9711",
+    "incident_type": "token_repeat",
+    "empty_prompt_recurled": false
+  },
+  "per_token_min_cos_head": [
+    {
+      "idx": 0,
+      "role": "prompt",
+      "min_cos": 0.999999
+    },
+    {
+      "idx": 1,
+      "role": "prompt",
+      "min_cos": 0.999987
+    },
+    {
+      "idx": 2,
+      "role": "prompt",
+      "min_cos": 0.999998
+    },
+    {
+      "idx": 3,
+      "role": "prompt",
+      "min_cos": 0.999996
+    },
+    {
+      "idx": 4,
+      "role": "prompt",
+      "min_cos": 0.999998
+    },
+    {
+      "idx": 5,
+      "role": "prompt",
+      "min_cos": 0.999997
+    },
+    {
+      "idx": 6,
+      "role": "prompt",
+      "min_cos": 0.999998
+    },
+    {
+      "idx": 7,
+      "role": "prompt",
+      "min_cos": 0.999994
+    },
+    {
+      "idx": 8,
+      "role": "prompt",
+      "min_cos": 0.999986
+    },
+    {
+      "idx": 9,
+      "role": "prompt",
+      "min_cos": 0.999996
+    },
+    {
+      "idx": 10,
+      "role": "prompt",
+      "min_cos": 0.999995
+    },
+    {
+      "idx": 11,
+      "role": "prompt",
+      "min_cos": 0.999994
+    },
+    {
+      "idx": 12,
+      "role": "prompt",
+      "min_cos": 0.999993
+    },
+    {
+      "idx": 13,
+      "role": "prompt",
+      "min_cos": 0.999995
+    },
+    {
+      "idx": 14,
+      "role": "prompt",
+      "min_cos": 0.999997
+    },
+    {
+      "idx": 15,
+      "role": "prompt",
+      "min_cos": 0.999995
+    },
+    {
+      "idx": 16,
+      "role": "prompt",
+      "min_cos": 0.999993
+    },
+    {
+      "idx": 17,
+      "role": "prompt",
+      "min_cos": 0.999995
+    },
+    {
+      "idx": 18,
+      "role": "prompt",
+      "min_cos": 0.999993
+    },
+    {
+      "idx": 19,
+      "role": "prompt",
+      "min_cos": 0.999996
+    },
+    {
+      "idx": 20,
+      "role": "prompt",
+      "min_cos": 0.999996
+    },
+    {
+      "idx": 21,
+      "role": "prompt",
+      "min_cos": 0.999996
+    },
+    {
+      "idx": 22,
+      "role": "prompt",
+      "min_cos": 0.999996
+    },
+    {
+      "idx": 23,
+      "role": "prompt",
+      "min_cos": 0.999992
+    },
+    {
+      "idx": 24,
+      "role": "prompt",
+      "min_cos": 0.999995
+    },
+    {
+      "idx": 25,
+      "role": "prompt",
+      "min_cos": 0.999996
+    },
+    {
+      "idx": 26,
+      "role": "prompt",
+      "min_cos": 0.999997
+    },
+    {
+      "idx": 27,
+      "role": "prompt",
+      "min_cos": 0.999997
+    },
+    {
+      "idx": 28,
+      "role": "prompt",
+      "min_cos": 0.999997
+    },
+    {
+      "idx": 29,
+      "role": "prompt",
+      "min_cos": 0.999994
+    },
+    {
+      "idx": 30,
+      "role": "prompt",
+      "min_cos": 0.999996
+    },
+    {
+      "idx": 31,
+      "role": "prompt",
+      "min_cos": 0.999996
+    }
+  ],
+  "analysis": {
+    "n_tokens": 36,
+    "n_prompt": 32,
+    "cos_thresh": 0.99,
+    "layers": [
+      "layer_36",
+      "layer_37",
+      "layer_38",
+      "layer_39",
+      "…"
+    ],
+    "first_bad": null,
+    "per_token": [
+      {
+        "token_idx": 0,
+        "token_id": 7985,
+        "role": "prompt",
+        "min_cos": 0.9999991769188927,
+        "min_layer": "layer_67"
+      },
+      {
+        "token_idx": 1,
+        "token_id": 264,
+        "role": "prompt",
+        "min_cos": 0.9999872798030257,
+        "min_layer": "layer_39"
+      },
+      {
+        "token_idx": 2,
+        "token_id": 825,
+        "role": "prompt",
+        "min_cos": 0.9999981576293475,
+        "min_layer": "layer_61"
+      },
+      {
+        "token_idx": 3,
+        "token_id": 8447,
+        "role": "prompt",
+        "min_cos": 0.9999963419081935,
+        "min_layer": "layer_63"
+      },
+      {
+        "token_idx": 4,
+        "token_id": 2097,
+        "role": "prompt",
+        "min_cos": 0.9999979573054679,
+        "min_layer": "layer_71"
+      },
+      {
+        "token_idx": 5,
+        "token_id": 911,
+        "role": "prompt",
+        "min_cos": 0.9999966186201291,
+        "min_layer": "layer_67"
+      },
+      {
+        "token_idx": 6,
+        "token_id": 3015,
+        "role": "prompt",
+        "min_cos": 0.9999983897258522,
+        "min_layer": "layer_71"
+      },
+      {
+        "token_idx": 7,
+        "token_id": 13,
+        "role": "prompt",
+        "min_cos": 0.9999940059833711,
+        "min_layer": "layer_69"
+      },
+      {
+        "token_idx": 8,
+        "token_id": 220,
+        "role": "prompt",
+        "min_cos": 0.9999864647051223,
+        "min_layer": "layer_59"
+      },
+      {
+        "token_idx": 9,
+        "token_id": 877,
+        "role": "prompt",
+        "min_cos": 0.9999956424471957,
+        "min_layer": "model.layers.33.self_attn.attn"
+      },
+      {
+        "token_idx": 10,
+        "token_id": 28,
+        "role": "prompt",
+        "min_cos": 0.99999513521675,
+        "min_layer": "layer_61"
+      },
+      {
+        "token_idx": 11,
+        "token_id": 23,
+        "role": "prompt",
+        "min_cos": 0.9999941608497507,
+        "min_layer": "layer_71"
+      },
+      {
+        "token_idx": 12,
+        "token_id": 11016,
+        "role": "prompt",
+        "min_cos": 0.9999934427987058,
+        "min_layer": "layer_71"
+      },
+      {
+        "token_idx": 13,
+        "token_id": 28,
+        "role": "prompt",
+        "min_cos": 0.9999948964513503,
+        "min_layer": "layer_63"
+      },
+      {
+        "token_idx": 14,
+        "token_id": 44102,
+        "role": "prompt",
+        "min_cos": 0.9999965864423292,
+        "min_layer": "model.layers.33.self_attn.attn"
+      },
+      {
+        "token_idx": 15,
+        "token_id": 44102,
+        "role": "prompt",
+        "min_cos": 0.999995329321131,
+        "min_layer": "layer_71"
+      },
+      {
+        "token_idx": 16,
+        "token_id": 44102,
+        "role": "prompt",
+        "min_cos": 0.9999934023501538,
+        "min_layer": "layer_71"
+      },
+      {
+        "token_idx": 17,
+        "token_id": 44102,
+        "role": "prompt",
+        "min_cos": 0.9999945785966844,
+        "min_layer": "model.layers.33.self_attn.attn"
+      },
+      {
+        "token_idx": 18,
+        "token_id": 44102,
+        "role": "prompt",
+        "min_cos": 0.9999925269645752,
+        "min_layer": "layer_43"
+      },
+      {
+        "token_idx": 19,
+        "token_id": 44102,
+        "role": "prompt",
+        "min_cos": 0.9999956355177703,
+        "min_layer": "layer_47"
+      },
+      {
+        "token_idx": 20,
+        "token_id": 44102,
+        "role": "prompt",
+        "min_cos": 0.9999957200512996,
+        "min_layer": "model.layers.33.self_attn.attn"
+      },
+      {
+        "token_idx": 21,
+        "token_id": 44102,
+        "role": "prompt",
+        "min_cos": 0.9999957006198438,
+        "min_layer": "layer_41"
+      },
+      {
+        "token_idx": 22,
+        "token_id": 44102,
+        "role": "prompt",
+        "min_cos": 0.9999956143861063,
+        "min_layer": "layer_38"
+      },
+      {
+        "token_idx": 23,
+        "token_id": 44102,
+        "role": "prompt",
+        "min_cos": 0.9999919567854663,
+        "min_layer": "layer_43"
+      },
+      {
+        "token_idx": 24,
+        "token_id": 44102,
+        "role": "prompt",
+        "min_cos": 0.9999952356428582,
+        "min_layer": "layer_43"
+      },
+      {
+        "token_idx": 25,
+        "token_id": 44102,
+        "role": "prompt",
+        "min_cos": 0.9999955382859161,
+        "min_layer": "layer_67"
+      },
+      {
+        "token_idx": 26,
+        "token_id": 44102,
+        "role": "prompt",
+        "min_cos": 0.9999967722788091,
+        "min_layer": "layer_67"
+      },
+      {
+        "token_idx": 27,
+        "token_id": 44102,
+        "role": "prompt",
+        "min_cos": 0.9999965747070871,
+        "min_layer": "layer_39"
+      },
+      {
+        "token_idx": 28,
+        "token_id": 44102,
+        "role": "prompt",
+        "min_cos": 0.9999965704485546,
+        "min_layer": "layer_41"
+      },
+      {
+        "token_idx": 29,
+        "token_id": 44102,
+        "role": "prompt",
+        "min_cos": 0.9999943761987368,
+        "min_layer": "model.layers.33.self_attn.attn"
+      },
+      {
+        "token_idx": 30,
+        "token_id": 44102,
+        "role": "prompt",
+        "min_cos": 0.9999962619579653,
+        "min_layer": "layer_47"
+      },
+      {
+        "token_idx": 31,
+        "token_id": 44102,
+        "role": "prompt",
+        "min_cos": 0.9999963695716451,
+        "min_layer": "layer_47"
+      },
+      {
+        "token_idx": 32,
+        "token_id": 44102,
+        "role": "out[0]",
+        "min_cos": 0.9999946828884647,
+        "min_layer": "layer_41"
+      },
+      {
+        "token_idx": 33,
+        "token_id": 44102,
+        "role": "out[1]",
+        "min_cos": 0.9999958272903944,
+        "min_layer": "layer_43"
+      },
+      {
+        "token_idx": 34,
+        "token_id": 44102,
+        "role": "out[2]",
+        "min_cos": 0.999995523353809,
+        "min_layer": "layer_39"
+      },
+      {
+        "token_idx": 35,
+        "token_id": 44102,
+        "role": "out[3]",
+        "min_cos": 0.9999945879260728,
+        "min_layer": "layer_43"
+      }
+    ],
+    "layers_count": 72
+  },
+  "status": "done",
+  "manual_n_end": 3
+}
