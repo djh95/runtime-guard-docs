@@ -35,11 +35,25 @@ Residual 极性案例。禁止 force-NaN / token fill。
 
 ## 定界分析
 
-（**L1** = 检测停点 / **L2** = 问题类停点；**不是** Transformer 层号。见 [④ 名词表 · L1/L2](../../README.md#名词怎么读先看这里)。）
+### 事实
 
-1. **现象与证据**——detector：`logits_finite`（`!!!!`）。现象见 `evidence/samples/` · `evidence/reports/`。归档 report prompt 为空（合修前旧归档；见名词表 **report 空 prompt**，非「clear 过早」）。
-2. **排除（应做）**——重放抓 ids + 标杆/异常 KV 对比做排除。**本案例归档尚未附 KV 对比结论**。
-3. **定界结论**——停在 **L2（问题类停点）**：residual 极性取反；≠S31/S38。**L1（检测停点）**：`logits_finite` 已命中。结案：PASS **100 / 48 / 48**。
+- 三层：100 / 48 / 48；detector：`logits_finite`（sample 多为 `!!!!`；`evidence/samples/` · `evidence/reports/`）。
+- 归档 report `prompt_token_ids` 为空；有 `output_token_ids`。
+- 包内无标杆 vs 异常 KV 对账结果。
+
+### 推断
+
+- 可确认：非有限 logits / `!!!!` 类异常且 `logits_finite` 已检出。
+- 坏输出推不出「residual 极性取反」；KV 排除路径可用，包内未附 → **定界分析不出** 该算子细因（§2 非定界已证）。
+
+### 结论
+
+- 已定界到：`!!!!` 类异常 + `logits_finite` 检出。
+- **尚未定界到** residual 极性；**分析不出 / 证据不足**。
+- KV：路径可用；归档尚未附结论。
+- **定界结论：L1** = `logits_finite` 已命中；**L2** = 证据不足。
+- 结案：PASS **100 / 48 / 48**。
+
 
 ## 证据文件
 

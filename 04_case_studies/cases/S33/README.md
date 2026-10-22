@@ -45,11 +45,25 @@ softcap 族要写清 incomplete 与 unstable overflow 的差别，避免和 S20 
 
 ## 定界分析
 
-（**L1** = 检测停点 / **L2** = 问题类停点；**不是** Transformer 层号。见 [④ 名词表 · L1/L2](../../README.md#名词怎么读先看这里)。）
+### 事实
 
-1. **现象与证据**——detector：`token_repeat`×48。现象见 `evidence/samples/` · `evidence/reports/`。
-2. **排除（应做）**——空 prompt / 包内暂无 buggy+ref **不等于**「Q1–Q5 不适用」。有 report 即可：同 prompt 再 curl 抓服务端 `prompt_token_ids`，与异常 `output_token_ids` 合并后抓标杆 KV，对比异常 KV（一致→排除 KV；不一致→重开 KV 线）。**本案例归档尚未附 KV 对比结论**。
-3. **定界结论**——停在 **L2（问题类停点）**：softcap 缺 `*cap` rescale；≠S20 overflow/`!!!!`。**L1（检测停点）**：`token_repeat` 已命中。结案：PASS **130 / 17 / 48**；须双树写入。
+- 三层：130 / 17 / 48；detector：`token_repeat`×48（`evidence/samples/` · `evidence/reports/`）。
+- 包内无标杆 vs 异常 KV 对账结果。
+
+### 推断
+
+- 可确认：复读异常且 `token_repeat` 已检出。
+- 坏输出推不出「softcap 缺 *cap rescale」；空 prompt / 无 buggy+ref ≠「Q1–Q5 不适用」。
+- 包内无对账 → **定界分析不出** softcap 细因（§2 非定界已证）。
+
+### 结论
+
+- 已定界到：复读异常 + `token_repeat` 检出。
+- **尚未定界到** softcap rescale；**分析不出 / 证据不足**。
+- KV：路径可用；归档尚未附结论。
+- **定界结论：L1** = `token_repeat` 已命中；**L2** = 证据不足。
+- 结案：PASS **130 / 17 / 48**。
+
 
 ## 证据文件
 

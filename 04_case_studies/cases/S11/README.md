@@ -38,11 +38,27 @@ pad-tail 错位 ≠ 回收块未清零。可能撞上同一个 detector，但 ro
 
 ## 定界分析
 
-（**L1** = 检测停点 / **L2** = 问题类停点；**不是** Transformer 层号。见 [④ 名词表 · L1/L2](../../README.md#名词怎么读先看这里)。）
+### 事实
 
-1. **现象与证据**——detector：`token_repeat` 命中（detect=60）。坏输出（digit / collapse）见 `evidence/samples/`；detect 以 `evidence/reports/` 为准。归档 report prompt 为空（合修前旧归档；见名词表 **report 空 prompt**，非「clear 过早」）。
-2. **排除（应做）**——空 prompt ≠ 不能做 KV 排除：同 prompt 再 curl 抓服务端 ids，与异常 `output_token_ids` 合并后抓标杆/异常 KV 对比（一致→排除 KV 再审 MLA RoPE；不一致→重开 KV）。**本案例归档尚未附 KV 对比结论**。
-3. **定界结论**——停在 **L2（问题类停点）**：MLA RoPE pad-tail（间接 KV）；≠S25。**L1（检测停点）**：`token_repeat` 已命中。结案：PASS **138 / 39 / 60**。
+- 三层：138 / 39 / 60；detector：`token_repeat`（detect=60；`evidence/reports/`）。
+- sample：digit / collapse 坏输出（`evidence/samples/`）。
+- 归档 report `prompt_token_ids` 为空；有 `output_token_ids`。
+- 包内无标杆 vs 异常 KV 对账结果。
+
+### 推断
+
+- 可确认：塌缩异常且 `token_repeat` 已检出。
+- 坏输出推不出「MLA RoPE pad-tail」；空 prompt 仍可同 prompt 再 curl 抓 ids + KV 排除。
+- 包内无对账 → **定界分析不出** MLA RoPE 细因（§2 / soft-inverse 非定界已证）。
+
+### 结论
+
+- 已定界到：塌缩异常 + `token_repeat` 检出。
+- **尚未定界到** MLA RoPE pad-tail；**分析不出 / 证据不足**。
+- KV：路径可用；归档尚未附结论。
+- **定界结论：L1** = `token_repeat` 已命中；**L2** = 证据不足。
+- 结案：PASS **138 / 39 / 60**。
+
 
 ## 证据文件
 

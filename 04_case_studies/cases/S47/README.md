@@ -27,19 +27,33 @@ CJK / Trail 塌缩；`token_repeat`×48。
 
 ## 4 · 复现技巧
 
-Attn 算子问题类（定界 **L2**）的对外保留案例代表（K/V swap）。
+按本包 pin / overlay 对齐三层率。本包是 Attn 算子问题类（K/V swap）的对外保留代表（构造见「根因」）。
 
 ## 5 · 教学要点
 
-本包归档真相是 **kv_swap**（Attn 前 K/V 对调）；短例文件名若仍写 `attn-qkv-out` 以本包为准。
+本包归档真相是 **kv_swap**（Attn 前 K/V 对调）；短例文件名若仍写 `attn-qkv-out` 以本包为准。禁把「CJK 塌缩 → 所以 K/V 对调」写成定界推论。
 
 ## 定界分析
 
-（**L1** = 检测停点 / **L2** = 问题类停点；**不是** Transformer 层号。见 [④ 名词表 · L1/L2](../../README.md#名词怎么读先看这里)。）
+### 事实
 
-1. **现象与证据**——detector：`token_repeat`（CJK / Trail 塌缩）。现象见 `evidence/samples/` · `evidence/reports/`。归档 report prompt 为空（合修前旧归档；见名词表 **report 空 prompt**，非「clear 过早」）。
-2. **排除（应做）**——重放抓 ids + 标杆/异常 KV 对比做排除。**本案例归档尚未附 KV 对比结论**。
-3. **定界结论**——停在 **L2（问题类停点）**：Attn 前 K/V 对调；≠S34/S35/S41。**L1（检测停点）**：`token_repeat` 已命中。结案：PASS **58 / 37 / 48**。
+- 三层：58 / 37 / 48；detector：`token_repeat`（CJK / Trail 塌缩；`evidence/samples/` · `evidence/reports/`）。
+- 归档 report `prompt_token_ids` 为空；有 `output_token_ids`。
+- 包内无标杆 vs 异常 KV 对账结果。
+
+### 推断
+
+- 可确认：塌缩异常且 `token_repeat` 已检出。
+- 坏输出推不出「Attn 前 K/V 对调」；KV 排除路径可用，包内未附 → **定界分析不出** 该算子细因（§2 非定界已证）。
+
+### 结论
+
+- 已定界到：塌缩异常 + `token_repeat` 检出。
+- **尚未定界到** K/V 对调；**分析不出 / 证据不足**。
+- KV：路径可用；归档尚未附结论。
+- **定界结论：L1** = `token_repeat` 已命中；**L2** = 证据不足。
+- 结案：PASS **58 / 37 / 48**。
+
 
 ## 证据文件
 

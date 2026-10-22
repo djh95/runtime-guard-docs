@@ -17,11 +17,11 @@
 
 ## 1 · 现象
 
-MoE 路由偏置或 mask 出错时，请求会进错专家。归档有 `token_repeat` 报告与 repeat 样本文。样本见 [evidence/samples/](./evidence/samples/)。
+归档样本为复读 / 乱码文本（如「惠惠感…」后接 `etc` 塌缩）；有 `token_repeat` 报告。样本见 [evidence/samples/](./evidence/samples/)。
 
-## 2 · 根因
+## 2 · 案例背景/构造
 
-错误 router bias / mask 类（非 bit-exact CUDA）。对外保留案例 **只留这一例** MoE。上游：[#38989](https://github.com/vllm-project/vllm/pull/38989)、[#60946](https://github.com/vllm-project/vllm/pull/60946)。
+Overlay / 上游 PR 意图：错误 router bias / mask 类（非 bit-exact CUDA）→ 错专家。对外保留案例 **只留这一例** MoE。上游：[#38989](https://github.com/vllm-project/vllm/pull/38989)、[#60946](https://github.com/vllm-project/vllm/pull/60946)。**构造已知 ≠ 定界从坏输出推出。**
 
 ## 3 · Guard 结果
 
@@ -37,14 +37,31 @@ MoE 路由偏置或 mask 出错时，请求会进错专家。归档有 `token_re
 
 1. 本例只作 MoE 路由模版；饱和类不在对外保留案例刷分。
 2. 核对时看 router / 专家相关 report 字段——KV 数值正常 ≠ MoE 已排除。
+3. **定界禁例：** 不可写「坏输出 → 所以进错专家」；构造根因放「案例背景/构造」，不放进定界推断。
 
 ## 定界分析
 
-（**L1** = 检测停点 / **L2** = 问题类停点；**不是** Transformer 层号。见 [④ 名词表 · L1/L2](../../README.md#名词怎么读先看这里)。）
+### 事实
 
-1. **现象与证据**——detector：`token_repeat` 命中（归档 `evidence/reports/`×1；以 report 为准）。坏输出 / 进错专家现象见 `evidence/samples/`。归档 report 的 `prompt_token_ids` / `prompt_text` 为空（合修前样本；根因见名词表，**非** clear 过早），但仍有 `output_token_ids`、`block_ids` / `dump_*`。
-2. **排除（应做）**——**KV 排除定界**（勿因空 prompt 或规格 `KV?=否` 跳过）：(1) 同案例 sample 的**同一 prompt 再 curl**，手动 dump 取得**服务端实际** `prompt_token_ids`（禁止离线再 tokenize）；(2) 与异常 report 的 **`output_token_ids` 合并**；(3) 抓标杆 KV，与异常 KV 对比。一致 → **排除 KV cache**，支撑转向 MoE/路由；不一致 → 重开 KV 线。`KV?=否` 只表示根因**预期**不在 KV。**本案例归档尚未附 KV 对比结论**。
-3. **定界结论**——停在 **L2（问题类停点）**：MoE 路由（bias/mask → 错专家）；KV finite ≠ 根因。**L1（检测停点）**：`token_repeat` 已命中。包内未附 buggy+ref 对账前不宣称 Q1–Q5 细定界；排除路径见上。结案：PASS；DeepSeek-V2-Lite；三层以 README 钉点为准。
+- 样本 completion：短 CJK 复读后接 `etc` 长复读（`evidence/samples/completion_1792138601_01.json`）。
+- 三层：70 / 1 / 1（`evidence/三层计数.json`）。
+- detector：`token_repeat`×1；`detail.repeat_sum=18`（阈值 16）；`output_token_ids` 长 10；`prompt_token_ids=[]`、`prompt_token_count=0`；`block_ids=[1]`；`dump_count=0`。
+- 包内无标杆 vs 异常 KV 对账；无同 prompt re-curl 抓服务端 ids 的归档。
+- 规格 `KV?=否` = 构造预期根因不在 KV，不是已跑排除结果。
+
+### 推断
+
+- 可确认：复读异常已出现，且 `token_repeat` 已检出 → PASS 有据。
+- 空 `prompt_token_ids` ≠ 不能做 KV 排除：同 prompt 再 curl 抓服务端 ids，与异常 `output_token_ids` 合并后可对账；本包未归档该步。
+- 坏输出推不出「进错专家 / MoE topk」——那是构造意图，见「案例背景/构造」。
+- 无 KV 对账 → 不能排除或确认 KV。
+
+### 结论
+
+- 已定界到：异常输出 + `token_repeat` 检出。
+- **尚未定界到** MoE 路由 / 错专家；**分析不出 / 证据不足**（勿把构造/上游 PR 当定界已证）。
+- KV：路径可用；归档尚未附结论。
+- **定界结论：L1** = `token_repeat` 已命中；**L2** = 证据不足（问题类未由本包推出）。
 
 ## 证据文件
 

@@ -27,19 +27,33 @@
 
 ## 4 · 复现技巧
 
-SwiGLU 算子问题类（定界 **L2**）代表。
+按本包 pin / overlay 对齐三层率。本包是 SwiGLU 算子问题类的对外保留代表（构造见「根因」）。
 
 ## 5 · 教学要点
 
-bang / NaN·Inf 塌缩可被 `logits_finite` 抓住。对照 **S07**（有限 logits + 乱码 → FAIL+GAP）。**S01** 是 dense 复现未出现，不是「有限乱码漏检」样板。
+bang / NaN·Inf 塌缩可被 `logits_finite` 抓住。对照 **S07**（有限 logits + 乱码 → FAIL+GAP）。**S01** 是 dense 复现未出现，不是「有限乱码漏检」样板。禁把「`!!!!` → 所以 gate/up 对调」写成定界推论。
 
 ## 定界分析
 
-（**L1** = 检测停点 / **L2** = 问题类停点；**不是** Transformer 层号。见 [④ 名词表 · L1/L2](../../README.md#名词怎么读先看这里)。）
+### 事实
 
-1. **现象与证据**——detector：`logits_finite`。现象见 `evidence/samples/` · `evidence/reports/`（跨请求内容相同的 `!!!!`）。归档 report prompt 为空（合修前旧归档；见名词表 **report 空 prompt**，非「clear 过早」）。
-2. **排除（应做）**——重放抓 ids + 标杆/异常 KV 对比做排除。**本案例归档尚未附 KV 对比结论**。
-3. **定界结论**——停在 **L2（问题类停点）**：SwiGLU gate/up 对调；≠S39。**L1（检测停点）**：`logits_finite` 已命中。结案：PASS **58 / 48 / 48**。
+- 样本：跨请求内容相同的 `!!!!`（`evidence/samples/`）。
+- 三层：58 / 48 / 48；detector：`logits_finite`。
+- 归档 report `prompt_token_ids` 为空；有 `output_token_ids`。
+- 包内无标杆 vs 异常 KV 对账；无同 prompt re-curl ids 归档。
+
+### 推断
+
+- 可确认：塌缩异常且 `logits_finite` 已检出 → PASS 有据。
+- 坏输出推不出「SwiGLU gate/up 对调」——构造意图见「根因」。
+- 无 KV 对账 → 不能排除或确认 KV。
+
+### 结论
+
+- 已定界到：异常输出 + `logits_finite` 检出。
+- **尚未定界到** SwiGLU gate/up；**分析不出 / 证据不足**。
+- KV：路径可用；归档尚未附结论。
+- **定界结论：L1** = `logits_finite` 已命中；**L2** = 证据不足。
 
 ## 证据文件
 

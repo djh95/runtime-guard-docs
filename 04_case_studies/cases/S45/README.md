@@ -48,11 +48,26 @@ top-k / top-p 作用在 `-logits` 上再取反——保留最低-k / 倒置 nucl
 
 ## 定界分析
 
-（**L1** = 检测停点 / **L2** = 问题类停点；**不是** Transformer 层号。见 [④ 名词表 · L1/L2](../../README.md#名词怎么读先看这里)。）
+### 事实
 
-1. **现象与证据**——detector：detect=0（`token_repeat`+`logits_finite` 均 miss）→ **乱码检测漏检**。各不相同有限乱码见 `evidence/samples/`。
-2. **排除（已做 / 应做）**——已确认异常已出现（非复现未出现）。无命中 report，包内未附 KV 对账；有 report 后可走重放 ids + KV 排除，勿写「Q1–Q5 不适用」仅因缺 prompt 快照。
-3. **定界结论**——停在弱 **L2（问题类停点）**：top-k 打在 −logits / unique-garbage。**L1（检测停点）**：未检出。结案：FAIL+GAP；双树 + temp=0.8 → 16/4/0。
+- 三层：16 / 4 / 0；detect=0（`token_repeat`+`logits_finite` 均 miss）。
+- sample：各不相同的有限乱码（`evidence/samples/`）。
+- 异常已出现（非复现未出现）；无命中 report，无 KV 对账。
+
+### 推断
+
+- 可确认：有限乱码 + **乱码检测漏检**。
+- sample 形态支持 unique-garbage；推不出「top-k 打在 −logits」→ **定界分析不出** 该采样细因（§2 非定界已证）。
+- 有 report 后可走重放 ids + KV 排除；勿因缺 prompt 快照写「Q1–Q5 不适用」。
+
+### 结论
+
+- 已定界到：unique-garbage 形态出现；detector 未命中。
+- **尚未定界到** top-k −logits；**分析不出 / 证据不足**。
+- KV：路径可用；归档尚未附结论。
+- **定界结论：L1** = 未检出；**L2** = 证据不足。
+- 结案：FAIL+GAP；双树 + temp=0.8 → 16/4/0。
+
 
 ## 证据文件
 
