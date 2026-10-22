@@ -58,8 +58,20 @@ python "$SCRIPTS/request_from_report.py" \
 ```
 
 也可用 `ref_inputs.json` 的 `force_feed_token_ids`。  
-4. 可选：`--feed history` / 末 token / `--feed full`。  
-5. 收集：`runtime/report/kv_cache/<type>/<ref_req_id>/wave_N/<rank_tag>/`（确认是**本轮清空后新写出**的路径）。
+4. 可选：`--feed history`（默认）/ 末 token / `--feed full`。  
+5. 收集：`runtime/report/kv_cache/<type>/<ref_req_id>/wave_N/<rank_tag>/`（确认是**本轮清空后新写出**的路径）。  
+6. **归档 ref dump** 后再清目录开下一对；勿只留 buggy。
+
+### `--feed=history` 对比长度（踩坑）
+
+默认 history = **`prompt + output[:-1]`**，再 `max_tokens=1` 生成的是 **ref 新 token**，不是异常的最后一个 output。
+
+| 比什么 | 对不对 |
+|--------|--------|
+| `n_tokens = len(prompt) + len(output) - 1`（只比 feed 跨度） | **对** |
+| `n_tokens = len(prompt) + len(output)`（把末 output 也算进去） | **错** — 末位常 NaN / 低 cos / 假 `first_mismatch`→层名 |
+
+末位假分歧 **禁止**写成「KV 不一致→定界」或 `token0@layer_L`。`--feed=full` 时才可按 `prompt+output` 全长比（仍要先 shape、剔未用 0 槽）。
 
 ## 对比（两表）— 先形状，再有效 token
 
@@ -69,7 +81,7 @@ block 内**未写入的 token 槽常为 0**；若把整 block / 超额 slot 算�
 **对比前硬步骤：**
 
 1. **先比形状** — buggy vs ref 各层 `shape` 一致（含 `n_blocks` / `block_size` / heads）；不一致 → 停，查 TP stitch / 错目录 / 不同 MODE，**勿直接算 cos**。  
-2. **只比有效 token** — `n_tokens` = report 实际 `prompt + output` 长度（或脚本 `--written-only` / 等价「写到的最后槽+1」）；**禁止**按 `n_blocks * block_size` 全容量比。  
+2. **只比有效 token** — 与 feed 对齐：默认 history 用 **`n_prompt + n_output - 1`**；full feed 才用 `n_prompt + n_output`；或 `--written-only`。**禁止**按 `n_blocks * block_size` 全容量比。  
 3. 再跑两表：
 
 ```bash
@@ -103,6 +115,7 @@ python "$SCRIPTS/compare_per_layer.py" \
 | cos 断崖→0 | 污染/串 block |
 | 平台 ~0.8–0.9 | 偏计算误差 |
 | **全 NaN `min_cos`** | **不是**定位信号 — 见下节；勿读 `first_mismatch_idx`/层名 |
+| **仅末 token 分歧**（history feed 且按 p+o 全长比） | **多半 feed 跨度错** — 改 `n_tokens=p+o-1` 复核；勿定界到层 |
 | **shape 不一致** | 错 dump / 未 stitch / 拓扑或 MODE 不一致 — 先修对齐 |
 
 **TP>1：** 对齐 `tp_rank` / `num_kv_heads`；必要时 `stitch_kv`。  
@@ -112,19 +125,20 @@ python "$SCRIPTS/compare_per_layer.py" \
 
 1. **同一次异常请求** — buggy report、buggy dump、ref dump、`kv_compare` 必须对齐同一 `req_id`/wave。禁止拿「有 dump 的旧跑」配「新 detect 钉点」。**detect=0 也不授权**混用历史 dump。  
 2. **先有有效异常** — 目标形态已复现；dump 覆盖足够 output（勿把 **弱窗** 如仅 o=1 / 非异常 completion 当有效异常 KV）。未满足 → 停，交 investigation 写 **复现未抓到** / 未做有效对账。  
-3. **先形状、有效 token** — 见上节；勿把 block 尾部未用 0 槽算进相似度。  
-4. **全 NaN ≠ token0@layer** — 若 Table1 几乎全 NaN：脚本可能把 idx=0 + 首层名当占位；**禁止**写成「首坏 token0 @ layer_L」。NaN 多因对齐/切片后向量零范数（含误用空槽），**不是**「第 L 层 KV 填了 NaN」。处理：查 shape / `block_ids` / 有效 `n_tokens` / TP stitch → 重 dump 直至出现**有限** cos，再写首分歧。  
+3. **先形状、有效 token** — 见上节；history feed 用 `p+o-1`；勿把 block 尾部未用 0 槽算进相似度。  
+4. **全 NaN / 仅末位假分歧 ≠ 层定位** — Table1 全 NaN 或 **只有最后一个 output** 分歧时，先查 feed 跨度与空槽；**禁止**写成「首坏 token0 @ layer_L」。NaN 多因对齐/切片零范数或比多了末 token。  
 5. **多组验证** — 同一 overlay 至少两组独立异常请求，cos 结论同向再归档③/④。  
-6. **空 `prompt_token_ids`** — 勿字符串重 tokenize；同 prompt re-curl 抓服务端 ids，与异常 `output_token_ids` 合并后再 force-feed（见 investigation）。
+6. **空 `prompt_token_ids`** — 勿字符串重 tokenize。优先树含 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285)（prompt 预缓存不门禁 sample hooks）再抓；否则同 prompt **re-curl** 抓服务端 ids，与异常 `output_token_ids` 合并后再 force-feed。
 
 ## forbidden
 
 - 无 verify PASS 仍执行  
 - 重复实现 `verify_request_kv`  
 - 输出 runtime_config JSON；使用 msprobe  
-- 用弱 dump / 全 NaN 对比结果写 keep-set ③/④ 或层定位  
+- 用弱 dump / 全 NaN / **history 下按 p+o 全长** 的末位假分歧写 keep-set ③/④ 或层定位  
 - 混用不同 run 的 report 与 dump（含未清空目录导致的残留）  
-- 跳过 shape 检查；按整 block 容量（含未用 0 槽）算余弦
+- 跳过 shape 检查；按整 block 容量（含未用 0 槽）算余弦  
+- 用本地 tokenize 字符串冒充服务端 `prompt_token_ids`
 
 ## Related
 

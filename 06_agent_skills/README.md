@@ -2,7 +2,7 @@
 
 面向 Cursor / Agent：按现象启用 detectors、抓现场、离线对账、有标杆时做 KV 定界。
 
-> **权威：** 本目录 `runtime-guard-docs/06_agent_skills/`（含 [SKILLS_METADATA.md](./SKILLS_METADATA.md) **v5.12**）。  
+> **权威：** 本目录 `runtime-guard-docs/06_agent_skills/`（含 [SKILLS_METADATA.md](./SKILLS_METADATA.md) **v5.13**）。  
 > **离线脚本：** [scripts/](./scripts/)（本仓）。  
 > 产品实现：`vllm_ascend/observability/runtime_guard/`（[#16849](https://github.com/vllm-project/vllm-ascend/pull/16849) + [#18644](https://github.com/vllm-project/vllm-ascend/pull/18644)）。  
 > 人读流程仍以 [02 问题定位](../02_problem_localization/README.md) 为准；skill 负责可执行编排。
@@ -49,9 +49,9 @@ python "$SCRIPTS/summarize_reports.py" --help
 `prepare_ref_inputs` / `request_from_report` / `locate_first_divergence` / `compare_kv_similarity` /  
 `compare_per_layer` / `stitch_kv`。
 
-Anomaly 对外对照：本仓 `04_case_studies/cases/Sxx/evidence/`。契约见 [SKILLS_METADATA.md](./SKILLS_METADATA.md)（**v5.12**）。构造纪律见 [`build-anomaly-env`](./build-anomaly-env/SKILL.md)。  
+Anomaly 对外对照：本仓 `04_case_studies/cases/Sxx/evidence/`。契约见 [SKILLS_METADATA.md](./SKILLS_METADATA.md)（**v5.13**）。构造纪律见 [`build-anomaly-env`](./build-anomaly-env/SKILL.md)。  
 Keep-set 结案四档 + 钉点同跑 / 有效异常 KV / 全 NaN 禁伪定位：见 [`investigation`](./investigation/SKILL.md)（证据完整性）与 [`ref-kv-dump`](./ref-kv-dump/SKILL.md)。  
-KV 抓前清目录、对比先 shape、只比有效 token（整 block 未用 0 槽不算）：见 [`ref-kv-dump`](./ref-kv-dump/SKILL.md)。
+KV：抓前清目录、先 shape、history 比 **`p+o-1`**、整 block 未用 0 槽不算：见 [`ref-kv-dump`](./ref-kv-dump/SKILL.md)。
 
 ## 与产品对齐的硬事实（2026-10）
 

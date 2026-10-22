@@ -1,6 +1,6 @@
 # Runtime-Guard Skills Metadata
 
-版本：v5.12  
+版本：v5.13  
 Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `analysis` · `ref-kv-dump` · **`build-anomaly-env`** · **`apply-mrv1-patch`** · **`apply-v030-mrv2-patch`**
 
 ## Changelog（摘要）
@@ -9,7 +9,8 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 
 离线脚本入口：本仓 [`scripts/`](./scripts/)。
 
-- **v5.12（现行）** — KV 执行纪律：抓前**清空**本轮 `kv_cache`；对比**先 shape**；整 block dump、未用槽常为 0 → **只比有效 token**（禁全容量余弦）。落点：`ref-kv-dump`（主）+ `investigation` / `analysis` / `scripts/README`。  
+- **v5.13（现行）** — `--feed=history` 对比跨度 **`n_prompt+n_output-1`**（禁按 p+o 全长→末位假分歧/伪层定位）；空 prompt 优先 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) 重抓或 re-curl，禁 tokenize 补造。落点：`ref-kv-dump` / `investigation` / `analysis`。  
+- **v5.12** — KV 执行纪律：抓前**清空**本轮 `kv_cache`；对比**先 shape**；整 block dump、未用槽常为 0 → **只比有效 token**（禁全容量余弦）。落点：`ref-kv-dump`（主）+ `investigation` / `analysis` / `scripts/README`。  
 - **v5.11** — 踩坑原则入库：keep-set **结案四档**（≠ PASS/FAIL/GAP 总评）；**钉点同跑** / 禁混用 run；**有效异常 KV**（弱窗不可对账）；**全 NaN cos ≠ 层定位**；多组验证；无证据留空；压测上限 ~1h；`manual_dump` 抓未检出异常。落点：`investigation` / `analysis` / `ref-kv-dump` / `build-anomaly-env`。  
 - **v5.10** — 构造 skill：`build-anomaly-env`（origin-faithful overlay / 三层率 / HARD·DEFER；术语主页）；排障五件套 + 接线 skills 不变。  
 - **v5.9** — 接线 skills：`apply-mrv1-patch`（`05_mrv1_backport`）· `apply-v030-mrv2-patch`（`05_v030_backport`）；排障五件套不变。  
@@ -147,15 +148,15 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 - 同模型 / 拓扑 / **同 MODE** 清洁实例 + native `dump_kv`  
 - `compare_kv_similarity` / `locate_first_divergence` / `compare_per_layer`；解读对齐十问  
 - 校验有效异常 KV / 拒绝全 NaN 伪定位；多组验证后再归档  
-- 抓前清 `kv_cache`；对比先 shape；只比有效 token（整 block 未用 0 槽不算）
+- 抓前清 `kv_cache`；对比先 shape；history 用 `p+o-1`；只比有效 token（整 block 未用 0 槽不算）
 
 **forbidden**
 
 - 无 verify PASS 证据仍执行  
 - 重复实现 `verify_request_kv`  
 - 输出 runtime_config JSON  
-- 弱 dump / 全 NaN cos 写成层定位或 keep-set ③/④；混用不同 run  
-- 未清目录用旧 dump；跳过 shape；按全 block 容量（含未用 0）算余弦
+- 弱 dump / 全 NaN / history 末位假分歧写成层定位或 keep-set ③/④；混用不同 run  
+- 未清目录用旧 dump；跳过 shape；按全 block 容量（含未用 0）算余弦；tokenize 冒充 prompt ids
 
 **逻辑输入：** verify PASS 证据, buggy token ids / report 路径, topology, model_mode  
 **逻辑输出：** ref_dump_path, kv_compare 摘要, warnings

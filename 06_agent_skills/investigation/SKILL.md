@@ -227,6 +227,9 @@ description: >-
 
 按报告里的 **token id** 原样喂给干净服务；**禁止**字符串重 tokenize。同模型 / 同拓扑 / **同 MODE**；只用 native `dump_kv`。细节与脚本见 [`ref-kv-dump`](../ref-kv-dump/SKILL.md)。
 
+- 默认 `--feed=history` → 对比长度 **`n_prompt + n_output - 1`**（不要按 `p+o` 全长，否则末 token 假分歧）。  
+- 空 `prompt_token_ids`：优先合 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) 重抓，或 re-curl；禁止 tokenize 补造。
+
 ## 目标（定界，非定位）— 十问
 
 用户面检查单：[02 §5](../../02_problem_localization/README.md#5-kv-定界十问检查单有-buggyref-时按序)。有 buggy+ref 时按序答（对比细节在 `ref-kv-dump`）：
@@ -281,7 +284,7 @@ description: >-
 4. **无证据留空** — 不可信混档 / 清空实测后：删 samples/reports/三层/跑批/`kv_compare`，结案与定界**留空**；勿保留半截旧结论或编造数字。  
 5. **多组验证** — 写③/④前至少再跑一组（同 overlay、独立请求）确认 cos 结论同向；单次弱窗不作定论。  
 6. **`kv_cache` 生命周期** — **抓前清空**本轮工作目录（防旧 dump 混入）；**对账中保留**本轮产物；归档后再清。细则见 `ref-kv-dump`。  
-7. **KV 对比：先形状、只比有效 token** — dump 是整 block；未用槽常为 0，勿按全容量算 cos（虚高/NaN/假分歧）。委派 `ref-kv-dump` 时遵守该纪律。  
+7. **KV 对比：先形状、只比有效 token** — dump 是整 block；未用槽常为 0；history feed 用 `p+o-1`。勿按全容量或错跨度算 cos（虚高/NaN/末位假分歧）。  
 8. **压测时限** — 单场景最长约 **1h**；超时未复现 → **未复现**（附 knobs/负载），勿空耗或放大器硬凑。
 
 ### KV/余弦时机方法示例（示意数字，非某包实测）
@@ -323,7 +326,8 @@ S45：勿用伪造 NaN/填 token / amplifier-retune 刷成 PASS；有异常+dete
 - 把「十问不适用」写进空 prompt 案例结案  
 - 混用不同 run 的 report/dump/`kv_compare`；用全 NaN / 弱 dump 伪写层定位  
 - 用 PASS/FAIL/GAP 当 keep-set 案例 headline 结案  
-- 未清 `kv_cache` 就开新抓；跳过 shape、把 block 未用 0 槽算进相似度
+- 未清 `kv_cache` 就开新抓；跳过 shape、把 block 未用 0 槽算进相似度  
+- history feed 下按 `p+o` 全长比出的**仅末 token**分歧写成③/④或层定位；tokenize 补造 prompt ids
 
 ## Related
 
