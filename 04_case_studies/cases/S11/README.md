@@ -33,8 +33,7 @@
 
 DeepSeek-V2-Lite；concurrent 48 变长英文 + 12 条 temp=0；util=0.40；不开 APC。
 
-## 定界分析
-
+## 5 · 定界分析
 ### 事实
 
 - 本包已归档 KV 对比（cos_thresh=0.99；n_prompt=14 n_cmp_tokens=20；matched_layers=54）。
@@ -52,8 +51,7 @@ DeepSeek-V2-Lite；concurrent 48 变长英文 + 12 条 temp=0；util=0.40；不�
 - 结案档：**KV 不一致→定界**（重开 KV 线）。
 - 尚未定界到具体写/传路径；分析不出 / 证据不足。
 
-## 证据文件
-
+## 6 · 证据文件
 | 文件 | 用途 |
 |------|------|
 | `evidence/overlay.patch` | 制造异常的静态补丁 |
@@ -64,8 +62,7 @@ DeepSeek-V2-Lite；concurrent 48 变长英文 + 12 条 temp=0；util=0.40；不�
 | `evidence/reports/` | Guard detector 报告 |
 | `evidence/kv_compare.json` | 最新 KV 标杆对比摘要（余弦 / 首不一致 / 结论） |
 
-## 上游 PR 关系
-
+## 7 · 上游 PR 关系
 | PR / 链接 | 角色 |
 |-----------|------|
 | [ascend#18798](https://github.com/vllm-project/vllm-ascend/pull/18798) | **根因修复**（MLA RoPE pad-tail）；本包做 soft-inverse（按上游修复反向注入） |

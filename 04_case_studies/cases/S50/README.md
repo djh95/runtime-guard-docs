@@ -30,8 +30,7 @@
 
 按本包 pin / overlay 对齐三层率。本包是 SwiGLU 算子问题类的对外保留代表（构造见「根因」）。
 
-## 定界分析
-
+## 5 · 定界分析
 ### 事实
 
 - 现象：非有限 logits / 异常输出（`evidence/samples/`）。
@@ -51,8 +50,7 @@
 - 结案档：**KV 不一致→定界**（重开 KV 线）。
 - 尚未定界到具体写/传路径；分析不出 / 证据不足。
 
-## 证据文件
-
+## 6 · 证据文件
 | 文件 | 用途 |
 |------|------|
 | `evidence/overlay.patch` | 制造异常的静态补丁 |
@@ -63,8 +61,7 @@
 | `evidence/reports/` | Guard detector 报告 |
 | `evidence/kv_compare.json` | 最新 KV 标杆对比摘要（余弦 / 首不一致 / 结论） |
 
-## 上游 PR 关系
-
+## 7 · 上游 PR 关系
 | PR / 链接 | 角色 |
 |-----------|------|
 | （constructed SwiGLU half-swap） | 无单一上游修复 PR |

@@ -27,7 +27,7 @@
 
 **检出。** 现行 **130 / 17 / 48**。结案档：**KV 一致→排除 KV**。
 
-## 4 · 复现技巧与双树写入（必读）
+## 4 · 复现技巧（双树写入 · 必读）
 
 softcap 改在 **vLLM** 的 `logits_processor.py`，同时 Ascend `platform.py` 也要打 boot/trigger。因此：
 
@@ -41,8 +41,7 @@ softcap 改在 **vLLM** 的 `logits_processor.py`，同时 Ascend `platform.py` 
 
 本包以归档的 **incomplete softcap** 为准（不是 S20 overflow）。
 
-## 定界分析
-
+## 5 · 定界分析
 ### 事实
 
 - 现象：`1.1.1…` 复读（`evidence/samples/`）。
@@ -62,8 +61,7 @@ softcap 改在 **vLLM** 的 `logits_processor.py`，同时 Ascend `platform.py` 
 - 结案档：**KV 一致→排除 KV**（本请求对比窗口）。
 - 尚未定界到具体算子/构造根因；分析不出 / 证据不足。
 
-## 证据文件
-
+## 6 · 证据文件
 | 文件 | 用途 |
 |------|------|
 | `evidence/overlay.patch` | 制造异常的静态补丁 |
@@ -74,8 +72,7 @@ softcap 改在 **vLLM** 的 `logits_processor.py`，同时 Ascend `platform.py` 
 | `evidence/reports/` | Guard detector 报告 |
 | `evidence/kv_compare.json` | 最新 KV 标杆对比摘要（余弦 / 首不一致 / 结论） |
 
-## 上游 PR 关系
-
+## 7 · 上游 PR 关系
 | PR / 链接 | 角色 |
 |-----------|------|
 | [vLLM#56579](https://github.com/vllm-project/vllm/pull/56579) | **同族相关**（softcap）；本包为 incomplete rescale 构造 |

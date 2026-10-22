@@ -27,7 +27,7 @@ acceptance_rate 异常偏低。主检出靠 `spec_acceptance`（detect≈47）�
 
 **检出。** 主 detector 是 **`spec_acceptance`**，不是 `logits_finite`。三层 **126 / 0 / 47**。结案档：**KV 一致→排除 KV**。
 
-## 4 · 复现技巧与环境坑（CRLF vs LF）
+## 4 · 复现技巧（CRLF vs LF）
 
 **正确做法：** 跑 `gen_s22_overlay.py` / `s22_concurrent_repro.py`——用**锚点字符串替换**，按源文件实际换行（CRLF 或 LF）自适应。
 
@@ -41,8 +41,7 @@ acceptance_rate 异常偏低。主检出靠 `spec_acceptance`（detect≈47）�
 2. 统一换行后再 apply；或 
 3. **推荐**：直接跑 `gen_s22_overlay.py` 锚点脚本。
 
-## 定界分析
-
+## 5 · 定界分析
 ### 事实
 
 - 本包已归档 KV 对比（cos_thresh=0.99；n_prompt=14 n_cmp_tokens=17；matched_layers=71）。
@@ -60,8 +59,7 @@ acceptance_rate 异常偏低。主检出靠 `spec_acceptance`（detect≈47）�
 - 结案档：**KV 一致→排除 KV**（本请求对比窗口）。
 - 尚未定界到具体算子/构造根因；分析不出 / 证据不足。
 
-## 证据文件
-
+## 6 · 证据文件
 | 文件 | 用途 |
 |------|------|
 | `evidence/overlay.patch` | 制造异常的静态补丁 |
@@ -72,8 +70,7 @@ acceptance_rate 异常偏低。主检出靠 `spec_acceptance`（detect≈47）�
 | `evidence/reports/` | Guard detector 报告 |
 | `evidence/kv_compare.json` | 最新 KV 标杆对比摘要（余弦 / 首不一致 / 结论） |
 
-## 上游 PR 关系
-
+## 7 · 上游 PR 关系
 | PR / 链接 | 角色 |
 |-----------|------|
 | [ascend#18657](https://github.com/vllm-project/vllm-ascend/pull/18657) | **根因修复**（resample salt） |

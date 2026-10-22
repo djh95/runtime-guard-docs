@@ -27,7 +27,7 @@ top-k / top-p 作用在 `-logits` 上再取反——保留最低-k / 倒置 nucl
 
 **乱码漏检。** detect=0。异常已出现，detector 未命中；manual dump 已完成有效对账。结案档：**KV 一致→排除 KV**。
 
-## 4 · 复现技巧与双树写入（必读）
+## 4 · 复现技巧（双树写入 · 必读）
 
 本案例 overlay 同时改：
 
@@ -41,8 +41,7 @@ top-k / top-p 作用在 `-logits` 上再取反——保留最低-k / 倒置 nucl
 
 按复现技巧（双树 + temp=0.8）→ **16 / 4 / 0**（仍为 detect=0，乱码漏检）。
 
-## 定界分析
-
+## 5 · 定界分析
 ### 事实
 
 - detect=0（乱码检测漏检）→ 归档 anomaly-repro 无 detector 触发的 `*.pt`；本轮用 **manual_dump** 重抓异常侧 KV 后完成对账（见 `evidence/kv_compare.json`）。
@@ -62,8 +61,7 @@ top-k / top-p 作用在 `-logits` 上再取反——保留最低-k / 倒置 nucl
 - 结案档：**KV 一致→排除 KV**（本请求 prompt 对比窗口）。
 - 尚未定界到具体算子/构造根因；分析不出 / 证据不足。
 
-## 证据文件
-
+## 6 · 证据文件
 | 文件 | 用途 |
 |------|------|
 | `evidence/overlay.patch` | 制造异常的静态补丁 |
@@ -73,8 +71,7 @@ top-k / top-p 作用在 `-logits` 上再取反——保留最低-k / 倒置 nucl
 | `evidence/kv_compare.json` | 最新 KV 标杆对比摘要（余弦 / 首不一致 / 结论） |
 | `evidence/samples/` | prompt + completion 样本 |
 
-## 上游 PR 关系
-
+## 7 · 上游 PR 关系
 | PR / 链接 | 角色 |
 |-----------|------|
 | （constructed wrong-topk-direction） | 无单一上游修复 PR；对照能检侧见 S43 |

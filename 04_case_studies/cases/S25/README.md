@@ -42,8 +42,7 @@ Soft-inverse [ascend#7082](https://github.com/vllm-project/vllm-ascend/pull/7082
 
 **历史错跑（不要照这个结案）：** 曾用「中文回声式」prompt（让模型复述中文）、大约 **8 条串行**请求、并把 `token_repeat` 阈值设成 **16**。那样往往**打不出** `1.1.1…` 数字复读，于是 detect=0。这是**复现条件不对**，不能当成「检测器漏检」。
 
-## 定界分析
-
+## 5 · 定界分析
 ### 事实
 
 - 现象：`1.1.1…` 复读（`evidence/samples/`）。
@@ -63,8 +62,7 @@ Soft-inverse [ascend#7082](https://github.com/vllm-project/vllm-ascend/pull/7082
 - 结案档：**KV 一致→排除 KV**（本请求对比窗口）。
 - 尚未定界到具体算子/构造根因；分析不出 / 证据不足。
 
-## 证据文件
-
+## 6 · 证据文件
 | 文件 | 用途 |
 |------|------|
 | `evidence/overlay.patch` | 制造异常的静态补丁 |
@@ -75,8 +73,7 @@ Soft-inverse [ascend#7082](https://github.com/vllm-project/vllm-ascend/pull/7082
 | `evidence/reports/` | Guard detector 报告 |
 | `evidence/kv_compare.json` | 最新 KV 标杆对比摘要（余弦 / 首不一致 / 结论） |
 
-## 上游 PR 关系
-
+## 7 · 上游 PR 关系
 | PR / 链接 | 角色 |
 |-----------|------|
 | [ascend#7082](https://github.com/vllm-project/vllm-ascend/pull/7082) | **根因修复**；本包 soft-inverse（按上游修复反向注入） |

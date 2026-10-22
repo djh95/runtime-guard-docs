@@ -33,8 +33,7 @@
 
 Qwen3-8B，temp=0，eager；concurrent 48；util=0.40。
 
-## 定界分析
-
+## 5 · 定界分析
 ### 事实
 
 - 现象：复读塌缩（`evidence/samples/`）。
@@ -54,8 +53,7 @@ Qwen3-8B，temp=0，eager；concurrent 48；util=0.40。
 - 结案档：**KV 不一致→定界**（重开 KV 线）。
 - 尚未定界到具体写/传路径；分析不出 / 证据不足。
 
-## 证据文件
-
+## 6 · 证据文件
 | 文件 | 用途 |
 |------|------|
 | `evidence/overlay.patch` | 制造异常的静态补丁 |
@@ -66,8 +64,7 @@ Qwen3-8B，temp=0，eager；concurrent 48；util=0.40。
 | `evidence/reports/` | Guard detector 报告 |
 | `evidence/kv_compare.json` | 最新 KV 标杆对比摘要（余弦 / 首不一致 / 结论） |
 
-## 上游 PR 关系
-
+## 7 · 上游 PR 关系
 | PR / 链接 | 角色 |
 |-----------|------|
 | （constructed weight-fault） | 无单一上游「修复 PR」；教学用权重置零 |

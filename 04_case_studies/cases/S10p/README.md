@@ -37,8 +37,7 @@ Overlay：强制 `needs_kv_cache_zeroing=False`，在 `BlockPool.get_new_blocks`
 
 标杆 run=`T181551`（英文负载）。勿用顺序中文负载当标杆（CJK 启发式会虚抬 precision）。
 
-## 定界分析
-
+## 5 · 定界分析
 ### 事实
 
 - 现象：复读 / `xxxx` 塌缩（`evidence/samples/`）。
@@ -59,8 +58,7 @@ Overlay：强制 `needs_kv_cache_zeroing=False`，在 `BlockPool.get_new_blocks`
 - 结案档：**KV 一致→排除 KV**（本请求对比窗口）。
 - 尚未定界到具体算子/构造根因；分析不出 / 证据不足。
 
-## 证据文件
-
+## 6 · 证据文件
 | 文件 | 用途 |
 |------|------|
 | `evidence/overlay.patch` | 制造异常的静态补丁 |
@@ -71,8 +69,7 @@ Overlay：强制 `needs_kv_cache_zeroing=False`，在 `BlockPool.get_new_blocks`
 | `evidence/reports/` | Guard detector 报告 |
 | `evidence/kv_compare.json` | 最新 KV 标杆对比摘要（余弦 / 首不一致 / 结论） |
 
-## 上游 PR 关系
-
+## 7 · 上游 PR 关系
 | PR / 链接 | 角色 |
 |-----------|------|
 | [vLLM#39283](https://github.com/vllm-project/vllm/pull/39283) | **根因修复**（FullAttn 进入 zeroing 门控） |
