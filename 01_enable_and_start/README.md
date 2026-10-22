@@ -119,7 +119,7 @@ runtime/
 | TP>1 | 检测/报告只在 last-PP TP0；同 stage 其它 TP 经 **due bus** 同步配置/dump 名单；dump 要凑齐各 `tp*` |
 | PP>1 | 检测/dump 只在 last PP；非 last-PP 可 **file poll** JSON，但别在早期 PP 找报告 |
 | DP>1 | 各副本各自写报告/dump；共享同一 JSON 时目标总次数 `N` 共用且进程不写回，内存「已拍次数」各自独立 → 大约最多 dump 到 `num_DP×N` 次 |
-| 多机 | 可启动后改路径，但 **last-PP 的 TP 组路径要统一**；各 rank 配置到达方式见附录 A.2（due bus / file poll） |
+| 多机 | 热更 dump/检测参数时，改 **last-PP TP0** 会读到的那份 live JSON（共享挂载即可，不必登 TP0 所在机）；TP0 经 **due bus** 同步同组其它 TP。另：last-PP 各 TP 的 report/dump 路径须一致（见附录 A.2） |
 | MoE | 开功能后 Python 占比更明显；默认关即可 |
 | Spec / MTP | 才需要 `spec_acceptance` |
 | Async scheduling | after-sample 在 `AscendAsyncOutput.get_output()`；finish 可能早于 dump |
