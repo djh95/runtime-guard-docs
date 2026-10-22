@@ -214,9 +214,7 @@ python "$SCRIPTS/verify_request_kv.py" --report ... --kv-dir {KV_RANK_DIR}
 
 1. 不用换 eager/graph 当对照。  
 2. 只用 native `dump_kv` 做 Guard 语义下的 KV 对比源。  
-3. 以当前盘上文件为准，不盲信历史会话结论。  
-4. 无标杆不宣称「已层定界」。  
-5. `.pt` 在 CPU `map_location` 上 load，勿占 NPU。
+3. `.pt` 在 CPU `map_location` 上 load，勿占 NPU。
 
 ---
 
