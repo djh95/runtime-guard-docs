@@ -21,7 +21,7 @@
 
 | Skill | 类型 | 何时用 |
 |-------|------|--------|
-| `runtime-guard-investigation` | 编排 | 端到端：triage → 委派原子 skill → Q1–Q5 定界交付 |
+| `runtime-guard-investigation` | 编排 | 端到端：triage → 委派原子 skill → 十问定界交付 |
 | `runtime-guard-detector-sweep` | 原子 · 在线 | 未定类：临时三键只 report（极简模板） |
 | `runtime-guard-config-recommender` | 原子 · 在线 | **正式配置唯一来源**（排障 / 业务默认） |
 | `runtime-guard-analysis` | 原子 · 离线 | 已有 report（±dump）：汇总 / 关联 / verify / inspect |

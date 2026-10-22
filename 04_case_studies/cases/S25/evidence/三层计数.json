@@ -20,5 +20,5 @@
   "concurrency": 48,
   "verdict": "PASS",
   "layers_trig_prec_detect": "348 / 17 / 48",
-  "repro_notes": "river prompt ×48 concurrent; threshold=8; avoid 中文回声/serial8/threshold16"
+  "repro_notes": "现行：英文河名短句×48并发+threshold=8。历史错跑：中文回声式prompt+约8条串行+threshold=16→常无数字复读/detect=0（非漏检）"
 }

@@ -32,7 +32,7 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 
 | Skill | 类型 | 一句话 |
 |-------|------|--------|
-| investigation | 编排 | 端到端 triage → 委派 → Q1–Q5 定界交付 |
+| investigation | 编排 | 端到端 triage → 委派 → 十问定界交付 |
 | detector-sweep | 原子 · 在线配置 | 未定类：临时三键只 report |
 | config-recommender | 原子 · 在线配置 | 正式排障 / 业务默认配置唯一来源 |
 | analysis | 原子 · 离线读盘 | report/dump 汇总、关联、verify、inspect |
@@ -53,7 +53,7 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 - Triage（手册 02）：Hang/OOM/启动 crash 等 → 终止并说明原因  
 - 收集开场输入：现象、版本、拓扑、能否压测、有无清洁标杆、本地 report/dump 路径、谁起服  
 - 委派：未定类 → sweep；定类 → recommender；已有产物 → analysis；verify=PASS 且可标杆 → ref-kv-dump  
-- 汇总下游结果，填 Q1–Q5 **定界交付模板**；区分「已定界」vs「无法根因定位」
+- 汇总下游结果，填十问 **定界交付模板**；区分「已定界」vs「无法根因定位」
 
 **forbidden**
 
@@ -138,7 +138,7 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 
 - 用报告 token ids force-feed（禁止字符串重 tokenize / 禁止标杆自行生成）  
 - 同模型 / 拓扑 / **同 MODE** 清洁实例 + native `dump_kv`  
-- `compare_kv_similarity` / `locate_first_divergence` / `compare_per_layer`；解读对齐 Q1–Q5
+- `compare_kv_similarity` / `locate_first_divergence` / `compare_per_layer`；解读对齐十问
 
 **forbidden**
 

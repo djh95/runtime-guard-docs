@@ -29,10 +29,6 @@ CJK / Trail 塌缩；`token_repeat`×48。
 
 按本包 pin / overlay 对齐三层率。本包是 Attn 算子问题类（K/V swap）的对外保留代表（构造见「根因」）。
 
-## 5 · 教学要点
-
-本包归档真相是 **kv_swap**（Attn 前 K/V 对调）；短例文件名若仍写 `attn-qkv-out` 以本包为准。禁把「CJK 塌缩 → 所以 K/V 对调」写成定界推论。
-
 ## 定界分析
 
 ### 事实
@@ -67,7 +63,6 @@ CJK / Trail 塌缩；`token_repeat`×48。
 | `evidence/samples/` | prompt + completion 样本 |
 | `evidence/reports/` | Guard detector 报告（归档 report prompt 为空：合修前旧归档，见名词表 **report 空 prompt**；可读 prompt 看 samples，见 [④ 名词表](../../README.md#名词怎么读先看这里)） |
 | `evidence/kv_compare.json` | 最新 KV 标杆对比摘要（余弦 / 首不一致 / 结论） |
-
 
 ## 上游 PR 关系
 

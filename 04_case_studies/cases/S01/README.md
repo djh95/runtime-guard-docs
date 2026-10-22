@@ -80,12 +80,6 @@ Overlay 打上后服务仍 200。可见 completion 是通顺中英散文（华�
 
 结案要点已写入下方「定界分析」。
 
-## 6 · 教学要点
-
-1. 分开「有 trigger」和「有坏输出」：本包 dense 复判只有前者 → 记 FAIL（复现未出现），不写 FAIL+GAP。
-2. 用排除 CJK 的评分看样本：通顺中文 ≠ `garbage_mixed_script`。
-3. 对照 S10′（同 KV 脏读族、能检）与 S07（有乱码+漏检）；本包不是漏检结案。
-
 ## 定界分析
 
 ### 事实
@@ -104,7 +98,6 @@ Overlay 打上后服务仍 200。可见 completion 是通顺中英散文（华�
 - 已定界到：dense 复现未出现 / 未抓到异常。
 - **未做有效 KV 对账（异常未复现）**；尚未定界到 KV 未置零类；分析不出 / 证据不足。
 
-
 ## 证据文件
 
 | 文件 | 用途 |
@@ -114,7 +107,6 @@ Overlay 打上后服务仍 200。可见 completion 是通顺中英散文（华�
 | `evidence/三层计数.json` | 三层明细（trigger / precision / detect） |
 | `evidence/跑批结果.json` | 跑批元数据 + 结案摘要 |
 | `evidence/samples/` | prompt + completion 样本（通顺散文；非异常） |
-
 
 ## 上游 PR 关系
 

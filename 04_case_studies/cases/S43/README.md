@@ -29,10 +29,6 @@
 
 对照 S45：同属 embed/logits 族，一边 PASS，一边 unique-garbage GAP。
 
-## 5 · 教学要点
-
-与 S45 成对看：本包是 magnitude 放大能检；S45 是采样方向翻转 → 各不相同乱码漏检。
-
 ## 定界分析
 
 ### 事实
@@ -67,7 +63,6 @@
 | `evidence/samples/` | prompt + completion 样本 |
 | `evidence/reports/` | Guard detector 报告（归档 report prompt 为空：合修前旧归档，见名词表 **report 空 prompt**；可读 prompt 看 samples，见 [④ 名词表](../../README.md#名词怎么读先看这里)） |
 | `evidence/kv_compare.json` | 最新 KV 标杆对比摘要（余弦 / 首不一致 / 结论） |
-
 
 ## 上游 PR 关系
 

@@ -10,13 +10,13 @@
 
 ```text
 04_case_studies/
-  README.md                         # 本文件：索引 + 名词表 + 标准说明
+  README.md                         # 本文件：索引 + 名词表 + 包结构
   cases/
     Sxx/                            # S10′ → 目录名 S10p
       README.md                     # 【必选 · 外层唯一主文件】
                                     #   结案标签 + 三层表 + detector 一句
-                                    #   + 现象 / 案例背景·构造 / Guard + 复现技巧 + 教学要点
-                                    #   + 定界分析（事实 → 推论 → 结论；勿写检出/问题类粗标签行）
+                                    #   + 现象 / 案例背景·构造 / Guard + 复现技巧
+                                    #   + 定界分析（事实 → 推论 → 结论）
                                     #   + 证据文件表 + 上游 PR 关系 + Origin
       evidence/
         overlay.patch               # 【必选】静态补丁
@@ -31,7 +31,7 @@
 
 | 路径 | 作用 |
 |------|------|
-| `cases/Sxx/README.md` | **人读主入口**：结案 + 三层 + detector + **定界分析**（事实→推论→结论；勿写检出/问题类粗标签行）+ 现象/案例背景·构造/复现技巧/证据表/上游 PR |
+| `cases/Sxx/README.md` | **人读主入口**：结案 + 三层 + detector + **定界分析**（事实→推论→结论）+ 现象/案例背景·构造/复现技巧/证据表/上游 PR |
 | `evidence/overlay.patch` | 制造异常的代码补丁（包内必有） |
 | `evidence/规格说明.md` | **只写怎么复现**（Origin、锚点、overlay、knobs、期望 detector）；不定界长文 |
 | `evidence/三层计数.json` | 机读三层数字；人读以 README 表为准 |
@@ -43,6 +43,8 @@
 
 **一个案例只留最终钉点**一套数字 / 样本 / report。
 
+定界写作纪律、KV 时机推演、案例禁写句 → [investigation skill](../06_agent_skills/investigation/SKILL.md)。细问序走 [02 §5 十问](../02_problem_localization/README.md#5-kv-定界十问检查单有-buggyref-时按序)；PD 单边对照见同页 Step 0.5。
+
 ### 必选 / 条件
 
 | 项 | 级别 |
@@ -53,51 +55,6 @@
 | `三层计数.json` · `跑批结果.json` | 强烈建议 |
 | `samples/` | 条件必选（有 precision 宣称） |
 | `reports/` | 条件必选（PASS 且 detect>0） |
-
-## 定界写作标准（keep-set）
-
-本 keep-set **15 例** `cases/S*/README.md` 定界节均按下列「事实 → 推断 → 结论」书写；KV 时机字段见下节方法示例。
-
-定界节必须有**推理逻辑**，顺序固定：
-
-1. **事实** — 只列包内可核对项：现象文本、三层计数、report / detector、`prompt_token_ids` 是否空、是否已做同 prompt re-curl、KV 对比是否已归档（未做就写「尚未做 KV 对比（未抓标杆/异常 KV 或未写入本包）」；已做则写实数事实）。少括号旁注，短 bullet；不编造未跑的 KV 数字。
-2. **推论**（可写作「推断」）— 只写事实支撑得住的允许/排除；不够就写推不出什么。
-3. **结论** — 写清**已定界到** / **尚未定界到**；定界不出写「分析不出 / 尚未定界到… / 证据不足」。**禁止**把 overlay / 上游 PR 已知根因写成定界已证。勿在文末另起「检出停点 / 问题类停点」粗标签行。
-
-**禁止**
-
-- **现象直接等于根因**（反例 S06：坏输出 →「所以进错专家 / MoE topk」）。
-- 把「案例背景/构造」（已知 overlay / PR 意图）塞进定界的推论或结论里冒充推出。
-
-构造已知根因放在 README 的「案例背景/构造」（或原「根因」节），与定界分开。
-
-### KV/余弦事实怎么推时机（方法示例）
-
-> **方法示例**（教学推演，**不是** keep-set 某案例的实测数字；勿把下列余弦/索引抄进 Sxx 定界，除非该包 `evidence/` 里已有对应对账结果）。
-
-定界写 KV 对比时，先把事实写清再推时机，至少交代：
-
-| 要写清的事实 | 为何要写 |
-|--------------|----------|
-| **首个不一致**位置落在 **prompt** 还是 **output** | 区分 prefill 段污染 vs decode 段才坏 |
-| 该点之后 **后续槽位是否恢复**（余弦是否又回到 ~1） | 恢复 → 更像写入后污染/串槽；一路坏 → 持续错误源或整包写坏 |
-| **output 首 token** 的余弦是否已明显偏低 | 偏低 → decode 开跑前状态已坏（prefill 后 / 交接后） |
-| 是否 **仅 PD 解耦** 复现（单 P / 单 D 正常） | 收窄到传写/交接路径，而非「坏输出 ⇒ 错专家」 |
-
-**事实链（方法示例，数字仅示意）：**
-
-- 首个不一致在 token index **5**，仍在 **prompt** 段。
-- 该点余弦很低 → 该槽已污染。
-- 其后许多 prompt 槽余弦又回到 **~1** → 前面一度正常，是 **算了一段之后** 才脏的，不是从第 0 槽起整包坏。
-- **output 第一个 decode token** 余弦已明显偏低（示意 **~0.8**）→ decode 尚未用「干净状态」；坏在 **prefill 之后、decode 之前**（或交接已把脏状态交给 D）。
-- 同异常 **仅 PD 解耦** 复现。
-
-**推论（同一示例）：**
-
-- 污染时机：prefill **进行到一定进度之后**，且在 decode 消费干净状态 **之前**。
-- 仅 PD 复现 → 优先收窄到：**传写路径** / P 侧 prefill 后发送前 / D 侧接收后、decode 前——**禁止**从「输出已坏」直接跳到「进错专家 / MoE topk」。
-
-细问序仍走 [02 Q1–Q5](../02_problem_localization/README.md#5-精度定界决策树-q1q5有-buggyref-时强制按序)；PD 单边对照见同页 Step 0.5。
 
 ## 名词怎么读（先看这里）
 
@@ -112,7 +69,7 @@
 | **样本** | 保存的请求 / 回复证据；应含 prompt + 输出，用来**读文意、核对坏没坏 / 是否误判**。仅有 prompt **字符串**的 sample **不能**当作可靠 tokenize 标杆（发出去的字符串 + 回来的 completion，再 encode 的结果可能与服务端不一致；处理 prompt 与处理 sample 的 tokenizer 也可能不同）。 |
 | **标杆请求（token ids）** | 需要可复现 tokenize / 定界对比时，请求侧以服务端或 Guard **实际捕获的 `prompt_token_ids`** 为准，**用 token ids 去抓 / 归档**，禁止「只存字符串、事后再 encode」当标杆。report 里 prompt 已空时：把**同一 prompt 再 curl**，手动 dump 取服务端实际 ids（仍禁止离线再 tokenize）。 |
 | **report 空 prompt** | 旧归档里 `prompt_token_ids` 可能为空（合 [vllm-ascend#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) 前样本）。对外三句：① 阅读原文看 `samples/`；② 需要标杆 ids 时**同 prompt 再请求**取服务端实际 ids；③ **勿**用字符串再 encode 填进旧 report。空 ids ≠ 不能做 KV 排除定界。 |
-| **KV 排除定界** | 有异常 report 时的可执行路径：重放抓**实际** prompt token ids → 合并异常 **output token ids** → 抓标杆 KV → 对比异常 KV。**一致 → 排除 KV cache**（再转向规格所指的非 KV 类，如 MoE 路由）；**不一致 → 重开 KV 线**。规格里「构造预期：根因是否在 KV」只记构造预期，**不是**跳过该排除步骤。包内未做对比时写「尚未做 KV 对比（未抓标杆/异常 KV 或未写入本包）」；已做则写实数事实。**不要**写「Q1–Q5 不适用」，也**不要**编造未跑的对比数字。 |
+| **KV 排除定界** | 有异常 report 时的可执行路径：重放抓**实际** prompt token ids → 合并异常 **output token ids** → 抓标杆 KV → 对比异常 KV。**一致 → 排除 KV cache**（再转向规格所指的非 KV 类，如 MoE 路由）；**不一致 → 重开 KV 线**。规格里「构造预期：根因是否在 KV」只记构造预期，**不是**跳过该排除步骤。包内未做对比时写「尚未做 KV 对比（未抓标杆/异常 KV 或未写入本包）」；已做则写实数事实。空 `prompt_token_ids` 仍可走本路径（同 prompt re-curl）。 |
 | **三层计数** | **trigger**（注入路径打中次数）/ **precision**（输出被判异常的次数，≠ 模型精度）/ **detect**（Guard 报告命中次数）。三者不相等；见各包 `三层计数.json`。 |
 | **三层计数.json** | 三层明细（trigger / precision / detect、备注、detector 名等）。索引表数字通常摘自这里。 |
 | **跑批结果.json** | 跑批元数据 + 结案摘要（场景名、verdict、模型、run 路径、三层摘要）。和 `三层计数.json` 一起读。 |
@@ -126,7 +83,6 @@
 | **force-feed** | 按报告里的 **token id** 原样喂给干净服务（禁止再 tokenize 字符串）。用于抓标杆 KV。 |
 | **FE** | **失败证据包**（fail-evidence）：一次复现留下的 samples / reports / 状态摘要等。 |
 | **soft-inv / soft-inverse** | 按上游修复做**反向注入**，人为复现同类故障（教学/评测用）。 |
-| **L1 / L2 / L3 / L4**（定界停点） | **L1** 检出停点（有 report）· **L2** 问题类提示（class-hint，非根因提交）· **L3** KV 首分歧（有 buggy/ref）· **L4** 不承诺根因提交。公开 keep-set 定界以「事实→推断→结论」为准，不必强套 L 级标签。 |
 | **CJK** | **中日韩字符**（Chinese / Japanese / Korean）。旧评分曾把「含非 ASCII 的中文」当成 `garbage_mixed_script`，把通顺中文误计成 precision——尤其 S01。现行规则：**排除 CJK 后再计 weird**；通顺中文 ≠ 乱码。 |
 | **hybrid / 量化 KV** | 混合或量化的 KV 页语义；和稠密 bf16 不是同一套前提（S01 尤其重要）。 |
 | **跨请求内容相同的乱码** | 多次独立请求得到的异常输出彼此相同（同一段垃圾重复出现），不是每次随机不同。常见于 S07。对照：各请求乱码各不相同（如 S45）。 |
@@ -160,8 +116,8 @@
 - **S11**：`precision=39` 可对照 `cases/S11/evidence/samples/`（T190840）。
 - **S23**：trigger=2 为 boot 置零（TP2 每卡一次），precision/detect 按请求计，故可 **precision > trigger**；结案看 detect=48。见 [cases/S23](./cases/S23/)。
 - **S45**：`precision=4` 仍偏低估（各不相同乱码）；样本为准。复现技巧：双树写入 + temp=0.8 → **16 / 4 / 0**。
-- **S22 / S25 / S26 / S33 / S45**：表内为现行 t/p/d；**trigger/precision 随并发浮动，detect 为判定口径**。复现要点见各包（S22：锚点脚本避 CRLF/LF；S25/S26：河名句×48 并发 + threshold=8；S33：双树 + 河名句）。
-- **S01 †**：CJK / 早期脚本曾把通顺中文计成 precision 疑误判；现行 **排除 CJK 后 precision=0**；dense 满量 overlay trigger=154 仍无坏输出。见 [cases/S01/](./cases/S01/)。**与 S10′ 对照**：同属 KV 脏读族，但 S01 需 hybrid/量化 KV 才有目标症状；S10′ 在 dense FullAttn 回收路径上即可打出塌缩并被 `token_repeat` 检出。
+- **S22 / S25 / S26 / S33 / S45**：表内为现行 t/p/d；**trigger/precision 随并发浮动，detect 为判定口径**。复现要点见各包（S22：锚点脚本避 CRLF/LF；S25/S26/S33：**现行** = 英文河名短句 ×48 并发 + `token_repeat` 阈值 8；**历史错跑** = 中文回声式 prompt + 约 8 条串行 + 阈值 16 → 常无 `1.1.1…`、detect=0，属复现条件不对而非漏检；S33 另需双树写入）。
+- **S01 †**：CJK / 早期脚本曾把通顺中文计成 precision 疑误判；现行 **排除 CJK 后 precision=0**；dense 满量 overlay trigger=154 仍无坏输出。见 [cases/S01/](./cases/S01/)。**与 S10′ 对照**：同属 KV 脏读族，但 S01 需 hybrid/量化 KV 才有目标症状；S10′ 在 dense FullAttn 回收路径上即可打出复读（如 `xxxx`）并被 `token_repeat` 检出。
 
 `S10′` 在仓库里的目录名是 **`S10p`**。相关 Skills 见 [06](../06_agent_skills/)（**v5.9**）。
 

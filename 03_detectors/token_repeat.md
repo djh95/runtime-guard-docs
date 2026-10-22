@@ -60,7 +60,7 @@
 ## 定界时怎么用
 
 1. 命中 → 归档 report（建议 `save_sensitive_info: true`）。  
-2. 需要层定界 → 加 dump + 有标杆时走 [02](../02_problem_localization/README.md) Q1–Q5。  
+2. 需要层定界 → 加 dump + 有标杆时走 [02 §5 十问检查单](../02_problem_localization/README.md#5-kv-定界十问检查单有-buggyref-时按序)。  
 3. 无标杆 → 停在「复读类 + 现场」，见 [02 §2.3](../02_problem_localization/README.md)。
 
 ## 最小配置

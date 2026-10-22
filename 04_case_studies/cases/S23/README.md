@@ -32,10 +32,6 @@
 
 Qwen3-8B，temp=0，eager；concurrent 48；util=0.40。
 
-## 5 · 教学要点
-
-能检不等于能定界到权重元素。写清已检出即可，不要夸大 dump 能力。
-
 ## 定界分析
 
 ### 事实
@@ -69,7 +65,6 @@ Qwen3-8B，temp=0，eager；concurrent 48；util=0.40。
 | `evidence/samples/` | prompt + completion 样本 |
 | `evidence/reports/` | Guard detector 报告（归档 report prompt 为空：合修前旧归档，见名词表 **report 空 prompt**；可读 prompt 看 samples，见 [④ 名词表](../../README.md#名词怎么读先看这里)） |
 | `evidence/kv_compare.json` | 最新 KV 标杆对比摘要（余弦 / 首不一致 / 结论） |
-
 
 ## 上游 PR 关系
 

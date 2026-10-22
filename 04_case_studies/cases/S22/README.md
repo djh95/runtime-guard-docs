@@ -40,10 +40,6 @@ acceptance_rate 异常偏低。主检出靠 `spec_acceptance`（detect≈47）�
 2. 统一换行后再 apply；或 
 3. **推荐**：直接跑 `gen_s22_overlay.py` 锚点脚本。
 
-## 5 · 教学要点
-
-Spec 路径要用对 detector（主看 `spec_acceptance`）。acceptance 塌缩时，不要硬套「是否复读」阈值去解释。
-
 ## 定界分析
 
 ### 事实
@@ -63,7 +59,6 @@ Spec 路径要用对 detector（主看 `spec_acceptance`）。acceptance 塌缩�
 - 已定界到：可排除 KV cache（本请求对比窗口）。
 - 尚未定界到具体算子/构造根因；分析不出 / 证据不足。
 
-
 ## 证据文件
 
 | 文件 | 用途 |
@@ -75,7 +70,6 @@ Spec 路径要用对 detector（主看 `spec_acceptance`）。acceptance 塌缩�
 | `evidence/samples/` | prompt + completion 样本 |
 | `evidence/reports/` | Guard detector 报告（`token_repeat` 条 prompt 为空、`spec_acceptance` 条有；空因见 [④ 名词表](../../README.md#名词怎么读先看这里)，可读 prompt 亦可看 samples） |
 | `evidence/kv_compare.json` | 最新 KV 标杆对比摘要（余弦 / 首不一致 / 结论） |
-
 
 ## 上游 PR 关系
 

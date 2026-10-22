@@ -3,9 +3,9 @@ name: runtime-guard-investigation
 description: >-
   Orchestrate end-to-end runtime_guard debugging: triage whether Guard fits,
   collect inputs, delegate to detector-sweep / config-recommender / analysis /
-  ref-kv-dump, then deliver Q1–Q5 delimitation (not root-cause). Do not invent
-  runtime_config thresholds or reimplement offline/ref scripts. Native dump_kv
-  only; no msprobe. Align with handbook 02.
+  ref-kv-dump, then deliver 10-question KV delimitation (not root-cause). Do
+  not invent runtime_config thresholds or reimplement offline/ref scripts.
+  Native dump_kv only; no msprobe. Align with handbook 02.
 ---
 
 # runtime_guard investigation（编排总控）
@@ -217,19 +217,65 @@ description: >-
 
 启服与热更细节见手册 01；源码路径须含 `observability/runtime_guard/`（MRV2）。`releases/v0.30.0` / rc 线无 Guard 时先看 [05](../../05_v030_backport/README.md)（BASE 见 CHANGELOG；`v0.30-rg.3` tip 已对齐 #18644）。
 
-## 目标（定界，非定位）
+## 压测抓命中（用户页 Step 3 纪律）
 
-有 buggy+ref 时按序答 Q1–Q5（对比细节在 `ref-kv-dump`）：
+- 有多份 report / sample 时优先看明显错误的（乱码 / 异常样本）。  
+- **先信 detector**，再用输出反查；勿因「看起来正常」直接否命中。  
+- `report.save_sensitive_info: true` 才能把 token ids 留给 force-feed。
 
-| 问 | 要点 |
-|----|------|
-| Q1 KV 是否异常？ | 高相似无首分歧 → 非 KV |
-| Q2 阶段/token/层？ | prefill vs decode；整包 vs 从某层起 |
-| Q3 粒度？ | 单 token / 连续 / block |
-| Q4 异常点之后？ | 恢复→写入后污染；一路坏→写入时即错 |
-| Q5 类型（cos）？ | 断崖≈污染；平台≈计算；nan/inf≈数值炸 |
+## force-feed（与 `ref-kv-dump` 对齐）
 
-**交付模板（定界）：** 能定到哪写到哪；未知填「未知」，勿每次固定声明「未定位算子/提交」。
+按报告里的 **token id** 原样喂给干净服务；**禁止**字符串重 tokenize。同模型 / 同拓扑 / **同 MODE**；只用 native `dump_kv`。细节与脚本见 [`ref-kv-dump`](../ref-kv-dump/SKILL.md)。
+
+## 目标（定界，非定位）— 十问
+
+用户面检查单：[02 §5](../../02_problem_localization/README.md#5-kv-定界十问检查单有-buggyref-时按序)。有 buggy+ref 时按序答（对比细节在 `ref-kv-dump`）：
+
+| 问 | 检查 outcome |
+|----|--------------|
+| **Q1** | KV 是否异常？（高相似无首分歧 → 非 KV，停） |
+| **Q2** | 首个不一致在 **prompt 还是 output**？索引大概在哪？ |
+| **Q3** | 层：全层齐坏，还是 **从某层起坏**？ |
+| **Q4** | 粒度：单 token / 连续 / 是否按 **`block_size`** 对齐？ |
+| **Q5** | 首分歧之后 **是否恢复**（邻域 ~1 vs 一路坏）？ |
+| **Q6** | **output 首 token 余弦**是否已明显偏低？（无 output 答未知） |
+| **Q7** | cos **形态**：断崖→0 / 平台 ~0.8–0.9 / nan·inf？ |
+| **Q8** | 是否 **仅 PD** 复现？单 P、单 D 各如何？（非 PD 答不适用/未测） |
+| **Q9** | **和哪些特性相关 / 不相关**？（已做消融结果） |
+| **Q10** | **对照是否完整可用**？（对比窗含 output？last-PP 各 TP 齐？同 MODE/同拓扑？） |
+
+### 写作纪律（何时再推断 / 禁止）
+
+- **正文必写的 KV 事实**（再推断）：首不一致在 prompt 还是 output；后续是否恢复；output 首 token 余弦；是否仅 PD 复现。  
+- **何时再推断：** 上述事实写清后，再推「何时脏 / 是否传写交接」。  
+- **禁止：** 从坏输出直接跳根因；把 overlay / 上游 PR 已知根因写成定界已证。  
+- **空 `prompt_token_ids`：** 不等于「十问不适用」；同 prompt re-curl 抓实际 ids 后仍可做 KV 排除定界。包内未跑对比写「尚未做 KV 对比…」，勿编造未跑数字。  
+- **logits_finite 无标杆：** 交付「非有限类 + 现场」即可，勿宣称层结论。
+
+### 定界写作标准（事实 → 推断 → 结论）
+
+1. **事实** — 包内可核对项：现象、三层、report/detector、`prompt_token_ids` 是否空、是否 re-curl、KV 对比是否归档（未做写明；已做写实数）。  
+2. **推断** — 只写事实支撑得住的允许/排除；不够就写推不出什么。  
+3. **结论** — 写清已定界到 / 尚未定界到；定界不出写「分析不出 / 证据不足」。
+
+**统一定界禁例（案例教学禁写并入此处）：** 不可写「坏输出 → 所以进错专家 / MoE topk / K/V 对调 / gate-up 对调」等；构造根因只放「案例背景/构造」，不放进定界推断。案例页只留 outcome/事实，不写教学禁例段。
+
+### KV/余弦时机方法示例（示意数字，非某包实测）
+
+交叉对照 [`ref-kv-dump`](../ref-kv-dump/SKILL.md) 信号表。
+
+| 要写清的事实 | 为何要写 |
+|--------------|----------|
+| 首个不一致在 **prompt** 还是 **output** | prefill 段脏 vs decode 才脏 |
+| 其后是否恢复 ~1 | 写入后污染/串槽 vs 持续错源 |
+| **output 首 token** 余弦是否已低 | decode 开跑前状态是否已坏 |
+| 是否 **仅 PD** 复现 | 收窄传写/交接 |
+
+示意链：首不一致 idx=5 仍在 prompt → 其后多槽又回 ~1 → out0 cos 已低（~0.8）→ 仅 PD 复现 → 推「prefill 进行到一定进度后、decode 前」脏；**禁止**从坏输出跳「进错专家」。
+
+### 交付模板（定界）
+
+能定到哪写到哪；未知填「未知」；**勿每次固定声明**「未定位算子/提交」。无标杆：标杆=无，停在「问题类 + 可归档现场」；**不要伪造 ref**。
 
 ```text
 【定界】KV=<异常|正常|未知(无标杆)>; 阶段=<prefill|decode|未知>;
@@ -239,13 +285,18 @@ description: >-
 标杆=<有|无>; 证据=<report路径 / dump路径 / 脚本>;
 ```
 
-无清洁标杆：停在「问题类 + 可归档现场」；**不要伪造 ref**。
+### 复现错跑提醒（S25/S26/S33 族）
+
+**现行：** 英文河名短句 `Name one famous river… id={i}.` × **48 并发** + `token_repeat` 阈值 **8**。  
+**历史错跑：** 「中文回声式」prompt + 约 8 条串行 + 阈值 16 → 常无 `1.1.1…`、detect=0 → **复现条件不对，不是漏检**。  
+S45：勿用伪造 NaN/填 token / amplifier-retune 刷成 PASS；有异常+detect=0 记 FAIL+GAP。
 
 ## forbidden
 
-- 在本 skill 内手写完整排障 JSON / 离线脚本流程 / force-feed  
+- 在本 skill 内手写完整排障 JSON / 离线脚本流程 / force-feed 实现  
 - 承诺定位算子、内核或具体 commit  
-- 从本流程跳过 `verify_request_kv` 直接宣称可做层定界
+- 从本流程跳过 `verify_request_kv` 直接宣称可做层定界  
+- 把「十问不适用」写进空 prompt 案例结案
 
 ## Related
 

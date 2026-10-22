@@ -30,18 +30,15 @@
 
 softcap 改在 **vLLM** 的 `logits_processor.py`，同时 Ascend `platform.py` 也要打 boot/trigger。因此：
 
-- **正确：** 跑 `gen_s33_overlay.py`——分别写入 **Ascend B** 与 **canonical vllm**。 
-- **负载：** 与 S25/S26 同族——英文河名短句 ×**48 并发**（勿用中文回声串行）。
+- **正确：** 跑 `gen_s33_overlay.py`——分别写入 **Ascend B** 与 **canonical vllm**。  
+- **负载（与 S25/S26 同族现行复现）：** prompt = `Name one famous river. One short English sentence. id={i}.`，**48 路同时发请求**。
 
-只对 Ascend B 做 `git apply`（缺 vLLM 树）会 PATCH_FAIL；中文回声串行打不出 `1.1.1…`。
+只对 Ascend B 做 `git apply`（缺 vLLM 树）会 PATCH_FAIL。  
+**历史错跑：** 「中文回声式」prompt + 少量串行请求 → 打不出 `1.1.1…` 数字复读（复现条件不对）。
 
 可用 `scripts/apply_anomaly_overlay.sh` 识别双树 patch，但 **仍推荐 gen_***。
 
 本包以归档的 **incomplete softcap** 为准（不是 S20 overflow）。
-
-## 5 · 教学要点
-
-softcap 族要写清 incomplete 与 unstable overflow 的差别，避免和 S20 混谈。环境：**双树写入 + 河名句并发**。
 
 ## 定界分析
 
@@ -77,7 +74,6 @@ softcap 族要写清 incomplete 与 unstable overflow 的差别，避免和 S20 
 | `evidence/samples/` | prompt + completion 样本 |
 | `evidence/reports/` | Guard detector 报告 |
 | `evidence/kv_compare.json` | 最新 KV 标杆对比摘要（余弦 / 首不一致 / 结论） |
-
 
 ## 上游 PR 关系
 

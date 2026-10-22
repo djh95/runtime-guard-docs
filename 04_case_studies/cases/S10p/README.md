@@ -36,10 +36,6 @@ Overlay：强制 `needs_kv_cache_zeroing=False`，在 `BlockPool.get_new_blocks`
 
 标杆 run=`T181551`（英文负载）。勿用顺序中文负载当标杆（CJK 启发式会虚抬 precision）。
 
-## 5 · 教学要点
-
-同大类 KV 脏读：**S10′ 能检**（recycle → `token_repeat`）；**S01** 在稠密栈上是 **FAIL（复现未出现）**（需 hybrid/量化 KV，dense 未见坏输出）。定界时不要只讲一个 detector。
-
 ## 定界分析
 
 ### 事实
@@ -73,7 +69,6 @@ Overlay：强制 `needs_kv_cache_zeroing=False`，在 `BlockPool.get_new_blocks`
 | `evidence/samples/` | 坏输出原文（prompt + completion；自 T181551） |
 | `evidence/reports/` | Guard detector 报告 |
 | `evidence/kv_compare.json` | 最新 KV 标杆对比摘要（余弦 / 首不一致 / 结论） |
-
 
 ## 上游 PR 关系
 

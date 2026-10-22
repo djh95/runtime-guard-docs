@@ -12,11 +12,11 @@
 | Origin | `ascend-only` |
 | Guard pin | G2 f2aefd068 |
 | 模型 | Qwen3-8B |
-| Run | 河名句 + 48 并发 + 阈值 8 |
+| Run | 英文河名短句 + 48 并发 + 阈值 8 |
 
 ## 1 · 现象
 
-输出塌成 `1.1.1…` / `1.0.0…` 复读；`token_repeat`×48。样本见 [evidence/samples/](./evidence/samples/)。
+输出变成反复的数字串（如 `1.1.1…` / `1.0.0…`）；`token_repeat`×48。样本见 [evidence/samples/](./evidence/samples/)。
 
 ## 2 · 根因
 
@@ -28,23 +28,18 @@ Soft-inverse [ascend#7082](https://github.com/vllm-project/vllm-ascend/pull/7082
 
 ## 4 · 复现技巧（必读）
 
-`1.1.1…` 塌缩**只在**下列技巧下稳定出现：
+目标症状（输出反复成 `1.1.1…`）**只在**下列现行复现下稳定出现：
 
-| 项 | 正确（照这个做） |
-|----|------------------|
+| 项 | 现行复现（照这个做） |
+|----|----------------------|
 | Overlay | `gen_s25_overlay.py` 就地改 B 树 |
-| Prompt | `Name one famous river. One short English sentence. id={i}.` |
-| 并发 | **48 并发**（勿串行 8 条） |
+| Prompt | `Name one famous river. One short English sentence. id={i}.`（英文河名短句） |
+| 并发 | **48 路同时发请求** |
 | 其它 | `max_tokens=48`；temp=0 |
-| detector | `token_repeat` **threshold=8**（勿用 16） |
+| detector | `token_repeat` **threshold=8** |
+| 脚本 | `s25_concurrent_repro.py`、`gen_s25_overlay.py` |
 
-勿用：中文回声 / 串行 8 / 阈值 16（会无塌缩、detect=0，属错跑法，不是漏检）。
-
-脚本：`s25_concurrent_repro.py`、`gen_s25_overlay.py`。
-
-## 5 · 教学要点
-
-写 RoPE 案例要写清「不等于 S11」。负载技巧错了，结论也会错——无塌缩时 detect=0 不要写成漏检。
+**历史错跑（不要照这个结案）：** 曾用「中文回声式」prompt（让模型复述中文）、大约 **8 条串行**请求、并把 `token_repeat` 阈值设成 **16**。那样往往**打不出** `1.1.1…` 数字复读，于是 detect=0。这是**复现条件不对**，不能当成「检测器漏检」。
 
 ## 定界分析
 
@@ -79,7 +74,6 @@ Soft-inverse [ascend#7082](https://github.com/vllm-project/vllm-ascend/pull/7082
 | `evidence/samples/` | prompt + completion 样本 |
 | `evidence/reports/` | Guard detector 报告（归档 report prompt 为空：合修前旧归档，见名词表 **report 空 prompt**；可读 prompt 看 samples，见 [④ 名词表](../../README.md#名词怎么读先看这里)） |
 | `evidence/kv_compare.json` | 最新 KV 标杆对比摘要（余弦 / 首不一致 / 结论） |
-
 
 ## 上游 PR 关系
 

@@ -29,10 +29,6 @@ fused add-RMSNorm 前 `residual = -residual`。不等于 S31 drop / S38 skip。
 
 Residual 极性案例。禁止 force-NaN / token fill。
 
-## 5 · 教学要点
-
-极性取反会走到 bang / NaN·Inf 路径，可被 `logits_finite` 抓住；要和 residual-drop 区分开。
-
 ## 定界分析
 
 ### 事实
@@ -67,7 +63,6 @@ Residual 极性案例。禁止 force-NaN / token fill。
 | `evidence/samples/` | prompt + completion 样本 |
 | `evidence/reports/` | Guard detector 报告（归档 report prompt 为空：合修前旧归档，见名词表 **report 空 prompt**；可读 prompt 看 samples，见 [④ 名词表](../../README.md#名词怎么读先看这里)） |
 | `evidence/kv_compare.json` | 最新 KV 标杆对比摘要（余弦 / 首不一致 / 结论） |
-
 
 ## 上游 PR 关系
 

@@ -74,7 +74,7 @@ python "$SCRIPTS/compare_per_layer.py" \
 - **Table 1**：per-token min-cos → 首坏 token  
 - **Table 2**：该 token 的 per-layer → 首坏层  
 
-解读交 investigation **Q1–Q5** / 手册定界模板。
+解读交 investigation **十问** / 手册 [02 §5](../../02_problem_localization/README.md#5-kv-定界十问检查单有-buggyref-时按序)。
 
 | 信号 | 含义 |
 |------|------|
@@ -97,4 +97,4 @@ python "$SCRIPTS/compare_per_layer.py" \
 
 ## Related
 
-`analysis`（门闩）· `investigation`（Q1–Q5 交付）· `config-recommender`（arm dump 配置）
+`analysis`（门闩）· `investigation`（十问交付）· `config-recommender`（arm dump 配置）

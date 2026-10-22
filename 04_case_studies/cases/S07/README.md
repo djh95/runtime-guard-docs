@@ -37,11 +37,6 @@ status 里 precision 记成 1，但 samples + score 证实跨请求内容相同�
 
 按本包 pin / 模型 / overlay 意图对齐三层率。Trigger 极高（2624）。不要强制写 NaN 或 token fill 伪造症状。
 
-## 5 · 教学要点
-
-1. **S07** = 有乱码 + detector miss → **FAIL+GAP**；**S01 dense** = 无坏输出 → **FAIL（复现未出现）**——勿并成同一漏检族（根因也不同：quant scale vs KV skip-zero）。
-2. 需要 garbled-text / 跨请求内容相同类 detector；仅靠 `logits_finite` 抓不住有限乱码。
-
 ## 定界分析
 
 ### 事实
@@ -62,7 +57,6 @@ status 里 precision 记成 1，但 samples + score 证实跨请求内容相同�
 - 已定界到：identical+garbage 形态 + detector miss；弱 dump 与标杆不一致。
 - 尚未定界到 W8A8 dequant / 具体写传路径；分析不出 / 证据不足。
 
-
 ## 证据文件
 
 | 文件 | 用途 |
@@ -73,7 +67,6 @@ status 里 precision 记成 1，但 samples + score 证实跨请求内容相同�
 | `evidence/跑批结果.json` | 跑批元数据 + 结案摘要 |
 | `evidence/samples/` | prompt + completion 样本 |
 | `evidence/kv_compare.json` | 最新 KV 标杆对比摘要（余弦 / 首不一致 / 结论） |
-
 
 ## 上游 PR 关系
 

@@ -29,10 +29,6 @@
 
 按本包 pin / overlay 对齐三层率。本包是 SwiGLU 算子问题类的对外保留代表（构造见「根因」）。
 
-## 5 · 教学要点
-
-bang / NaN·Inf 塌缩可被 `logits_finite` 抓住。对照 **S07**（有限 logits + 乱码 → FAIL+GAP）。**S01** 是 dense 复现未出现，不是「有限乱码漏检」样板。禁把「`!!!!` → 所以 gate/up 对调」写成定界推论。
-
 ## 定界分析
 
 ### 事实
@@ -67,7 +63,6 @@ bang / NaN·Inf 塌缩可被 `logits_finite` 抓住。对照 **S07**（有限 lo
 | `evidence/samples/` | prompt + completion 样本 |
 | `evidence/reports/` | Guard detector 报告（归档 report prompt 为空：合修前旧归档，见名词表 **report 空 prompt**；可读 prompt 看 samples，见 [④ 名词表](../../README.md#名词怎么读先看这里)） |
 | `evidence/kv_compare.json` | 最新 KV 标杆对比摘要（余弦 / 首不一致 / 结论） |
-
 
 ## 上游 PR 关系
 

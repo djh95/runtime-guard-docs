@@ -20,11 +20,11 @@
 
 ## 2 · 根因
 
-top-k / top-p 作用在 `-logits` 上再取反——保留最低-k / 倒置 nucleus。**不是**放大器。
+top-k / top-p 作用在 `-logits` 上再取反——保留最低-k / 倒置 nucleus（构造故障本身；不是靠伪造 NaN/填复读 token 硬造症状）。
 
 ## 3 · Guard 结果
 
-**FAIL+GAP。** detect=0。异常已出现，但乱码检测漏检。勿用 amplifier-retune 刷检。
+**FAIL+GAP。** detect=0。异常已出现，但乱码检测漏检。
 
 ## 4 · 复现技巧与双树写入（必读）
 
@@ -39,12 +39,6 @@ top-k / top-p 作用在 `-logits` 上再取反——保留最低-k / 倒置 nucl
 - **错误：** 只 `git apply` 到 Ascend B → `sampler.py: No such file or directory`；或 temp=0。
 
 按复现技巧（双树 + temp=0.8）→ **16 / 4 / 0**（仍为 detect=0，与归档 GAP 一致）。
-
-## 5 · 教学要点
-
-1. 各不相同的有限乱码 + detect=0 → FAIL+GAP；对照 S43（magnitude 故障能检）。
-2. 乱码样板对照 **S07**（跨请求相同）；**S01** 是 dense 未见坏输出的对照，不是乱码样板。
-3. 环境：必须 **双树写入 + temp=0.8**。
 
 ## 定界分析
 
@@ -67,7 +61,6 @@ top-k / top-p 作用在 `-logits` 上再取反——保留最低-k / 倒置 nucl
 - 已定界到：可排除 KV cache（本请求 prompt 对比窗口）。
 - 尚未定界到具体算子/构造根因；分析不出 / 证据不足。
 
-
 ## 证据文件
 
 | 文件 | 用途 |
@@ -78,7 +71,6 @@ top-k / top-p 作用在 `-logits` 上再取反——保留最低-k / 倒置 nucl
 | `evidence/跑批结果.json` | 跑批元数据 + 结案摘要 |
 | `evidence/kv_compare.json` | 最新 KV 标杆对比摘要（余弦 / 首不一致 / 结论） |
 | `evidence/samples/` | prompt + completion 样本 |
-
 
 ## 上游 PR 关系
 

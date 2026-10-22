@@ -86,7 +86,7 @@ vllm serve <MODEL> --additional-config '{
 
 - JSON 里 `dump.manual_dump = N` 是 **目标总次数**（不是剩余次数）；进程**从不写回** `false`/`0`。  
 - 进程内 dump 次数只在内存；大于等于 N 就停止 dump。  
-- 继续 dump 需要改配置文件增大 N（推荐 `1` → `2` → `3`）；勿一次设很大的 N。  
+- 继续 dump 需要改配置文件增大 N；按需每次加 1（`1` → `2` → `3`）即可。  
 - 需要 `runtime_config_hot_reload=true`。
 
 ---

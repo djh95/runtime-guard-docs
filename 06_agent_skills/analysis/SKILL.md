@@ -105,7 +105,7 @@ python "$SCRIPTS/inspect_kv_dump.py" --path ./runtime/report/kv_cache/<type>/<re
 3. 可提取的 `prompt_token_ids` / `output_token_ids`（需 report 含敏感字段）  
 4. 三层率（若 anomaly）与缺口说明  
 
-有 buggy+ref 定界 → 用户/总控再开 `ref-kv-dump` + investigation Q1–Q5（本 skill 不跑对比）。
+有 buggy+ref 定界 → 用户/总控再开 `ref-kv-dump` + investigation 十问（本 skill 不跑对比）。
 
 ## 落盘约定
 

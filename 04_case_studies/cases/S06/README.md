@@ -33,12 +33,6 @@ Overlay / 上游 PR 意图：错误 router bias / mask 类（非 bit-exact CUDA�
 
 按 pin / 模型 / overlay 对齐三层率。标杆是本包钉点（70 / 1 / 1）。
 
-## 5 · 教学要点
-
-1. 本例只作 MoE 路由模版；饱和类不在对外保留案例刷分。
-2. 核对时看 router / 专家相关 report 字段——KV 数值正常 ≠ MoE 已排除。
-3. **定界禁例：** 不可写「坏输出 → 所以进错专家」；构造根因放「案例背景/构造」，不放进定界推断。
-
 ## 定界分析
 
 ### 事实
@@ -58,7 +52,6 @@ Overlay / 上游 PR 意图：错误 router bias / mask 类（非 bit-exact CUDA�
 - 已定界到：KV 与标杆不一致（重开 KV 线）。
 - 尚未定界到具体写/传路径；分析不出 / 证据不足。
 
-
 ## 证据文件
 
 | 文件 | 用途 |
@@ -70,7 +63,6 @@ Overlay / 上游 PR 意图：错误 router bias / mask 类（非 bit-exact CUDA�
 | `evidence/samples/` | prompt + completion 样本（**阅读 / 现象核对**；非 tokenize 标杆） |
 | `evidence/reports/` | Guard detector 报告（本包归档 **`prompt_token_ids` 为空**：合 #19285 前样本；阅读看 samples；标杆 ids 可重放抓取——见定界节与 [④ 名词表](../../README.md#名词怎么读先看这里)） |
 | `evidence/kv_compare.json` | 最新 KV 标杆对比摘要（余弦 / 首不一致 / 结论） |
-
 
 ## 上游 PR 关系
 

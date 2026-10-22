@@ -32,10 +32,6 @@
 
 DeepSeek-V2-Lite；concurrent 48 变长英文 + 12 条 temp=0；util=0.40；不开 APC。
 
-## 5 · 教学要点
-
-pad-tail 错位 ≠ 回收块未清零。可能撞上同一个 detector，但 root-cause 不同；文本证据见 `evidence/reports/report_sample.json`。
-
 ## 定界分析
 
 ### 事实
@@ -56,7 +52,6 @@ pad-tail 错位 ≠ 回收块未清零。可能撞上同一个 detector，但 ro
 - 已定界到：KV 与标杆不一致（重开 KV 线）。
 - 尚未定界到具体写/传路径；分析不出 / 证据不足。
 
-
 ## 证据文件
 
 | 文件 | 用途 |
@@ -68,7 +63,6 @@ pad-tail 错位 ≠ 回收块未清零。可能撞上同一个 detector，但 ro
 | `evidence/samples/` | 坏输出原文（prompt + completion；自 T190840） |
 | `evidence/reports/` | Guard detector 报告（归档 report prompt 为空：合修前旧归档，见名词表 **report 空 prompt**；可读 prompt 看 samples，见 [④ 名词表](../../README.md#名词怎么读先看这里)） |
 | `evidence/kv_compare.json` | 最新 KV 标杆对比摘要（余弦 / 首不一致 / 结论） |
-
 
 ## 上游 PR 关系
 
