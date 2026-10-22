@@ -1,7 +1,7 @@
 # Runtime-Guard Skills Metadata
 
-版本：v5.13  
-Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `analysis` · `ref-kv-dump` · **`build-anomaly-env`** · **`apply-mrv1-patch`** · **`apply-v030-mrv2-patch`**
+版本：v5.14  
+Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `analysis` · `ref-kv-dump` · **`msprobe-dump`** · **`build-anomaly-env`** · **`apply-mrv1-patch`** · **`apply-v030-mrv2-patch`**
 
 ## Changelog（摘要）
 
@@ -9,7 +9,8 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 
 离线脚本入口：本仓 [`scripts/`](./scripts/)。
 
-- **v5.13（现行）** — `--feed=history` 对比跨度 **`n_prompt+n_output-1`**（禁按 p+o 全长→末位假分歧/伪层定位）；空 prompt 优先 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) 重抓或 re-curl，禁 tokenize 补造。落点：`ref-kv-dump` / `investigation` / `analysis`。  
+- **v5.14（现行）** — **`logits_finite` 命中 → 跳过 KV 对账**，转 **`msprobe-dump`**（`task=statistics`，**仅 eager / 禁图模式**）扫 `dump.json` 找首坏算子；勿把 NaN KV 写成「复现未抓到」或层定界。Guard KV 对比源仍只用 native `dump_kv`。落点：新 skill `msprobe-dump` + `investigation` / README / `02` / `ref-kv-dump`。  
+- **v5.13** — `--feed=history` 对比跨度 **`n_prompt+n_output-1`**（禁按 p+o 全长→末位假分歧/伪层定位）；空 prompt 优先 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) 重抓或 re-curl，禁 tokenize 补造。落点：`ref-kv-dump` / `investigation` / `analysis`。  
 - **v5.12** — KV 执行纪律：抓前**清空**本轮 `kv_cache`；对比**先 shape**；整 block dump、未用槽常为 0 → **只比有效 token**（禁全容量余弦）。落点：`ref-kv-dump`（主）+ `investigation` / `analysis` / `scripts/README`。  
 - **v5.11** — 踩坑原则入库：keep-set **结案四档**（≠ PASS/FAIL/GAP 总评）；**钉点同跑** / 禁混用 run；**有效异常 KV**（弱窗不可对账）；**全 NaN cos ≠ 层定位**；多组验证；无证据留空；压测上限 ~1h；`manual_dump` 抓未检出异常。落点：`investigation` / `analysis` / `ref-kv-dump` / `build-anomaly-env`。  
 - **v5.10** — 构造 skill：`build-anomaly-env`（origin-faithful overlay / 三层率 / HARD·DEFER；术语主页）；排障五件套 + 接线 skills 不变。  
@@ -41,6 +42,7 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 | config-recommender | 原子 · 在线配置 | 正式排障 / 业务默认配置唯一来源 |
 | analysis | 原子 · 离线读盘 | report/dump 汇总、关联、verify、inspect |
 | ref-kv-dump | 原子 · 标杆+对比 | force-feed（按报告 token id 原样喂干净服务）抓 ref + KV 首分歧 |
+| msprobe-dump | 原子 · 算子 dump | `logits_finite` 后 statistics dump（eager only）；扫首坏算子 |
 | build-anomaly-env | 构造 · 评测基建 | origin-faithful overlay 场景；三层率；禁合成放大器 |
 | apply-mrv1-patch | 运维 · 接线 | 多 release × MRV1 → `05_mrv1_backport` |
 | apply-v030-mrv2-patch | 运维 · 接线 | v0.30 × MRV2 → `05_v030_backport` |
@@ -57,21 +59,22 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 
 - Triage（手册 02）：Hang/OOM/启动 crash 等 → 终止并说明原因  
 - 收集开场输入：现象、版本、拓扑、能否压测、有无清洁标杆、本地 report/dump 路径、谁起服  
-- 委派：未定类 → sweep；定类 → recommender；已有产物 → analysis；verify=PASS 且可标杆 → ref-kv-dump  
-- 汇总下游结果，填十问 **定界交付模板**；区分「已定界」vs「无法根因定位」  
-- keep-set **结案四档** + 证据完整性（钉点同跑 / 有效异常 KV / 全 NaN 禁伪定位 / 无证据留空）
+- 委派：未定类 → sweep；定类 → recommender；已有产物 → analysis；verify=PASS 且可标杆 → ref-kv-dump；**`logits_finite` 命中 → msprobe-dump**（跳过 ref-kv）  
+- 汇总下游结果，填十问 **定界交付模板**（KV 路径）或 msprobe 首坏算子摘要；区分「已定界」vs「无法根因定位」  
+- keep-set **结案四档** + 证据完整性（钉点同跑 / 有效异常 KV / 全 NaN 禁伪定位 / 无证据留空）；logits 路径见例外
 
 **forbidden**
 
 - 自创 runtime_config 阈值 / dump 配额 / cooldown / `on_trigger`（须来自 sweep 或 recommender 产出）  
 - 自行实现离线解析或 force-feed / 对比脚本流程（委派 analysis / ref）  
-- 承诺定位到算子 / 内核 / 具体提交  
-- 混用不同 run；用弱 dump / 全 NaN 伪写③/④；用 PASS/FAIL/GAP 当案例 headline 结案
+- 仅凭 Guard KV / 坏输出 **跳承诺**算子/内核/提交（msprobe `dump.json` 首非有限统计可写算子名，仍勿升格成上游 commit）  
+- 混用不同 run；用弱 dump / 全 NaN 伪写③/④；用 PASS/FAIL/GAP 当案例 headline 结案  
+- `logits_finite` 后仍空耗 KV 对账或写成「复现未抓到」
 
 **逻辑输入：** symptom, version, topology, can_pressure_test, has_clean_ref_env, local_artifact_path?  
 **逻辑输出：** triage_result, delegated 摘要, delimitation_template, conclusion, next_step
 
-**依赖：** 可调用四个原子 skill；无上游。
+**依赖：** 可调用原子 skill（含 `msprobe-dump`）；无上游。
 
 ---
 
@@ -161,9 +164,36 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 **逻辑输入：** verify PASS 证据, buggy token ids / report 路径, topology, model_mode  
 **逻辑输出：** ref_dump_path, kv_compare 摘要, warnings
 
+**何时不调：** `logits_finite` 已命中 → 改调 `msprobe-dump`。
+
 ---
 
-## 6. build-anomaly-env
+## 6. msprobe-dump
+
+**触发：** `logits_finite`（或明确非有限数值炸）后，要 dump 算子 I/O **统计值**找首坏算子。
+
+**can_do**
+
+- 写 `task=statistics` / `summary_mode=statistics` / 默认 `level=L1` 的 config  
+- 经 vllm-ascend `--additional-config.dump_config_path`（或 `dump_config`）启用；**必须 `--enforce-eager`**  
+- 指导读 `dump.json`（Max/Min/Mean/Norm）找首个非有限/爆炸条目  
+- 可选收窄 `list`/`scope`、钉 `request_id`
+
+**forbidden**
+
+- 图模式 / aclgraph 当默认路径  
+- 默认 `task=tensor` 全量落盘  
+- 把 msprobe 产物当 Guard `dump_kv` 对比源  
+- 未装 `mindstudio-probe` 却假装已 dump
+
+**逻辑输入：** logits_finite report 路径?, model/topo, dump_path, optional request_id  
+**逻辑输出：** dump_path, first_bad_op?, notes
+
+**依赖：** 容器已 `pip install mindstudio-probe`；vllm-ascend 带 `dump_config_path` 接线。
+
+---
+
+## 7. build-anomaly-env
 
 **触发：** 要挖/建 anomaly 评测环境（overlay），或抬 origin-faithful 复现率。
 

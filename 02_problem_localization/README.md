@@ -54,9 +54,9 @@
 | 现象 | 典型入口 | 说明 |
 |------|----------|------|
 | 输出复读 / 局部卡词 | `token_repeat` | 最轻；适合先开 |
-| 采样前 NaN/Inf、突然乱码伴数值炸 | `logits_finite` | 给「数值是否已坏」的强信号 |
+| 采样前 NaN/Inf、突然乱码伴数值炸 | `logits_finite` | 给「数值是否已坏」的强信号；**命中后跳过 KV**，转 skill **`msprobe-dump`**（statistics · eager · 禁图模式） |
 | Spec 接受率/长度异常 | `spec_acceptance` | 需 MTP/Eagle 等 speculative |
-| 怀疑 KV / PD 传写出问题 | `dump_kv` +（有标杆时）对比 | detector 给坐标，定界靠对比 |
+| 怀疑 KV / PD 传写出问题 | `dump_kv` +（有标杆时）对比 | 适用于有限异常 / `token_repeat` 等；detector 给坐标，定界靠对比 |
 | **偶发、难复现** | 热更 + report/dump | 命中即抓，不必先有稳定复现脚本 |
 
 ### 2.2 不适合（直接换工具）
@@ -154,7 +154,7 @@ python "$SCRIPTS/verify_request_kv.py" --report ... --kv-dir {KV_RANK_DIR}
 
 - 同模型、同拓扑、**同 MODE**（勿用 eager↔graph 当对照）。  
 - 用 report 的 `prompt_token_ids` + `output_token_ids` **force-feed**（token-id API），禁止字符串重 tokenize。  
-- 只使用 native `dump_kv`（不要 msprobe / 临时自造 dumper 冒充对比源）。
+- Guard KV 对比只用 native `dump_kv`（不要 msprobe / 临时自造 dumper **冒充** KV 对比源）。`logits_finite` 已命中时 **不做** KV 对账，改走 msprobe 算子 I/O。
 
 ### Step 6 — 首分歧与十问检查单
 

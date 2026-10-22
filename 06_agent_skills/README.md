@@ -26,6 +26,7 @@
 | `runtime-guard-config-recommender` | 原子 · 在线 | **正式配置唯一来源**（排障 / 业务默认） |
 | `runtime-guard-analysis` | 原子 · 离线 | 已有 report（±dump）：汇总 / 关联 / verify / inspect |
 | `runtime-guard-ref-kv-dump` | 原子 · 离线+起服 | verify PASS 后 force-feed（按报告 token id 原样喂干净服务）抓 ref + 两表对比 |
+| `runtime-guard-msprobe-dump` | 原子 · 算子 dump | `logits_finite` 后：**statistics** + **eager only**；扫 `dump.json` 找首坏算子 |
 | `build-anomaly-env` | 构造 · 评测基建 | origin-faithful overlay 场景：挖 PR → 抬复现率 → 三层计数 → 打包 |
 | `apply-mrv1-patch` | 运维 · 接线 | 多 release × **MRV1** Guard → [`05_mrv1_backport`](../05_mrv1_backport/) |
 | `apply-v030-mrv2-patch` | 运维 · 接线 | **v0.30 × MRV2** Guard → [`05_v030_backport`](../05_v030_backport/) |
@@ -49,9 +50,10 @@ python "$SCRIPTS/summarize_reports.py" --help
 `prepare_ref_inputs` / `request_from_report` / `locate_first_divergence` / `compare_kv_similarity` /  
 `compare_per_layer` / `stitch_kv`。
 
-Anomaly 对外对照：本仓 `04_case_studies/cases/Sxx/evidence/`。契约见 [SKILLS_METADATA.md](./SKILLS_METADATA.md)（**v5.13**）。构造纪律见 [`build-anomaly-env`](./build-anomaly-env/SKILL.md)。  
+Anomaly 对外对照：本仓 `04_case_studies/cases/Sxx/evidence/`。契约见 [SKILLS_METADATA.md](./SKILLS_METADATA.md)（**v5.14**）。构造纪律见 [`build-anomaly-env`](./build-anomaly-env/SKILL.md)。  
 Keep-set 结案四档 + 钉点同跑 / 有效异常 KV / 全 NaN 禁伪定位：见 [`investigation`](./investigation/SKILL.md)（证据完整性）与 [`ref-kv-dump`](./ref-kv-dump/SKILL.md)。  
-KV：抓前清目录、先 shape、history 比 **`p+o-1`**、整 block 未用 0 槽不算：见 [`ref-kv-dump`](./ref-kv-dump/SKILL.md)。
+KV：抓前清目录、先 shape、history 比 **`p+o-1`**、整 block 未用 0 槽不算：见 [`ref-kv-dump`](./ref-kv-dump/SKILL.md)。  
+**`logits_finite` 命中 → 跳过 KV，转 [`msprobe-dump`](./msprobe-dump/SKILL.md)**（statistics · eager · 禁图模式）：见 [`investigation`](./investigation/SKILL.md)。
 
 ## 与产品对齐的硬事实（2026-10）
 
@@ -62,7 +64,8 @@ KV：抓前清目录、先 shape、history 比 **`p+o-1`**、整 block 未用 0 
 | Runner | 产品 main / `05_v030`：**MRV2**；历史 release 接线：`05_mrv1` → **MRV1** |
 | 热更 | 启动参数 `runtime_config_hot_reload=true`（**不是** JSON 里的 `reload_interval_seconds`） |
 | 停检 | `report.max_per_req`（**不是** `stop_after_alert`） |
-| Dump | 仅 native `dump_kv`；无 msprobe |
+| Dump（Guard KV） | 对比源仅 native `dump_kv`（勿用 msprobe 冒充 KV） |
+| `logits_finite` 后 | **跳过 KV** → skill **`msprobe-dump`**（statistics · `--enforce-eager`） |
 | 默认全关 | **全关旁路**（static idle：detector/dump/热更全关；代码侧 `needs_sample_phase_hooks()` 为假时跳过 sample 壳） |
 | `releases/v0.30.0` MRV2 backport | 见 [05_v030](../05_v030_backport/README.md)（skill `apply-v030-mrv2-patch`；`v0.30-rg.3` SOURCE `#18450` @ `96046a3f0`，**含** #18644 对齐） |
 | 多 release MRV1 backport | 见 [05_mrv1](../05_mrv1_backport/README.md)（skill `apply-mrv1-patch`）；含 v0.30 MRV1，与 05_v030 互斥 |

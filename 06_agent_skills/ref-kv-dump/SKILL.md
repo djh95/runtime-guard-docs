@@ -4,7 +4,8 @@ description: >-
   After verify_request_kv PASS, force-feed report token ids into a clean
   same-model/topology/MODE server, capture native dump_kv ref, and compare
   buggy vs ref (first divergence / per-layer). Requires PASS evidence; do not
-  reimplement verify or emit runtime_config JSON. No msprobe.
+  reimplement verify or emit runtime_config JSON. Guard KV path only
+  (native dump_kv); if logits_finite already hit, skip this skill → msprobe.
 ---
 
 # Reference KV via native dump_kv
