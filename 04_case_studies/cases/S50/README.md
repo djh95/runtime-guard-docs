@@ -33,21 +33,18 @@
 ## 5 · 定界分析
 ### 事实
 
-- 现象：非有限 logits / 异常输出（`evidence/samples/`）。
-- 三层见包内计数；detector：`logits_finite`。
-- 本包已归档 KV 对比（cos_thresh=0.99；n_prompt=14 n_cmp_tokens=14；layers=72）。
-- 首不一致：idx=0 role=prompt span=prompt min_cos=n/a @ layer_36。
-- 后续是否恢复≈1：False；output 首 token 余弦=n/a；仅 PD：False。
+- 现象：非有限 logits / 异常输出（`evidence/samples/`）；detector：`logits_finite`（本包有检出）。
+- KV 对比（`evidence/kv_compare.json`）：阈值 0.99；窗长≈14 且 **几乎全是 prompt**（无有效 output 槽 → 算不出「第一个输出 token 余弦」）。
+- 摘要里写「idx=0 @ layer_36、min_cos=n/a」：实际是 **每个 token 的最小余弦都是 NaN**，脚本用 NaN 占「最差」——**不要**读成精确定位到第 0 个 token / 第 36 层（与 S07 同类写法）。
 
 ### 推断
 
-- 对账不一致 → **重开 KV 线**。
-- 坏输出仍不可直接写成具体根因。
-- 首不一致在 prompt 段 → 偏向 prefill 侧（需结合是否恢复、仅 PD）。
+- 只能记：**对不上 / 算不出有效余弦** → 还不能当「KV 已排除」；也还推不出「就是 prefill 第 0 个 token」。
+- 要坐实首分歧 → 需重抓带足够 output 的配对 dump 再比。坏输出不可直接写成具体根因。
 
 ### 结论
 
-- 结案档：**KV 不一致→定界**（重开 KV 线）。
+- 结案档：**KV 不一致→定界**（现有对账摘要力度有限）。
 - 尚未定界到具体写/传路径；分析不出 / 证据不足。
 
 ## 6 · 证据文件
