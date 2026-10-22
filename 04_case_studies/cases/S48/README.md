@@ -1,4 +1,4 @@
-# S48 · Residual negate（PASS）
+# S48 · Residual negate（KV 不一致→定界）
 
 公开自洽案例包。
 
@@ -6,7 +6,8 @@
 
 | 项 | 值 |
 |----|-----|
-| 结果 | **PASS** |
+| 结案 | **KV 不一致→定界** |
+| 检测 | **检出** |
 | 三层率 | **100 / 48 / 48** |
 | Detector | `logits_finite` |
 | Origin | `both`（constructed） |
@@ -23,7 +24,7 @@ fused add-RMSNorm 前 `residual = -residual`。不等于 S31 drop / S38 skip。
 
 ## 3 · Guard 结果
 
-**PASS。** **100 / 48 / 48**。
+**检出。** **100 / 48 / 48**。结案档：**KV 不一致→定界**。
 
 ## 4 · 复现技巧
 
@@ -49,7 +50,7 @@ Residual 极性案例。禁止 force-NaN / token fill。
 
 ### 结论
 
-- 已定界到：KV 与标杆不一致（重开 KV 线）。
+- 结案档：**KV 不一致→定界**（重开 KV 线）。
 - 尚未定界到具体写/传路径；分析不出 / 证据不足。
 
 ## 证据文件

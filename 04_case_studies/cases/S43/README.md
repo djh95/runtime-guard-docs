@@ -1,4 +1,4 @@
-# S43 · Embed ×100 → newline collapse（PASS）
+# S43 · Embed ×100 → newline collapse（KV 不一致→定界）
 
 公开自洽案例包。漏检对照：[S45](../S45/)。
 
@@ -6,7 +6,8 @@
 
 | 项 | 值 |
 |----|-----|
-| 结果 | **PASS** |
+| 结案 | **KV 不一致→定界** |
+| 检测 | **检出** |
 | 三层率 | **16 / 40 / 48** |
 | Detector | `token_repeat` |
 | Origin | `both`（constructed） |
@@ -23,11 +24,11 @@
 
 ## 3 · Guard 结果
 
-**PASS。** **16 / 40 / 48**。score 需认 `newline_collapse`——只数裸 `.` 会 miss `\n`。
+**检出。** **16 / 40 / 48**。score 需认 `newline_collapse`——只数裸 `.` 会 miss `\n`。结案档：**KV 不一致→定界**。
 
 ## 4 · 复现技巧
 
-对照 S45：同属 embed/logits 族，一边 PASS，一边 unique-garbage GAP。
+对照 S45：同属 embed/logits 族；本包检出，S45 乱码漏检（但 S45 结案为 KV 一致→排除 KV）。
 
 ## 定界分析
 
@@ -49,7 +50,7 @@
 
 ### 结论
 
-- 已定界到：KV 与标杆不一致（重开 KV 线）。
+- 结案档：**KV 不一致→定界**（重开 KV 线）。
 - 尚未定界到具体写/传路径；分析不出 / 证据不足。
 
 ## 证据文件

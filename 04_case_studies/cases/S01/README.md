@@ -1,16 +1,17 @@
-# S01 · KV skip-zero → FAIL（复现未出现）
+# S01 · KV skip-zero → 未复现
 
 这是一份公开、自洽的案例包：只靠本目录材料就能读完。
 
-同族里**能检出来**的对照包：[S10′（S10p）](../S10p/)（recycle-zero → `token_repeat` PASS）。
+同族里**能检出来**的对照包：[S10′（S10p）](../S10p/)（recycle-zero → `token_repeat` 检出；结案 **KV 一致→排除 KV**）。
 
 ## 归档钉点
 
 | 项 | 值 |
 |----|-----|
-| 结案结论 | **FAIL（复现未出现）** / repro-blocked |
+| 结案 | **未复现** |
+| 检测 | **无可检（非漏检）** |
 | 三层率（2026-10-20 钉点复判） | **154 / 0 / 0**（trigger / precision〔CJK 排除后〕/ detect） |
-| 期望 detector | 乱码类；本轮**无可检坏输出**，故不构成 FAIL+GAP |
+| 期望 detector | 乱码类；本轮**无可检坏输出**（非漏检） |
 | Guard pin | G2 · `f2aefd068c4bd299d91cf0a1fdf642a3f327308f` |
 | 模型 | Qwen3-8B · TP2 · 稠密 float16 |
 | 上游锚点 | [vLLM#43990](https://github.com/vllm-project/vllm/pull/43990) · [#47574](https://github.com/vllm-project/vllm/pull/47574)（角色见文末表） |
@@ -21,7 +22,7 @@
 
 Overlay 打上后服务仍 200。可见 completion 是通顺中英散文（华为 NPU / vLLM 介绍），**不是**乱码。样本见 [evidence/samples/](./evidence/samples/)。
 
-**CJK 是什么：** 中日韩字符。早期评分曾把通顺中文计成 `garbage_mixed_script`（**precision≈CJK / early-script 疑误判**）；现行须排除 CJK 后再计 weird——通顺中文 ≠ 乱码。本包排除后 weird≈0 → **precision=0**（不另造数字）。没有坏输出时，**不要**写成 FAIL+GAP。
+**CJK 是什么：** 中日韩字符。早期评分曾把通顺中文计成 `garbage_mixed_script`（**precision≈CJK / early-script 疑误判**）；现行须排除 CJK 后再计 weird——通顺中文 ≠ 乱码。本包排除后 weird≈0 → **precision=0**（不另造数字）。没有坏输出时，**不要**写成漏检；结案档是 **未复现**。
 
 ### 为何 S01 复现不出、S10′ 可以
 
@@ -29,10 +30,10 @@ Overlay 打上后服务仍 200。可见 completion 是通顺中英散文（华�
 |--|-----------------|----------|
 | 机制 | 进了 zeroer 再 **skip 置零**（新块脏读） | FullAttn **从不进** zeroing（回收块脏尾） |
 | 形态前提 | **hybrid / 量化 KV**；稠密 bf16 上目标乱码不出现 | dense FullAttn + 回收压力即可 |
-| 本 pin 实测 | trigger=154，**precision=0**，detect=0 | **65 / 20 / 79**，`token_repeat` PASS |
-| 结案 | FAIL（复现未出现） | PASS |
+| 本 pin 实测 | trigger=154，**precision=0**，detect=0 | **65 / 20 / 79**，`token_repeat` 检出 |
+| 结案 | **未复现** | **KV 一致→排除 KV** |
 
-跨请求内容相同的真实乱码见 **S07**（FAIL+GAP；与本包结案不同）。
+跨请求内容相同的真实乱码见 **S07**（乱码漏检；结案 **KV 不一致→定界（弱窗）**；与本包不同）。
 
 ## 2 · 根因
 
@@ -48,7 +49,7 @@ Overlay 打上后服务仍 200。可见 completion 是通顺中英散文（华�
 
 ## 3 · Guard 结果
 
-**判定：FAIL（复现未出现）。** 有 trigger、无真实坏输出、detect=0——缺的是「异常已出现」前提，故不是 GAP 结案。
+**结案：未复现。** 有 trigger、无真实坏输出、detect=0——缺的是「异常已出现」前提，故不是漏检。
 
 | 层 | 复判（钉点 · `T101951`） | 含义 |
 |----|------------------------:|------|
@@ -74,7 +75,7 @@ Overlay 打上后服务仍 200。可见 completion 是通顺中英散文（华�
 
 | 项 | 现行 |
 |----|------|
-| 结案 | **FAIL（复现未出现）** / repro-blocked；**不是** FAIL+GAP |
+| 结案 | **未复现**；**不是**漏检 |
 | 三层 | **154 / 0 / 0**（CJK 排除后 precision=0） |
 | 形态 | hybrid/量化 KV 是前提；本 pin 上 fp8 KV 起服失败 |
 
@@ -84,18 +85,18 @@ Overlay 打上后服务仍 200。可见 completion 是通顺中英散文（华�
 
 ### 事实
 
-- 本包 dense 结案为 **FAIL（复现未出现）**：completion 为通顺中英散文，不是乱码；三层 154 / 0 / 0；detect=0；无命中 report——**未抓到目标异常**。
+- 本包 dense 结案为 **未复现**：completion 为通顺中英散文，不是乱码；三层 154 / 0 / 0；detect=0；无命中 report——目标异常形态未出现。
 - 因此 **尚未做（也无法做）针对该异常的 KV 对比**：定界 KV 对账要求异常 dump ↔ 标杆配对；无异常则无从对账。
 - 曾有过一份旧 `logits_finite`、o=1 弱 dump 与标杆的余弦对比，但 dump **不是**本包 dense 复判抓到的坏样本；该对比 **对定界无效**，已从本包 evidence 删除，不作为定界证据。
 
 ### 推断
 
-- dense 上目标乱码未出现 → 结案仍是 FAIL（复现未出现），不是漏检。
+- dense 上目标乱码未出现 → 结案仍是 **未复现**，不是漏检。
 - 无有效异常 dump → 不能从任何 KV 余弦「不一致」去证明或排除本 bug；通顺散文也推不出「KV 未置零」细因。
 
 ### 结论
 
-- 已定界到：dense 复现未出现 / 未抓到异常。
+- 已定界到：dense **未复现**（目标异常未出现）。
 - **未做有效 KV 对账（异常未复现）**；尚未定界到 KV 未置零类；分析不出 / 证据不足。
 
 ## 证据文件

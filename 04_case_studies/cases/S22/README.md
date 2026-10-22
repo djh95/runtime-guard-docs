@@ -1,4 +1,4 @@
-# S22 · Spec resample 无 SALT（PASS · spec_acceptance）
+# S22 · Spec resample 无 SALT（KV 一致→排除 KV · spec_acceptance）
 
 公开自洽案例包。
 
@@ -6,7 +6,8 @@
 
 | 项 | 值 |
 |----|-----|
-| 结果 | **PASS** |
+| 结案 | **KV 一致→排除 KV** |
+| 检测 | **检出** |
 | 三层率 | **126 / 0 / 47**（现行；trigger/precision 随并发浮动，detect 为判定口径） |
 | Detector | `spec_acceptance`（主）+ `token_repeat` |
 | Origin | `ascend-only`（+ vLLM#61161 cousin） |
@@ -24,7 +25,7 @@ acceptance_rate 异常偏低。主检出靠 `spec_acceptance`（detect≈47）�
 
 ## 3 · Guard 结果
 
-**PASS。** 主 detector 是 **`spec_acceptance`**，不是 `logits_finite`。三层 **126 / 0 / 47**。
+**检出。** 主 detector 是 **`spec_acceptance`**，不是 `logits_finite`。三层 **126 / 0 / 47**。结案档：**KV 一致→排除 KV**。
 
 ## 4 · 复现技巧与环境坑（CRLF vs LF）
 
@@ -56,7 +57,7 @@ acceptance_rate 异常偏低。主检出靠 `spec_acceptance`（detect≈47）�
 
 ### 结论
 
-- 已定界到：可排除 KV cache（本请求对比窗口）。
+- 结案档：**KV 一致→排除 KV**（本请求对比窗口）。
 - 尚未定界到具体算子/构造根因；分析不出 / 证据不足。
 
 ## 证据文件

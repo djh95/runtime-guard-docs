@@ -14,7 +14,7 @@
   cases/
     Sxx/                            # S10′ → 目录名 S10p
       README.md                     # 【必选 · 外层唯一主文件】
-                                    #   结案标签 + 三层表 + detector 一句
+                                    #   结案四档 + 检测（辅）+ 三层表 + detector 一句
                                     #   + 现象 / 案例背景·构造 / Guard + 复现技巧
                                     #   + 定界分析（事实 → 推论 → 结论）
                                     #   + 证据文件表 + 上游 PR 关系 + Origin
@@ -24,7 +24,7 @@
         三层计数.json                # 推荐：trigger / precision / detect 明细
         跑批结果.json                # 推荐：跑批元数据 + 结案摘要
         samples/                    # 条件：宣称 precision>0 → ≥1 份 prompt+completion
-        reports/                    # 条件：PASS 且 detect>0 → ≥1 份真实 report
+        reports/                    # 条件：detect>0（有检出）→ ≥1 份真实 report
 ```
 
 ### 各文件作用
@@ -54,18 +54,29 @@
 | `evidence/规格说明.md` | 必选（只管复现） |
 | `三层计数.json` · `跑批结果.json` | 强烈建议 |
 | `samples/` | 条件必选（有 precision 宣称） |
-| `reports/` | 条件必选（PASS 且 detect>0） |
+| `reports/` | 条件必选（detect>0，有检出） |
+
+## 结案四档（主标签）
+
+keep-set 案例的 **headline 结案**只用下面四档；**不要**再用 PASS / FAIL / GAP 当总评。
+
+| 档 | 含义 |
+|----|------|
+| **未复现** | 目标异常形态没有出现（有 trigger 也不够；通顺输出 ≠ 目标乱码）。 |
+| **复现未抓到** | 异常已现或应现，但**没有有效异常 KV dump** 可做对账。mere detect=0 **不是**本档——若 manual dump 已抓到异常 KV 并完成对账，按③/④。 |
+| **KV 一致→排除 KV** | 有效异常↔标杆对账，对比窗匹配 → **排除 KV cache** 为本请求坏输出的必要原因。 |
+| **KV 不一致→定界** | 有效对账不匹配 → **重开 KV 线**；摘要十问事实（首不一致在 prompt/output、是否恢复、out0 余弦、是否仅 PD…），不从坏输出跳根因。弱窗对账（如 o=1）仍可归本档，但须注明力度有限。 |
+
+**检测**另写：三层数字和/或「检出 / 漏检 / 乱码漏检」等，见名词表。
 
 ## 名词怎么读（先看这里）
 
 | 说法 | 含义 |
 |------|------|
-| **PASS** | 异常按预期出现，且期望的 detector **命中**（有 report）。 |
-| **FAIL** | 未达到 PASS 的总称（复现没出来，或复现出来了但没检出，都算 FAIL）。 |
-| **GAP** | **检测能力缺口**这种问题类型（例如只抓 NaN、抓不住有限乱码）。是缺口分类，不是单独一种「跑失败」标签。 |
-| **FAIL+GAP** | 结论标签：异常（或目标坏输出）**已经出现**，但 detector **没检出**——既记未过关（FAIL），又标成检测缺口（GAP）。**有异常是前提**；没有异常出现时不要写 FAIL+GAP。 |
-| **复现失败** | 打了 patch / overlay，但目标异常**没有出现**。不要写 GAP。结论记 **FAIL**，并注明原因（形态不对、注入未打中、负载不够、patch 未真正生效等）。可简称 **FAIL（复现未出现）** / **repro-blocked**。 |
-| **结案结论** | 写在案例上的判定标签（PASS / FAIL+GAP / FAIL（复现未出现）等），标明是否按预期复现并检出。 |
+| **结案（四档）** | 案例**总评主标签**，只取下列四档之一（与「检出与否」分开写）：① **未复现** — 目标异常形态未出现；② **复现未抓到** — 异常已现/应现，但**无有效异常 KV dump** 可对账（若 manual dump 已成功对账，不算本档；也不因 mere detect=0 就归本档）；③ **KV 一致→排除 KV** — 有效对账且匹配；④ **KV 不一致→定界** — 有效对账且不匹配，用十问事实（prompt/output、恢复、out0、PD…）摘要，禁止根因跃迁。 |
+| **检测（辅）** | 与结案档并列的辅信息：三层 trigger/precision/detect，和/或短标签「检出 / 漏检 / 乱码漏检 / 无可检（非漏检）」等。**不是**结案总评。 |
+| **PASS / FAIL / GAP（历史·检测侧）** | **已退役为结案总评。** 旧文里 PASS≈检出、FAIL≈未过关总称、GAP/FAIL+GAP≈有异常未检出（漏检类）。现只可作 **detector / verify 侧**用语（如 skills 验 detector），**不要**再当案例 headline 结案。无异常时不要写「漏检/GAP」。 |
+| **复现失败** | 打了 patch / overlay，但目标异常**没有出现** → 结案档 **未复现**（注明形态/注入/负载等原因）。不要写成漏检。 |
 | **样本** | 保存的请求 / 回复证据；应含 prompt + 输出，用来**读文意、核对坏没坏 / 是否误判**。仅有 prompt **字符串**的 sample **不能**当作可靠 tokenize 标杆（发出去的字符串 + 回来的 completion，再 encode 的结果可能与服务端不一致；处理 prompt 与处理 sample 的 tokenizer 也可能不同）。 |
 | **标杆请求（token ids）** | 需要可复现 tokenize / 定界对比时，请求侧以服务端或 Guard **实际捕获的 `prompt_token_ids`** 为准，**用 token ids 去抓 / 归档**，禁止「只存字符串、事后再 encode」当标杆。report 里 prompt 已空时：把**同一 prompt 再 curl**，手动 dump 取服务端实际 ids（仍禁止离线再 tokenize）。 |
 | **report 空 prompt** | 旧归档里 `prompt_token_ids` 可能为空（合 [vllm-ascend#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) 前样本）。对外三句：① 阅读原文看 `samples/`；② 需要标杆 ids 时**同 prompt 再请求**取服务端实际 ids；③ **勿**用字符串再 encode 填进旧 report。空 ids ≠ 不能做 KV 排除定界。 |
@@ -90,27 +101,27 @@
 | **复现技巧** | 对外文档里「怎么跑才能对齐本包结论」的步骤与负载（旧称「复现配方」，已不用）。过程旧文称 **历史记录**，不称「历史配方」。 |
 ## 对外保留的 15 个典型案例
 
-| ID | 包 | 结案结论 | 根因 | 现象 | 检测器 | trigger / precision / detect |
-|----|-----|----------|------|------|--------|------------------------------|
-| S01 | [cases/S01/](./cases/S01/) | FAIL（复现未出现） | KV 新块未置零（需 hybrid/量化 KV） | dense 未见坏输出 | 本轮无可检坏输出；非漏检结案 | 154 / 0† / 0 |
-| S10′ | [cases/S10p/](./cases/S10p/) | PASS | FullAttn 回收块未清零 | 复读 / `xxxx` 塌缩 | `token_repeat` | 65 / 20 / 79 |
-| S11 | [cases/S11/](./cases/S11/) | PASS | MLA RoPE pad-tail 错位 | digit / collapse 垃圾 | `token_repeat` | 138 / 39 / 60 |
-| S07 | [cases/S07/](./cases/S07/) | FAIL+GAP | W8A8 dequant scale 崩溃 | 跨请求内容相同的乱码 | 期望 `logits_finite`→未检出；乱码检测漏检 | 2624 / 1 / 0 |
-| S23 | [cases/S23/](./cases/S23/) | PASS | 一层 `o_proj` 权重置零 | 跨请求内容相同塌缩 | `token_repeat` | 2 / 17 / 48 |
-| S45 | [cases/S45/](./cases/S45/) | FAIL+GAP | top-k 打在 −logits | 各不相同乱码 | 期望 `token_repeat`+`logits_finite`→未检出；乱码检测漏检 | 16 / 4 / 0 |
-| S43 | [cases/S43/](./cases/S43/) | PASS | embedding ×100 | 换行塌缩 | `token_repeat` | 16 / 40 / 48 |
-| S22 | [cases/S22/](./cases/S22/) | PASS | Spec resample 无独立 salt | acceptance_rate 塌缩 | `spec_acceptance`（主） | 126 / 0 / 47 |
-| S06 | [cases/S06/](./cases/S06/) | PASS | MoE router bias / mask（构造） | 复读/乱码文本 | `token_repeat` | 70 / 1 / 1† |
-| S26 | [cases/S26/](./cases/S26/) | PASS | RMSNorm fp32 错乘 | `1.1.1…` 复读 | `token_repeat` | 354 / 16 / 48 |
-| S25 | [cases/S25/](./cases/S25/) | PASS | RoPE 后半维丢失 | `1.1.1…` / `1.0.0…` 复读 | `token_repeat` | 348 / 17 / 48 |
-| S50 | [cases/S50/](./cases/S50/) | PASS | SwiGLU gate/up 对调 | 跨请求内容相同的 `!!!!` | `logits_finite` | 58 / 48 / 48 |
-| S48 | [cases/S48/](./cases/S48/) | PASS | residual 极性取反 | 跨请求内容相同的 `!!!!` | `logits_finite` | 100 / 48 / 48 |
-| S47 | [cases/S47/](./cases/S47/) | PASS | Attn 前 K/V 对调 | CJK / Trail 塌缩 | `token_repeat` | 58 / 37 / 48 |
-| S33 | [cases/S33/](./cases/S33/) | PASS | softcap 缺 `*cap` rescale | `1.1.1…` 复读 | `token_repeat` | 130 / 17 / 48 |
+| ID | 包 | 结案 | 检测 | 根因 | 现象 | 检测器 | trigger / precision / detect |
+|----|-----|------|------|------|------|--------|------------------------------|
+| S01 | [cases/S01/](./cases/S01/) | 未复现 | 无可检（非漏检） | KV 新块未置零（需 hybrid/量化 KV） | dense 未见坏输出 | 本轮无可检坏输出 | 154 / 0† / 0 |
+| S10′ | [cases/S10p/](./cases/S10p/) | KV 一致→排除 KV | 检出 | FullAttn 回收块未清零 | 复读 / `xxxx` 塌缩 | `token_repeat` | 65 / 20 / 79 |
+| S11 | [cases/S11/](./cases/S11/) | KV 不一致→定界 | 检出 | MLA RoPE pad-tail 错位 | digit / collapse 垃圾 | `token_repeat` | 138 / 39 / 60 |
+| S07 | [cases/S07/](./cases/S07/) | KV 不一致→定界（弱窗） | 乱码漏检 | W8A8 dequant scale 崩溃 | 跨请求内容相同的乱码 | 期望 `logits_finite`→未检出 | 2624 / 1 / 0 |
+| S23 | [cases/S23/](./cases/S23/) | KV 不一致→定界 | 检出 | 一层 `o_proj` 权重置零 | 跨请求内容相同塌缩 | `token_repeat` | 2 / 17 / 48 |
+| S45 | [cases/S45/](./cases/S45/) | KV 一致→排除 KV | 乱码漏检 | top-k 打在 −logits | 各不相同乱码 | 期望 `token_repeat`+`logits_finite`→未检出 | 16 / 4 / 0 |
+| S43 | [cases/S43/](./cases/S43/) | KV 不一致→定界 | 检出 | embedding ×100 | 换行塌缩 | `token_repeat` | 16 / 40 / 48 |
+| S22 | [cases/S22/](./cases/S22/) | KV 一致→排除 KV | 检出 | Spec resample 无独立 salt | acceptance_rate 塌缩 | `spec_acceptance`（主） | 126 / 0 / 47 |
+| S06 | [cases/S06/](./cases/S06/) | KV 不一致→定界 | 检出 | MoE router bias / mask（构造） | 复读/乱码文本 | `token_repeat` | 70 / 1 / 1† |
+| S26 | [cases/S26/](./cases/S26/) | KV 不一致→定界 | 检出 | RMSNorm fp32 错乘 | `1.1.1…` 复读 | `token_repeat` | 354 / 16 / 48 |
+| S25 | [cases/S25/](./cases/S25/) | KV 一致→排除 KV | 检出 | RoPE 后半维丢失 | `1.1.1…` / `1.0.0…` 复读 | `token_repeat` | 348 / 17 / 48 |
+| S50 | [cases/S50/](./cases/S50/) | KV 不一致→定界 | 检出 | SwiGLU gate/up 对调 | 跨请求内容相同的 `!!!!` | `logits_finite` | 58 / 48 / 48 |
+| S48 | [cases/S48/](./cases/S48/) | KV 不一致→定界 | 检出 | residual 极性取反 | 跨请求内容相同的 `!!!!` | `logits_finite` | 100 / 48 / 48 |
+| S47 | [cases/S47/](./cases/S47/) | KV 不一致→定界 | 检出 | Attn 前 K/V 对调 | CJK / Trail 塌缩 | `token_repeat` | 58 / 37 / 48 |
+| S33 | [cases/S33/](./cases/S33/) | KV 一致→排除 KV | 检出 | softcap 缺 `*cap` rescale | `1.1.1…` 复读 | `token_repeat` | 130 / 17 / 48 |
 
 计数摘自各包 `evidence/三层计数.json`（每个案例一份最新对外结果）。脚注：
 
-- **S06 †**：detect 按归档 `token_repeat` report×1 记 **1**（与 `三层计数.json` / 跑批结果一致）；表内为数字，PASS 说明见 [cases/S06](./cases/S06/) 备注。
+- **S06 †**：detect 按归档 `token_repeat` report×1 记 **1**（与 `三层计数.json` / 跑批结果一致）；表内为数字；检出说明见 [cases/S06](./cases/S06/) 备注。
 - **S07**：precision 记成 1，实为 48 次请求内容相同的乱码（以 samples + score 为准）。
 - **S10′**：`precision=20` 可对照 `cases/S10p/evidence/samples/`（T181551）；detect=79 见 `evidence/reports/report_sample.json`。
 - **S11**：`precision=39` 可对照 `cases/S11/evidence/samples/`（T190840）。

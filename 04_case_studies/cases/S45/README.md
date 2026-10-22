@@ -1,4 +1,4 @@
-# S45 · Top-k on −logits → unique garbage（FAIL+GAP）
+# S45 · Top-k on −logits → unique garbage（KV 一致→排除 KV · 乱码漏检）
 
 公开自洽案例包。能检对照：[S43](../S43/)。
 
@@ -6,7 +6,8 @@
 
 | 项 | 值 |
 |----|-----|
-| 结果 | **FAIL+GAP** |
+| 结案 | **KV 一致→排除 KV** |
+| 检测 | **乱码漏检** |
 | 三层率 | **16 / 4 / 0**（现行；trigger/precision 随并发浮动，detect 为判定口径） |
 | Detector | `token_repeat` + `logits_finite`（均 miss）；**乱码检测漏检** |
 | Origin | `both`（constructed wrong-topk-direction） |
@@ -24,7 +25,7 @@ top-k / top-p 作用在 `-logits` 上再取反——保留最低-k / 倒置 nucl
 
 ## 3 · Guard 结果
 
-**FAIL+GAP。** detect=0。异常已出现，但乱码检测漏检。
+**乱码漏检。** detect=0。异常已出现，detector 未命中；manual dump 已完成有效对账。结案档：**KV 一致→排除 KV**。
 
 ## 4 · 复现技巧与双树写入（必读）
 
@@ -38,7 +39,7 @@ top-k / top-p 作用在 `-logits` 上再取反——保留最低-k / 倒置 nucl
 - **正确：** `gen_s45_overlay.py` 分别写 **Ascend B** + **canonical/vllm**；**temp=0.8**。 
 - **错误：** 只 `git apply` 到 Ascend B → `sampler.py: No such file or directory`；或 temp=0。
 
-按复现技巧（双树 + temp=0.8）→ **16 / 4 / 0**（仍为 detect=0，与归档 GAP 一致）。
+按复现技巧（双树 + temp=0.8）→ **16 / 4 / 0**（仍为 detect=0，乱码漏检）。
 
 ## 定界分析
 
@@ -58,7 +59,7 @@ top-k / top-p 作用在 `-logits` 上再取反——保留最低-k / 倒置 nucl
 
 ### 结论
 
-- 已定界到：可排除 KV cache（本请求 prompt 对比窗口）。
+- 结案档：**KV 一致→排除 KV**（本请求 prompt 对比窗口）。
 - 尚未定界到具体算子/构造根因；分析不出 / 证据不足。
 
 ## 证据文件

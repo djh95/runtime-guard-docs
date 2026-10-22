@@ -1,4 +1,4 @@
-# S26 · RMSNorm fp32 weight-mul（PASS · PR-rooted）
+# S26 · RMSNorm fp32 weight-mul（KV 不一致→定界 · PR-rooted）
 
 公开自洽案例包。
 
@@ -6,7 +6,8 @@
 
 | 项 | 值 |
 |----|-----|
-| 结果 | **PASS** |
+| 结案 | **KV 不一致→定界** |
+| 检测 | **检出** |
 | 三层率 | **354 / 16 / 48**（现行；detect=48/48；trigger/precision 随并发浮动，detect 为判定口径） |
 | Detector | `token_repeat`（**threshold=8**） |
 | Origin | `both` |
@@ -24,7 +25,7 @@ Soft-inverse [vLLM#42379](https://github.com/vllm-project/vllm/pull/42379)：`As
 
 ## 3 · Guard 结果
 
-**PASS。** 现行 **354 / 16 / 48**。
+**检出。** 现行 **354 / 16 / 48**。结案档：**KV 不一致→定界**。
 
 ## 4 · 复现技巧（必读）
 
@@ -61,7 +62,7 @@ Soft-inverse [vLLM#42379](https://github.com/vllm-project/vllm/pull/42379)：`As
 
 ### 结论
 
-- 已定界到：KV 与标杆不一致（重开 KV 线）。
+- 结案档：**KV 不一致→定界**（重开 KV 线）。
 - 尚未定界到具体写/传路径；分析不出 / 证据不足。
 
 ## 证据文件

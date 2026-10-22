@@ -1,12 +1,13 @@
-# S07 · W8A8 scale collapse → logits 有限乱码（FAIL+GAP）
+# S07 · W8A8 scale collapse → logits 有限乱码（KV 不一致→定界 · 弱窗）
 
-公开自洽案例包。同属「有限分值 / KV·量化」话题的对照：[S01](../S01/)（dense **复现未出现**，不是漏检结案）。
+公开自洽案例包。同属「有限分值 / KV·量化」话题的对照：[S01](../S01/)（dense **未复现**，不是漏检）。
 
 ## 归档钉点
 
 | 项 | 值 |
 |----|-----|
-| 结果 | **FAIL+GAP** |
+| 结案 | **KV 不一致→定界（弱窗/力度有限）** |
+| 检测 | **乱码漏检** |
 | 三层率 | **2624 / 1（跨请求内容相同×48） / 0** |
 | Detector | 期望 `logits_finite` → **miss**（0 report） |
 | Origin | `both` |
@@ -25,7 +26,7 @@ W8A8 dequant scale 崩溃（在 `deq_scale` 上 zero + 1e20）。属于 quant / 
 
 ## 3 · Guard 结果
 
-**判定：FAIL+GAP。** `logits_finite` 已武装，detect=0——logits（采样前的分值）始终是有限数，没有 NaN/Inf；文字仍是乱码，故漏检。score 侧 `garbage_mixed_script`×48 且跨请求内容相同。
+**乱码漏检。** `logits_finite` 已武装，detect=0——logits（采样前的分值）始终是有限数，没有 NaN/Inf；文字仍是乱码，故漏检。score 侧 `garbage_mixed_script`×48 且跨请求内容相同。结案档为 **KV 不一致→定界（弱窗/力度有限）**（有异常 dump，但对账窗弱）。
 
 | 层 | 归档 |
 |----|------|
@@ -41,7 +42,7 @@ status 里 precision 记成 1，但 samples + score 证实跨请求内容相同�
 
 ### 事实
 
-- 现象：有限分值乱码 + detector miss（FAIL+GAP）；归档 dump 侧可用配对为旧 `logits_finite`（`output_token_ids` 仅 1 枚）。
+- 现象：有限分值乱码 + 乱码漏检；归档 dump 侧可用配对为旧 `logits_finite`（`output_token_ids` 仅 1 枚）。
 - 本包已归档 KV 对比（cos_thresh=0.99；n_prompt=16 n_cmp_tokens=16；matched_layers=72）。
 - 原 report `prompt_token_ids` 为空；同 prompt re-curl 后与异常 `output_token_ids` 合并再抓标杆。
 - 首不一致：idx=0 role=prompt span=prompt min_cos=NaN @ layer_36。
@@ -54,7 +55,7 @@ status 里 precision 记成 1，但 samples + score 证实跨请求内容相同�
 
 ### 结论
 
-- 已定界到：identical+garbage 形态 + detector miss；弱 dump 与标杆不一致。
+- 结案档：**KV 不一致→定界（弱窗/力度有限）**；identical+garbage 形态 + 乱码漏检；弱 dump 与标杆不一致。
 - 尚未定界到 W8A8 dequant / 具体写传路径；分析不出 / 证据不足。
 
 ## 证据文件

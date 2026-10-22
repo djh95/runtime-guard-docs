@@ -1,4 +1,4 @@
-# S25 · RoPE second-half drop（PASS · PR-rooted）
+# S25 · RoPE second-half drop（KV 一致→排除 KV · PR-rooted）
 
 公开自洽案例包。
 
@@ -6,7 +6,8 @@
 
 | 项 | 值 |
 |----|-----|
-| 结果 | **PASS** |
+| 结案 | **KV 一致→排除 KV** |
+| 检测 | **检出** |
 | 三层率 | **348 / 17 / 48**（现行；detect=48/48；trigger/precision 随并发浮动，detect 为判定口径） |
 | Detector | `token_repeat`（**threshold=8**） |
 | Origin | `ascend-only` |
@@ -24,7 +25,7 @@ Soft-inverse [ascend#7082](https://github.com/vllm-project/vllm-ascend/pull/7082
 
 ## 3 · Guard 结果
 
-**PASS。** 现行 **348 / 17 / 48**。
+**检出。** 现行 **348 / 17 / 48**。结案档：**KV 一致→排除 KV**。
 
 ## 4 · 复现技巧（必读）
 
@@ -60,7 +61,7 @@ Soft-inverse [ascend#7082](https://github.com/vllm-project/vllm-ascend/pull/7082
 
 ### 结论
 
-- 已定界到：可排除 KV cache（本请求对比窗口）。
+- 结案档：**KV 一致→排除 KV**（本请求对比窗口）。
 - 尚未定界到具体算子/构造根因；分析不出 / 证据不足。
 
 ## 证据文件

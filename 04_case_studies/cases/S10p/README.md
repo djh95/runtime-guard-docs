@@ -1,12 +1,13 @@
-# S10′ · FullAttn recycle-zero（PASS）
+# S10′ · FullAttn recycle-zero（KV 一致→排除 KV）
 
-公开自洽案例包。对照：[S01](../S01/)（dense **FAIL（复现未出现）**，不是漏检结案）。
+公开自洽案例包。对照：[S01](../S01/)（dense **未复现**，不是漏检）。
 
 ## 归档钉点
 
 | 项 | 值 |
 |----|-----|
-| 结果 | **PASS** |
+| 结案 | **KV 一致→排除 KV** |
+| 检测 | **检出** |
 | 三层率 | **65 / 20 / 79** |
 | Detector | `token_repeat` |
 | Origin | `both` |
@@ -28,7 +29,7 @@ FullAttention 不进 `needs_kv_cache_zeroing` 管线，回收 block 时 partial-
 
 ## 3 · Guard 结果
 
-**PASS。** 期望 `token_repeat`。归档 **65 / 20 / 79**（precision 可用 `evidence/samples/` 核对；detect 有 report）。
+**检出。** 期望 `token_repeat`。归档 **65 / 20 / 79**（precision 可用 `evidence/samples/` 核对；detect 有 report）。结案档：**KV 一致→排除 KV**。
 
 ## 4 · 复现技巧
 
@@ -55,7 +56,7 @@ Overlay：强制 `needs_kv_cache_zeroing=False`，在 `BlockPool.get_new_blocks`
 
 ### 结论
 
-- 已定界到：可排除 KV cache（本请求对比窗口）。
+- 结案档：**KV 一致→排除 KV**（本请求对比窗口）。
 - 尚未定界到具体算子/构造根因；分析不出 / 证据不足。
 
 ## 证据文件

@@ -148,7 +148,7 @@ python "$SCRIPTS/summarize_reports.py" --report-dir {REPORT}
 python "$SCRIPTS/verify_request_kv.py" --report ... --kv-dir {KV_RANK_DIR}
 ```
 
-`PASS` 再抓标杆；`FAIL` 先修路径 / 配额 / `on_trigger`。
+`verify_request_kv` **PASS**（脚本验 dump，非案例结案档）再抓标杆；**FAIL** 先修路径 / 配额 / `on_trigger`。
 
 ### Step 5 — 有标杆：同 token 序列抓 ref
 
@@ -168,7 +168,7 @@ python "$SCRIPTS/verify_request_kv.py" --report ... --kv-dir {KV_RANK_DIR}
 
 ## 5. KV 定界十问检查单（有 buggy+ref 时按序）
 
-**前置：** `verify_request_kv` PASS；已有 buggy / ref dump。按序答下表，只填 **检查 outcome**。
+**前置：** `verify_request_kv` 脚本验 dump 通过；已有 buggy / ref dump。按序答下表，只填 **检查 outcome**。（此处 PASS 指脚本验，不是案例结案四档。）
 
 | 问 | 检查什么（判断 outcome） |
 |----|--------------------------|

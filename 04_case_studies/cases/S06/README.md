@@ -1,4 +1,4 @@
-# S06 · MoE routing bias / topk→0（PASS · 唯一公开 MoE）
+# S06 · MoE routing bias / topk→0（KV 不一致→定界 · 唯一公开 MoE）
 
 公开自洽案例包。
 
@@ -6,14 +6,15 @@
 
 | 项 | 值 |
 |----|-----|
-| 结果 | **PASS** |
+| 结案 | **KV 不一致→定界** |
+| 检测 | **检出** |
 | 三层率 | **70 / 1 / 1** |
 | Detector | `token_repeat` |
 | Origin | `both` |
 | Guard pin | G2 f2aefd068 |
 | 模型 | DeepSeek-V2-Lite |
 | Run | 06_moe_routing_bias-20261016T081459|
-| 备注 | detect=1 来自归档 `token_repeat` report×1（与 `evidence/三层计数.json` 一致）；PASS 以该数字为准 |
+| 备注 | detect=1 来自归档 `token_repeat` report×1（与 `evidence/三层计数.json` 一致）；检出以该数字为准 |
 
 ## 1 · 现象
 
@@ -25,7 +26,7 @@ Overlay / 上游 PR 意图：错误 router bias / mask 类（非 bit-exact CUDA�
 
 ## 3 · Guard 结果
 
-**PASS。** detect 以归档 `reports/report_*.json`（`token_repeat`×1）为准。
+**检出。** detect 以归档 `reports/report_*.json`（`token_repeat`×1）为准。
 
 **report 空 `prompt_token_ids`（旧归档）：** 合修前样本可能空 ids。阅读看 [evidence/samples/](./evidence/samples/)；需要标杆时同 prompt 再请求取服务端 ids；**勿**从 sample 字符串再 encode。空 prompt ≠ 不能做 KV 排除定界。通则见 [④ 名词表 · report 空 prompt](../../README.md#名词怎么读先看这里)。
 
@@ -49,7 +50,7 @@ Overlay / 上游 PR 意图：错误 router bias / mask 类（非 bit-exact CUDA�
 
 ### 结论
 
-- 已定界到：KV 与标杆不一致（重开 KV 线）。
+- 结案档：**KV 不一致→定界**（重开 KV 线）。
 - 尚未定界到具体写/传路径；分析不出 / 证据不足。
 
 ## 证据文件
