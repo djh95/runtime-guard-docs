@@ -85,15 +85,26 @@ python "$SCRIPTS/compare_per_layer.py" \
 | 从某层起坏 | 该层计算/写出 |
 | cos 断崖→0 | 污染/串 block |
 | 平台 ~0.8–0.9 | 偏计算误差 |
+| **全 NaN `min_cos`** | **不是**定位信号 — 见下节；勿读 `first_mismatch_idx`/层名 |
 
 **TP>1：** 对齐 `tp_rank` / `num_kv_heads`；必要时 `stitch_kv`。  
-对比后删临时全量 `kv_cache`（可留 `.pt` 小样）。
+**归档前保留**服务端 buggy/ref dump；对比产物写入 keep-set 后再按配额清临时全量（可留 `.pt` 小样）。
+
+## 有效对账前提（踩坑硬纪律）
+
+1. **同一次异常请求** — buggy report、buggy dump、ref dump、`kv_compare` 必须对齐同一 `req_id`/wave。禁止拿「有 dump 的旧跑」配「新 detect 钉点」。**detect=0 也不授权**混用历史 dump。  
+2. **先有有效异常** — 目标形态已复现；dump 覆盖足够 output（勿把 **弱窗** 如仅 o=1 / 非异常 completion 当有效异常 KV）。未满足 → 停，交 investigation 写 **复现未抓到** / 未做有效对账。  
+3. **全 NaN ≠ token0@layer** — 若 Table1 几乎全 NaN：脚本可能把 idx=0 + 首层名当占位；**禁止**写成「首坏 token0 @ layer_L」。NaN 多因对齐/切片后向量零范数，**不是**「第 L 层 KV 填了 NaN」。处理：检查 `block_ids`/切片/TP stitch → 重 dump 直至出现**有限** cos，再写首分歧。  
+4. **多组验证** — 同一 overlay 至少两组独立异常请求，cos 结论同向再归档③/④。  
+5. **空 `prompt_token_ids`** — 勿字符串重 tokenize；同 prompt re-curl 抓服务端 ids，与异常 `output_token_ids` 合并后再 force-feed（见 investigation）。
 
 ## forbidden
 
 - 无 verify PASS 仍执行  
 - 重复实现 `verify_request_kv`  
-- 输出 runtime_config JSON；使用 msprobe
+- 输出 runtime_config JSON；使用 msprobe  
+- 用弱 dump / 全 NaN 对比结果写 keep-set ③/④ 或层定位  
+- 混用不同 run 的 report 与 dump
 
 ## Related
 

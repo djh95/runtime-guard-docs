@@ -221,6 +221,8 @@ Anomaly 压测：优先 `token_repeat` + `save_sensitive_info:true`；预期有�
 
 - 无 `dump.enabled`；活跃 = `auto_max_times>0` 或 manual 水位  
 - `auto_max_times>0` 与 active `manual_dump` **互斥**  
+- **`manual_dump` 的 N = 目标总次数**（非「还剩几次」）；进程内计数，≥N 停；要继续 dump 须改配置增大 N  
+- detector 未亮时仍可用 `manual_dump` **当场**抓同请求异常 KV（勿拿历史 dump 顶替）  
 - 未知 detector key → reload **拒绝并保留旧配置**  
 - Report：last-PP TP0；dump：last-PP×全部 TP；各 TP 同 live JSON
 

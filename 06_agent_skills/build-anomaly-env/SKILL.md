@@ -78,7 +78,7 @@ detector 漏检 → 记 FAIL+GAP / 缺口，**禁止**用放大器硬凑 detect�
 | 请求量 / 并发 / 时长 | 用 `synthetic/` 冒充主门 |
 | seeds / 调度边 / 同路径并行拓扑 | |
 
-时间：优先 **≤5–10 min 大量请求**；必要时 ~30 min。  
+时间：优先 **≤5–10 min 大量请求**；稀有路径可拉长，**单场景上限约 1h**。超时未复现 → 记 **未复现**（附 knobs），勿放大器硬凑、勿空耗。  
 每场景记 **original repro rate**（调前）与 **tuned repro rate**（调后）及所用 knobs。
 
 ### 6. HARD / DEFER；多挖少造
@@ -99,6 +99,12 @@ detector 漏检 → 记 FAIL+GAP / 缺口，**禁止**用放大器硬凑 detect�
 | 原始异常样本 | completions / logs / dumps（FAIL 时尤须：确认是否复现 + 若干 raw 样本） |
 | keep-set 打包 | 包内 `overlay.patch` + `规格说明.md`；结案入口在 `cases/Sxx/README.md` |
 
+**构造 vs 复现技巧（文案落点）：** 「勿强制写 NaN / token fill」属 **overlay 构造**，写在规格 / 根因·构造；**不要**放进案例 README 的「复现技巧」（复现技巧 = 怎么跑才对齐本包结论）。origin-faithful 同属本 skill，不是用户面复现技巧。
+
+**无实测则留空：** keep-set 未跑或证据不可信时，只留 overlay+规格；结案/三层/samples/reports/`kv_compare` **留空或删除**，勿半截旧跑、勿编造。重测后 **同一次异常请求** 回填（见 `investigation` 证据完整性）。
+
+**抓 dump：** detector 未亮时可用 `manual_dump` 当场抓有效异常 KV；N = 目标总次数（进程内计数，≥N 停）。短 output 也能 dump，但弱窗（如 o=1）不作有效对账前提。
+
 ### 8. `synthetic/` / g_inject
 
 **阳性对照 only**，不是主门集 / ~10-gate 主体。勿用其 PASS 代替 origin-faithful 场景。
@@ -106,6 +112,7 @@ detector 漏检 → 记 FAIL+GAP / 缺口，**禁止**用放大器硬凑 detect�
 ### 9. 复现之后（交叉链接，勿在此展开十问）
 
 有异常证据后 → [`investigation`](../investigation/SKILL.md) 编排；verify PASS 后 → [`ref-kv-dump`](../ref-kv-dump/SKILL.md)。  
+结案用 **四档**（未复现 / 复现未抓到 / KV 一致→排除 / KV 不一致→定界），勿把本 skill 的 PASS/FAIL 语言升格为 keep-set headline。  
 **本 skill 不写十问推断纪律。**
 
 ---

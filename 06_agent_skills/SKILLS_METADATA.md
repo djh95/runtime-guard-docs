@@ -1,6 +1,6 @@
 # Runtime-Guard Skills Metadata
 
-版本：v5.10  
+版本：v5.11  
 Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `analysis` · `ref-kv-dump` · **`build-anomaly-env`** · **`apply-mrv1-patch`** · **`apply-v030-mrv2-patch`**
 
 ## Changelog（摘要）
@@ -9,7 +9,8 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 
 离线脚本入口：本仓 [`scripts/`](./scripts/)。
 
-- **v5.10（现行）** — 构造 skill：`build-anomaly-env`（origin-faithful overlay / 三层率 / HARD·DEFER；术语主页）；排障五件套 + 接线 skills 不变。  
+- **v5.11（现行）** — 踩坑原则入库：keep-set **结案四档**（≠ PASS/FAIL/GAP 总评）；**钉点同跑** / 禁混用 run；**有效异常 KV**（弱窗不可对账）；**全 NaN cos ≠ 层定位**；多组验证；服务器保留 dump；无证据留空；压测上限 ~1h；`manual_dump` 抓未检出异常。落点：`investigation` / `analysis` / `ref-kv-dump` / `build-anomaly-env`。  
+- **v5.10** — 构造 skill：`build-anomaly-env`（origin-faithful overlay / 三层率 / HARD·DEFER；术语主页）；排障五件套 + 接线 skills 不变。  
 - **v5.9** — 接线 skills：`apply-mrv1-patch`（`05_mrv1_backport`）· `apply-v030-mrv2-patch`（`05_v030_backport`）；排障五件套不变。  
 - **v5.8** — ones/zeros 收尾；多为 `token_repeat` + 问题类提示（L2）。
 - **v5.0–v5.7** — soft-inverse（按上游修复反向注入）矩阵扩展。
@@ -55,13 +56,15 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 - Triage（手册 02）：Hang/OOM/启动 crash 等 → 终止并说明原因  
 - 收集开场输入：现象、版本、拓扑、能否压测、有无清洁标杆、本地 report/dump 路径、谁起服  
 - 委派：未定类 → sweep；定类 → recommender；已有产物 → analysis；verify=PASS 且可标杆 → ref-kv-dump  
-- 汇总下游结果，填十问 **定界交付模板**；区分「已定界」vs「无法根因定位」
+- 汇总下游结果，填十问 **定界交付模板**；区分「已定界」vs「无法根因定位」  
+- keep-set **结案四档** + 证据完整性（钉点同跑 / 有效异常 KV / 全 NaN 禁伪定位 / 无证据留空）
 
 **forbidden**
 
 - 自创 runtime_config 阈值 / dump 配额 / cooldown / `on_trigger`（须来自 sweep 或 recommender 产出）  
 - 自行实现离线解析或 force-feed / 对比脚本流程（委派 analysis / ref）  
-- 承诺定位到算子 / 内核 / 具体提交
+- 承诺定位到算子 / 内核 / 具体提交  
+- 混用不同 run；用弱 dump / 全 NaN 伪写③/④；用 PASS/FAIL/GAP 当案例 headline 结案
 
 **逻辑输入：** symptom, version, topology, can_pressure_test, has_clean_ref_env, local_artifact_path?  
 **逻辑输出：** triage_result, delegated 摘要, delimitation_template, conclusion, next_step
@@ -125,7 +128,8 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 
 - 输出 runtime_config / 热更 JSON  
 - 拉起推理服务、force-feed、标杆对比（→ ref-kv-dump）  
-- 把 empty report 直接当成「无异常」而不看 samples
+- 把 empty report 直接当成「无异常」而不看 samples  
+- 混用不同 run 的 report/dump；把弱 dump / 空 ids 补造为可定界证据
 
 **逻辑输入：** report_dir, optional_dump_dir?, optional_sample_dir?  
 **逻辑输出：** verify_result, request_list 摘要, artifact_check_note, optional gap_score
@@ -140,13 +144,15 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 
 - 用报告 token ids force-feed（禁止字符串重 tokenize / 禁止标杆自行生成）  
 - 同模型 / 拓扑 / **同 MODE** 清洁实例 + native `dump_kv`  
-- `compare_kv_similarity` / `locate_first_divergence` / `compare_per_layer`；解读对齐十问
+- `compare_kv_similarity` / `locate_first_divergence` / `compare_per_layer`；解读对齐十问  
+- 校验有效异常 KV / 拒绝全 NaN 伪定位；多组验证后再归档
 
 **forbidden**
 
 - 无 verify PASS 证据仍执行  
 - 重复实现 `verify_request_kv`  
-- 输出 runtime_config JSON
+- 输出 runtime_config JSON  
+- 弱 dump / 全 NaN cos 写成层定位或 keep-set ③/④；混用不同 run
 
 **逻辑输入：** verify PASS 证据, buggy token ids / report 路径, topology, model_mode  
 **逻辑输出：** ref_dump_path, kv_compare 摘要, warnings
@@ -162,13 +168,15 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 - 按真实修复 PR 挖 typed 候选；写 overlay-only 故障（测试仓 `tests/build-anomaly-env/`）  
 - 列 allowed/forbidden knobs；用合法 knobs 抬 trigger/precision；记 original vs tuned rate  
 - 强制三层分计 + bug 路径开火日志；打包 SPEC / overlay / 上游 PR / 样本 / 三层  
-- HARD/DEFER 难 bug，改挖新候选；`synthetic/` 仅阳性对照
+- HARD/DEFER 难 bug，改挖新候选；`synthetic/` 仅阳性对照  
+- 时限 ≤~1h；无实测留空；NaN/fill 禁令只写规格/构造（不进「复现技巧」）
 
 **forbidden**
 
 - NaN 强写 / token fill / 伪造症状放大器；改 canonical 当场景  
 - 以 GSM8K/golden 当成功；用 soft-inv 刷分顶替 HARD  
-- 在本 skill 展开十问定界（→ `investigation` / `ref-kv-dump`）
+- 在本 skill 展开十问定界（→ `investigation` / `ref-kv-dump`）  
+- 半截旧跑冒充实测；把构造禁令写进案例「复现技巧」
 
 **逻辑输入：** bug/PR 锚点, Origin 标签, 拓扑/模型, 时限  
 **逻辑输出：** SPEC, overlay, 三层率, samples, HARD|就绪, keep-set 打包提示

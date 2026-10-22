@@ -260,6 +260,29 @@ description: >-
 
 **统一定界禁例（案例教学禁写并入此处）：** 不可写「坏输出 → 所以进错专家 / MoE topk / K/V 对调 / gate-up 对调」等；构造根因只放「案例背景/构造」，不放进定界推断。案例页只留 outcome/事实，不写教学禁例段。
 
+### keep-set 结案四档（主标签；≠ PASS/FAIL/GAP）
+
+案例 **headline 结案**只用四档（详见 [04](../../04_case_studies/README.md)）。PASS/FAIL/GAP 仅作 **detector / verify 侧**用语，不作整案总评。
+
+| 档 | 何时 |
+|----|------|
+| **未复现** | 目标异常形态未出现（通顺输出 ≠ 目标乱码；有 trigger 也不够） |
+| **复现未抓到** | 异常已现/应现，但**无有效异常 KV** 可对账 |
+| **KV 一致→排除 KV** | 有效对账且匹配 |
+| **KV 不一致→定界** | 有效对账且不匹配 → 按十问写事实摘要 |
+
+**检测（辅）** 另写：三层或「检出 / 漏检 / …漏检」。mere **detect=0** 不自动等于「复现未抓到」——若 `manual_dump` 已抓到有效异常 KV 并完成对账，按③/④。
+
+### 证据完整性（踩坑硬纪律）
+
+1. **钉点同跑** — detect 钉点、KV dump、`kv_compare`、定界结论必须来自**同一次异常请求**（同 `req_id` / 同 wave）。禁止把 A 跑的 report 与 B 跑的 dump / 旧 `kv_compare` 拼成一案。  
+2. **有效异常 KV 前提** — 未复现、非目标形态、或**弱 dump**（如仅 o=1 / 窗过短 / 非异常样本）→ **不得**写成已做有效对账；写「未复现 → 无有效异常 KV → 未做有效对账」或留空档 **复现未抓到**。  
+3. **全 NaN 余弦 ≠ 定位** — per-token `min_cos` 全 NaN 时，**禁止**把脚本占位的 `first_mismatch_idx` / 层名写成「token0@layer_L」类定界；NaN 常=抽取向量零范数，不是「第 L 层 KV 全是 NaN」。重抓能出有限 cos 再写③/④（细则见 `ref-kv-dump`）。  
+4. **无证据留空** — 不可信混档 / 清空实测后：删 samples/reports/三层/跑批/`kv_compare`，结案与定界**留空**；勿保留半截旧结论或编造数字。  
+5. **多组验证** — 写③/④前至少再跑一组（同 overlay、独立请求）确认 cos 结论同向；单次弱窗不作定论。  
+6. **服务器保留 dump** — 对账前勿清服务端 `kv_cache`；归档后再按配额清理。  
+7. **压测时限** — 单场景最长约 **1h**；超时未复现 → **未复现**（附 knobs/负载），勿空耗或放大器硬凑。
+
 ### KV/余弦时机方法示例（示意数字，非某包实测）
 
 交叉对照 [`ref-kv-dump`](../ref-kv-dump/SKILL.md) 信号表。
@@ -296,7 +319,9 @@ S45：勿用伪造 NaN/填 token / amplifier-retune 刷成 PASS；有异常+dete
 - 在本 skill 内手写完整排障 JSON / 离线脚本流程 / force-feed 实现  
 - 承诺定位算子、内核或具体 commit  
 - 从本流程跳过 `verify_request_kv` 直接宣称可做层定界  
-- 把「十问不适用」写进空 prompt 案例结案
+- 把「十问不适用」写进空 prompt 案例结案  
+- 混用不同 run 的 report/dump/`kv_compare`；用全 NaN / 弱 dump 伪写层定位  
+- 用 PASS/FAIL/GAP 当 keep-set 案例 headline 结案
 
 ## Related
 
