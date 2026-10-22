@@ -11,7 +11,7 @@
 | Detector | `logits_finite` |
 | Origin | `both`（constructed） |
 | Guard pin | G2 · `f2aefd068c4bd299d91cf0a1fdf642a3f327308f` |
-| Run | 48_residual_negate-20261017T165947 @ builder 机 cards 8,9 |
+| Run | 48_residual_negate-20261017T165947|
 
 ## 1 · 现象
 
@@ -40,7 +40,7 @@ Residual 极性案例。禁止 force-NaN / token fill。
 - 现象：非有限 logits / 异常输出（`evidence/samples/`）。
 - 三层见包内计数；detector：`logits_finite`。
 - 归档 report：`prompt_token_ids` 为空；本轮 re-curl 合并后对比。
-- builder 机 KV 对比（cos_thresh=0.99；n_prompt=14 n_cmp_tokens=14；layers=72）。
+- 本包已归档 KV 对比（cos_thresh=0.99；n_prompt=14 n_cmp_tokens=14；layers=72）。
 - 原 dump 条 `prompt_token_ids` 空；同 prompt re-curl 后与异常 `output_token_ids` 合并再抓标杆。
 - 首不一致：idx=0 role=prompt span=prompt min_cos=n/a @ layer_36。
 - 后续是否恢复≈1：False；output 首 token 余弦=n/a；仅 PD：False。

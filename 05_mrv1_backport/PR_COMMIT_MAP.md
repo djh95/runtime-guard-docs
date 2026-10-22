@@ -63,7 +63,7 @@
 | `releases/v0.28.0rc` | [#19340](https://github.com/vllm-project/vllm-ascend/pull/19340) | `7508a0e8b0ba47b1cf139e5f3e94d2ff855d9f4d` | `v0.28.0rc1/` | tip == docs BASE |
 | `releases/v0.30.0` | [#19341](https://github.com/vllm-project/vllm-ascend/pull/19341) | `8b11f6fa7ebe65dbb5b808590468cd7be8735cdc` | `v0.30.0/` | **≠** `#18450`；**离线 patch ≠ tip 字节**；勿改 `worker/v2/` |
 
-Fork heads：`djh95:cherry-pick/mrv1-runtime-guard-to-releases-<line>`。
+维护者 fork 分支命名约定见内部备忘（不在对外导航展开）。
 
 ---
 

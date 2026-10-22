@@ -11,7 +11,7 @@ description: >-
 
 **类型：原子 · 在线配置。** 排障 JSON / 业务默认全关 **只从此 skill 产出**（sweep 仅极简临时模板）。
 
-人读：[runtime_config.md](https://github.com/vllm-project/vllm-ascend/blob/main/docs/source/user_guide/configuration/runtime_config.md) · 手册 [01](https://github.com/djh95/runtime-guard-docs/blob/main/01_enable_and_start/README.md) / [03](https://github.com/djh95/runtime-guard-docs/blob/main/03_detectors/README.md)  
+人读：[runtime_config.md](https://github.com/vllm-project/vllm-ascend/blob/main/docs/source/user_guide/configuration/runtime_config.md) · 手册 [01](../../01_enable_and_start/README.md) / [03](../../03_detectors/README.md)  
 契约：[SKILLS_METADATA.md](./SKILLS_METADATA.md)
 
 ## Step 1 — 模式

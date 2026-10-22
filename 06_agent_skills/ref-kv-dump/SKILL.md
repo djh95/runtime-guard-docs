@@ -11,11 +11,13 @@ description: >-
 
 **类型：原子 · 标杆抓取 + 对比。**
 
+**force-feed：** 按报告里的 token id 原样喂给干净服务（禁止再 tokenize 字符串）。
+
 **硬门闩：** 已有 `verify_request_kv` **PASS**（本轮先跑 `runtime-guard-analysis`，或用户出示 PASS 证据）。无 PASS → 停止，勿抓 ref。  
 勿在本 skill 重复实现 verify。勿输出 `runtime_config`（起服/arm dump 配置来自 `config-recommender` 或用户已有 live JSON）。
 
-契约：[SKILLS_METADATA.md](./SKILLS_METADATA.md) · 定界：[02 §5](https://github.com/djh95/runtime-guard-docs/blob/main/02_problem_localization/README.md)  
-脚本：本仓 `../scripts/`（`python "$SCRIPTS/<name>.py"`；不需 `$RG_TEST`）
+契约：[SKILLS_METADATA.md](../SKILLS_METADATA.md) · 定界：[02 §5](../../02_problem_localization/README.md)  
+脚本：本仓 `../scripts/`（`python "$SCRIPTS/<name>.py"`）
 
 ```bash
 export RG_DOCS=/path/to/runtime-guard-docs

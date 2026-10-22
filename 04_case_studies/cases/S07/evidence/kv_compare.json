@@ -1,6 +1,5 @@
 {
   "case": "S07",
-  "host": "builder",
   "cos_thresh": 0.99,
   "kv_match": false,
   "first_mismatch_idx": 0,
@@ -16,11 +15,11 @@
   "n_prompt": 16,
   "n_layers_matched": 72,
   "source": {
-    "buggy_run": "/workspace/runtime-guard/canonical/results/anomaly-repro-20261016/07_quant_scale_collapse-20261016T113106",
-    "buggy_report": "/workspace/runtime-guard/canonical/results/anomaly-repro-20261016/07_quant_scale_collapse-20261016T113106/report/logits_finite/report_20261016_113309_175_cmpl-9f9af15665dd7128-0-b8086710_pid42243.json",
-    "feed_report": "/home/d00824595/keepset-kv-compare-20261022/out/cases/S07/scratch/merged_report_20261016_113309_175_cmpl-9f9af15665dd7128-0-b8086710_pid42243.json",
-    "buggy_rank": "/workspace/runtime-guard/canonical/results/anomaly-repro-20261016/07_quant_scale_collapse-20261016T113106/dump/logits_finite/cmpl-9f9af15665dd7128-0-b8086710/wave_2/dp0_tp0_pp0_cp0",
-    "ref_rank": "/home/d00824595/keepset-kv-compare-20261022/ref_runs/qwen3-8b-ref-20261022T171449/dump/manual_trigger/cmpl-98c1c8f97261c61d-0-81bb7a29/wave_6/dp0_tp0_pp0_cp0",
+    "buggy_run": "07_quant_scale_collapse-20261016T113106",
+    "buggy_report": "07_quant_scale_collapse-20261016T113106/report/logits_finite/report_20261016_113309_175_cmpl-9f9af15665dd7128-0-b8086710_pid42243.json",
+    "feed_report": "keepset-kv-compare-20261022/out/cases/S07/scratch/merged_report_20261016_113309_175_cmpl-9f9af15665dd7128-0-b8086710_pid42243.json",
+    "buggy_rank": "07_quant_scale_collapse-20261016T113106/dump/logits_finite/cmpl-9f9af15665dd7128-0-b8086710/wave_2/dp0_tp0_pp0_cp0",
+    "ref_rank": "ref_runs/qwen3-8b-ref-20261022T171449/dump/manual_trigger/cmpl-98c1c8f97261c61d-0-81bb7a29/wave_6/dp0_tp0_pp0_cp0",
     "req_id": "cmpl-9f9af15665dd7128-0-b8086710",
     "incident_type": "logits_finite",
     "empty_prompt_recurled": true

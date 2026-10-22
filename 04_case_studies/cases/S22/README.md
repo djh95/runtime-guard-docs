@@ -36,8 +36,8 @@ acceptance_rate 异常偏低。主检出靠 `spec_acceptance`（detect≈47）�
 
 **修复（任选）：**
 
-1. 用 `scripts/apply_anomaly_overlay.sh`（会依次尝试 `--ignore-whitespace` / `--ignore-space-change`）；或  
-2. 统一换行后再 apply；或  
+1. 用 `scripts/apply_anomaly_overlay.sh`（会依次尝试 `--ignore-whitespace` / `--ignore-space-change`）；或 
+2. 统一换行后再 apply；或 
 3. **推荐**：直接跑 `gen_s22_overlay.py` 锚点脚本。
 
 ## 5 · 教学要点
@@ -48,7 +48,7 @@ Spec 路径要用对 detector（主看 `spec_acceptance`）。acceptance 塌缩�
 
 ### 事实
 
-- builder 机实跑 KV 对比（cos_thresh=0.99；n_prompt=14 n_cmp_tokens=17；matched_layers=71）。
+- 本包已归档 KV 对比（cos_thresh=0.99；n_prompt=14 n_cmp_tokens=17；matched_layers=71）。
 - 标杆 vs 异常：对比窗口内**全程一致**（min-over-layers cos ≥ thresh）；output 首 token 余弦=0.999993。
 - 首不一致：无。
 

@@ -13,9 +13,9 @@ description: >-
 **类型：编排。** 只做 triage、收集输入、委派原子 skill、汇总定界交付。  
 底层配置 / 读盘 / force-feed / KV 对比 **委派**，不在本 skill 重写一遍。
 
-手册：[02](https://github.com/djh95/runtime-guard-docs/blob/main/02_problem_localization/README.md) · [01](https://github.com/djh95/runtime-guard-docs/blob/main/01_enable_and_start/README.md) · [03](https://github.com/djh95/runtime-guard-docs/blob/main/03_detectors/README.md)  
+手册：[02](../../02_problem_localization/README.md) · [01](../../01_enable_and_start/README.md) · [03](../../03_detectors/README.md)  
 契约：[SKILLS_METADATA.md](./SKILLS_METADATA.md)  
-脚本仓：**内部私有** `runtime-guard-test`（`$RG_TEST`；勿发公开 HTTPS blob）  
+离线脚本：本仓 [`../scripts/`](../scripts/)（完整评测矩阵不在本仓）  
 产品：`vllm_ascend/observability/runtime_guard/`（[#16849](https://github.com/vllm-project/vllm-ascend/pull/16849)/[#18644](https://github.com/vllm-project/vllm-ascend/pull/18644)）
 
 **Dump 只有 native `dump_kv`。** 禁止 msprobe / PrecisionDebugger / 自造 dumper。
@@ -47,7 +47,7 @@ description: >-
 
 **适合：** `token_repeat` / `logits_finite` / `spec_acceptance`（MTP）；KV 可疑靠 dump+标杆。  
 **勿启用未合入：** `output_substring` / `token_logprob` / `slot_*` / `kv_state`。  
-**看似必现：** 先按手册 [02 §4 Step 0.5](https://github.com/djh95/runtime-guard-docs/blob/main/02_problem_localization/README.md) 做连测 / 换输入（勿只靠 `max_tokens=1`）/ 消融 / PD 单 P·单 D；未验证勿在交付里写「必现」。
+**看似必现：** 先按手册 [02 §4 Step 0.5](../../02_problem_localization/README.md) 做连测 / 换输入（勿只靠 `max_tokens=1`）/ 消融 / PD 单 P·单 D；未验证勿在交付里写「必现」。
 
 ### 三层率（anomaly / 压测必记）
 
@@ -215,7 +215,7 @@ description: >-
 
 可**复述**下游给出的 JSON；**禁止**自己编造 window / 阈值 / `auto_max_times` / cooldown / `on_trigger`。
 
-启服与热更细节见手册 01；源码路径须含 `observability/runtime_guard/`（MRV2）。`releases/v0.30.0` / rc 线无 Guard 时先看 [05](https://github.com/djh95/runtime-guard-docs/blob/main/05_v030_backport/README.md)（BASE 见 CHANGELOG；`v0.30-rg.3` tip 已对齐 #18644）。
+启服与热更细节见手册 01；源码路径须含 `observability/runtime_guard/`（MRV2）。`releases/v0.30.0` / rc 线无 Guard 时先看 [05](../../05_v030_backport/README.md)（BASE 见 CHANGELOG；`v0.30-rg.3` tip 已对齐 #18644）。
 
 ## 目标（定界，非定位）
 

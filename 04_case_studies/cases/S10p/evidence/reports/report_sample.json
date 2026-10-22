@@ -7,7 +7,7 @@
   "dump_arm_wave": 8,
   "dump_count": 0,
   "dump_max_times": 2,
-  "dump_dir": "/workspace/runtime-guard/canonical/results/anomaly-repro-20261016/10_fullattn_recycle_zero-20261016T181551/dump/token_repeat/cmpl-88970fb1f4571132-0-9ab8bcd5",
+  "dump_dir": "10_fullattn_recycle_zero-20261016T181551/dump/token_repeat/cmpl-88970fb1f4571132-0-9ab8bcd5",
   "decode_token_ids": true,
   "max_prompt_token_ids": 100000,
   "max_output_token_ids": 100000,

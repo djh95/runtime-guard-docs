@@ -7,7 +7,6 @@
   "detect_reports": 0,
   "n_requests": 24,
   "rejudge": {
-    "host": "builder 机",
     "container": "rg-builder",
     "run_dir": "01_kv_block_nonzero-20261020T101951",
     "model": "/mnt/weight/Qwen3-8B",

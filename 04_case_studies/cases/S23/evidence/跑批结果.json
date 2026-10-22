@@ -2,7 +2,6 @@
   "id": "S23",
   "verdict": "PASS",
   "layers": "2 / 17 / 48",
-  "host": "builder 机",
   "cards": "10,11",
   "run": "23_weight_layer_corrupt-20261017T104359",
   "detector": "token_repeat",

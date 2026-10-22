@@ -10,7 +10,7 @@ description: >-
 
 **类型：运维 / 接线。** 对干净 `releases/v0.30.0` BASE 打 `05_v030_backport` 的 Guard→**Model Runner V2** 补丁。
 
-包说明：[05_v030_backport/README.md](https://github.com/djh95/runtime-guard-docs/blob/main/05_v030_backport/README.md) · [CHANGELOG](https://github.com/djh95/runtime-guard-docs/blob/main/05_v030_backport/CHANGELOG.md)
+包说明：[05_v030_backport/README.md](../../05_v030_backport/README.md) · [CHANGELOG](../../05_v030_backport/CHANGELOG.md)
 
 ## When
 
@@ -34,7 +34,7 @@ bash /path/to/runtime-guard-docs/05_v030_backport/apply_patch.sh \
   /path/to/vllm-ascend
 ```
 
-4. 重建 / 安装后按 [01](https://github.com/djh95/runtime-guard-docs/blob/main/01_enable_and_start/README.md) 启 Guard（**MRV2**）。  
+4. 重建 / 安装后按 [01](../../01_enable_and_start/README.md) 启 Guard（**MRV2**）。  
 5. 记录 `git rev-parse HEAD` 与包版本（CHANGELOG）。
 
 冲突 → 停，回报 `git status`。

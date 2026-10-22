@@ -11,7 +11,7 @@
 | Detector | `token_repeat` |
 | Origin | `both`（constructed） |
 | Guard pin | G2 · `f2aefd068c4bd299d91cf0a1fdf642a3f327308f` |
-| Run | 43_embed_scale_blowup-20261017T153923 @ builder 机 cards 10,11 |
+| Run | 43_embed_scale_blowup-20261017T153923|
 
 ## 1 · 现象
 
@@ -40,7 +40,7 @@
 - 现象：换行塌缩 / 复读（`evidence/samples/`）。
 - 三层见包内计数；detector：`token_repeat`。
 - 归档 report：`prompt_token_ids` 为空；本轮 re-curl 合并后对比。
-- builder 机 KV 对比（cos_thresh=0.99；n_prompt=14 n_cmp_tokens=18；layers=72）。
+- 本包已归档 KV 对比（cos_thresh=0.99；n_prompt=14 n_cmp_tokens=18；layers=72）。
 - 原 dump 条 `prompt_token_ids` 空；同 prompt re-curl 后与异常 `output_token_ids` 合并再抓标杆。
 - 首不一致：idx=0 role=prompt span=prompt min_cos=-0.295200 @ model.layers.20.self_attn.attn。
 - 后续是否恢复≈1：False；output 首 token 余弦=-0.237587；仅 PD：False。

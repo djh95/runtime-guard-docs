@@ -17,6 +17,6 @@
   "host_cards": "12,13",
   "model": "/mnt/weight/Qwen3-8B",
   "detector": "both",
-  "run_dir": "/workspace/runtime-guard/canonical/results/anomaly-repro-20261016/50_swiglu_swap_halves-20261017T171204",
+  "run_dir": "50_swiglu_swap_halves-20261017T171204",
   "boot_ok": true
 }

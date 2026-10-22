@@ -111,7 +111,7 @@
 | **结案结论** | 写在案例上的判定标签（PASS / FAIL+GAP / FAIL（复现未出现）等），标明是否按预期复现并检出。 |
 | **样本** | 保存的请求 / 回复证据；应含 prompt + 输出，用来**读文意、核对坏没坏 / 是否误判**。仅有 prompt **字符串**的 sample **不能**当作可靠 tokenize 标杆（发出去的字符串 + 回来的 completion，再 encode 的结果可能与服务端不一致；处理 prompt 与处理 sample 的 tokenizer 也可能不同）。 |
 | **标杆请求（token ids）** | 需要可复现 tokenize / 定界对比时，请求侧以服务端或 Guard **实际捕获的 `prompt_token_ids`** 为准，**用 token ids 去抓 / 归档**，禁止「只存字符串、事后再 encode」当标杆。report 里 prompt 已空时：把**同一 prompt 再 curl**，手动 dump 取服务端实际 ids（仍禁止离线再 tokenize）。 |
-| **report 空 prompt** | report 里 `prompt_token_ids` / `prompt_text` 可能为空（output 仍常有）。**常见根因（热重载路径，S06 时序实测）**：首包 `scheduled_new_reqs` prefill 波上 `needs_sample_phase_hooks()` 仍为 false，Bug #9 预缓存整段被跳过，Store **从未写入** prompt；snapshot 时未必已 finished / clear。**不要**写成「请求结束后 clear / reap 过早导致本条空 prompt」——`clear`→zombie 是代码上的另一充分路径，但**不是** S06 空 report 的实测路径。**不是**请求没带 prompt，也不是脱敏。合入 [vllm-ascend#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) 后预缓存不再绑 hooks，同路径应写出非空 ids；本仓 keep-set **旧归档**可能仍为空（合修前样本）。空 ids **不等于**没有 `block_ids` / 不能武装 `dump_kv`，也**不等于**「Q1–Q5 不适用」——有 report 即可：**同 prompt 再 curl** 抓服务端 ids，与异常 `output_token_ids` 合并后做 **KV 排除定界**。**阅读**原文 → samples；**不要**从字符串补造 ids 填进旧 report。 |
+| **report 空 prompt** | 旧归档里 `prompt_token_ids` 可能为空（合 [vllm-ascend#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) 前样本）。对外三句：① 阅读原文看 `samples/`；② 需要标杆 ids 时**同 prompt 再请求**取服务端实际 ids；③ **勿**用字符串再 encode 填进旧 report。空 ids ≠ 不能做 KV 排除定界。 |
 | **KV 排除定界** | 有异常 report 时的可执行路径：重放抓**实际** prompt token ids → 合并异常 **output token ids** → 抓标杆 KV → 对比异常 KV。**一致 → 排除 KV cache**（再转向规格所指的非 KV 类，如 MoE 路由）；**不一致 → 重开 KV 线**。规格里「构造预期：根因是否在 KV」只记构造预期，**不是**跳过该排除步骤。包内未做对比时写「尚未做 KV 对比（未抓标杆/异常 KV 或未写入本包）」；已做则写实数事实。**不要**写「Q1–Q5 不适用」，也**不要**编造未跑的对比数字。 |
 | **三层计数** | **trigger**（注入路径打中次数）/ **precision**（输出被判异常的次数，≠ 模型精度）/ **detect**（Guard 报告命中次数）。三者不相等；见各包 `三层计数.json`。 |
 | **三层计数.json** | 三层明细（trigger / precision / detect、备注、detector 名等）。索引表数字通常摘自这里。 |
@@ -123,6 +123,10 @@
 | **上游锚点** | 本案例所对照的**上游修复 PR / issue**（「原 bug 是在哪修好的」）。多笔时要标明：根因修复 / 同族相关 / 对照 cousin，不要堆一串无说明链接。 |
 | **Origin**（字段） | 案例表格里的 **`Origin`** 标的是**异常逻辑落在哪棵代码树**，取值只有三种：`vllm-only`（只改 / 只坏在上游 vLLM）、`ascend-only`（只改 / 只坏在 Ascend 插件树）、`both`（两边同失败模式，或复现要动双树）。它**不是**「有没有忠实复现」、也不是 PR 好坏分。旁注里的 `constructed` 只说明注入是按该类故障构造的，不改变上述三值。 |
 | **origin-faithful** | **复现纪律**：注入要忠于原 bug 逻辑；禁止强制写 NaN、填复读 token 等「伪造症状」。与上表 **Origin 字段**是两件事。文档里**没有**「origin bath」；若看到多半是口误，应指 **origin-faithful** 或 **Origin**。 |
+| **force-feed** | 按报告里的 **token id** 原样喂给干净服务（禁止再 tokenize 字符串）。用于抓标杆 KV。 |
+| **FE** | **失败证据包**（fail-evidence）：一次复现留下的 samples / reports / 状态摘要等。 |
+| **soft-inv / soft-inverse** | 按上游修复做**反向注入**，人为复现同类故障（教学/评测用）。 |
+| **L1 / L2 / L3 / L4**（定界停点） | **L1** 检出停点（有 report）· **L2** 问题类提示（class-hint，非根因提交）· **L3** KV 首分歧（有 buggy/ref）· **L4** 不承诺根因提交。公开 keep-set 定界以「事实→推断→结论」为准，不必强套 L 级标签。 |
 | **CJK** | **中日韩字符**（Chinese / Japanese / Korean）。旧评分曾把「含非 ASCII 的中文」当成 `garbage_mixed_script`，把通顺中文误计成 precision——尤其 S01。现行规则：**排除 CJK 后再计 weird**；通顺中文 ≠ 乱码。 |
 | **hybrid / 量化 KV** | 混合或量化的 KV 页语义；和稠密 bf16 不是同一套前提（S01 尤其重要）。 |
 | **跨请求内容相同的乱码** | 多次独立请求得到的异常输出彼此相同（同一段垃圾重复出现），不是每次随机不同。常见于 S07。对照：各请求乱码各不相同（如 S45）。 |
@@ -161,14 +165,6 @@
 
 `S10′` 在仓库里的目录名是 **`S10p`**。相关 Skills 见 [06](../06_agent_skills/)（**v5.9**）。
 
-## 评估汇总（去刷分）
-
-| 编号 | 文档 | 备注 |
-|------|------|------|
-| A6 | [guard-skills-evaluation-20261018.md](./guard-skills-evaluation-20261018.md) | 去刷分评估 + 作用分 ≈0.53（合并取代旧 raw / PR-weighted / 作用分三文） |
-
-满量能力矩阵、mining 政策、verify-loop 等分析全文在内部仓 `runtime-guard-test/docs/`（需权限）；公开 `04` 只保留本 keep-set + 上述合并评估。
-
 ## 样本字段
 
 `evidence/samples/` 里的样本 JSON 使用：
@@ -188,4 +184,4 @@
 - **阅读 vs 标杆（分层）**
   - **阅读**：完整 prompt / completion 文本看 `evidence/samples/`（文意、坏输出形态、误判核对）。
   - **标杆（tokenize / 定界对比）**：以 report（或其它 Guard/服务端路径）里**实际捕获的 `prompt_token_ids`** 为准；不要用 sample 字符串再 encode。
-- **report 里 prompt / `prompt_token_ids` 为空**：见名词表 **report 空 prompt**（hooks=false 跳过预缓存等；**不是**「clear 过早」独断说法）。旧归档可能仍为空；合 #19285 后同路径应非空。仍可用 samples **阅读**原文；**禁止**从字符串补造 ids 填进旧 report。空 ids **不**表示无 `block_ids`，也**不**表示不能做 KV 排除——走 **KV 排除定界**。包内未做对比时写「尚未做 KV 对比（未抓标杆/异常 KV 或未写入本包）」，勿写「Q1–Q5 不适用」。
+- **report 里 prompt / `prompt_token_ids` 为空**：见名词表 **report 空 prompt**。旧归档可能仍为空；用 samples 阅读；标杆 ids 同 prompt 再请求；勿字符串补造。空 ids 仍可走 **KV 排除定界**。

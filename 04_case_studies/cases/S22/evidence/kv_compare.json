@@ -1,6 +1,5 @@
 {
   "case": "S22",
-  "host": "builder",
   "cos_thresh": 0.99,
   "kv_match": true,
   "first_mismatch_idx": null,
@@ -16,11 +15,11 @@
   "n_prompt": 14,
   "n_layers_matched": 71,
   "source": {
-    "buggy_run": "/workspace/runtime-guard/canonical/results/anomaly-repro-20261016/22_spec_resample_rng_collide-20261019T225755",
-    "buggy_report": "/workspace/runtime-guard/canonical/results/anomaly-repro-20261016/22_spec_resample_rng_collide-20261019T225755/report/spec_acceptance/report_20261019_225915_417_cmpl-ac2665161417f8df-0-835a65a1_pid399600.json",
-    "feed_report": "/workspace/runtime-guard/canonical/results/anomaly-repro-20261016/22_spec_resample_rng_collide-20261019T225755/report/spec_acceptance/report_20261019_225915_417_cmpl-ac2665161417f8df-0-835a65a1_pid399600.json",
-    "buggy_rank": "/workspace/runtime-guard/canonical/results/anomaly-repro-20261016/22_spec_resample_rng_collide-20261019T225755/dump/spec_acceptance/cmpl-ac2665161417f8df-0-835a65a1/wave_8/dp0_tp0_pp0_cp0",
-    "ref_rank": "/home/d00824595/keepset-kv-compare-20261022/ref_runs/qwen3-8b-ref-20261022T171449/dump/manual_trigger/cmpl-8b432c5044fbf2a1-0-869ba8ef/wave_2/dp0_tp0_pp0_cp0",
+    "buggy_run": "22_spec_resample_rng_collide-20261019T225755",
+    "buggy_report": "22_spec_resample_rng_collide-20261019T225755/report/spec_acceptance/report_20261019_225915_417_cmpl-ac2665161417f8df-0-835a65a1_pid399600.json",
+    "feed_report": "22_spec_resample_rng_collide-20261019T225755/report/spec_acceptance/report_20261019_225915_417_cmpl-ac2665161417f8df-0-835a65a1_pid399600.json",
+    "buggy_rank": "22_spec_resample_rng_collide-20261019T225755/dump/spec_acceptance/cmpl-ac2665161417f8df-0-835a65a1/wave_8/dp0_tp0_pp0_cp0",
+    "ref_rank": "ref_runs/qwen3-8b-ref-20261022T171449/dump/manual_trigger/cmpl-8b432c5044fbf2a1-0-869ba8ef/wave_2/dp0_tp0_pp0_cp0",
     "req_id": "cmpl-ac2665161417f8df-0-835a65a1",
     "incident_type": "spec_acceptance",
     "empty_prompt_recurled": false

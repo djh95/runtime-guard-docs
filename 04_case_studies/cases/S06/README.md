@@ -12,7 +12,7 @@
 | Origin | `both` |
 | Guard pin | G2 f2aefd068 |
 | 模型 | DeepSeek-V2-Lite |
-| Run | 06_moe_routing_bias-20261016T081459 @ skills 机 cards 0,1 |
+| Run | 06_moe_routing_bias-20261016T081459|
 | 备注 | detect=1 来自归档 `token_repeat` report×1（与 `evidence/三层计数.json` 一致）；PASS 以该数字为准 |
 
 ## 1 · 现象
@@ -27,11 +27,11 @@ Overlay / 上游 PR 意图：错误 router bias / mask 类（非 bit-exact CUDA�
 
 **PASS。** detect 以归档 `reports/report_*.json`（`token_repeat`×1）为准。
 
-**report 空 `prompt_token_ids`（旧归档）：** 本包钉点 report 仍为空——属**合修前样本**。实测根因是热重载下首包 prefill 波 `needs_sample_phase_hooks()=False`，Bug #9 预缓存被跳过（Store 从未写入）；**不是**「请求结束后 clear / reap 过早」。合入 [vllm-ascend#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) 后同路径 report 应有非空 ids（builder 机复测 n=17）。**阅读**原文看 [evidence/samples/](./evidence/samples/)；**禁止**从 sample 字符串再 encode 补造 ids 填进旧 report。空 prompt **不等于**不能做 KV 排除定界。通则见 [④ 名词表 · report 空 prompt](../../README.md#名词怎么读先看这里)。
+**report 空 `prompt_token_ids`（旧归档）：** 合修前样本可能空 ids。阅读看 [evidence/samples/](./evidence/samples/)；需要标杆时同 prompt 再请求取服务端 ids；**勿**从 sample 字符串再 encode。空 prompt ≠ 不能做 KV 排除定界。通则见 [④ 名词表 · report 空 prompt](../../README.md#名词怎么读先看这里)。
 
 ## 4 · 复现技巧
 
-按 pin / 模型 / overlay 对齐三层率。标杆是本包 skills 机钉点（70 / 1 / 1）。
+按 pin / 模型 / overlay 对齐三层率。标杆是本包钉点（70 / 1 / 1）。
 
 ## 5 · 教学要点
 
@@ -43,7 +43,7 @@ Overlay / 上游 PR 意图：错误 router bias / mask 类（非 bit-exact CUDA�
 
 ### 事实
 
-- builder 机实跑 KV 对比（cos_thresh=0.99；n_prompt=17 n_cmp_tokens=25；matched_layers=54）。
+- 本包已归档 KV 对比（cos_thresh=0.99；n_prompt=17 n_cmp_tokens=25；matched_layers=54）。
 - 首不一致：idx=0 role=prompt span=prompt min_cos=-0.308082 @ layer_48。
 - 后续是否恢复≈1：False；output 首 token 余弦=0.041545；仅 PD 复现：False。
 

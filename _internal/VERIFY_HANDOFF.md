@@ -266,7 +266,7 @@ internal/skills-verify-results/2026-10-19/
 
 | 需要 | 打开 |
 |------|------|
-| 本文件（docs） | `06_agent_skills/VERIFY_HANDOFF.md` |
+| 本文件（docs） | `_internal/VERIFY_HANDOFF.md`（已移出公开导航） |
 | 本文件（store） | `docs/skills-verify-handoff-for-agents-20261019.md` |
 | 15 个案例包 | `04_case_studies/cases/Sxx/` |
 | Skills | `06_agent_skills/*/SKILL.md` |

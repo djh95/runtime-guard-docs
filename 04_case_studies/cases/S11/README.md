@@ -12,7 +12,7 @@
 | Origin | `ascend-only` |
 | Guard pin | G2 f2aefd068 |
 | 模型 | DeepSeek-V2-Lite MLA bf16 |
-| Run | 11_mla_rope_pad-20261016T190840 @ builder 机 cards 4,5 |
+| Run | 11_mla_rope_pad-20261016T190840|
 
 ## 1 · 现象
 
@@ -40,7 +40,7 @@ pad-tail 错位 ≠ 回收块未清零。可能撞上同一个 detector，但 ro
 
 ### 事实
 
-- builder 机实跑 KV 对比（cos_thresh=0.99；n_prompt=14 n_cmp_tokens=20；matched_layers=54）。
+- 本包已归档 KV 对比（cos_thresh=0.99；n_prompt=14 n_cmp_tokens=20；matched_layers=54）。
 - 原 report `prompt_token_ids` 为空；同 prompt re-curl 后与异常 `output_token_ids` 合并再抓标杆。
 - 首不一致：idx=0 role=prompt span=prompt min_cos=0.319268 @ model.layers.4.self_attn.attn。
 - 后续是否恢复≈1：False；output 首 token 余弦=0.020733；仅 PD 复现：False。
@@ -74,4 +74,4 @@ pad-tail 错位 ≠ 回收块未清零。可能撞上同一个 detector，但 ro
 
 | PR / 链接 | 角色 |
 |-----------|------|
-| [ascend#18798](https://github.com/vllm-project/vllm-ascend/pull/18798) | **根因修复**（MLA RoPE pad-tail）；本包做 soft-inverse |
+| [ascend#18798](https://github.com/vllm-project/vllm-ascend/pull/18798) | **根因修复**（MLA RoPE pad-tail）；本包做 soft-inverse（按上游修复反向注入） |

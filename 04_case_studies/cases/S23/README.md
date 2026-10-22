@@ -12,7 +12,7 @@
 | Origin | `both`（constructed weight-fault） |
 | Guard pin | G2 · `f2aefd068c4bd299d91cf0a1fdf642a3f327308f` |
 | 模型 | Qwen3-8B layer=15 o_proj |
-| Run | 23_weight_layer_corrupt-20261017T104359 @ builder 机 cards 10,11 |
+| Run | 23_weight_layer_corrupt-20261017T104359|
 
 > **口径：** trigger=2 是 boot 时 `ANOMALY_TRIGGER`（TP2 每卡一次置零），不是「每请求触发」；precision / detect 按请求计，故可出现 **precision > trigger**。结案以 **detect=48** 为准。
 
@@ -43,7 +43,7 @@ Qwen3-8B，temp=0，eager；concurrent 48；util=0.40。
 - 现象：复读塌缩（`evidence/samples/`）。
 - 三层见 `evidence/三层计数.json`；detector：`token_repeat`。
 - 归档 report：`prompt_token_ids` 为空；本轮对比用非空 ids dump（len prompt=14）。
-- builder 机 KV 对比（cos_thresh=0.99；n_prompt=14 n_cmp_tokens=20；layers=72）。
+- 本包已归档 KV 对比（cos_thresh=0.99；n_prompt=14 n_cmp_tokens=20；layers=72）。
 - 首不一致：idx=1 role=prompt span=prompt min_cos=0.983096 @ model.layers.35.self_attn.attn。
 - 后续是否恢复≈1：False；output 首 token 余弦=0.892670；仅 PD：False。
 

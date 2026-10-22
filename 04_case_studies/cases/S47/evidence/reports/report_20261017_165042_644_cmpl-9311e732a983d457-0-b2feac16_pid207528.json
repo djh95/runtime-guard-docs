@@ -7,7 +7,7 @@
   "dump_arm_wave": 6,
   "dump_count": 0,
   "dump_max_times": 2,
-  "dump_dir": "/workspace/runtime-guard/canonical/results/anomaly-repro-20261016/47_kv_swap-20261017T164919/dump/token_repeat/cmpl-9311e732a983d457-0-b2feac16",
+  "dump_dir": "47_kv_swap-20261017T164919/dump/token_repeat/cmpl-9311e732a983d457-0-b2feac16",
   "decode_token_ids": true,
   "max_prompt_token_ids": 100000,
   "max_output_token_ids": 100000,

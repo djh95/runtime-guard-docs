@@ -5,17 +5,17 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 
 ## Changelog（摘要）
 
-按波次归纳；细案例 ID / FE 在**内部私有**仓 `runtime-guard-test`（勿发公开 HTTPS blob），不在此逐条堆叠。
+按波次归纳；细案例 ID / 失败证据包（FE）细节不在此逐条堆叠（完整评测矩阵不在本仓）。
 
-离线脚本对外入口：本仓 [`scripts/`](./scripts/)（不需 `$RG_TEST`）。
+离线脚本入口：本仓 [`scripts/`](./scripts/)。
 
 - **v5.9（现行）** — 接线 skills：`apply-mrv1-patch`（`05_mrv1_backport`）· `apply-v030-mrv2-patch`（`05_v030_backport`）；排障五件套不变。  
-- **v5.8** — ones/zeros 收尾（约 S147–S152）：多为 `token_repeat` + L2；与近邻 mag/polarity 案区分。
-- **v5.0–v5.7** — soft-inv C 矩阵扩展：hidden / embed / QKV / residual / RMSNorm / SwiGLU 的 ones·zeros 族。
-- **v4.x** — abs / scale / skip / half-swap 波；偶发走 `logits_finite`；部分 precision=0 仍可 detect PASS。
-- **v3.x** — mag/polarity 算子族（×÷ / negate）铺开 residual · RMSNorm · SwiGLU · attn。
-- **v2.x** — 典型 keep 案落地（如 S45 GAP、S43/S48/S50 PASS、S22 spec）；S44 标 INVALID amplifier。
-- **v1.x** — 三层率与 `score_completion_samples`；早期 soft-inv / weight / overflow / pad 课。
+- **v5.8** — ones/zeros 收尾；多为 `token_repeat` + 问题类提示（L2）。
+- **v5.0–v5.7** — soft-inverse（按上游修复反向注入）矩阵扩展。
+- **v4.x** — abs / scale / skip / half-swap 波；偶发走 `logits_finite`。
+- **v3.x** — mag/polarity 算子族铺开。
+- **v2.x** — 典型 keep 案落地（如 S45 GAP、S43/S48/S50 PASS、S22 spec）。
+- **v1.x** — 三层率与 `score_completion_samples`；早期 soft-inverse / weight / overflow / pad。
 
 > 本文是职责契约（给人 / Agent 对齐用），**不是** RPC schema。  
 > 输入输出用「逻辑字段」描述即可；对话里用自然语言收集，勿伪造 JSON 信封。
@@ -36,7 +36,7 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 | detector-sweep | 原子 · 在线配置 | 未定类：临时三键只 report |
 | config-recommender | 原子 · 在线配置 | 正式排障 / 业务默认配置唯一来源 |
 | analysis | 原子 · 离线读盘 | report/dump 汇总、关联、verify、inspect |
-| ref-kv-dump | 原子 · 标杆+对比 | force-feed 抓 ref + KV 首分歧 |
+| ref-kv-dump | 原子 · 标杆+对比 | force-feed（按报告 token id 原样喂干净服务）抓 ref + KV 首分歧 |
 | apply-mrv1-patch | 运维 · 接线 | 多 release × MRV1 → `05_mrv1_backport` |
 | apply-v030-mrv2-patch | 运维 · 接线 | v0.30 × MRV2 → `05_v030_backport` |
 

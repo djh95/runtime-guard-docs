@@ -11,7 +11,7 @@ description: >-
 
 **类型：运维 / 接线。** 对干净 BASE 树打 `05_mrv1_backport` 的 Guard→**Model Runner V1** 补丁。
 
-包说明：[05_mrv1_backport/README.md](https://github.com/djh95/runtime-guard-docs/blob/main/05_mrv1_backport/README.md) · [CHANGELOG](https://github.com/djh95/runtime-guard-docs/blob/main/05_mrv1_backport/CHANGELOG.md)
+包说明：[05_mrv1_backport/README.md](../../05_mrv1_backport/README.md) · [CHANGELOG](../../05_mrv1_backport/CHANGELOG.md)
 
 ## When
 
@@ -38,7 +38,7 @@ bash /path/to/runtime-guard-docs/05_mrv1_backport/apply_patch.sh \
   /path/to/vllm-ascend
 ```
 
-4. 重建 / 安装后按 [01](https://github.com/djh95/runtime-guard-docs/blob/main/01_enable_and_start/README.md) 启 Guard（**MRV1**）。  
+4. 重建 / 安装后按 [01](../../01_enable_and_start/README.md) 启 Guard（**MRV1**）。  
 5. 记录 `git rev-parse HEAD` 与所用 `--release`。
 
 冲突 → 停，回报 `git status`；勿 `--reject` 当生产。

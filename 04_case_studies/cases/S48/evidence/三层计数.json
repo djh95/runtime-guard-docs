@@ -17,6 +17,6 @@
   "host_cards": "8,9",
   "model": "/mnt/weight/Qwen3-8B",
   "detector": "both",
-  "run_dir": "/workspace/runtime-guard/canonical/results/anomaly-repro-20261016/48_residual_negate-20261017T165947",
+  "run_dir": "48_residual_negate-20261017T165947",
   "boot_ok": true
 }

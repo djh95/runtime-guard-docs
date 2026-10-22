@@ -1,6 +1,5 @@
 {
   "case": "S45",
-  "host": "builder",
   "status": "blocked",
   "reason": "现有 anomaly-repro/origin run 均无可用 *.pt dump（已查 45_topk_bottom_keep-*）",
   "kv_match": null,

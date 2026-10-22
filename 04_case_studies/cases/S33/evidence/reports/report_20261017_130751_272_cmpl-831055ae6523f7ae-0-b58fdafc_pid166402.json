@@ -7,7 +7,7 @@
   "dump_arm_wave": 10,
   "dump_count": 1,
   "dump_max_times": 2,
-  "dump_dir": "/workspace/runtime-guard/canonical/results/anomaly-repro-20261016/33_softcap_incomplete-20261017T130612/dump/token_repeat/cmpl-831055ae6523f7ae-0-b58fdafc",
+  "dump_dir": "33_softcap_incomplete-20261017T130612/dump/token_repeat/cmpl-831055ae6523f7ae-0-b58fdafc",
   "decode_token_ids": true,
   "max_prompt_token_ids": 100000,
   "max_output_token_ids": 100000,

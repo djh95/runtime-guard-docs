@@ -30,12 +30,12 @@ top-k / top-p 作用在 `-logits` 上再取反——保留最低-k / 倒置 nucl
 
 本案例 overlay 同时改：
 
-1. Ascend `vllm_ascend/platform.py`（boot 日志）  
+1. Ascend `vllm_ascend/platform.py`（boot 日志） 
 2. **vLLM** `vllm/v1/worker/gpu/sample/sampler.py`（真正 flip）
 
 因此：
 
-- **正确：** `gen_s45_overlay.py` 分别写 **Ascend B** + **canonical/vllm**；**temp=0.8**。  
+- **正确：** `gen_s45_overlay.py` 分别写 **Ascend B** + **canonical/vllm**；**temp=0.8**。 
 - **错误：** 只 `git apply` 到 Ascend B → `sampler.py: No such file or directory`；或 temp=0。
 
 按复现技巧（双树 + temp=0.8）→ **16 / 4 / 0**（仍为 detect=0，与归档 GAP 一致）。

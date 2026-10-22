@@ -11,7 +11,7 @@ description: >-
 
 **类型：原子 · 在线配置。** 只产出临时 sweep 模板；不做读盘、不做阈值调优。
 
-手册：[01](https://github.com/djh95/runtime-guard-docs/blob/main/01_enable_and_start/README.md) · [03](https://github.com/djh95/runtime-guard-docs/blob/main/03_detectors/README.md) · 契约：[SKILLS_METADATA.md](./SKILLS_METADATA.md)
+手册：[01](../../01_enable_and_start/README.md) · [03](../../03_detectors/README.md) · 契约：[SKILLS_METADATA.md](./SKILLS_METADATA.md)
 
 ## When
 

@@ -1,6 +1,6 @@
 # 离线分析脚本（docs 仓）
 
-对外排障 / keep-set 复现用的读盘脚本。在本目录直接跑，**不需要** `$RG_TEST`。
+对外排障 / keep-set 复现用的读盘脚本。在本目录直接跑。
 
 ```bash
 export RG_DOCS=/path/to/runtime-guard-docs
@@ -19,5 +19,4 @@ python "$SCRIPTS/stitch_kv.py" --help
 python "$SCRIPTS/correlate_incident.py" --help
 ```
 
-与 [02 问题定位](../../02_problem_localization/README.md) Step 4、[analysis skill](../analysis/SKILL.md)、[ref-kv-dump](../ref-kv-dump/SKILL.md) 同一套入口。  
-批量 keep-set 驱动等内部私有工具仍留在 `runtime-guard-test`（有权限时用本地路径；勿发公开 blob）。
+与 [02 问题定位](../../02_problem_localization/README.md) Step 4、[analysis skill](../analysis/SKILL.md)、[ref-kv-dump](../ref-kv-dump/SKILL.md) 同一套入口。

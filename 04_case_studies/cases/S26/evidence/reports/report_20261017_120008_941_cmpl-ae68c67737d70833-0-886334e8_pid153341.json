@@ -7,7 +7,7 @@
   "dump_arm_wave": 9,
   "dump_count": 0,
   "dump_max_times": 2,
-  "dump_dir": "/workspace/runtime-guard/canonical/results/anomaly-repro-20261016/26_rmsnorm_fp32_mul-20261017T115830/dump/token_repeat/cmpl-ae68c67737d70833-0-886334e8",
+  "dump_dir": "26_rmsnorm_fp32_mul-20261017T115830/dump/token_repeat/cmpl-ae68c67737d70833-0-886334e8",
   "decode_token_ids": true,
   "max_prompt_token_ids": 100000,
   "max_output_token_ids": 100000,

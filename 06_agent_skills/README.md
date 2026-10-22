@@ -3,20 +3,19 @@
 面向 Cursor / Agent：按现象启用 detectors、抓现场、离线对账、有标杆时做 KV 定界。
 
 > **权威：** 本目录 `runtime-guard-docs/06_agent_skills/`（含 [SKILLS_METADATA.md](./SKILLS_METADATA.md) **v5.9**）。  
-> **离线脚本（对外）：** [scripts/](./scripts/)（本仓；不需 `$RG_TEST`）。  
-> **镜像：** **内部私有**仓 `$RG_TEST/analysis/skill/`（rsync 同步；可短暂滞后；勿发公开 blob）。  
+> **离线脚本：** [scripts/](./scripts/)（本仓）。  
 > 产品实现：`vllm_ascend/observability/runtime_guard/`（[#16849](https://github.com/vllm-project/vllm-ascend/pull/16849) + [#18644](https://github.com/vllm-project/vllm-ascend/pull/18644)）。  
 > 人读流程仍以 [02 问题定位](../02_problem_localization/README.md) 为准；skill 负责可执行编排。
 
-## 无内部仓权限时
+## 无满量评测矩阵时
 
-公开路径：本目录 skill 契约 + [scripts/](./scripts/) + 手册 01–05 + `04` 的 `cases/Sxx/` 完整包。
+公开路径：本目录 skill 契约 + [scripts/](./scripts/) + 手册 01–05 + `04` 的 `cases/Sxx/` 完整包。完整评测矩阵不在本仓。
 
 | 仍可做 | 须停止 / 跳过 |
 |--------|----------------|
-| 读 METADATA / 各 skill README；用 sweep / recommender 产出配置 | 勿假设能 clone **内部私有** `runtime-guard-test` |
+| 读 METADATA / 各 skill README；用 sweep / recommender 产出配置 | 勿假设能拿到满量失败证据包 / runs |
 | 跑本仓 `06_agent_skills/scripts/*.py`；人工读 `report_*.json` | 勿宣称未跑的 verify/ref 已完成 |
-| 按 02 无标杆停点交接 | FE / 满量 runs / 大体积分析 —— **内部可选** |
+| 按 02 无标杆停点交接 | 满量分析矩阵 —— 内部可选 |
 
 ## Skills
 
@@ -26,7 +25,7 @@
 | `runtime-guard-detector-sweep` | 原子 · 在线 | 未定类：临时三键只 report（极简模板） |
 | `runtime-guard-config-recommender` | 原子 · 在线 | **正式配置唯一来源**（排障 / 业务默认） |
 | `runtime-guard-analysis` | 原子 · 离线 | 已有 report（±dump）：汇总 / 关联 / verify / inspect |
-| `runtime-guard-ref-kv-dump` | 原子 · 离线+起服 | verify PASS 后 force-feed 抓 ref + 两表对比 |
+| `runtime-guard-ref-kv-dump` | 原子 · 离线+起服 | verify PASS 后 force-feed（按报告 token id 原样喂干净服务）抓 ref + 两表对比 |
 | `apply-mrv1-patch` | 运维 · 接线 | 多 release × **MRV1** Guard → [`05_mrv1_backport`](../05_mrv1_backport/) |
 | `apply-v030-mrv2-patch` | 运维 · 接线 | **v0.30 × MRV2** Guard → [`05_v030_backport`](../05_v030_backport/) |
 
@@ -49,9 +48,7 @@ python "$SCRIPTS/summarize_reports.py" --help
 `prepare_ref_inputs` / `request_from_report` / `locate_first_divergence` / `compare_kv_similarity` /  
 `compare_per_layer` / `stitch_kv`。
 
-Anomaly 对外对照：本仓 `04_case_studies/cases/Sxx/evidence/`。满量 FE（有权限时）在内部仓。契约见 [SKILLS_METADATA.md](./SKILLS_METADATA.md)（**v5.9**）。
-
-**给其他 Agent 的离线复核包（15 典型 keep-set）：** [VERIFY_HANDOFF.md](./VERIFY_HANDOFF.md)。
+Anomaly 对外对照：本仓 `04_case_studies/cases/Sxx/evidence/`。契约见 [SKILLS_METADATA.md](./SKILLS_METADATA.md)（**v5.9**）。
 
 ## 与产品对齐的硬事实（2026-10）
 
@@ -64,23 +61,10 @@ Anomaly 对外对照：本仓 `04_case_studies/cases/Sxx/evidence/`。满量 FE�
 | 停检 | `report.max_per_req`（**不是** `stop_after_alert`） |
 | Dump | 仅 native `dump_kv`；无 msprobe |
 | 默认全关 | **全关旁路**（static idle：detector/dump/热更全关；代码侧 `needs_sample_phase_hooks()` 为假时跳过 sample 壳） |
-| `releases/v0.30.0` MRV2 backport | 见 [05_v030](https://github.com/djh95/runtime-guard-docs/blob/main/05_v030_backport/README.md)（skill `apply-v030-mrv2-patch`；`v0.30-rg.3` SOURCE `#18450` @ `96046a3f0`，**含** #18644 对齐） |
-| 多 release MRV1 backport | 见 [05_mrv1](https://github.com/djh95/runtime-guard-docs/blob/main/05_mrv1_backport/README.md)（skill `apply-mrv1-patch`）；含 v0.30 MRV1，与 05_v030 互斥 |
-
-## 权威与同步
-
-- **Ownership：** skills 权威 = 本目录；test `analysis/skill/` = 镜像。  
-- **Ownership：** 04 分析全文 / FE / runs 权威 = **内部私有** `$RG_TEST/docs/`；公开 `04` = 本仓 `cases/Sxx/` 完整包（含 `evidence/`）。  
-- 回写镜像（有权限时）：
-
-```bash
-export RG_DOCS=/path/to/runtime-guard-docs
-export RG_TEST=/path/to/runtime-guard-test
-rsync -a --delete --exclude VERIFY_HANDOFF.md \
-  "$RG_DOCS/06_agent_skills/" "$RG_TEST/analysis/skill/"
-```
+| `releases/v0.30.0` MRV2 backport | 见 [05_v030](../05_v030_backport/README.md)（skill `apply-v030-mrv2-patch`；`v0.30-rg.3` SOURCE `#18450` @ `96046a3f0`，**含** #18644 对齐） |
+| 多 release MRV1 backport | 见 [05_mrv1](../05_mrv1_backport/README.md)（skill `apply-mrv1-patch`）；含 v0.30 MRV1，与 05_v030 互斥 |
 
 ## 维护
 
 - 产品 detector / 配置字段变更 → 同步改本目录 + [03_detectors](../03_detectors/README.md) + [SKILLS_METADATA.md](./SKILLS_METADATA.md)。  
-- 脚本 CLI 变更 → 先改本目录（权威），再 rsync 回写内部仓镜像。
+- 脚本 CLI 变更 → 先改本目录（权威）；镜像回写见 `_internal/MAINTAINER_SYNC.md`（非对外导航）。

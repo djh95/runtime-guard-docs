@@ -7,7 +7,7 @@
   "dump_arm_wave": 8,
   "dump_count": 1,
   "dump_max_times": 2,
-  "dump_dir": "/workspace/runtime-guard/canonical/results/anomaly-repro-20261016/22_spec_resample_rng_collide-20261017T101553/dump/spec_acceptance/cmpl-9cb26de2b185de49-0-ab8f1160",
+  "dump_dir": "22_spec_resample_rng_collide-20261017T101553/dump/spec_acceptance/cmpl-9cb26de2b185de49-0-ab8f1160",
   "decode_token_ids": true,
   "max_prompt_token_ids": 100000,
   "max_output_token_ids": 100000,

@@ -7,7 +7,7 @@
   "dump_arm_wave": 8,
   "dump_count": 0,
   "dump_max_times": 2,
-  "dump_dir": "/workspace/runtime-guard/canonical/results/anomaly-repro-20261016/11_mla_rope_pad-20261016T190840/dump/token_repeat/cmpl-81f2ceee2770a442-0-ac77ac47",
+  "dump_dir": "11_mla_rope_pad-20261016T190840/dump/token_repeat/cmpl-81f2ceee2770a442-0-ac77ac47",
   "decode_token_ids": true,
   "max_prompt_token_ids": 100000,
   "max_output_token_ids": 100000,

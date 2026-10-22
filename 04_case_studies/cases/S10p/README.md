@@ -12,7 +12,7 @@
 | Origin | `both` |
 | Guard pin | G2 f2aefd068 |
 | 模型 | Qwen3-8B（英文并发负载） |
-| Run | 10_fullattn_recycle_zero-20261016T181551 @ builder 机 cards 4,5 |
+| Run | 10_fullattn_recycle_zero-20261016T181551|
 
 ## 1 · 现象
 
@@ -47,7 +47,7 @@ Overlay：强制 `needs_kv_cache_zeroing=False`，在 `BlockPool.get_new_blocks`
 - 现象：复读 / `xxxx` 塌缩（`evidence/samples/`）。
 - 三层：65 / 20 / 79；detector：`token_repeat`。
 - 归档 report：`prompt_token_ids` 非空（len=32）；有 `output_token_ids`。
-- builder 机 KV 对比（cos_thresh=0.99；n_prompt=32 n_cmp_tokens=36；layers=72）。
+- 本包已归档 KV 对比（cos_thresh=0.99；n_prompt=32 n_cmp_tokens=36；layers=72）。
 - 标杆 vs 异常：对比窗口**全程一致**（min-over-layers cos ≥ thresh）；output 首 token 余弦=0.999995。
 - 首不一致：无。
 

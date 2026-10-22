@@ -7,7 +7,7 @@
   "dump_arm_wave": 8,
   "dump_count": 0,
   "dump_max_times": 2,
-  "dump_dir": "/workspace/runtime-guard/canonical/results/anomaly-repro-20261016/25_rope_siso_half_drop-20261017T115523/dump/token_repeat/cmpl-bd3b567bcd96ef62-0-9d8d7e1f",
+  "dump_dir": "25_rope_siso_half_drop-20261017T115523/dump/token_repeat/cmpl-bd3b567bcd96ef62-0-9d8d7e1f",
   "decode_token_ids": true,
   "max_prompt_token_ids": 100000,
   "max_output_token_ids": 100000,

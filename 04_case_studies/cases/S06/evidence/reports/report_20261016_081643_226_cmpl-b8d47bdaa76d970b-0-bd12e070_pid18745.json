@@ -7,7 +7,7 @@
   "dump_arm_wave": 11,
   "dump_count": 0,
   "dump_max_times": 2,
-  "dump_dir": "/workspace/runtime-guard/canonical/results/anomaly-origin-20261016/06_moe_routing_bias-20261016T081459/dump/token_repeat/cmpl-b8d47bdaa76d970b-0-bd12e070",
+  "dump_dir": "06_moe_routing_bias-20261016T081459/dump/token_repeat/cmpl-b8d47bdaa76d970b-0-bd12e070",
   "decode_token_ids": true,
   "max_prompt_token_ids": 100000,
   "max_output_token_ids": 100000,

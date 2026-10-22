@@ -18,7 +18,7 @@
   "model": "/mnt/weight/Qwen3-8B",
   "layer": 15,
   "detector": "both",
-  "run_dir": "/workspace/runtime-guard/canonical/results/anomaly-repro-20261016/23_weight_layer_corrupt-20261017T104359",
+  "run_dir": "23_weight_layer_corrupt-20261017T104359",
   "boot_ok": true,
   "verdict": "PASS",
   "layers_trig_prec_detect": "2 / 17 / 48"

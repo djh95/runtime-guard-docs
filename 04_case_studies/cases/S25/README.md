@@ -53,7 +53,7 @@ Soft-inverse [ascend#7082](https://github.com/vllm-project/vllm-ascend/pull/7082
 - 现象：`1.1.1…` 复读（`evidence/samples/`）。
 - 三层：462 / 15 / 48；detector：`token_repeat`×48。
 - 归档 report：`prompt_token_ids` 为空（合修前）；本轮对比用非空 ids 的异常 dump（len prompt=14）。
-- builder 机 KV 对比（cos_thresh=0.99；n_prompt=14 n_cmp_tokens=20；layers=72）。
+- 本包已归档 KV 对比（cos_thresh=0.99；n_prompt=14 n_cmp_tokens=20；layers=72）。
 - 标杆 vs 异常：对比窗口**全程一致**（min-over-layers cos ≥ thresh）；output 首 token 余弦=0.999993。
 - 首不一致：无。
 
@@ -85,4 +85,4 @@ Soft-inverse [ascend#7082](https://github.com/vllm-project/vllm-ascend/pull/7082
 
 | PR / 链接 | 角色 |
 |-----------|------|
-| [ascend#7082](https://github.com/vllm-project/vllm-ascend/pull/7082) | **根因修复**；本包 soft-inverse |
+| [ascend#7082](https://github.com/vllm-project/vllm-ascend/pull/7082) | **根因修复**；本包 soft-inverse（按上游修复反向注入） |

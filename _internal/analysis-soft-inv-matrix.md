@@ -1,0 +1,131 @@
+# analysis soft-inv 满量对照表（维护者）
+
+> 已从公开 `06_agent_skills/analysis/SKILL.md` 移出。公开 skill 只保留 keep-set（约 15 例）相关步骤。  
+> 下列为原 S25–S152 soft-inv 映射长表（依赖内部 FE / 满量矩阵）。
+
+## Soft-inv / 扩展案例提示（原 Step 1b 摘录）
+
+- Soft-inv RoPE/RMSNorm（S25/S26/S28）→ `token_repeat` + **L2 class-hint**（half-drop / fp32-mul / neox→interleaved）；句级复读看 `phrase_repeat`；≠ S11 pad。有 report 时勿因短标签空而宣称「无 precision」。  
+- Logits fp16 demote（S29）→ `token_repeat` + **L2 cast**；≠ S20/S26。Null-block KV dirt（S30）→ `token_repeat` + **L2 KV**（可 verify/ref）；≠ S01/S10。Residual drop（S31）→ 强 `phrase_repeat`/identical；**L2** ≠ S26。  
+- FIA FULL-graph pad（S32 #7144）→ `token_repeat` + **L2**；precision 常为 **unique** `pad_echo`（`wN_M` / `_0_0_0`），identical-mode 会低估；≠ S14。  
+- Incomplete softcap（S33）→ `token_repeat` + **L2**（÷cap+tanh skip *cap）；≠ S20 overflow/`!!!!`。  
+- Attn scale drop（S34）→ `token_repeat` + **L2**（wrong attn temp）；precision 常 **unique** digit/junk；≠ S20/S32/S33。  
+- Causal-off（S35）→ `token_repeat` + **L2**（future leak）；强 `phrase_repeat`/prompt-echo；≠ S34。  
+- Temp-scale blowup（S36）→ `token_repeat` + **L2**；precision 常 **unique** `id_echo`/`unique_garbage`；勿因 identical_mode 低判「无 precision」。≠ S29/S20。  
+- Positions→0（S37）→ `token_repeat` + **L2**；≠ S25/S28/S11。  
+- RMSNorm identity skip（S38）→ **`logits_finite`**（`!!!!`/`token0_collapse`）；**L2** ≠ S26/S31；勿当成「仅 S20 softcap」。  
+- SwiGLU skip-silu（S39）→ **`logits_finite`** + **L2**；≠ S26/S31/S38。  
+- RoPE skip（S40）→ `token_repeat` + **L2**；强 `phrase_repeat`；≠ S25/S28/S37。  
+- Post-FA attn `mul_(1000)`（S41）→ **`logits_finite`** + **L2**；≠ S34（softmax scale）/S14/S35。  
+- RoPE phase negate（S42）→ `token_repeat` + **L2**；≠ S37/S40/S25/S28。  
+- Embed ×100（S43）→ `token_repeat` + **L2**；precision 常 **`newline_collapse`**；≠ S23/S41。  
+- Logits `zero_()`（S44）→ **invalid-synthetic / BLOCKED**（放大器）；归档勿当 skills win。  
+- Top-k on `-logits`（S45）→ **FAIL+GAP**：unique `garbage_mixed_script` + detect=0（同 S07；**≠ S01 dense 复现未出现**）；identical-mode 低估勿判「无 precision」。  
+- Penalty sign flip（S46）→ `token_repeat` + **L2**；digit/`1.1.1…`；≠ S45/S44。  
+- K/V swap（S47）→ `token_repeat` + **L2**；短语/单字塌缩；≠ S34/S35/S41。  
+- Residual negate（S48）→ **`logits_finite`** + **L2**；`!!!!`/`token0_collapse`；≠ S31 drop ≠ S38 skip。  
+- Attn scale ×50（S49）→ `token_repeat` + **L2**；precision 常 unique/`1.1.1…`；≠ S34(=1.0) ≠ S41 post-FA。  
+- SwiGLU half-swap（S50）→ **`logits_finite`** + **L2**；`!!!!`；≠ S39 skip-silu。  
+- Value ×50 before FA（S51）→ `token_repeat` + **L2**；≠ S41/S47/S49。  
+- Query negate（S52）→ `token_repeat` + **L2**；≠ S47/S51/S42。  
+- LM-head logits ÷50（S53）→ `token_repeat` + **L2**；≠ S36 post-temp ≠ S44 amplifier。  
+- Key negate（S54）→ `token_repeat` + **L2**；≠ S47/S51/S52。  
+- Residual ×50（S55）→ **`logits_finite`** + **L2**；≠ S31/S38/S48。  
+- SwiGLU input negate（S56）→ **`logits_finite`** + **L2**；≠ S39/S50。  
+- Positions ×2（S57）→ `token_repeat` + **L2**；≠ S37。  
+- Value negate（S58）→ **`logits_finite`** + **L2**；≠ S51/S47/S52/S54。  
+- Key ×50（S59）→ `token_repeat` + **L2**；≠ S49/S51/S54。  
+- Query ×50（S60）→ `token_repeat` + **L2**；≠ S52/S49/S51/S59。  
+- Hidden ×50（S61）→ `token_repeat` + **L2**；≠ S53/S43。  
+- Pre-RMSNorm x×50（S62）→ **`logits_finite`** + **L2**；≠ S26/S38/S48/S55。  
+- Attn-out negate（S63）→ **`logits_finite`** + **L2**；≠ S41。  
+- Residual ÷50（S64）→ `token_repeat` + **L2**；≠ S48/S55。  
+- Logits ×50（S65）→ `token_repeat` + **L2**；≠ S53/S36。  
+- RMSNorm weight negate（S66）→ **`logits_finite`** + **L2**；≠ S26/S38/S48/S55/S62。  
+- SwiGLU out negate（S67）→ **`logits_finite`** + **L2**；≠ S39/S50/S56。  
+- Attn scale ÷50（S68）→ `token_repeat` + **L2**；≠ S34/S49。  
+- Embed negate（S69）→ **`logits_finite`** + **L2**；≠ S43。  
+- Variance eps ×1000（S70）→ `token_repeat` + **L2**；≠ S26/S38/S66。  
+- RMSNorm weight ×50（S71）→ **`logits_finite`** + **L2**；≠ S66。  
+- SwiGLU out ×50（S72）→ **`logits_finite`** + **L2**；≠ S39/S50/S56/S67。  
+- RMSNorm x negate（S73）→ **`logits_finite`** + **L2**；≠ S48/S62。  
+- RMSNorm weight ÷50（S74）→ `token_repeat` + **L2**；≠ S66/S71。  
+- Hidden ÷50（S75）→ `token_repeat` + **L2**；≠ S61/S53/S65。  
+- SwiGLU input ×50（S76）→ **`logits_finite`** + **L2**；≠ S39/S50/S56/S67/S72。  
+- Variance eps ÷1000（S77）→ `token_repeat` + **L2**；≠ S70。  
+- RMSNorm x ÷50（S78）→ `token_repeat` + **L2**；≠ S62/S73。  
+- Cos/sin ×50（S79）→ `token_repeat` + **L2**；≠ S37/S40/S42/S25/S28。  
+- Embed ÷50（S80）→ `token_repeat` + **L2**；≠ S43/S69。  
+- SwiGLU input ÷50（S81）→ `token_repeat` + **L2**；≠ S39/S50/S56/S76。  
+- Cos/sin ÷50（S82）→ `token_repeat` + **L2**；≠ S37/S40/S42/S79。  
+- Attn-out ×50（S83）→ `token_repeat` + **L2**；≠ S41/S63。  
+- Positions ÷2（S84）→ `token_repeat` + **L2**；≠ S37/S57。  
+- Temp ÷50（S85，post-temp×50）→ `token_repeat` + **L2**；≠ S36；需 temperature>0。  
+- RMSNorm-out negate（S86）→ **`logits_finite`** + **L2**；≠ S73/S66。  
+- RMSNorm-out ×50（S87）→ **`logits_finite`** + **L2**；≠ S62/S86。  
+- Residual-post negate（S88）→ **`logits_finite`** + **L2**；≠ S48/S86。  
+- RMSNorm-out ÷50（S89）→ `token_repeat` + **L2**；≠ S87/S78。  
+- Residual-post ×50（S90）→ **`logits_finite`** + **L2**；≠ S55/S64/S88。  
+- Residual-post ÷50（S91）→ `token_repeat` + **L2**；≠ S90/S64/S88。  
+- Temp-skip（S92）→ `token_repeat` + **L2**；≠ S36/S85；需 T>0；**identical-mode precision=0 仍可 PASS**（per-req detect）。  
+- Residual←normed-x（S93）→ `token_repeat` + **L2**；≠ S31/S94/S88–S91。  
+- Residual↔x swap（S94）→ **`logits_finite`** + **L2**；≠ S31/S93/S88。  
+- Temp-double（S95）→ `token_repeat` + **L2**；≠ S36/S85/S92；需 T>0。  
+- RMSNorm-weight=ones（S96）→ `token_repeat` + **L2**；≠ S66/S71/S74；**identical-mode precision=0 仍可 PASS**（per-req detect）。  
+- Residual-leak-add（S97）→ **`logits_finite`** + **L2**；≠ S31/S93/S94/S88–S91。  
+- Min_p-skip（S98）→ `token_repeat` + **L2**；≠ S36/S85/S92/S95/S46；需 T>0；**precision=0 仍可 PASS**。  
+- Top_p-skip（S99）→ `token_repeat` + **L2**；≠ S45/S98/temp；需 T>0；**precision=0 仍可 PASS**（detect≈45）。  
+- RMSNorm-bias=weight（S100）→ `token_repeat` + **L2**；≠ S66/S71/S74/S96。  
+- Cos/sin-half-swap（S101）→ `token_repeat` + **L2**；≠ S42/S79–S82/S40/S25/S28。  
+- RMSNorm-out-abs（S102）→ `token_repeat` + **L2**；≠ S86/S87–S89。  
+- SwiGLU-gate-only（S103）→ `token_repeat` + **L2**；≠ S39/S50/S56–S81；**identical-mode precision=0 仍可 PASS**（detect=48）。  
+- Rope-skip-key（S104）→ `token_repeat` + **L2**；≠ S40/S25/S28/S101。  
+- Rope-skip-query（S105）→ `token_repeat` + **L2**；≠ S104/S40/S25/S28/S101。  
+- Residual-post-abs（S106）→ `token_repeat` + **L2**；≠ S88/S90–S91/S102。  
+- SwiGLU-up-only（S107）→ `token_repeat` + **L2**；≠ S103/S39/S50。  
+- Hidden-abs（S108）→ `token_repeat` + **L2**；≠ S61/S75。  
+- Value-abs（S109）→ `token_repeat` + **L2**；≠ S58/S51；**identical-mode precision=0 仍可 PASS**（detect=24）。  
+- RMSNorm-weight-abs（S110）→ `token_repeat` + **L2**；≠ S66/S71/S74/S96/S100。  
+- Key-abs（S111）→ `token_repeat` + **L2**；≠ S54/S59/S109。  
+- Embed-abs（S112）→ `token_repeat` + **L2**；≠ S69/S43/S80。  
+- Cos/sin-abs（S113）→ `token_repeat` + **L2**；≠ S42/S79–S82/S101/S40；**identical-mode precision=0 仍可 PASS**（detect=48）。  
+- Query-abs（S114）→ `token_repeat` + **L2**；≠ S52/S60/S109/S111。  
+- SwiGLU-out-abs（S115）→ `token_repeat` + **L2**；≠ S67/S72/S103/S107。  
+- RMSNorm-x-abs（S116）→ `token_repeat` + **L2**；≠ S73/S62/S78/S102。  
+- Query-scale-down（S117）→ `token_repeat` + **L2**；≠ S60/S52/S114。  
+- Key-scale-down（S118）→ `token_repeat` + **L2**；≠ S59/S54/S111。  
+- Residual-pre-abs（S119）→ `token_repeat` + **L2**；≠ S48/S55/S64/S106。  
+- RMSNorm-weight=zeros（S120）→ `token_repeat` + **L2**；≠ S96/S66/S71/S74/S110。  
+- SwiGLU-input-abs（S121）→ `token_repeat` + **L2**；≠ S56/S76/S81/S115；**identical-mode precision=0 仍可 PASS**（detect=48）。  
+- Logits-abs（S122）→ `token_repeat` + **L2**；≠ S53/S65/S108。  
+- RMSNorm-bias=-weight（S123）→ `token_repeat` + **L2**；≠ S100/S66/S120。  
+- Penalty-skip（S124）→ `token_repeat` + **L2**；≠ S46/S98/S99；**identical-mode precision=0 仍可 PASS**（detect=48）。  
+- Residual-leak-sub（S125）→ **`logits_finite`** + **L2**；≠ S97/S93/S94/S31。  
+- Hidden-zeros（S126）→ `token_repeat` + **L2**；≠ S61/S75/S108/S122。  
+- Embed-zeros（S127）→ `token_repeat` + **L2**；≠ S69/S43/S80/S112。  
+- Cos/sin-zeros（S128）→ `token_repeat` + **L2**；≠ S42/S79–S82/S101/S113。  
+- Residual-pre-zeros（S129）→ `token_repeat` + **L2**；≠ S48/S55/S64/S119。  
+- Query-zeros（S130）→ `token_repeat` + **L2**；≠ S60/S52/S114/S117。  
+- SwiGLU-out-zeros（S131）→ `token_repeat` + **L2**；≠ S67/S72/S115/S103/S107。  
+- Key-zeros（S132）→ `token_repeat` + **L2**；≠ S54/S59/S111/S118。  
+- SwiGLU-input-zeros（S133）→ `token_repeat` + **L2**；≠ S56/S76/S81/S121/S131。  
+- Cos/sin-ones（S134）→ `token_repeat` + **L2**；≠ S42/S79–S82/S101/S113/S128。  
+- Residual-post-zeros（S135）→ `token_repeat` + **L2**；≠ S88/S90/S91/S106/S129。  
+- RMSNorm-out-zeros（S136）→ `token_repeat` + **L2**；≠ S86/S87/S89/S102。  
+- Embed-ones（S137）→ `token_repeat` + **L2**；≠ S69/S43/S80/S112/S127。  
+- Hidden-ones（S138）→ `token_repeat` + **L2**；≠ S61/S75/S108/S126。  
+- Positions-ones（S139）→ `token_repeat` + **L2**；≠ S37/S57/S84。  
+- Residual-pre-ones（S140）→ `token_repeat` + **L2**；≠ S48/S55/S64/S119/S129。  
+- Query-ones（S141）→ `token_repeat` + **L2**；≠ S60/S52/S114/S117/S130。  
+- Key-ones（S142）→ `token_repeat` + **L2**；≠ S54/S59/S111/S118/S132。  
+- SwiGLU-out-ones（S143）→ `token_repeat` + **L2**；≠ S67/S72/S115/S131。  
+- Residual-post-ones（S144）→ `token_repeat` + **L2**；≠ S88/S90/S91/S106/S135。  
+- RMSNorm-out-ones（S145）→ `token_repeat` + **L2**；≠ S86/S87/S89/S102/S136。  
+- SwiGLU-input-ones（S146）→ `token_repeat` + **L2**；≠ S56/S76/S81/S121/S133。  
+- Positions-zeros（S147）→ `token_repeat` + **L2**；≠ S139/S57/S84。  
+- Value-ones（S148）→ `token_repeat` + **L2**；≠ S58/S51/S109。  
+- Attn-out-ones（S149）→ `token_repeat` + **L2**；≠ S63/S41/S83。  
+- RMSNorm-x-ones（S150）→ `token_repeat` + **L2**；≠ S73/S62/S78/S116。  
+- Logits-ones（S151）→ `token_repeat` + **L2**；≠ S122/S53/S65。  
+- RMSNorm-bias-zeros（S152）→ `token_repeat` + **L2**；≠ S100/S123/S96。  
+

@@ -6,7 +6,7 @@
 2. **如何操作**（从启检测到初步定界）  
 3. **定界到哪一步为止**——什么叫「能定界、无法定位」
 
-案例模版与分析附录见 [04_case_studies](../04_case_studies/README.md)（15 典型 + 政策/能力文档），不堵本流程。
+案例模版见 [04_case_studies](../04_case_studies/README.md)（15 典型 keep-set），不堵本流程。
 
 ## 上游文档
 
@@ -28,7 +28,7 @@
                 └─(+ dump_kv)──► 本请求 KV block 快照 .pt
                                       │
                     ┌─────────────────┴─────────────────┐
-                    │ 有清洁标杆 + 同 token force-feed   │
+                    │ 有清洁标杆 + 同 token force-feed*  │
                     ▼                                   ▼
               buggy vs ref 首分歧              仅有报告/单侧 dump
               → 阶段/token/层 定界              → 类与现场，难到层
@@ -42,6 +42,8 @@
 | 离线对比（有标杆时） | 首坏 token / 首坏层级 **定界**；不自动指出是哪行代码 / 哪个算子 bug |
 
 **一句话：** Guard 是 **观测 + 抓现场 +（有条件时）定界** 工具，不是自动根因定位器。
+
+\* **force-feed**：按报告里的 token id 原样喂给干净服务（禁止再 tokenize 字符串）。
 
 ---
 
@@ -138,7 +140,7 @@
 
 ### Step 4 — 对账（本仓离线脚本）
 
-离线脚本在本仓 [06_agent_skills/scripts/](../06_agent_skills/scripts/)（与 [06 Agent Skills](../06_agent_skills/README.md) 同入口）。**不需要** `$RG_TEST`：
+离线脚本在本仓 [06_agent_skills/scripts/](../06_agent_skills/scripts/)（与 [06 Agent Skills](../06_agent_skills/README.md) 同入口）：
 
 ```bash
 export RG_DOCS=/path/to/runtime-guard-docs

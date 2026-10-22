@@ -1,6 +1,5 @@
 {
   "case": "S48",
-  "host": "builder",
   "cos_thresh": 0.99,
   "kv_match": false,
   "first_mismatch_idx": 0,
@@ -16,11 +15,11 @@
   "n_prompt": 14,
   "n_layers_matched": 72,
   "source": {
-    "buggy_run": "/workspace/runtime-guard/canonical/results/anomaly-repro-20261016/48_residual_negate-20261019T224114",
-    "buggy_report": "/workspace/runtime-guard/canonical/results/anomaly-repro-20261016/48_residual_negate-20261019T224114/report/logits_finite/report_20261019_224227_178_cmpl-9be232a2b0988714-0-a68cdc9b_pid388210.json",
-    "feed_report": "/home/d00824595/keepset-kv-compare-20261022/out/cases/S48/scratch/merged_report_20261019_224227_178_cmpl-9be232a2b0988714-0-a68cdc9b_pid388210.json",
-    "buggy_rank": "/workspace/runtime-guard/canonical/results/anomaly-repro-20261016/48_residual_negate-20261019T224114/dump/logits_finite/cmpl-9be232a2b0988714-0-a68cdc9b/wave_2/dp0_tp0_pp0_cp0",
-    "ref_rank": "/home/d00824595/keepset-kv-compare-20261022/ref_runs/qwen3-8b-ref-20261022T165528/dump/manual_trigger/cmpl-a10cddc9a618edbe-0-8c63ce2f/wave_10/dp0_tp0_pp0_cp0",
+    "buggy_run": "48_residual_negate-20261019T224114",
+    "buggy_report": "48_residual_negate-20261019T224114/report/logits_finite/report_20261019_224227_178_cmpl-9be232a2b0988714-0-a68cdc9b_pid388210.json",
+    "feed_report": "keepset-kv-compare-20261022/out/cases/S48/scratch/merged_report_20261019_224227_178_cmpl-9be232a2b0988714-0-a68cdc9b_pid388210.json",
+    "buggy_rank": "48_residual_negate-20261019T224114/dump/logits_finite/cmpl-9be232a2b0988714-0-a68cdc9b/wave_2/dp0_tp0_pp0_cp0",
+    "ref_rank": "ref_runs/qwen3-8b-ref-20261022T165528/dump/manual_trigger/cmpl-a10cddc9a618edbe-0-8c63ce2f/wave_10/dp0_tp0_pp0_cp0",
     "req_id": "cmpl-9be232a2b0988714-0-a68cdc9b",
     "incident_type": "logits_finite",
     "empty_prompt_recurled": true
