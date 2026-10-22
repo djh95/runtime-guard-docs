@@ -90,22 +90,19 @@ Overlay 打上后服务仍 200。可见 completion 是通顺中英散文（华�
 
 ### 事实
 
-- 现象：dense 栈 completion 为通顺中英散文，不是乱码；三层 154 / 0 / 0；detect=0；无命中 report。
-- 本包已归档 KV 对比（cos_thresh=0.99；n_prompt=16 n_cmp_tokens=16；matched_layers=72）。
-- 所用异常 dump 为旧 `logits_finite` 波（`output_token_ids` 仅 1 枚；原 `prompt_token_ids` 空 → re-curl 合并后抓标杆）；**非** dense 复判坏样本配对。
-- 首不一致：idx=0 role=prompt span=prompt min_cos=0.233433 @ model.layers.13.self_attn.attn。
-- 后续是否恢复≈1：False；output 首 token 余弦=n/a（对比窗口无 output 槽）；仅 PD 复现：False。
+- 本包 dense 结案为 **FAIL（复现未出现）**：completion 为通顺中英散文，不是乱码；三层 154 / 0 / 0；detect=0；无命中 report——**未抓到目标异常**。
+- 因此 **尚未做（也无法做）针对该异常的 KV 对比**：定界 KV 对账要求异常 dump ↔ 标杆配对；无异常则无从对账。
+- 曾有过一份旧 `logits_finite`、o=1 弱 dump 与标杆的余弦对比，但 dump **不是**本包 dense 复判抓到的坏样本；该对比 **对定界无效**，已从本包 evidence 删除，不作为定界证据。
 
 ### 推断
 
 - dense 上目标乱码未出现 → 结案仍是 FAIL（复现未出现），不是漏检。
-- 弱 dump 对账不一致 → 只能记「该 dump 与标杆不一致」，**不能**据此把 dense FAIL 改写成已证实的 KV 脏读根因。
-- 坏输出/通顺散文都推不出「KV 未置零」细因。
+- 无有效异常 dump → 不能从任何 KV 余弦「不一致」去证明或排除本 bug；通顺散文也推不出「KV 未置零」细因。
 
 ### 结论
 
-- 已定界到：dense 复现未出现；弱 dump 与标杆不一致（排除力度有限）。
-- 尚未定界到 KV 未置零类；分析不出 / 证据不足。
+- 已定界到：dense 复现未出现 / 未抓到异常。
+- **未做有效 KV 对账（异常未复现）**；尚未定界到 KV 未置零类；分析不出 / 证据不足。
 
 
 ## 证据文件
@@ -116,8 +113,7 @@ Overlay 打上后服务仍 200。可见 completion 是通顺中英散文（华�
 | `evidence/规格说明.md` | 复现规格（Origin / 锚点 / overlay / knobs / 期望 detector） |
 | `evidence/三层计数.json` | 三层明细（trigger / precision / detect） |
 | `evidence/跑批结果.json` | 跑批元数据 + 结案摘要 |
-| `evidence/samples/` | prompt + completion 样本 |
-| `evidence/kv_compare.json` | 最新 KV 标杆对比摘要（余弦 / 首不一致 / 结论） |
+| `evidence/samples/` | prompt + completion 样本（通顺散文；非异常） |
 
 
 ## 上游 PR 关系
