@@ -100,28 +100,30 @@ keep-set 案例的 **headline 结案**只用下面四档；**不要**再用 PASS
 | **复现技巧** | 「怎么跑才能对齐本包结论」的步骤与负载（并发 / prompt / 双树写入等）。**不含** origin-faithful / 禁止 NaN·token fill——那是**构建异常环境 / overlay 构造**纪律，写在 `规格说明.md` 与根因/构造节。旧称「复现配方」已不用；过程旧文称 **历史记录**。 |
 ## 对外保留的 15 个典型案例
 
+> **2026-10-22 撤回：** keep-set 15 包内全部 `kv_compare.json` 及依赖其的「KV 一致/不一致」结案已删除。旧对账与新旧证据混用，**不可信**。检测三层 / samples / reports（若有）仍保留作复现与检出参考；**有效 KV 对账须按同一次异常请求重做**后再改结案档。
+
 | ID | 包 | 结案 | 检测 | 根因 | 现象 | 检测器 | trigger / precision / detect |
 |----|-----|------|------|------|------|--------|------------------------------|
 | S01 | [cases/S01/](./cases/S01/) | 未复现 | 无可检（非漏检） | KV 新块未置零（需 hybrid/量化 KV） | dense 未见坏输出 | 本轮无可检坏输出 | 154 / 0† / 0 |
-| S10′ | [cases/S10p/](./cases/S10p/) | KV 一致→排除 KV | 检出 | FullAttn 回收块未清零 | 复读 / `xxxx` 塌缩 | `token_repeat` | 65 / 20 / 79 |
-| S11 | [cases/S11/](./cases/S11/) | KV 不一致→定界 | 检出 | MLA RoPE pad-tail 错位 | digit / collapse 垃圾 | `token_repeat` | 138 / 39 / 60 |
+| S10′ | [cases/S10p/](./cases/S10p/) | 复现未抓到 | 检出 | FullAttn 回收块未清零 | 复读 / `xxxx` 塌缩 | `token_repeat` | 65 / 20 / 79 |
+| S11 | [cases/S11/](./cases/S11/) | 复现未抓到 | 检出 | MLA RoPE pad-tail 错位 | digit / collapse 垃圾 | `token_repeat` | 138 / 39 / 60 |
 | S07 | [cases/S07/](./cases/S07/) | 复现未抓到 | 乱码漏检 | W8A8 dequant scale 崩溃 | 跨请求内容相同的乱码 | 期望 `logits_finite`→未检出（0 report） | 2624 / 1 / 0 |
-| S23 | [cases/S23/](./cases/S23/) | KV 不一致→定界 | 检出 | 一层 `o_proj` 权重置零 | 跨请求内容相同塌缩 | `token_repeat` | 2 / 17 / 48 |
-| S45 | [cases/S45/](./cases/S45/) | KV 一致→排除 KV | 乱码漏检 | top-k 打在 −logits | 各不相同乱码 | 期望 `token_repeat`+`logits_finite`→未检出 | 16 / 4 / 0 |
-| S43 | [cases/S43/](./cases/S43/) | KV 不一致→定界 | 检出 | embedding ×100 | 换行塌缩 | `token_repeat` | 16 / 40 / 48 |
-| S22 | [cases/S22/](./cases/S22/) | KV 一致→排除 KV | 检出 | Spec resample 无独立 salt | acceptance_rate 塌缩 | `spec_acceptance`（主） | 126 / 0 / 47 |
-| S06 | [cases/S06/](./cases/S06/) | KV 不一致→定界 | 检出 | MoE router bias / mask（构造） | 复读/乱码文本 | `token_repeat` | 70 / 2 / 1† |
-| S26 | [cases/S26/](./cases/S26/) | KV 不一致→定界 | 检出 | RMSNorm fp32 错乘 | `1.1.1…` 复读 | `token_repeat` | 354 / 16 / 48 |
-| S25 | [cases/S25/](./cases/S25/) | KV 一致→排除 KV | 检出 | RoPE 后半维丢失 | `1.1.1…` / `1.0.0…` 复读 | `token_repeat` | 348 / 17 / 48 |
-| S50 | [cases/S50/](./cases/S50/) | KV 不一致→定界 | 检出 | SwiGLU gate/up 对调 | 跨请求内容相同的 `!!!!` | `logits_finite` | 58 / 48 / 48 |
-| S48 | [cases/S48/](./cases/S48/) | KV 不一致→定界 | 检出 | residual 极性取反 | 跨请求内容相同的 `!!!!` | `logits_finite` | 100 / 48 / 48 |
-| S47 | [cases/S47/](./cases/S47/) | KV 不一致→定界 | 检出 | Attn 前 K/V 对调 | CJK / Trail 塌缩 | `token_repeat` | 58 / 37 / 48 |
-| S33 | [cases/S33/](./cases/S33/) | KV 一致→排除 KV | 检出 | softcap 缺 `*cap` rescale | `1.1.1…` 复读 | `token_repeat` | 130 / 17 / 48 |
+| S23 | [cases/S23/](./cases/S23/) | 复现未抓到 | 检出 | 一层 `o_proj` 权重置零 | 跨请求内容相同塌缩 | `token_repeat` | 2 / 17 / 48 |
+| S45 | [cases/S45/](./cases/S45/) | 复现未抓到 | 乱码漏检 | top-k 打在 −logits | 各不相同乱码 | 期望 `token_repeat`+`logits_finite`→未检出 | 16 / 4 / 0 |
+| S43 | [cases/S43/](./cases/S43/) | 复现未抓到 | 检出 | embedding ×100 | 换行塌缩 | `token_repeat` | 16 / 40 / 48 |
+| S22 | [cases/S22/](./cases/S22/) | 复现未抓到 | 检出 | Spec resample 无独立 salt | acceptance_rate 塌缩 | `spec_acceptance`（主） | 126 / 0 / 47 |
+| S06 | [cases/S06/](./cases/S06/) | 复现未抓到 | 检出 | MoE router bias / mask（构造） | 复读/乱码文本 | `token_repeat` | 70 / 2 / 1† |
+| S26 | [cases/S26/](./cases/S26/) | 复现未抓到 | 检出 | RMSNorm fp32 错乘 | `1.1.1…` 复读 | `token_repeat` | 354 / 16 / 48 |
+| S25 | [cases/S25/](./cases/S25/) | 复现未抓到 | 检出 | RoPE 后半维丢失 | `1.1.1…` / `1.0.0…` 复读 | `token_repeat` | 348 / 17 / 48 |
+| S50 | [cases/S50/](./cases/S50/) | 复现未抓到 | 检出 | SwiGLU gate/up 对调 | 跨请求内容相同的 `!!!!` | `logits_finite` | 58 / 48 / 48 |
+| S48 | [cases/S48/](./cases/S48/) | 复现未抓到 | 检出 | residual 极性取反 | 跨请求内容相同的 `!!!!` | `logits_finite` | 100 / 48 / 48 |
+| S47 | [cases/S47/](./cases/S47/) | 复现未抓到 | 检出 | Attn 前 K/V 对调 | CJK / Trail 塌缩 | `token_repeat` | 58 / 37 / 48 |
+| S33 | [cases/S33/](./cases/S33/) | 复现未抓到 | 检出 | softcap 缺 `*cap` rescale | `1.1.1…` 复读 | `token_repeat` | 130 / 17 / 48 |
 
 计数摘自各包 `evidence/三层计数.json`（每个案例一份最新对外结果）。脚注：
 
-- **S06 †**：钉点 run `20261020T190354`；detect 按 `token_repeat` report×1 记 **1**（report `prompt_token_ids` 非空；与 KV 对账同跑）；三层 **70 / 2 / 1** 见 `三层计数.json` / 跑批结果。
-- **S07**：precision 记成 1，实为 48 次请求内容相同的乱码（以 samples + score 为准）。detect=0 → **无有效异常 KV**；结案 **复现未抓到**（勿把旧 NaN 对账当定界）。
+- **S06 †**：钉点 run `20261020T190354`；detect×1、`prompt_token_ids` 非空；三层 **70 / 2 / 1**。KV 对账已撤回，结案 **复现未抓到**。
+- **S07**：precision 记成 1，实为 48 次同文乱码（samples 为准）；detect=0；**无有效 KV** → 结案 **复现未抓到**。
 - **S10′**：`precision=20` 可对照 `cases/S10p/evidence/samples/`（T181551）；detect=79 见 `evidence/reports/report_sample.json`。
 - **S11**：`precision=39` 可对照 `cases/S11/evidence/samples/`（T190840）。
 - **S23**：trigger=2 为 boot 置零（TP2 每卡一次），precision/detect 按请求计，故可 **precision > trigger**；结案看 detect=48。见 [cases/S23](./cases/S23/)。

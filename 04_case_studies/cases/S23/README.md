@@ -1,4 +1,4 @@
-# S23 · Weight layer zero（KV 不一致→定界 · 检出停点，不定界到权重元素）
+# S23 · Weight layer zero（复现未抓到）
 
 公开自洽案例包。
 
@@ -6,7 +6,7 @@
 
 | 项 | 值 |
 |----|-----|
-| 结案 | **KV 不一致→定界** |
+| 结案 | **复现未抓到** |
 | 检测 | **检出** |
 | 三层率 | **2 / 17 / 48** |
 | Detector | `token_repeat` |
@@ -27,31 +27,29 @@
 
 ## 3 · Guard 结果
 
-**检出**（detect 48），但 skills **不定界到具体权重元素**——教学点是停在检出，不到权重元素细拆。结案档：**KV 不一致→定界**。
+**检出**（detect 48），但 skills **不定界到具体权重元素**——教学点是停在检出，不到权重元素细拆。结案档：**复现未抓到**。
 
 ## 4 · 复现技巧
 
 Qwen3-8B，temp=0，eager；concurrent 48；util=0.40。
 
 ## 5 · 定界分析
+
 ### 事实
 
-- 现象：复读塌缩（`evidence/samples/`）。
-- 三层见 `evidence/三层计数.json`；detector：`token_repeat`。
-- 本包已归档 KV 对比（cos_thresh=0.99；n_prompt=14 n_cmp_tokens=20；layers=72）。
-- 首不一致：idx=1 role=prompt span=prompt min_cos=0.983096 @ model.layers.35.self_attn.attn。
-- 后续是否恢复≈1：False；output 首 token 余弦=0.892670；仅 PD：False。
+- 现象 / 检测见上文钉点与 samples（或 reports）。
+- **有效 KV 对账：无。** 本包曾归档的 `kv_compare.json` 及其中「首不一致 / 层号 / 余弦」结论**全部撤回**（新旧跑次混用、空 prompt、弱窗、全 NaN 占位等问题，不可信）。
 
 ### 推断
 
-- 对账不一致 → **重开 KV 线**。
-- 坏输出仍不可直接写成具体根因。
-- 首不一致在 prompt 段 → 偏向 prefill 侧（需结合是否恢复、仅 PD）。
+- 在重做**同一次异常请求**的有效异常 dump ↔ 标杆对账之前，**不能**得出「排除 KV」或「KV 不一致定界」。
+- 坏输出 / 构造预期 ≠ 已证根因。
 
 ### 结论
 
-- 结案档：**KV 不一致→定界**（重开 KV 线）。
-- 尚未定界到具体写/传路径；分析不出 / 证据不足。
+- 结案档：**复现未抓到**（有异常或检出证据，但无有效异常 KV 可对账）。
+- **尚未做有效 KV 对账**；分析不出 / 证据不足。
+
 
 ## 6 · 证据文件
 | 文件 | 用途 |
@@ -62,7 +60,6 @@ Qwen3-8B，temp=0，eager；concurrent 48；util=0.40。
 | `evidence/跑批结果.json` | 跑批元数据 + 结案摘要 |
 | `evidence/samples/` | prompt + completion 样本 |
 | `evidence/reports/` | Guard detector 报告 |
-| `evidence/kv_compare.json` | 最新 KV 标杆对比摘要（余弦 / 首不一致 / 结论） |
 
 ## 7 · 上游 PR 关系
 | PR / 链接 | 角色 |

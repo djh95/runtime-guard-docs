@@ -1,4 +1,4 @@
-# S25 · RoPE second-half drop（KV 一致→排除 KV · PR-rooted）
+# S25 · RoPE second-half drop（复现未抓到）
 
 公开自洽案例包。
 
@@ -6,7 +6,7 @@
 
 | 项 | 值 |
 |----|-----|
-| 结案 | **KV 一致→排除 KV** |
+| 结案 | **复现未抓到** |
 | 检测 | **检出** |
 | 三层率 | **348 / 17 / 48**（现行；detect=48/48；trigger/precision 随并发浮动，detect 为判定口径） |
 | Detector | `token_repeat`（**threshold=8**） |
@@ -25,7 +25,7 @@ Soft-inverse [ascend#7082](https://github.com/vllm-project/vllm-ascend/pull/7082
 
 ## 3 · Guard 结果
 
-**检出。** 现行 **348 / 17 / 48**。结案档：**KV 一致→排除 KV**。
+**检出。** 现行 **348 / 17 / 48**。结案档：**复现未抓到**。
 
 ## 4 · 复现技巧（必读）
 
@@ -43,24 +43,22 @@ Soft-inverse [ascend#7082](https://github.com/vllm-project/vllm-ascend/pull/7082
 **历史错跑（不要照这个结案）：** 曾用「中文回声式」prompt（让模型复述中文）、大约 **8 条串行**请求、并把 `token_repeat` 阈值设成 **16**。那样往往**打不出** `1.1.1…` 数字复读，于是 detect=0。这是**复现条件不对**，不能当成「检测器漏检」。
 
 ## 5 · 定界分析
+
 ### 事实
 
-- 现象：`1.1.1…` 复读（`evidence/samples/`）。
-- 三层：462 / 15 / 48；detector：`token_repeat`×48。
-- 本包已归档 KV 对比（cos_thresh=0.99；n_prompt=14 n_cmp_tokens=20；layers=72）。
-- 标杆 vs 异常：对比窗口**全程一致**（min-over-layers cos ≥ thresh）；output 首 token 余弦=0.999993。
-- 首不一致：无。
+- 现象 / 检测见上文钉点与 samples（或 reports）。
+- **有效 KV 对账：无。** 本包曾归档的 `kv_compare.json` 及其中「首不一致 / 层号 / 余弦」结论**全部撤回**（新旧跑次混用、空 prompt、弱窗、全 NaN 占位等问题，不可信）。
 
 ### 推断
 
-- 对账一致 → **排除 KV cache** 作为本请求坏输出的必要原因。
-- 坏输出仍不能从文本推出构造根因；转向非 KV 类（见案例背景/构造）。
-- 无首不一致 → 推不出污染时机窗口。
+- 在重做**同一次异常请求**的有效异常 dump ↔ 标杆对账之前，**不能**得出「排除 KV」或「KV 不一致定界」。
+- 坏输出 / 构造预期 ≠ 已证根因。
 
 ### 结论
 
-- 结案档：**KV 一致→排除 KV**（本请求对比窗口）。
-- 尚未定界到具体算子/构造根因；分析不出 / 证据不足。
+- 结案档：**复现未抓到**（有异常或检出证据，但无有效异常 KV 可对账）。
+- **尚未做有效 KV 对账**；分析不出 / 证据不足。
+
 
 ## 6 · 证据文件
 | 文件 | 用途 |
@@ -71,7 +69,6 @@ Soft-inverse [ascend#7082](https://github.com/vllm-project/vllm-ascend/pull/7082
 | `evidence/跑批结果.json` | 跑批元数据 + 结案摘要 |
 | `evidence/samples/` | prompt + completion 样本 |
 | `evidence/reports/` | Guard detector 报告 |
-| `evidence/kv_compare.json` | 最新 KV 标杆对比摘要（余弦 / 首不一致 / 结论） |
 
 ## 7 · 上游 PR 关系
 | PR / 链接 | 角色 |
