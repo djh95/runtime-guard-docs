@@ -169,19 +169,21 @@ python "$SCRIPTS/verify_request_kv.py" --report ... --kv-dir {KV_RANK_DIR}
 
 ## 5. 精度定界决策树 Q1–Q5（有 buggy+ref 时强制按序）
 
-前置：`verify_request_kv` PASS + 已有 buggy/ref dump。
+**前置：** `verify_request_kv` PASS；已有 buggy / ref dump。按序答下表。
 
 | 问 | 怎么答 |
 |----|--------|
-| **Q1 KV 是否异常？** | 高相似无首分歧 → 非 KV（后采样/组装等）；有首分歧 → Q2 |
-| **Q2 阶段 / token / 层？** | prompt 段→prefill；output 段→decode；全层齐坏→整包写/传；从某层起坏→该层计算/写出 |
-| **Q3 粒度？** | 单 token / 连续多 token / 按 `block_size` 的 block 级 |
-| **Q4 异常点之后？** | 邻域恢复→写入后污染；一路坏→写入时即错或持续错误源 |
-| **Q5 类型（cos）？** | 断崖→0≈污染/串 block；平台 ~0.8–0.9≈计算误差；nan/inf≈数值炸 |
+| **Q1** KV 是否异常？ | 高相似、无首分歧 → 非 KV（后采样/组装等）；有首分歧 → 做 Q2 |
+| **Q2** 阶段 / token / 层定到哪？ | prompt 段 → prefill；output 段 → decode；全层齐坏 → 整包写/传；从某层起坏 → 该层计算/写出 |
+| **Q3** 粒度是什么？ | 单 token / 连续多 token / 按 `block_size` 的 block 级 |
+| **Q4** 异常点之后怎样？ | 邻域恢复 → 写入后污染；一路坏 → 写入时即错或持续错误源 |
+| **Q5** 类型（cos）像什么？ | 断崖→0 ≈ 污染/串 block；平台 ~0.8–0.9 ≈ 计算误差；nan/inf ≈ 数值炸 |
+| 正文必写哪些 KV 事实？ | 首个不一致在 prompt 还是 output；后续是否恢复；output 首 token 余弦；是否仅 PD 复现 |
+| 何时再推断？ | 上述事实写清后，再推「何时脏 / 是否传写交接」 |
+| 禁止什么？ | 从坏输出直接跳根因 |
+| 完整示例在哪？ | [04 · KV/余弦事实怎么推时机](../04_case_studies/README.md#kv余弦事实怎么推时机方法示例)（示意数字，非 keep-set 实测） |
 
-写进定界正文时：先写清 **首个不一致属于 prompt 还是 output、后续是否恢复、output 首 token 余弦、是否仅 PD 复现**，再推「何时脏 / 是否传写交接」——**禁止**从坏输出直接跳根因。完整方法示例（示意数字，非 keep-set 实测）见 [04 · KV/余弦事实怎么推时机](../04_case_studies/README.md#kv余弦事实怎么推时机方法示例)。
-
-**交付模板（定界，非定位）：**
+**交付模板（定界）：** 能定到哪写到哪；未知填「未知」，勿每次固定声明「未定位算子/提交」。
 
 ```text
 【定界】KV=<异常|正常|未知(无标杆)>; 阶段=<prefill|decode|未知>;
@@ -189,7 +191,6 @@ python "$SCRIPTS/verify_request_kv.py" --report ... --kv-dir {KV_RANK_DIR}
 粒度=<单token|连续|block|未知>; 时机=<写入时即坏|写入后污染|未知>;
 类型=<污染断崖|计算平台|后采样/非KV|仅detector类>;
 标杆=<有|无>; 证据=<report路径 / dump路径 / 脚本>;
-【非结论】未定位到具体算子或提交。
 ```
 
 ---
@@ -203,7 +204,7 @@ python "$SCRIPTS/verify_request_kv.py" --report ... --kv-dir {KV_RANK_DIR}
 | 只有 tp0 | 其它 last-PP TP 是否同波；日志 `[runtime_guard dump_kv]` |
 | 无更早 PP 层 | **预期**（不 dump 非 last PP） |
 | 热更无效 | `runtime_config_hot_reload`；路径；reload 拒绝日志 |
-| Manual 不触发 | 是否有 scheduled tokens；本进程 `done` 是否已 ≥ 目标总次数 `N` |
+| Manual 不触发 | 是否有 scheduled tokens；本进程「已拍次数」是否已 ≥ 目标总次数 `N`（内部常叫 `done`） |
 
 日志关键字：`[runtime_guard sync]` / `manual_trigger` / `dump_kv` / `action`。
 
