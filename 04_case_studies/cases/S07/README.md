@@ -1,6 +1,6 @@
 # S07 · W8A8 scale collapse → 无 NaN 乱码（KV 不一致→定界 · 弱窗）
 
-公开自洽案例包。对照：[S01](../S01/)（dense **未复现**，不是漏检）。本包是**真有乱码**，但采样前分数没有 NaN/Inf，专用 NaN 检测抓不住。
+公开自洽案例包。对照：[S01](../S01/)（dense **未复现**，不是漏检）。本包是**真有乱码**，但logits 没有 NaN/Inf，专用 NaN 检测抓不住。
 
 ## 归档钉点
 
@@ -26,7 +26,7 @@ W8A8 dequant scale 崩溃（在 `deq_scale` 上 zero + 1e20）。属于 quant / 
 
 ## 3 · Guard 结果
 
-**乱码漏检。** 开了 `logits_finite`（专门抓采样前分数里的 NaN/Inf），但本包乱码的分数一直是普通有限数字、没有 NaN/Inf，所以 **detect=0**——文字坏了也报不出来。人工看 samples / score 仍是跨请求同一段乱码×48。  
+**乱码漏检。** 开了 `logits_finite`（专门抓 logits 里的 NaN/Inf），但本包乱码的 logits 一直是普通有限数字、没有 NaN/Inf，所以 **detect=0**——文字坏了也报不出来。人工看 samples / score 仍是跨请求同一段乱码×48。  
 结案档：**KV 不一致→定界（弱窗/力度有限）**——没检出也能拿已有异常 KV dump 去对账；只是这份 dump 很弱（几乎只有 1 个输出 token），定界力度有限。
 
 | 层 | 归档 |
@@ -42,7 +42,7 @@ status 里 precision 记成 1，但 samples + score 证实跨请求内容相同�
 ## 5 · 定界分析
 ### 事实
 
-- **坏输出：** 真乱码，且多次请求吐出**同一段**垃圾；采样前分数**没有** NaN/Inf（所以只盯 NaN 的检测器会漏）。
+- **坏输出：** 真乱码，且多次请求吐出**同一段**垃圾；logits **没有** NaN/Inf（所以只盯 NaN 的检测器会漏）。
 - **检测：** `logits_finite` 没命中（detect=0）= 乱码漏检。  
   **没检出 ≠ 不能做 KV 对账**：包里另有一份异常侧 KV 快照，用来和干净侧标杆比。这份快照当时几乎只带了 **1 个输出 token**（对比窗主要在 prompt 上）→ 所以叫「弱窗」。
 - **对比结果**（`evidence/kv_compare.json`）：相似度阈值 0.99；prompt 约 16 个 token、对齐了 72 层。**两边 KV 对不上。**

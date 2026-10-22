@@ -17,7 +17,7 @@
 
 ## 1 · 现象
 
-**各不相同（unique）** 的混合脚本垃圾文字；采样前分值始终有限，没有 NaN/Inf。内容相同计分会低估——`precision=4` **不能单独**当成「几乎没有坏输出」。样本见 [evidence/samples/](./evidence/samples/)。
+**各不相同（unique）** 的混合脚本垃圾文字；logits 始终有限，没有 NaN/Inf。内容相同计分会低估——`precision=4` **不能单独**当成「几乎没有坏输出」。样本见 [evidence/samples/](./evidence/samples/)。
 
 ## 2 · 根因
 
