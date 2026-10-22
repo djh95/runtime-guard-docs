@@ -1,0 +1,16 @@
+{
+  "case": "S26",
+  "结案": "KV一致→排除 KV",
+  "检测": "检出",
+  "t_p_d": "470/14/48",
+  "host": "192.168.13.160 rg-test-160",
+  "cards": "4,5",
+  "guard_pin": "G2 f2aefd068 + PR#19285 (temp apply for capture)",
+  "model": "Qwen3-8B TP2",
+  "kv_pairs": 2,
+  "kv_compare_span": "history feed n_tokens=p+o-1",
+  "kv_result": "both pairs match",
+  "server_verified_kv": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S26",
+  "buggy_run": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S26-pr19285-20261022T231038",
+  "docs_skills": "v5.13"
+}

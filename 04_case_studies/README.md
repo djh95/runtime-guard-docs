@@ -113,7 +113,7 @@ keep-set 案例的 **headline 结案**只用下面四档；**不要**再用 PASS
 | S43 | [cases/S43/](./cases/S43/) | （空） | （空） | embedding ×100 | （空） | `token_repeat` | （空） |
 | S22 | [cases/S22/](./cases/S22/) | （空） | （空） | Spec resample 无独立 salt | （空） | `spec_acceptance` | （空） |
 | S06 | [cases/S06/](./cases/S06/) | （空） | （空） | MoE router bias / mask（构造） | （空） | `token_repeat` | （空） |
-| S26 | [cases/S26/](./cases/S26/) | （空） | （空） | RMSNorm fp32 错乘 | （空） | `token_repeat` | （空） |
+| S26 | [cases/S26/](./cases/S26/) | **KV 一致→排除 KV** | **检出** | RMSNorm fp32 错乘 | `1.1.1…` 数字复读 | `token_repeat` | **470 / 14 / 48** |
 | S25 | [cases/S25/](./cases/S25/) | **KV 一致→排除 KV** | **检出** | RoPE 后半维丢失 | `1.1.1…` 数字复读 | `token_repeat` | **462 / 15 / 48** |
 | S50 | [cases/S50/](./cases/S50/) | （空） | （空） | SwiGLU gate/up 对调 | （空） | `logits_finite` | （空） |
 | S48 | [cases/S48/](./cases/S48/) | （空） | （空） | residual 极性取反 | （空） | `logits_finite` | （空） |
@@ -122,7 +122,7 @@ keep-set 案例的 **headline 结案**只用下面四档；**不要**再用 PASS
 
 计数摘自各包实测回填后的 `evidence/三层计数.json`（已回填者见表；其余为空）。
 
-脚注：S25 钉点 dump 临时合入 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) 以取得非空 `prompt_token_ids`；KV 对比跨度 `p+o-1`（两组 match）。详见 [cases/S25/](./cases/S25/)。
+脚注：S25/S26 钉点 dump 均临时合入 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) 以取得非空 `prompt_token_ids`；KV 对比跨度 `p+o-1`（各两组 match）。原始 `.pt` 留服务器 `verified_kv/`（S25≈94M / S26≈75M，未入库）。
 
 
 `S10′` 在仓库里的目录名是 **`S10p`**。相关 Skills 见 [06](../06_agent_skills/)（**v5.9**）。

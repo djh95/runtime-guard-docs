@@ -1,0 +1,281 @@
+{
+  "bug": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S26-pr19285-20261022T231038",
+  "pr19285_source": true,
+  "tier_candidate": "KV\u4e00\u81f4\u2192\u6392\u9664 KV",
+  "n_ok_pairs": 2,
+  "n_match": 2,
+  "n_mismatch": 0,
+  "results": [
+    {
+      "req_id": "cmpl-9dc6d291ed4ee37d-0-a45e21f3",
+      "ok": true,
+      "n_tokens": 30,
+      "n_prompt": 14,
+      "shape": [
+        1,
+        128,
+        4,
+        128
+      ],
+      "kv_match": true,
+      "nan_all": false,
+      "n_finite_cos": 30,
+      "first_mismatch_idx": null,
+      "first_mismatch_role": null,
+      "first_mismatch_layer": null,
+      "first_mismatch_min_cos": null,
+      "buggy_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S26-pr19285-20261022T231038/dump/token_repeat/cmpl-9dc6d291ed4ee37d-0-a45e21f3/wave_114/dp0_tp0_pp0_cp0",
+      "ref_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S26-ref-20261022T231509/dump/manual_trigger/cmpl-8ad8f4b46d7a6296-0-b886597a/wave_2/dp0_tp0_pp0_cp0",
+      "per_token_head": [
+        {
+          "idx": 0,
+          "role": "prompt",
+          "min_cos": 0.999999
+        },
+        {
+          "idx": 1,
+          "role": "prompt",
+          "min_cos": 0.999998
+        },
+        {
+          "idx": 2,
+          "role": "prompt",
+          "min_cos": 0.999998
+        },
+        {
+          "idx": 3,
+          "role": "prompt",
+          "min_cos": 0.999998
+        },
+        {
+          "idx": 4,
+          "role": "prompt",
+          "min_cos": 0.999995
+        },
+        {
+          "idx": 5,
+          "role": "prompt",
+          "min_cos": 0.999995
+        },
+        {
+          "idx": 6,
+          "role": "prompt",
+          "min_cos": 0.999989
+        },
+        {
+          "idx": 7,
+          "role": "prompt",
+          "min_cos": 0.999995
+        },
+        {
+          "idx": 8,
+          "role": "prompt",
+          "min_cos": 0.999994
+        },
+        {
+          "idx": 9,
+          "role": "prompt",
+          "min_cos": 0.999993
+        },
+        {
+          "idx": 10,
+          "role": "prompt",
+          "min_cos": 0.999995
+        },
+        {
+          "idx": 11,
+          "role": "prompt",
+          "min_cos": 0.999991
+        },
+        {
+          "idx": 12,
+          "role": "prompt",
+          "min_cos": 0.999992
+        },
+        {
+          "idx": 13,
+          "role": "prompt",
+          "min_cos": 0.999993
+        },
+        {
+          "idx": 14,
+          "role": "out[0]",
+          "min_cos": 0.999994
+        },
+        {
+          "idx": 15,
+          "role": "out[1]",
+          "min_cos": 0.999992
+        },
+        {
+          "idx": 16,
+          "role": "out[2]",
+          "min_cos": 0.999991
+        },
+        {
+          "idx": 17,
+          "role": "out[3]",
+          "min_cos": 0.999994
+        },
+        {
+          "idx": 18,
+          "role": "out[4]",
+          "min_cos": 0.999993
+        },
+        {
+          "idx": 19,
+          "role": "out[5]",
+          "min_cos": 0.999992
+        },
+        {
+          "idx": 20,
+          "role": "out[6]",
+          "min_cos": 0.999996
+        },
+        {
+          "idx": 21,
+          "role": "out[7]",
+          "min_cos": 0.999998
+        },
+        {
+          "idx": 22,
+          "role": "out[8]",
+          "min_cos": 0.999996
+        },
+        {
+          "idx": 23,
+          "role": "out[9]",
+          "min_cos": 0.999996
+        }
+      ]
+    },
+    {
+      "req_id": "cmpl-b6589cc95bc441c6-0-90a56851",
+      "ok": true,
+      "n_tokens": 21,
+      "n_prompt": 14,
+      "shape": [
+        1,
+        128,
+        4,
+        128
+      ],
+      "kv_match": true,
+      "nan_all": false,
+      "n_finite_cos": 21,
+      "first_mismatch_idx": null,
+      "first_mismatch_role": null,
+      "first_mismatch_layer": null,
+      "first_mismatch_min_cos": null,
+      "buggy_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S26-pr19285-20261022T231038/dump/token_repeat/cmpl-b6589cc95bc441c6-0-90a56851/wave_9/dp0_tp0_pp0_cp0",
+      "ref_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S26-ref-20261022T231509/dump/manual_trigger/cmpl-b18c1bd5b4c4a49f-0-ad2b95f3/wave_3/dp0_tp0_pp0_cp0",
+      "per_token_head": [
+        {
+          "idx": 0,
+          "role": "prompt",
+          "min_cos": 0.999999
+        },
+        {
+          "idx": 1,
+          "role": "prompt",
+          "min_cos": 0.999998
+        },
+        {
+          "idx": 2,
+          "role": "prompt",
+          "min_cos": 0.999998
+        },
+        {
+          "idx": 3,
+          "role": "prompt",
+          "min_cos": 0.999998
+        },
+        {
+          "idx": 4,
+          "role": "prompt",
+          "min_cos": 0.999995
+        },
+        {
+          "idx": 5,
+          "role": "prompt",
+          "min_cos": 0.999995
+        },
+        {
+          "idx": 6,
+          "role": "prompt",
+          "min_cos": 0.999989
+        },
+        {
+          "idx": 7,
+          "role": "prompt",
+          "min_cos": 0.999995
+        },
+        {
+          "idx": 8,
+          "role": "prompt",
+          "min_cos": 0.999994
+        },
+        {
+          "idx": 9,
+          "role": "prompt",
+          "min_cos": 0.999993
+        },
+        {
+          "idx": 10,
+          "role": "prompt",
+          "min_cos": 0.999995
+        },
+        {
+          "idx": 11,
+          "role": "prompt",
+          "min_cos": 0.999991
+        },
+        {
+          "idx": 12,
+          "role": "prompt",
+          "min_cos": 0.999989
+        },
+        {
+          "idx": 13,
+          "role": "prompt",
+          "min_cos": 0.999992
+        },
+        {
+          "idx": 14,
+          "role": "out[0]",
+          "min_cos": 0.999994
+        },
+        {
+          "idx": 15,
+          "role": "out[1]",
+          "min_cos": 0.999989
+        },
+        {
+          "idx": 16,
+          "role": "out[2]",
+          "min_cos": 0.999992
+        },
+        {
+          "idx": 17,
+          "role": "out[3]",
+          "min_cos": 0.999988
+        },
+        {
+          "idx": 18,
+          "role": "out[4]",
+          "min_cos": 0.999994
+        },
+        {
+          "idx": 19,
+          "role": "out[5]",
+          "min_cos": 0.999994
+        },
+        {
+          "idx": 20,
+          "role": "out[6]",
+          "min_cos": 0.999993
+        }
+      ]
+    }
+  ]
+}
