@@ -50,23 +50,22 @@ Soft-inverse [ascend#7082](https://github.com/vllm-project/vllm-ascend/pull/7082
 
 ### 事实
 
-- 三层：348 / 17 / 48；detector：`token_repeat`×48（threshold=8；`evidence/samples/` · `evidence/reports/`）。
-- 归档 report `prompt_token_ids` 为空；有 `output_token_ids`。
-- 包内无标杆 vs 异常 KV 对账结果。
+- 现象：`1.1.1…` / `1.0.0…` 复读（`evidence/samples/`）。
+- 三层：348 / 17 / 48；detector：`token_repeat`×48。
+- 归档 report：`prompt_token_ids` 为空；有 `output_token_ids`。
+- KV 对账路径可用；归档尚未附结论。
 
 ### 推断
 
-- 可确认：复读异常且 `token_repeat` 已检出（河名句×48 并发负载下）。
-- 坏输出推不出「RoPE 后半维丢失」；KV 排除路径可用，包内未附 → **定界分析不出** RoPE 细因（§2 / soft-inverse 非定界已证）。
+- 可确认：复读异常已出现，且 `token_repeat` 已检出。
+- 坏输出推不出「RoPE 后半维丢失」——构造见「根因」。
+- 无对账事实 → 推不出污染时机。
 
 ### 结论
 
 - 已定界到：复读异常 + `token_repeat` 检出。
-- **尚未定界到** RoPE 后半维；**分析不出 / 证据不足**。
-- KV：路径可用；归档尚未附结论。
-- **定界结论：L1** = `token_repeat` 已命中；**L2** = 证据不足。
-- 结案：PASS **348 / 17 / 48**。
-
+- 尚未定界到 RoPE 后半维；分析不出 / 证据不足。
+- L1=`token_repeat` 已命中；L2=证据不足。
 
 ## 证据文件
 

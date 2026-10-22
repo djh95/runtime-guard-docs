@@ -48,24 +48,22 @@ Spec 路径要用对 detector（主看 `spec_acceptance`）。acceptance 塌缩�
 
 ### 事实
 
-- 三层：126 / 0 / 47；主 detector：`spec_acceptance`（detect=47；`evidence/reports/`）。
-- sample / report：acceptance 塌缩相关现象（`evidence/samples/`）；`token_repeat` 条 prompt 为空、`spec_acceptance` 条有。
-- 包内无标杆 vs 异常 KV 对账结果。
+- 现象：acceptance_rate 塌缩相关（`evidence/samples/` · `evidence/reports/`）。
+- 三层：126 / 0 / 47；主 detector：`spec_acceptance`×47。
+- 归档 report：`spec_acceptance` 条 `prompt_token_ids` 非空（len=14）；另有条为空；均有 `output_token_ids`。
+- KV 对账路径可用；归档尚未附结论。
 
 ### 推断
 
-- 可确认：`spec_acceptance` 已检出 → PASS 有据。
-- 坏输出 / acceptance 塌缩推不出「spec resample RNG/SALT」细因（§2 非定界已证）。
-- 无 KV 对账 → 不能排除或确认 KV。
+- 可确认：`spec_acceptance` 已检出。
+- acceptance 塌缩推不出「spec resample 无独立 salt」——构造见「根因」。
+- 无对账事实 → 不能排除或确认 KV，也推不出污染时机。
 
 ### 结论
 
 - 已定界到：`spec_acceptance` 检出。
-- **尚未定界到** resample salt；**分析不出 / 证据不足**。
-- KV：路径可用；归档尚未附结论。
-- **定界结论：L1** = `spec_acceptance` 已命中；**L2** = 证据不足。
-- 结案：PASS。
-
+- 尚未定界到 resample salt；分析不出 / 证据不足。
+- L1=`spec_acceptance` 已命中；L2=证据不足。
 
 ## 证据文件
 

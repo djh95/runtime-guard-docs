@@ -56,6 +56,8 @@
 
 ## 定界写作标准（keep-set）
 
+本 keep-set **15 例** `cases/S*/README.md` 定界节均按下列「事实 → 推断 → 结论」书写；KV 时机字段见下节方法示例。
+
 定界节必须有**推理逻辑**，顺序固定：
 
 1. **事实** — 只列包内可核对项：现象文本、三层计数、report / detector、`prompt_token_ids` 是否空、是否已做同 prompt re-curl、KV 对比是否已归档（未归档就写「路径可用；归档尚未附结论」）。少括号旁注，短 bullet；不编造未跑的 KV 数字。

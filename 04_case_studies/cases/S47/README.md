@@ -37,23 +37,22 @@ CJK / Trail 塌缩；`token_repeat`×48。
 
 ### 事实
 
-- 三层：58 / 37 / 48；detector：`token_repeat`（CJK / Trail 塌缩；`evidence/samples/` · `evidence/reports/`）。
-- 归档 report `prompt_token_ids` 为空；有 `output_token_ids`。
-- 包内无标杆 vs 异常 KV 对账结果。
+- 现象：CJK / Trail 塌缩（`evidence/samples/`）。
+- 三层：58 / 37 / 48；detector：`token_repeat`×48。
+- 归档 report：`prompt_token_ids` 为空；有 `output_token_ids`。
+- KV 对账路径可用；归档尚未附结论。
 
 ### 推断
 
-- 可确认：塌缩异常且 `token_repeat` 已检出。
-- 坏输出推不出「Attn 前 K/V 对调」；KV 排除路径可用，包内未附 → **定界分析不出** 该算子细因（§2 非定界已证）。
+- 可确认：塌缩异常已出现，且 `token_repeat` 已检出。
+- 坏输出推不出「Attn 前 K/V 对调」——构造见「根因」。
+- 无对账事实 → 推不出污染时机。
 
 ### 结论
 
 - 已定界到：塌缩异常 + `token_repeat` 检出。
-- **尚未定界到** K/V 对调；**分析不出 / 证据不足**。
-- KV：路径可用；归档尚未附结论。
-- **定界结论：L1** = `token_repeat` 已命中；**L2** = 证据不足。
-- 结案：PASS **58 / 37 / 48**。
-
+- 尚未定界到 K/V 对调；分析不出 / 证据不足。
+- L1=`token_repeat` 已命中；L2=证据不足。
 
 ## 证据文件
 

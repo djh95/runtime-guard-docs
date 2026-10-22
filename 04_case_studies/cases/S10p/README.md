@@ -44,24 +44,22 @@ Overlay：强制 `needs_kv_cache_zeroing=False`，在 `BlockPool.get_new_blocks`
 
 ### 事实
 
-- 三层：65 / 20 / 79；detector：`token_repeat`（`evidence/reports/`）。
-- sample：复读 / `xxxx` 塌缩（`evidence/samples/`）。
-- 包内无标杆 vs 异常 KV 对账结果。
+- 现象：复读 / `xxxx` 塌缩（`evidence/samples/`）。
+- 三层：65 / 20 / 79；detector：`token_repeat`。
+- 归档 report：`prompt_token_ids` 非空（len=32）；有 `output_token_ids`。
+- KV 对账路径可用；归档尚未附结论。
 
 ### 推断
 
-- 可确认：复读/塌缩异常且 `token_repeat` 已检出。
-- 坏输出推不出「FullAttn 回收未清零」；确认/排除 KV 须重放抓服务端 `prompt_token_ids`（空 prompt 时同 prompt 再 curl）+ 合并 `output_token_ids` 做 buggy vs 标杆 KV 对账。
-- 包内无对账 → **定界分析不出** 真 KV 脏读细因（§2 / 上游 PR 非本包定界已证）。
+- 可确认：复读/塌缩异常已出现，且 `token_repeat` 已检出。
+- 坏输出推不出「FullAttn 回收未清零」——构造见「根因」。
+- 无首不一致落在 prompt/output、后续是否恢复 ~1、output 首 token 余弦、是否仅 PD 等对账事实 → 推不出污染时机窗口。
 
 ### 结论
 
 - 已定界到：复读/塌缩异常 + `token_repeat` 检出。
-- **尚未定界到** FullAttn 回收未清零；**分析不出 / 证据不足**。
-- KV：路径可用；归档尚未附结论。
-- **定界结论：L1** = `token_repeat` 已命中；**L2** = 证据不足。
-- 结案：PASS **65 / 20 / 79**。
-
+- 尚未定界到 FullAttn 回收未清零；分析不出 / 证据不足。
+- L1=`token_repeat` 已命中；L2=证据不足。
 
 ## 证据文件
 

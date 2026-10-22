@@ -40,25 +40,22 @@ Qwen3-8B，temp=0，eager；concurrent 48；util=0.40。
 
 ### 事实
 
-- 三层：2 / 17 / 48；detector：`token_repeat` 命中（detect=48；`evidence/samples/` · `evidence/reports/`）。
-- sample：跨请求内容相同塌缩。
-- 归档 report `prompt_token_ids` 为空；有 `output_token_ids`。
-- 包内无标杆 vs 异常 KV 对账；教学设计为 detect-only。
+- 现象：跨请求内容相同塌缩（`evidence/samples/`）。
+- 三层：2 / 17 / 48；detector：`token_repeat`×48。
+- 归档 report：`prompt_token_ids` 为空；有 `output_token_ids`。
+- KV 对账路径可用；归档尚未附结论。
 
 ### 推断
 
-- 可确认：塌缩异常且 `token_repeat` 已检出。
-- 教学目标不定界到权重元素；坏输出推不出具体权重地址。
-- KV 排除路径可用但非本案例细定界目标；包内未附对账。
+- 可确认：塌缩异常已出现，且 `token_repeat` 已检出。
+- 坏输出推不出具体权重地址 / 「一层 o_proj 置零」——构造见「根因」；本案例教学为 detect-only。
+- 无对账事实 → 推不出污染时机。
 
 ### 结论
 
 - 已定界到：异常输出 + `token_repeat` 检出；不定界到权重元素。
-- **尚未定界到** 具体权重元素；**分析不出 / 证据不足**（detect-only）。
-- KV：路径可用；归档尚未附结论。
-- **定界结论：L1** = `token_repeat` 已命中；**L2** = 不宣称（detect-only）。
-- 结案：PASS。
-
+- 尚未定界到具体权重元素；分析不出 / 证据不足。
+- L1=`token_repeat` 已命中；L2=不宣称。
 
 ## 证据文件
 

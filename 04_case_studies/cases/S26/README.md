@@ -48,23 +48,22 @@ Soft-inverse [vLLM#42379](https://github.com/vllm-project/vllm/pull/42379)：`As
 
 ### 事实
 
-- 三层：354 / 16 / 48；detector：`token_repeat`×48（threshold=8；`evidence/samples/` · `evidence/reports/`）。
-- 归档 report `prompt_token_ids` 为空；有 `output_token_ids`。
-- 包内无标杆 vs 异常 KV 对账结果。
+- 现象：`1.1.1…` 复读塌缩（`evidence/samples/`）。
+- 三层：354 / 16 / 48；detector：`token_repeat`×48。
+- 归档 report：`prompt_token_ids` 为空；有 `output_token_ids`。
+- KV 对账路径可用；归档尚未附结论。
 
 ### 推断
 
-- 可确认：复读异常且 `token_repeat` 已检出。
-- 坏输出推不出「RMSNorm dtype / fp32-mul」；KV 排除路径可用，包内未附 → **定界分析不出** 该算子细因（§2 / soft-inverse 非定界已证）。
+- 可确认：复读异常已出现，且 `token_repeat` 已检出。
+- 坏输出推不出「RMSNorm fp32 错乘」——构造见「根因」。
+- 无对账事实 → 推不出污染时机。
 
 ### 结论
 
 - 已定界到：复读异常 + `token_repeat` 检出。
-- **尚未定界到** RMSNorm dtype；**分析不出 / 证据不足**。
-- KV：路径可用；归档尚未附结论。
-- **定界结论：L1** = `token_repeat` 已命中；**L2** = 证据不足。
-- 结案：PASS **354 / 16 / 48**。
-
+- 尚未定界到 RMSNorm dtype；分析不出 / 证据不足。
+- L1=`token_repeat` 已命中；L2=证据不足。
 
 ## 证据文件
 

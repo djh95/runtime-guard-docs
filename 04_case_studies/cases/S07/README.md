@@ -46,24 +46,22 @@ status 里 precision 记成 1，但 samples + score 证实跨请求内容相同�
 
 ### 事实
 
-- detect=0（`logits_finite` 未命中；logits 仍有限，无 NaN/Inf）。
-- sample：跨请求内容相同的乱码（identical+garbage；`evidence/samples/`）。
-- 异常已出现（非「复现未出现」）；本包无命中 report，无 KV 对账。
+- 现象：跨请求内容相同的有限乱码×48（`evidence/samples/`）；logits 仍有限，无 NaN/Inf。
+- 三层：2624 / 1 / 0；期望 `logits_finite` 未命中；无命中 report。
+- 无 `prompt_token_ids` 快照。
+- KV 对账路径可用；归档尚未附结论。
 
 ### 推断
 
-- 可确认：有限 logits 下的乱码 + **乱码检测漏检**。
-- sample 形态支持「跨请求相同乱码」；推不出「W8A8 dequant」细因 → **定界分析不出** quant 根因（§2 / 上游 PR 非定界已证）。
-- 若补抓 report，可走重放 ids + KV 排除；勿因无 prompt 字段写「Q1–Q5 不适用」。
+- 可确认：有限 logits 下的乱码已出现，且乱码检测漏检。
+- 坏输出推不出「W8A8 dequant scale」——构造见「根因」。
+- 无对账事实 → 推不出污染时机；有 report 后可走重放 ids + KV 排除。
 
 ### 结论
 
 - 已定界到：identical+garbage 形态出现；detector 未命中。
-- **尚未定界到** W8A8 dequant；**分析不出 / 证据不足**。
-- KV：路径可用；归档尚未附结论。
-- **定界结论：L1** = 未检出（detect=0）；**L2** = 证据不足。
-- 结案：FAIL+GAP。
-
+- 尚未定界到 W8A8 dequant；分析不出 / 证据不足。
+- L1=未检出；L2=证据不足。
 
 ## 证据文件
 

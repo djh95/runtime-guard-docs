@@ -37,23 +37,22 @@ bang / NaN·Inf 塌缩可被 `logits_finite` 抓住。对照 **S07**（有限 lo
 
 ### 事实
 
-- 样本：跨请求内容相同的 `!!!!`（`evidence/samples/`）。
-- 三层：58 / 48 / 48；detector：`logits_finite`。
-- 归档 report `prompt_token_ids` 为空；有 `output_token_ids`。
-- 包内无标杆 vs 异常 KV 对账；无同 prompt re-curl ids 归档。
+- 现象：跨请求内容相同的 `!!!!`（`evidence/samples/`）。
+- 三层：58 / 48 / 48；detector：`logits_finite`×48。
+- 归档 report：`prompt_token_ids` 为空；有 `output_token_ids`。
+- KV 对账路径可用；归档尚未附结论。
 
 ### 推断
 
-- 可确认：塌缩异常且 `logits_finite` 已检出 → PASS 有据。
-- 坏输出推不出「SwiGLU gate/up 对调」——构造意图见「根因」。
-- 无 KV 对账 → 不能排除或确认 KV。
+- 可确认：塌缩异常已出现，且 `logits_finite` 已检出。
+- 坏输出推不出「SwiGLU gate/up 对调」——构造见「根因」。
+- 无对账事实 → 推不出污染时机，也不能排除或确认 KV。
 
 ### 结论
 
 - 已定界到：异常输出 + `logits_finite` 检出。
-- **尚未定界到** SwiGLU gate/up；**分析不出 / 证据不足**。
-- KV：路径可用；归档尚未附结论。
-- **定界结论：L1** = `logits_finite` 已命中；**L2** = 证据不足。
+- 尚未定界到 SwiGLU gate/up；分析不出 / 证据不足。
+- L1=`logits_finite` 已命中；L2=证据不足。
 
 ## 证据文件
 

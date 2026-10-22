@@ -47,23 +47,22 @@ softcap 族要写清 incomplete 与 unstable overflow 的差别，避免和 S20 
 
 ### 事实
 
-- 三层：130 / 17 / 48；detector：`token_repeat`×48（`evidence/samples/` · `evidence/reports/`）。
-- 包内无标杆 vs 异常 KV 对账结果。
+- 现象：`1.1.1…` 复读（`evidence/samples/`）。
+- 三层：130 / 17 / 48；detector：`token_repeat`×48。
+- 归档 report：`prompt_token_ids` 非空（len=14）；有 `output_token_ids`。
+- KV 对账路径可用；归档尚未附结论。
 
 ### 推断
 
-- 可确认：复读异常且 `token_repeat` 已检出。
-- 坏输出推不出「softcap 缺 *cap rescale」；空 prompt / 无 buggy+ref ≠「Q1–Q5 不适用」。
-- 包内无对账 → **定界分析不出** softcap 细因（§2 非定界已证）。
+- 可确认：复读异常已出现，且 `token_repeat` 已检出。
+- 坏输出推不出「softcap 缺 *cap rescale」——构造见「根因」。
+- 无对账事实 → 推不出污染时机；勿因缺 buggy+ref 写「Q1–Q5 不适用」。
 
 ### 结论
 
 - 已定界到：复读异常 + `token_repeat` 检出。
-- **尚未定界到** softcap rescale；**分析不出 / 证据不足**。
-- KV：路径可用；归档尚未附结论。
-- **定界结论：L1** = `token_repeat` 已命中；**L2** = 证据不足。
-- 结案：PASS **130 / 17 / 48**。
-
+- 尚未定界到 softcap rescale；分析不出 / 证据不足。
+- L1=`token_repeat` 已命中；L2=证据不足。
 
 ## 证据文件
 

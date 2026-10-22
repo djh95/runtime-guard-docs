@@ -40,25 +40,22 @@ pad-tail 错位 ≠ 回收块未清零。可能撞上同一个 detector，但 ro
 
 ### 事实
 
-- 三层：138 / 39 / 60；detector：`token_repeat`（detect=60；`evidence/reports/`）。
-- sample：digit / collapse 坏输出（`evidence/samples/`）。
-- 归档 report `prompt_token_ids` 为空；有 `output_token_ids`。
-- 包内无标杆 vs 异常 KV 对账结果。
+- 现象：digit / collapse 垃圾（如 `1010…`；`evidence/samples/`）。
+- 三层：138 / 39 / 60；detector：`token_repeat`。
+- 归档 report：`prompt_token_ids` 为空；有 `output_token_ids`。
+- KV 对账路径可用；归档尚未附结论。
 
 ### 推断
 
-- 可确认：塌缩异常且 `token_repeat` 已检出。
-- 坏输出推不出「MLA RoPE pad-tail」；空 prompt 仍可同 prompt 再 curl 抓 ids + KV 排除。
-- 包内无对账 → **定界分析不出** MLA RoPE 细因（§2 / soft-inverse 非定界已证）。
+- 可确认：塌缩异常已出现，且 `token_repeat` 已检出。
+- 坏输出推不出「MLA RoPE pad-tail」——构造见「根因」。
+- 空 prompt 仍可同 prompt 再 curl 抓 ids 后做 KV 排除；本包无对账 → 推不出污染时机。
 
 ### 结论
 
 - 已定界到：塌缩异常 + `token_repeat` 检出。
-- **尚未定界到** MLA RoPE pad-tail；**分析不出 / 证据不足**。
-- KV：路径可用；归档尚未附结论。
-- **定界结论：L1** = `token_repeat` 已命中；**L2** = 证据不足。
-- 结案：PASS **138 / 39 / 60**。
-
+- 尚未定界到 MLA RoPE pad-tail；分析不出 / 证据不足。
+- L1=`token_repeat` 已命中；L2=证据不足。
 
 ## 证据文件
 

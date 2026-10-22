@@ -37,23 +37,22 @@ Residual 极性案例。禁止 force-NaN / token fill。
 
 ### 事实
 
-- 三层：100 / 48 / 48；detector：`logits_finite`（sample 多为 `!!!!`；`evidence/samples/` · `evidence/reports/`）。
-- 归档 report `prompt_token_ids` 为空；有 `output_token_ids`。
-- 包内无标杆 vs 异常 KV 对账结果。
+- 现象：跨请求内容相同的 `!!!!`（`evidence/samples/`）。
+- 三层：100 / 48 / 48；detector：`logits_finite`×48。
+- 归档 report：`prompt_token_ids` 为空；有 `output_token_ids`。
+- KV 对账路径可用；归档尚未附结论。
 
 ### 推断
 
-- 可确认：非有限 logits / `!!!!` 类异常且 `logits_finite` 已检出。
-- 坏输出推不出「residual 极性取反」；KV 排除路径可用，包内未附 → **定界分析不出** 该算子细因（§2 非定界已证）。
+- 可确认：`!!!!` 类异常已出现，且 `logits_finite` 已检出。
+- 坏输出推不出「residual 极性取反」——构造见「根因」。
+- 无对账事实 → 推不出污染时机。
 
 ### 结论
 
 - 已定界到：`!!!!` 类异常 + `logits_finite` 检出。
-- **尚未定界到** residual 极性；**分析不出 / 证据不足**。
-- KV：路径可用；归档尚未附结论。
-- **定界结论：L1** = `logits_finite` 已命中；**L2** = 证据不足。
-- 结案：PASS **100 / 48 / 48**。
-
+- 尚未定界到 residual 极性；分析不出 / 证据不足。
+- L1=`logits_finite` 已命中；L2=证据不足。
 
 ## 证据文件
 
