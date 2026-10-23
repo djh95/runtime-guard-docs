@@ -104,7 +104,7 @@ keep-set 案例的 **headline 结案**只用下面四档；**不要**再用 PASS
 
 | ID | 包 | 结案 | 检测 | 根因（构造） | 现象 | 检测器（期望） | trigger / precision / detect |
 |----|-----|------|------|--------------|------|----------------|------------------------------|
-| S01 | [cases/S01/](./cases/S01/) | （空） | （空） | KV 新块未置零（需 hybrid/量化 KV） | （空） | 乱码类 | （空） |
+| S01 | [cases/S01/](./cases/S01/) | KV 一致→排除 KV（dense） | 检出 | 新 KV block 未置零 | token 重复（如 1.1.1…） | `token_repeat` | 82 / 16 / 48 |
 | S10p | [cases/S10p/](./cases/S10p/) | KV 一致→排除 KV | 检出 | FullAttn 回收块未清零 | token 重复 / 垃圾 | `token_repeat` | 64 / 17 / 64 |
 | S11 | [cases/S11/](./cases/S11/) | KV 不一致→定界 | 检出 | MLA RoPE pad | token 重复 | `token_repeat` | 108 / 27 / 48 |
 | S07 | [cases/S07/](./cases/S07/) | KV 不一致→定界（zero_norm） | 乱码漏检 | W8A8 scale 崩溃 | 跨请求内容相同的乱码×48 | 期望 `logits_finite`→0；`manual_dump` | 74 / 48 / 0 |

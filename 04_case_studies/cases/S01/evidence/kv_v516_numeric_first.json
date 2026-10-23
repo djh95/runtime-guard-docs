@@ -1,0 +1,376 @@
+{
+  "case": "S01",
+  "method": "v5.16 numeric-gate before cosine",
+  "cos_thresh": 0.99,
+  "n_pairs": 2,
+  "pairs": [
+    {
+      "req_id": "cmpl-93e3b271ba1d5fed-0-bd59b33a",
+      "n_tokens": 21,
+      "n_prompt": 14,
+      "n_layers": 72,
+      "n_model_layers": 36,
+      "n_total_cells": 1512,
+      "n_numeric_issue_cells": 0,
+      "n_cos_cells": 1512,
+      "cosine_localizable": true,
+      "first_numeric_issue_all_names": null,
+      "first_numeric_issue_model_layers": null,
+      "first_cos_mismatch": null,
+      "first_cos_mismatch_model_layers_tok0": null,
+      "worst_clean_model_tok0": {
+        "token_idx": 0,
+        "layer": "model.layers.13.self_attn.attn",
+        "cos": 0.9999996036535814
+      },
+      "clean_model_tok0_cos": {
+        "model.layers.0.self_attn.attn": 1.0,
+        "model.layers.1.self_attn.attn": 1.0,
+        "model.layers.2.self_attn.attn": 1.0,
+        "model.layers.3.self_attn.attn": 1.0,
+        "model.layers.4.self_attn.attn": 1.0,
+        "model.layers.5.self_attn.attn": 1.0,
+        "model.layers.6.self_attn.attn": 1.0,
+        "model.layers.7.self_attn.attn": 1.0,
+        "model.layers.8.self_attn.attn": 1.0,
+        "model.layers.9.self_attn.attn": 1.0,
+        "model.layers.10.self_attn.attn": 1.0,
+        "model.layers.11.self_attn.attn": 1.0
+      },
+      "per_token_min_clean": [
+        {
+          "token_idx": 0,
+          "min_cos": 0.9999995333718532,
+          "min_layer": "layer_67",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 1,
+          "min_cos": 0.9999983214893566,
+          "min_layer": "layer_61",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 2,
+          "min_cos": 0.9999977086103862,
+          "min_layer": "layer_67",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 3,
+          "min_cos": 0.999998154188623,
+          "min_layer": "layer_61",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 4,
+          "min_cos": 0.9999967543750728,
+          "min_layer": "layer_69",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 5,
+          "min_cos": 0.9999974115092727,
+          "min_layer": "model.layers.33.self_attn.attn",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 6,
+          "min_cos": 0.9999952193960993,
+          "min_layer": "layer_71",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 7,
+          "min_cos": 0.9999953283264492,
+          "min_layer": "layer_61",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 8,
+          "min_cos": 0.9999947857257793,
+          "min_layer": "layer_63",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 9,
+          "min_cos": 0.9999938349817057,
+          "min_layer": "layer_69",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 10,
+          "min_cos": 0.9999933860085213,
+          "min_layer": "model.layers.33.self_attn.attn",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 11,
+          "min_cos": 0.9999934647386073,
+          "min_layer": "layer_61",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 12,
+          "min_cos": 0.9999938980412495,
+          "min_layer": "layer_71",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 13,
+          "min_cos": 0.9999924832016369,
+          "min_layer": "layer_63",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 14,
+          "min_cos": 0.9999941727029514,
+          "min_layer": "layer_63",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 15,
+          "min_cos": 0.9999873948381539,
+          "min_layer": "layer_61",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 16,
+          "min_cos": 0.9999929797792764,
+          "min_layer": "layer_63",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 17,
+          "min_cos": 0.9999884718817299,
+          "min_layer": "layer_61",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 18,
+          "min_cos": 0.9999915510946717,
+          "min_layer": "layer_63",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 19,
+          "min_cos": 0.9999922141706844,
+          "min_layer": "layer_63",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 20,
+          "min_cos": 0.9999928867077901,
+          "min_layer": "layer_63",
+          "n_issue": 0,
+          "n_cos": 72
+        }
+      ],
+      "buggy_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S01-pr19285-20261023T125947/dump/token_repeat/cmpl-93e3b271ba1d5fed-0-bd59b33a/wave_9/dp0_tp0_pp0_cp0",
+      "ref_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S01/ref_recap/cmpl-93e3b271ba1d5fed-0-bd59b33a/wave_2/dp0_tp0_pp0_cp0"
+    },
+    {
+      "req_id": "cmpl-88a1712b271c8033-0-abea83e4",
+      "n_tokens": 20,
+      "n_prompt": 14,
+      "n_layers": 72,
+      "n_model_layers": 36,
+      "n_total_cells": 1440,
+      "n_numeric_issue_cells": 0,
+      "n_cos_cells": 1440,
+      "cosine_localizable": true,
+      "first_numeric_issue_all_names": null,
+      "first_numeric_issue_model_layers": null,
+      "first_cos_mismatch": null,
+      "first_cos_mismatch_model_layers_tok0": null,
+      "worst_clean_model_tok0": {
+        "token_idx": 0,
+        "layer": "model.layers.13.self_attn.attn",
+        "cos": 0.9999996680073677
+      },
+      "clean_model_tok0_cos": {
+        "model.layers.0.self_attn.attn": 1.0,
+        "model.layers.1.self_attn.attn": 1.0,
+        "model.layers.2.self_attn.attn": 1.0,
+        "model.layers.3.self_attn.attn": 1.0,
+        "model.layers.4.self_attn.attn": 1.0,
+        "model.layers.5.self_attn.attn": 1.0,
+        "model.layers.6.self_attn.attn": 1.0,
+        "model.layers.7.self_attn.attn": 1.0,
+        "model.layers.8.self_attn.attn": 1.0,
+        "model.layers.9.self_attn.attn": 1.0,
+        "model.layers.10.self_attn.attn": 1.0,
+        "model.layers.11.self_attn.attn": 1.0
+      },
+      "per_token_min_clean": [
+        {
+          "token_idx": 0,
+          "min_cos": 0.9999994488919027,
+          "min_layer": "layer_67",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 1,
+          "min_cos": 0.9999980763090167,
+          "min_layer": "layer_67",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 2,
+          "min_cos": 0.9999974912385833,
+          "min_layer": "layer_61",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 3,
+          "min_cos": 0.9999982242520293,
+          "min_layer": "layer_61",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 4,
+          "min_cos": 0.999995133703598,
+          "min_layer": "layer_69",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 5,
+          "min_cos": 0.9999942481843871,
+          "min_layer": "layer_61",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 6,
+          "min_cos": 0.9999830852160535,
+          "min_layer": "layer_71",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 7,
+          "min_cos": 0.9999834875783463,
+          "min_layer": "layer_71",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 8,
+          "min_cos": 0.9999924194045594,
+          "min_layer": "layer_71",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 9,
+          "min_cos": 0.9999940485816745,
+          "min_layer": "layer_59",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 10,
+          "min_cos": 0.999992024917399,
+          "min_layer": "layer_47",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 11,
+          "min_cos": 0.9999907771584163,
+          "min_layer": "layer_61",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 12,
+          "min_cos": 0.9999884594239097,
+          "min_layer": "layer_63",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 13,
+          "min_cos": 0.9999894868272169,
+          "min_layer": "layer_63",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 14,
+          "min_cos": 0.9999921922189666,
+          "min_layer": "layer_63",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 15,
+          "min_cos": 0.9999912123651179,
+          "min_layer": "layer_61",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 16,
+          "min_cos": 0.9999917227701979,
+          "min_layer": "layer_63",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 17,
+          "min_cos": 0.9999928247234311,
+          "min_layer": "layer_61",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 18,
+          "min_cos": 0.999993599446642,
+          "min_layer": "layer_63",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 19,
+          "min_cos": 0.9999937588293982,
+          "min_layer": "layer_61",
+          "n_issue": 0,
+          "n_cos": 72
+        }
+      ],
+      "buggy_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S01-pr19285-20261023T125947/dump/token_repeat/cmpl-88a1712b271c8033-0-abea83e4/wave_10/dp0_tp0_pp0_cp0",
+      "ref_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S01/ref_recap/cmpl-88a1712b271c8033-0-abea83e4/wave_3/dp0_tp0_pp0_cp0"
+    }
+  ],
+  "hint": {
+    "any_numeric_issue": false,
+    "any_cos_mismatch": false,
+    "all_pairs_cos_clean": true
+  }
+}
