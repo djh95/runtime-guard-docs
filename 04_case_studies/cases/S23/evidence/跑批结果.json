@@ -1,0 +1,12 @@
+{
+  "scenario": "S23",
+  "conclusion": "KV不一致→定界",
+  "detection": "检出",
+  "layers": "2/16/48",
+  "detector": "token_repeat",
+  "model": "/mnt/weight/Qwen3-8B",
+  "host_cards": "4,5",
+  "guard_pin": "G2 f2aefd068 + dump-time #19285",
+  "layers_run_dir": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S23-layers-20261023T102530",
+  "kv_note": "两组有限 cos；min_cos≈0.68；首不一致 prompt idx=1 @ layers.35；未用槽有限非0=卫生"
+}

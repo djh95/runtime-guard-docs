@@ -1,0 +1,11 @@
+{
+  "scenario": "S23",
+  "trigger": 2,
+  "precision": 16,
+  "detect": 48,
+  "detect_by": {
+    "token_repeat": 48
+  },
+  "n_requests": 48,
+  "notes": "token_repeat thresh=8; config re-armed after READY"
+}

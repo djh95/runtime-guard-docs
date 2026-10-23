@@ -1,0 +1,405 @@
+{
+  "case": "S23",
+  "source_pairs": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/results/S23.kv_pairs_recap.json",
+  "n_pairs": 2,
+  "必现": "yes (layers 58/48/48 logits_finite×48)",
+  "rows": [
+    {
+      "req_id": "cmpl-97bc9373d0367b22-0-94e56ad4",
+      "n_used": 21,
+      "n_prompt": 14,
+      "buggy": {
+        "ok": true,
+        "rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S23-pr19285-20261023T102710/dump/token_repeat/cmpl-97bc9373d0367b22-0-94e56ad4/wave_9/dp0_tp0_pp0_cp0",
+        "n_tensors": 36,
+        "n_used": 21,
+        "any_used_nan": false,
+        "any_used_inf": false,
+        "any_unused_nonzero": true,
+        "any_unused_nonfinite": false,
+        "worst_head": [
+          {
+            "name": "layer_36",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 1536,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              4,
+              128
+            ]
+          },
+          {
+            "name": "layer_37",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 1536,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              4,
+              128
+            ]
+          },
+          {
+            "name": "layer_38",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 1536,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              4,
+              128
+            ]
+          },
+          {
+            "name": "layer_39",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 1536,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              4,
+              128
+            ]
+          },
+          {
+            "name": "layer_40",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 1536,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              4,
+              128
+            ]
+          },
+          {
+            "name": "layer_41",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 1536,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              4,
+              128
+            ]
+          }
+        ]
+      },
+      "ref": {
+        "ok": true,
+        "rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S23/ref_recap/cmpl-97bc9373d0367b22-0-94e56ad4/wave_2/dp0_tp0_pp0_cp0",
+        "n_tensors": 36,
+        "n_used": 21,
+        "any_used_nan": false,
+        "any_used_inf": false,
+        "any_unused_nonzero": false,
+        "any_unused_nonfinite": false,
+        "worst_head": [
+          {
+            "name": "layer_36",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 0,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              4,
+              128
+            ]
+          },
+          {
+            "name": "layer_37",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 0,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              4,
+              128
+            ]
+          },
+          {
+            "name": "layer_38",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 0,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              4,
+              128
+            ]
+          },
+          {
+            "name": "layer_39",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 0,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              4,
+              128
+            ]
+          },
+          {
+            "name": "layer_40",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 0,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              4,
+              128
+            ]
+          },
+          {
+            "name": "layer_41",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 0,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              4,
+              128
+            ]
+          }
+        ]
+      },
+      "read": "buggy有效槽有限、未用槽有限非0 → 脏写/卫生；通常不致坏结果"
+    },
+    {
+      "req_id": "cmpl-8112fccbfbec1b24-0-a7e93f19",
+      "n_used": 20,
+      "n_prompt": 14,
+      "buggy": {
+        "ok": true,
+        "rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S23-pr19285-20261023T102710/dump/token_repeat/cmpl-8112fccbfbec1b24-0-a7e93f19/wave_10/dp0_tp0_pp0_cp0",
+        "n_tensors": 36,
+        "n_used": 20,
+        "any_used_nan": false,
+        "any_used_inf": false,
+        "any_unused_nonzero": true,
+        "any_unused_nonfinite": false,
+        "worst_head": [
+          {
+            "name": "layer_36",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 1024,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              4,
+              128
+            ]
+          },
+          {
+            "name": "layer_37",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 1024,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              4,
+              128
+            ]
+          },
+          {
+            "name": "layer_38",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 1024,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              4,
+              128
+            ]
+          },
+          {
+            "name": "layer_39",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 1024,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              4,
+              128
+            ]
+          },
+          {
+            "name": "layer_40",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 1024,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              4,
+              128
+            ]
+          },
+          {
+            "name": "layer_41",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 1024,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              4,
+              128
+            ]
+          }
+        ]
+      },
+      "ref": {
+        "ok": true,
+        "rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S23/ref_recap/cmpl-8112fccbfbec1b24-0-a7e93f19/wave_3/dp0_tp0_pp0_cp0",
+        "n_tensors": 36,
+        "n_used": 20,
+        "any_used_nan": false,
+        "any_used_inf": false,
+        "any_unused_nonzero": true,
+        "any_unused_nonfinite": false,
+        "worst_head": [
+          {
+            "name": "layer_36",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 512,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              4,
+              128
+            ]
+          },
+          {
+            "name": "layer_37",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 512,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              4,
+              128
+            ]
+          },
+          {
+            "name": "layer_38",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 512,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              4,
+              128
+            ]
+          },
+          {
+            "name": "layer_39",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 512,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              4,
+              128
+            ]
+          },
+          {
+            "name": "layer_40",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 512,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              4,
+              128
+            ]
+          },
+          {
+            "name": "layer_41",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 512,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              4,
+              128
+            ]
+          }
+        ]
+      },
+      "read": "buggy有效槽有限、未用槽有限非0 → 脏写/卫生；通常不致坏结果",
+      "ref_unused_note": "标杆未用槽有限非0（卫生，通常无妨）"
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "case": "S23",
+  "tier_candidate": "KV不一致→定界",
+  "n_ok_pairs": 2,
+  "n_match": 0,
+  "n_mismatch": 2,
+  "results": [
+    {
+      "req_id": "cmpl-97bc9373d0367b22-0-94e56ad4",
+      "n_tokens": 21,
+      "n_prompt": 14,
+      "n_output": 8,
+      "shape": [
+        1,
+        128,
+        4,
+        128
+      ],
+      "buggy_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S23-pr19285-20261023T102710/dump/token_repeat/cmpl-97bc9373d0367b22-0-94e56ad4/wave_9/dp0_tp0_pp0_cp0",
+      "ref_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S23/ref_recap/cmpl-97bc9373d0367b22-0-94e56ad4/wave_2/dp0_tp0_pp0_cp0",
+      "ok": true,
+      "kv_match": false,
+      "nan_all": false,
+      "n_finite_cos": 21,
+      "min_cos_over_window": 0.678657,
+      "first_mismatch_idx": 1,
+      "first_mismatch_role": "prompt",
+      "first_mismatch_layer": "model.layers.35.self_attn.attn",
+      "first_mismatch_min_cos": 0.983083
+    },
+    {
+      "req_id": "cmpl-8112fccbfbec1b24-0-a7e93f19",
+      "n_tokens": 20,
+      "n_prompt": 14,
+      "n_output": 7,
+      "shape": [
+        1,
+        128,
+        4,
+        128
+      ],
+      "buggy_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S23-pr19285-20261023T102710/dump/token_repeat/cmpl-8112fccbfbec1b24-0-a7e93f19/wave_10/dp0_tp0_pp0_cp0",
+      "ref_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S23/ref_recap/cmpl-8112fccbfbec1b24-0-a7e93f19/wave_3/dp0_tp0_pp0_cp0",
+      "ok": true,
+      "kv_match": false,
+      "nan_all": false,
+      "n_finite_cos": 20,
+      "min_cos_over_window": 0.678441,
+      "first_mismatch_idx": 1,
+      "first_mismatch_role": "prompt",
+      "first_mismatch_layer": "model.layers.35.self_attn.attn",
+      "first_mismatch_min_cos": 0.983096
+    }
+  ],
+  "finite_note": "unused finite≠0 = hygiene only; used finite"
+}

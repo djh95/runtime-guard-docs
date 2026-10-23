@@ -108,7 +108,7 @@ keep-set 案例的 **headline 结案**只用下面四档；**不要**再用 PASS
 | S10′ | [cases/S10p/](./cases/S10p/) | （空） | （空） | FullAttn 回收块未清零 | （空） | `token_repeat` | （空） |
 | S11 | [cases/S11/](./cases/S11/) | （空） | （空） | MLA RoPE pad-tail 错位 | （空） | `token_repeat` | （空） |
 | S07 | [cases/S07/](./cases/S07/) | （空） | （空） | W8A8 dequant scale 崩溃 | （空） | `logits_finite` | （空） |
-| S23 | [cases/S23/](./cases/S23/) | （空） | （空） | 一层 `o_proj` 权重置零 | （空） | `token_repeat` | （空） |
+| S23 | [cases/S23/](./cases/S23/) | KV 不一致→定界 | 检出 | 一层 `o_proj` 权重置零 | min_cos≈0.68；prompt idx=1@L35；未用槽有限非0=卫生 | `token_repeat` | 2 / 16 / 48 |
 | S45 | [cases/S45/](./cases/S45/) | （空） | （空） | top-k 打在 −logits | （空） | `token_repeat`+`logits_finite` | （空） |
 | S43 | [cases/S43/](./cases/S43/) | （空） | （空） | embedding ×100 | （空） | `token_repeat` | （空） |
 | S22 | [cases/S22/](./cases/S22/) | （空） | （空） | Spec resample 无独立 salt | （空） | `spec_acceptance` | （空） |
