@@ -1,0 +1,46 @@
+{
+  "case": "S10p",
+  "bug": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S10p-pr19285-20261023T121916",
+  "ref_run": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S10p-ref-recap-20261023T122057",
+  "pr19285_source": true,
+  "clean_ref_no_overlay": true,
+  "n_ok_pairs": 2,
+  "results": [
+    {
+      "req_id": "cmpl-95a5d11f50558864-0-9a4c6512",
+      "ok": true,
+      "n_tokens": 21,
+      "n_prompt": 14,
+      "n_output": 8,
+      "shape": [
+        1,
+        128,
+        4,
+        128
+      ],
+      "shape_match": true,
+      "logits_finite_on_ref": false,
+      "buggy_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S10p-pr19285-20261023T121916/dump/token_repeat/cmpl-95a5d11f50558864-0-9a4c6512/wave_9/dp0_tp0_pp0_cp0",
+      "ref_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S10p/ref_recap/cmpl-95a5d11f50558864-0-9a4c6512/wave_2/dp0_tp0_pp0_cp0",
+      "buggy_report": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S10p-pr19285-20261023T121916/report/token_repeat/report_20261023_122046_316_cmpl-95a5d11f50558864-0-9a4c6512_pid1002757.json"
+    },
+    {
+      "req_id": "cmpl-87b6528eb48f0638-0-b8642ec9",
+      "ok": true,
+      "n_tokens": 20,
+      "n_prompt": 14,
+      "n_output": 7,
+      "shape": [
+        1,
+        128,
+        4,
+        128
+      ],
+      "shape_match": true,
+      "logits_finite_on_ref": false,
+      "buggy_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S10p-pr19285-20261023T121916/dump/token_repeat/cmpl-87b6528eb48f0638-0-b8642ec9/wave_10/dp0_tp0_pp0_cp0",
+      "ref_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S10p/ref_recap/cmpl-87b6528eb48f0638-0-b8642ec9/wave_3/dp0_tp0_pp0_cp0",
+      "buggy_report": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S10p-pr19285-20261023T121916/report/token_repeat/report_20261023_122046_391_cmpl-87b6528eb48f0638-0-b8642ec9_pid1002757.json"
+    }
+  ]
+}

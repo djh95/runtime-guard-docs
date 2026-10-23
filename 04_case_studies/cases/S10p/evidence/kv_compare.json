@@ -1,0 +1,124 @@
+{
+  "case": "S10p",
+  "tier_candidate": "KV一致→排除 KV",
+  "method": "v5.16 numeric-gate then cosine; unused-slot graded",
+  "pr19285_source": true,
+  "clean_ref_recap": true,
+  "ref_run": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S10p-ref-recap-20261023T122057",
+  "n_ok_pairs": 2,
+  "cos_thresh": 0.99,
+  "layers": {
+    "trigger": 64,
+    "precision": 17,
+    "detect": 64,
+    "detect_by": {
+      "token_repeat": 64
+    }
+  },
+  "results": [
+    {
+      "req_id": "cmpl-95a5d11f50558864-0-9a4c6512",
+      "ok": true,
+      "n_tokens": 21,
+      "n_prompt": 14,
+      "n_output_at_dump": 8,
+      "shape": [
+        1,
+        128,
+        4,
+        128
+      ],
+      "shape_match": true,
+      "buggy": {
+        "any_used_nan": false,
+        "any_used_inf": false,
+        "any_unused_nonzero_finite": true,
+        "any_unused_nonfinite": false
+      },
+      "ref": {
+        "any_used_nan": false,
+        "any_unused_nonzero_finite": false,
+        "any_unused_nonfinite": false
+      },
+      "first_numeric_issue": null,
+      "first_numeric_issue_model_layers": null,
+      "first_cos_mismatch": null,
+      "first_cos_mismatch_model_layers_tok0": null,
+      "worst_clean_model_tok0": {
+        "token_idx": 0,
+        "layer": "model.layers.13.self_attn.attn",
+        "cos": 0.9999996036535814
+      },
+      "clean_model_tok0_cos": {
+        "model.layers.0.self_attn.attn": 1.0,
+        "model.layers.1.self_attn.attn": 1.0,
+        "model.layers.2.self_attn.attn": 1.0,
+        "model.layers.3.self_attn.attn": 1.0,
+        "model.layers.4.self_attn.attn": 1.0,
+        "model.layers.5.self_attn.attn": 1.0,
+        "model.layers.6.self_attn.attn": 1.0,
+        "model.layers.7.self_attn.attn": 1.0,
+        "model.layers.8.self_attn.attn": 1.0,
+        "model.layers.9.self_attn.attn": 1.0,
+        "model.layers.10.self_attn.attn": 1.0,
+        "model.layers.11.self_attn.attn": 1.0
+      },
+      "buggy_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S10p-pr19285-20261023T121916/dump/token_repeat/cmpl-95a5d11f50558864-0-9a4c6512/wave_9/dp0_tp0_pp0_cp0",
+      "ref_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S10p/ref_recap/cmpl-95a5d11f50558864-0-9a4c6512/wave_2/dp0_tp0_pp0_cp0",
+      "cos_layer_claim": false,
+      "read": "buggy有效槽有限、未用槽有限非0 → 脏写/卫生；通常不致坏结果"
+    },
+    {
+      "req_id": "cmpl-87b6528eb48f0638-0-b8642ec9",
+      "ok": true,
+      "n_tokens": 20,
+      "n_prompt": 14,
+      "n_output_at_dump": 7,
+      "shape": [
+        1,
+        128,
+        4,
+        128
+      ],
+      "shape_match": true,
+      "buggy": {
+        "any_used_nan": false,
+        "any_used_inf": false,
+        "any_unused_nonzero_finite": true,
+        "any_unused_nonfinite": false
+      },
+      "ref": {
+        "any_used_nan": false,
+        "any_unused_nonzero_finite": true,
+        "any_unused_nonfinite": false
+      },
+      "first_numeric_issue": null,
+      "first_numeric_issue_model_layers": null,
+      "first_cos_mismatch": null,
+      "first_cos_mismatch_model_layers_tok0": null,
+      "worst_clean_model_tok0": {
+        "token_idx": 0,
+        "layer": "model.layers.13.self_attn.attn",
+        "cos": 0.9999996680073677
+      },
+      "clean_model_tok0_cos": {
+        "model.layers.0.self_attn.attn": 1.0,
+        "model.layers.1.self_attn.attn": 1.0,
+        "model.layers.2.self_attn.attn": 1.0,
+        "model.layers.3.self_attn.attn": 1.0,
+        "model.layers.4.self_attn.attn": 1.0,
+        "model.layers.5.self_attn.attn": 1.0,
+        "model.layers.6.self_attn.attn": 1.0,
+        "model.layers.7.self_attn.attn": 1.0,
+        "model.layers.8.self_attn.attn": 1.0,
+        "model.layers.9.self_attn.attn": 1.0,
+        "model.layers.10.self_attn.attn": 1.0,
+        "model.layers.11.self_attn.attn": 1.0
+      },
+      "buggy_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S10p-pr19285-20261023T121916/dump/token_repeat/cmpl-87b6528eb48f0638-0-b8642ec9/wave_10/dp0_tp0_pp0_cp0",
+      "ref_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S10p/ref_recap/cmpl-87b6528eb48f0638-0-b8642ec9/wave_3/dp0_tp0_pp0_cp0",
+      "cos_layer_claim": false,
+      "read": "buggy有效槽有限、未用槽有限非0 → 脏写/卫生；通常不致坏结果"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "scenario": "S10p",
+  "trigger": 64,
+  "precision": 17,
+  "precision_identical_mode": null,
+  "detect_reports": 64,
+  "detect_by": {
+    "token_repeat": 64
+  },
+  "n_requests": 64,
+  "n_errors": 0,
+  "temperature": 0.0,
+  "top_k": null,
+  "top_p": null,
+  "host_cards": "4,5",
+  "model": "/mnt/weight/Qwen3-8B",
+  "detector": "token_repeat",
+  "run_dir": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S10p-layers-20261023T121734",
+  "boot_ok": true
+}

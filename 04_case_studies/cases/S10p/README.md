@@ -1,56 +1,76 @@
-# S10′ · FullAttn recycle-zero
+# S10′ · FullAttn recycle-zero（KV 一致→排除 KV）
 
-公开案例包（**尚未实测归档**）。本目录只保留构造材料；**无** samples / reports / 三层 / 跑批 / KV 对账。
+公开自洽案例包。目录名 `S10p` = S10′。
 
 ## 归档钉点
 
 | 项 | 值 |
 |----|-----|
-| 结案 | （空 · 尚未实测） |
-| 检测 | （空） |
-| 三层率 | （空） |
-| Detector（期望） | `token_repeat` |
-| Origin / 构造 | 见 [evidence/规格说明.md](./evidence/规格说明.md) |
-| Guard pin | （空） |
-| 模型 / Run | （空） |
+| 结案 | **KV 一致→排除 KV** |
+| 检测 | **检出** |
+| 三层率 | **64 / 17 / 64**（`token_repeat`×64） |
+| Detector | `token_repeat` |
+| Origin | 见规格 |
+| Guard pin | G2 `f2aefd068` + 抓 dump 时临时合入 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) |
+| 模型 | Qwen3-8B · TP2 · CARD=4,5 · util=0.35 · max-num-seqs=128 · `192.168.13.160` / `rg-test-160` |
+| Run | `keep-set-retest-20261022` · `S10p-layers-20261023T121734` |
 
 ## 1 · 现象
 
-（空 · 尚未实测，无样本）
+检出 `token_repeat`（precision=17）。样本见 [evidence/samples/](./evidence/samples/)。
 
 ## 2 · 案例背景 / 构造
 
-FullAttn 回收块未清零。细节与 knobs 见 [evidence/规格说明.md](./evidence/规格说明.md)；补丁见 [evidence/overlay.patch](./evidence/overlay.patch)。
+FullAttention 回收块未清零（`needs_kv_cache_zeroing→False`）。细节见 [evidence/规格说明.md](./evidence/规格说明.md)。**构造「预期根因在 KV」≠ 本窗已证根因。**
 
 ## 3 · Guard 结果
 
-（空 · 尚未实测，无 report）
+**检出。** **64 / 17 / 64**。结案档：**KV 一致→排除 KV**（v5.16：有效槽有限、无数值问题；干净格余弦全程 ≥0.99）。
 
 ## 4 · 复现技巧
 
-见规格说明中的 knobs / 环境要求。按规格构造环境后实测，再回填钉点与证据。
+| 项 | 现行复现 |
+|----|----------|
+| Overlay | `10_fullattn_recycle_zero.patch`（或 `gen_s10_overlay.py` 生成） |
+| 负载 | pad 变长 prompt · concurrency 64 · temp=0 · churn |
+| detector | `token_repeat` |
+| 抓 dump | #19285；抓前清双树 |
+| 标杆 | 清洁树；force-feed history |
 
 ## 5 · 定界分析
 
 ### 事实
 
-（空）
+- **≥2 组**清洁标杆；shape 一致；`n_cmp` 含 prompt+output−1（非弱窗）。
+- **v5.16（两对同向）：** 数值问题格 **0**；`first_cos_mismatch` **无**（全程 clean；token0 最差仍 ≈1.0 @ L13）。
+- 未用槽：异常侧**有限非 0**（卫生）；一对标杆未用亦有限非 0。
+- 证据：`evidence/kv_compare.json` + `kv_v516_numeric_first.json`；`verified_kv/S10p/ref_recap/`（**.pt 未入库**）。
 
 ### 推断
 
-（空）
+- 有效对账匹配 → **排除「坏值经/进 KV」为主因路径**（就本窗、本 head、matched 层而言）。
+- 异常仍检出 → 问题更可能在未对比到的路径 / 时序 / 其它块；**不能**仅凭本窗余弦把根因钉在 recycle-zero。
 
 ### 结论
 
-（空 · 尚未实测）
+- 结案档：**KV 一致→排除 KV**（两组同向；标杆洁净）。
+- 未用槽有限脏写仅附注卫生。
 
 ## 6 · 证据文件
 
 | 文件 | 用途 |
 |------|------|
 | `evidence/overlay.patch` | 制造异常的静态补丁 |
-| `evidence/规格说明.md` | 复现规格（Origin / 锚点 / overlay / knobs / 期望 detector） |
+| `evidence/规格说明.md` | 复现规格 + 实测状态 |
+| `evidence/三层计数.json` | 三层明细 |
+| `evidence/跑批结果.json` | 跑批元数据 + 结案摘要 |
+| `evidence/samples/` | 样本 |
+| `evidence/reports/` | detector 报告 |
+| `evidence/kv_compare.json` | 对账摘要 |
+| `evidence/kv_v516_numeric_first.json` | v5.16 |
+| `evidence/kv_finite_unused.json` | 有限性/未用槽 |
+| `evidence/kv_pairs_recap.json` | 成对路径 |
 
 ## 7 · 上游 PR 关系
 
-见 [evidence/规格说明.md](./evidence/规格说明.md)（若有锚点）。本 README 不重复实测结论。
+见 [evidence/规格说明.md](./evidence/规格说明.md)（#39283 / #43741）。本 README 不把「构造预期在 KV」写成已证根因。
