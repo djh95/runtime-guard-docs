@@ -1,0 +1,154 @@
+{
+  "case": "S43",
+  "tier_candidate": "KV不一致→定界",
+  "method": "v5.16 numeric-gate then cosine; unused-slot graded",
+  "pr19285_source": true,
+  "clean_ref_recap": true,
+  "ref_run": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S43-ref-recap-20261023T105259",
+  "n_ok_pairs": 2,
+  "cos_thresh": 0.99,
+  "layers": {
+    "trigger": 16,
+    "precision": 40,
+    "detect": 48,
+    "detect_by": {
+      "token_repeat": 48
+    }
+  },
+  "results": [
+    {
+      "req_id": "cmpl-895abf4495ac06e2-0-a66dbfba",
+      "ok": true,
+      "n_tokens": 18,
+      "n_prompt": 14,
+      "n_output_at_dump": 5,
+      "shape": [
+        1,
+        128,
+        4,
+        128
+      ],
+      "shape_match": true,
+      "buggy": {
+        "any_used_nan": false,
+        "any_used_inf": false,
+        "any_unused_nonzero_finite": true,
+        "any_unused_nonfinite": false
+      },
+      "ref": {
+        "any_used_nan": false,
+        "any_unused_nonzero_finite": false,
+        "any_unused_nonfinite": false
+      },
+      "first_numeric_issue": null,
+      "first_numeric_issue_model_layers": null,
+      "first_cos_mismatch": {
+        "token_idx": 0,
+        "token_id": 675,
+        "role": "prompt",
+        "layer": "layer_36",
+        "cos_at_layer": 0.6479150200085569,
+        "min_cos": -0.2952006467847628,
+        "min_layer": "model.layers.20.self_attn.attn"
+      },
+      "first_cos_mismatch_model_layers_tok0": {
+        "token_idx": 0,
+        "layer": "model.layers.2.self_attn.attn",
+        "cos": 0.551894692466526
+      },
+      "worst_clean_model_tok0": {
+        "token_idx": 0,
+        "layer": "model.layers.20.self_attn.attn",
+        "cos": -0.2952006467847628
+      },
+      "clean_model_tok0_cos": {
+        "model.layers.0.self_attn.attn": 1.0,
+        "model.layers.1.self_attn.attn": 1.0,
+        "model.layers.2.self_attn.attn": 0.551895,
+        "model.layers.3.self_attn.attn": 0.561943,
+        "model.layers.4.self_attn.attn": 0.586448,
+        "model.layers.5.self_attn.attn": 0.202065,
+        "model.layers.6.self_attn.attn": 0.909819,
+        "model.layers.7.self_attn.attn": 0.307803,
+        "model.layers.8.self_attn.attn": 0.707507,
+        "model.layers.9.self_attn.attn": 0.390195,
+        "model.layers.10.self_attn.attn": 0.465849,
+        "model.layers.11.self_attn.attn": 0.074692
+      },
+      "buggy_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S43-pr19285-20261023T105118/dump/token_repeat/cmpl-895abf4495ac06e2-0-a66dbfba/wave_8/dp0_tp0_pp0_cp0",
+      "ref_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S43/ref_recap/cmpl-895abf4495ac06e2-0-a66dbfba/wave_2/dp0_tp0_pp0_cp0",
+      "cos_layer_claim": true,
+      "read": "有效槽有限；无数值问题格；余弦自 token0 不一致；未用槽有限非0=卫生"
+    },
+    {
+      "req_id": "cmpl-916221c5b1a59a40-0-8cf66059",
+      "ok": true,
+      "n_tokens": 18,
+      "n_prompt": 14,
+      "n_output_at_dump": 5,
+      "shape": [
+        1,
+        128,
+        4,
+        128
+      ],
+      "shape_match": true,
+      "buggy": {
+        "any_used_nan": false,
+        "any_used_inf": false,
+        "any_unused_nonzero_finite": true,
+        "any_unused_nonfinite": false
+      },
+      "ref": {
+        "any_used_nan": false,
+        "any_unused_nonzero_finite": false,
+        "any_unused_nonfinite": false
+      },
+      "first_numeric_issue": null,
+      "first_numeric_issue_model_layers": null,
+      "first_cos_mismatch": {
+        "token_idx": 0,
+        "token_id": 675,
+        "role": "prompt",
+        "layer": "layer_36",
+        "cos_at_layer": 0.6479150200085569,
+        "min_cos": -0.2952006467847628,
+        "min_layer": "model.layers.20.self_attn.attn"
+      },
+      "first_cos_mismatch_model_layers_tok0": {
+        "token_idx": 0,
+        "layer": "model.layers.2.self_attn.attn",
+        "cos": 0.551894692466526
+      },
+      "worst_clean_model_tok0": {
+        "token_idx": 0,
+        "layer": "model.layers.20.self_attn.attn",
+        "cos": -0.2952006467847628
+      },
+      "clean_model_tok0_cos": {
+        "model.layers.0.self_attn.attn": 1.0,
+        "model.layers.1.self_attn.attn": 1.0,
+        "model.layers.2.self_attn.attn": 0.551895,
+        "model.layers.3.self_attn.attn": 0.561943,
+        "model.layers.4.self_attn.attn": 0.586448,
+        "model.layers.5.self_attn.attn": 0.202065,
+        "model.layers.6.self_attn.attn": 0.909819,
+        "model.layers.7.self_attn.attn": 0.307803,
+        "model.layers.8.self_attn.attn": 0.707507,
+        "model.layers.9.self_attn.attn": 0.390195,
+        "model.layers.10.self_attn.attn": 0.465849,
+        "model.layers.11.self_attn.attn": 0.074692
+      },
+      "buggy_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S43-pr19285-20261023T105118/dump/token_repeat/cmpl-916221c5b1a59a40-0-8cf66059/wave_8/dp0_tp0_pp0_cp0",
+      "ref_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S43/ref_recap/cmpl-916221c5b1a59a40-0-8cf66059/wave_3/dp0_tp0_pp0_cp0",
+      "cos_layer_claim": true,
+      "read": "有效槽有限；无数值问题格；余弦自 token0 不一致；未用槽有限非0=卫生"
+    }
+  ],
+  "summary": {
+    "numeric_issue": "none on used cells",
+    "cosine": "mismatch from token0; model.layers first below thresh ~L2; worst ~L20",
+    "unused": "buggy finite nonzero (hygiene); ref unused zero",
+    "tier": "KV不一致→定界"
+  }
+}

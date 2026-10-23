@@ -1,0 +1,19 @@
+{
+  "case": "S43",
+  "scenario": "43_embed_scale_blowup",
+  "host": "192.168.13.160/rg-test-160",
+  "cards": "4,5",
+  "model": "/mnt/weight/Qwen3-8B",
+  "guard_pin": "G2 f2aefd068 + #19285 for dump",
+  "trigger": 16,
+  "precision": 40,
+  "detect": 48,
+  "detect_by": {
+    "token_repeat": 48
+  },
+  "tier": "KV不一致→定界",
+  "kv_note": "v5.16：无数值问题；token0 cos mismatch（model L2 首次越阈，L20 最差）；未用槽有限非0=卫生；标杆洁净",
+  "bug_run": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S43-pr19285-20261023T105118",
+  "ref_run": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S43-ref-recap-20261023T105259",
+  "n_ok_pairs": 2
+}

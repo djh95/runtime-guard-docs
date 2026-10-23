@@ -110,7 +110,7 @@ keep-set 案例的 **headline 结案**只用下面四档；**不要**再用 PASS
 | S07 | [cases/S07/](./cases/S07/) | （空） | （空） | W8A8 dequant scale 崩溃 | （空） | `logits_finite` | （空） |
 | S23 | [cases/S23/](./cases/S23/) | KV 不一致→定界 | 检出 | 一层 `o_proj` 权重置零 | min_cos≈0.68；prompt idx=1@L35；未用槽有限非0=卫生 | `token_repeat` | 2 / 16 / 48 |
 | S45 | [cases/S45/](./cases/S45/) | （空） | （空） | top-k 打在 −logits | （空） | `token_repeat`+`logits_finite` | （空） |
-| S43 | [cases/S43/](./cases/S43/) | （空） | （空） | embedding ×100 | （空） | `token_repeat` | （空） |
+| S43 | [cases/S43/](./cases/S43/) | KV 不一致→定界 | 检出 | embedding ×100 | 换行塌缩 | `token_repeat`×48 | 16 / 40 / 48 |
 | S22 | [cases/S22/](./cases/S22/) | （空） | （空） | Spec resample 无独立 salt | （空） | `spec_acceptance` | （空） |
 | S06 | [cases/S06/](./cases/S06/) | （空） | （空） | MoE router bias / mask（构造） | （空） | `token_repeat` | （空） |
 | S26 | [cases/S26/](./cases/S26/) | **KV 一致→排除 KV** | **检出** | RMSNorm fp32 错乘 | `1.1.1…` 数字复读 | `token_repeat` | **470 / 14 / 48** |
