@@ -25,7 +25,7 @@ Soft-inverse：SwiGLU 先 `cat(up, gate)` 再 `npu_swiglu`（gate/up 对调）�
 
 ## 3 · Guard 结果
 
-**检出。** 现行 **58 / 48 / 48**（`detect_by.logits_finite=48`）。结案档：**KV 不一致→定界**（有限性/未用槽分级；**非** NaN-cos 层定位）。
+**检出。** 现行 **58 / 48 / 48**（`detect_by.logits_finite=48`）。结案档：**KV 不一致→定界**（v5.16 数值门闩 + 干净格余弦；两组同向）。
 
 钉点 dump report：`prompt_token_ids` 长度 **14**（非空）；dump 时 `output_token_count=1`（早拍窗）。
 
@@ -48,23 +48,31 @@ Soft-inverse：SwiGLU 先 `cat(up, gate)` 再 `npu_swiglu`（gate/up 对调）�
 - 现象：全请求 `!!!!…`；`logits_finite` 必现（48/48）。
 - 三层：**58 / 48 / 48**。
 - 钉点 report（×2）：`…ac611d71`、`…b27e35ba`；均 `prompt=14`、`output_at_dump=1`、`finite_kind=nan`。
-- **≥2 组**异常↔清洁标杆（2026-10-23 Asia/Shanghai 补抓 `S50-ref-recap-20261023T094236`；标杆侧 `logits_finite` 未触发；shape `[1,128,4,128]` 一致）。
-- history 窗：`n_tokens = p + o − 1 = 14`（短窗；只做有限性/未用槽，**不做层定位**）。
-- **异常侧：** 有效槽 **全 NaN**（无 Inf）；未用槽 **亦有 NaN**（按 v5.15 分级属**可影响结果**；非「仅有限非 0 卫生脏写」）。
-- **标杆侧：** 有效槽有限；未用槽全 0。
-- 证据：`evidence/kv_compare.json` + `kv_finite_unused.json`；服务器 `verified_kv/S50/ref_recap/`（**.pt 未入库**）。
+- **≥2 组**异常↔清洁标杆（`S50-ref-recap-20261023T094236`；标杆未亮 `logits_finite`；shape `[1,128,4,128]` 一致）。
+- history 窗：`n_tokens = p + o − 1 = 14`（prompt token0 起即可比）。
+- Dump 含两套层名（各 36）：`layer_36..71` 与 `model.layers.0..35.self_attn.attn`。
+- **v5.16 数值门闩 + 余弦（两对同向）：**
+
+| 对 | first_numeric（model.layers） | first_cos_mismatch（干净格） | 备注 |
+|----|-------------------------------|------------------------------|------|
+| `…ac611d71` | token **0** @ `model.layers.6`（`buggy_nan`） | token **0** @ `model.layers.3`（cos≈0.989，阈值 0.99） | L5 最差 cos≈-0.017；L0–L2≈1 |
+| `…b27e35ba` | token **0** @ `model.layers.6`（`buggy_nan`） | token **0** @ `model.layers.3`（cos≈0.989） | 同向 |
+
+- `layer_36..71`：自 token **0** 起 used 槽 **全 NaN**（全名 natural-sort 的 first_numeric 会先落到 `layer_36`；属并行命名，不作唯一层叙事）。
+- `model.layers.6..35`：自 token 0 起 **数值问题**（不算余弦）；L0–L5 有限可算余弦。
+- 未用槽：异常侧亦有 NaN（严重）；标杆未用槽全 0。
+- 证据：`evidence/kv_compare.json` + `kv_v516_numeric_first.json`；服务器 `verified_kv/S50/ref_recap/`（**.pt 未入库**）。
 
 ### 推断
 
-- 有效槽已非有限 + 标杆洁净 → **不能排除**「坏值已进/经 KV」；属 **KV 不一致**类信号。
-- 未用槽 NaN 加重严重度；**不能**单凭 KV 推出「根因=KV 子系统」或「根因=SwiGLU 对调」（后者仅构造背景）。
-- 全 NaN cos **不定层**；短 o=1 窗进一步削弱层定位。
-- **未开 msprobe**（殿后；本包不停在算子名）。
+- prompt token0 起：干净格上余弦在 L3 越阈、L5 塌缩，L6+ 已非有限 → **KV 不一致**且可写层事实（非伪 NaN-sort）。
+- **不能**单凭此推出「根因=SwiGLU 对调」或「根因=KV 子系统」（前者仅构造背景）。
+- **未开 msprobe**（殿后）。
 
 ### 结论
 
-- 结案档：**KV 不一致→定界**（有限性/未用槽事实；两组同向；标杆未炸）。
-- 尚未定界到具体算子/构造根因；分析不出 / 证据不足；需要时再开 `msprobe-dump`。
+- 结案档：**KV 不一致→定界**（v5.16；两组同向；标杆未炸；含 first_numeric / first_cos 层事实）。
+- 尚未证到构造根因算子名；需要时再开 `msprobe-dump`。
 
 ## 6 · 证据文件
 
@@ -76,8 +84,9 @@ Soft-inverse：SwiGLU 先 `cat(up, gate)` 再 `npu_swiglu`（gate/up 对调）�
 | `evidence/跑批结果.json` | 跑批元数据 + 结案摘要 |
 | `evidence/samples/` | prompt + completion 样本 |
 | `evidence/reports/` | 钉点 Guard report（非空 prompt；logits_finite） |
-| `evidence/kv_compare.json` | 两组有限性/未用槽分级摘要 |
-| `evidence/kv_finite_unused.json` | 明细（含 worst_head） |
+| `evidence/kv_compare.json` | v5.16 数值门闩 + 余弦首分歧（两组） |
+| `evidence/kv_v516_numeric_first.json` | v5.16 重分析摘要 |
+| `evidence/kv_finite_unused.json` | 有限性/未用槽明细 |
 | `evidence/kv_pairs_recap.json` | 标杆补抓配对元数据 |
 
 ## 7 · 上游 PR 关系

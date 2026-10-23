@@ -1,0 +1,121 @@
+{
+  "case": "S50",
+  "method": "v5.16 numeric-gate before cosine (skills 982ec3a)",
+  "n_pairs": 2,
+  "pairs": [
+    {
+      "req_id": "cmpl-80dfca0aa2091acb-0-ac611d71",
+      "n_tokens": 14,
+      "n_layers_matched": 72,
+      "cells": {
+        "total": 1008,
+        "numeric_issue": 924,
+        "cosine_computed": 84
+      },
+      "first_numeric_issue_all_names": {
+        "token_idx": 0,
+        "token_id": 675,
+        "role": "prompt",
+        "layer": "layer_36",
+        "status": "数值问题:buggy_nan",
+        "n_numeric_issue_at_token": 66,
+        "n_cos_cells_at_token": 6
+      },
+      "first_numeric_issue_model_layers": {
+        "token_idx": 0,
+        "layer": "model.layers.6.self_attn.attn",
+        "status": "数值问题:buggy_nan",
+        "note": "model.layers.0..5 clean/finite; 6..35 NaN on buggy used slots"
+      },
+      "first_cos_mismatch": {
+        "token_idx": 0,
+        "layer": "model.layers.3.self_attn.attn",
+        "cos": 0.9894389869642402,
+        "thresh": 0.99,
+        "note": "first clean cell below thresh in model.layers natural order"
+      },
+      "worst_clean_cos_at_token0": {
+        "token_idx": 0,
+        "layer": "model.layers.5.self_attn.attn",
+        "cos": -0.017238504939462555
+      },
+      "clean_model_layers_token0_cos": {
+        "model.layers.0.self_attn.attn": 1.0,
+        "model.layers.1.self_attn.attn": 1.0,
+        "model.layers.2.self_attn.attn": 0.9977,
+        "model.layers.3.self_attn.attn": 0.9894,
+        "model.layers.4.self_attn.attn": 0.8046,
+        "model.layers.5.self_attn.attn": -0.0172
+      },
+      "layer_star_family": {
+        "names": "layer_36..layer_71 (36 files)",
+        "first_numeric_issue": {
+          "token_idx": 0,
+          "layer": "layer_36",
+          "status": "数值问题:buggy_nan"
+        },
+        "note": "all layer_* used slots NaN from token 0; parallel dump naming, not a cosine localization"
+      },
+      "buggy_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S50-pr19285-20261022T232738/dump/logits_finite/cmpl-80dfca0aa2091acb-0-ac611d71/wave_50/dp0_tp0_pp0_cp0",
+      "ref_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S50/ref_recap/cmpl-80dfca0aa2091acb-0-ac611d71/wave_2/dp0_tp0_pp0_cp0"
+    },
+    {
+      "req_id": "cmpl-b7550a193f424933-0-b27e35ba",
+      "n_tokens": 14,
+      "n_layers_matched": 72,
+      "cells": {
+        "total": 1008,
+        "numeric_issue": 924,
+        "cosine_computed": 84
+      },
+      "first_numeric_issue_all_names": {
+        "token_idx": 0,
+        "token_id": 675,
+        "role": "prompt",
+        "layer": "layer_36",
+        "status": "数值问题:buggy_nan",
+        "n_numeric_issue_at_token": 66,
+        "n_cos_cells_at_token": 6
+      },
+      "first_numeric_issue_model_layers": {
+        "token_idx": 0,
+        "layer": "model.layers.6.self_attn.attn",
+        "status": "数值问题:buggy_nan",
+        "note": "model.layers.0..5 clean/finite; 6..35 NaN on buggy used slots"
+      },
+      "first_cos_mismatch": {
+        "token_idx": 0,
+        "layer": "model.layers.3.self_attn.attn",
+        "cos": 0.9894389869642402,
+        "thresh": 0.99,
+        "note": "first clean cell below thresh in model.layers natural order"
+      },
+      "worst_clean_cos_at_token0": {
+        "token_idx": 0,
+        "layer": "model.layers.5.self_attn.attn",
+        "cos": -0.017238504939462555
+      },
+      "clean_model_layers_token0_cos": {
+        "model.layers.0.self_attn.attn": 1.0,
+        "model.layers.1.self_attn.attn": 1.0,
+        "model.layers.2.self_attn.attn": 0.9977,
+        "model.layers.3.self_attn.attn": 0.9894,
+        "model.layers.4.self_attn.attn": 0.8046,
+        "model.layers.5.self_attn.attn": -0.0172
+      },
+      "layer_star_family": {
+        "names": "layer_36..layer_71 (36 files)",
+        "first_numeric_issue": {
+          "token_idx": 0,
+          "layer": "layer_36",
+          "status": "数值问题:buggy_nan"
+        },
+        "note": "all layer_* used slots NaN from token 0; parallel dump naming, not a cosine localization"
+      },
+      "buggy_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S50-pr19285-20261022T232738/dump/logits_finite/cmpl-b7550a193f424933-0-b27e35ba/wave_98/dp0_tp0_pp0_cp0",
+      "ref_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S50/ref_recap/cmpl-b7550a193f424933-0-b27e35ba/wave_3/dp0_tp0_pp0_cp0"
+    }
+  ],
+  "tier": "KV不一致→定界",
+  "summary_zh": "两对同向。matched 含两套层名：layer_36..71 自 token0 全 NaN；model.layers.0..5 有限可算余弦（L3 首次<0.99，L5 最差≈-0.02），model.layers.6..35 自 token0 为数值问题(buggy_nan)。结案仍为 KV不一致→定界，但现可写层事实（非伪 NaN-sort）。"
+}

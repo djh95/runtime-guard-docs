@@ -11,5 +11,6 @@
   "bug_dump_run": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S50-pr19285-20261022T232738",
   "ref_recap_run": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S50-ref-recap-20261023T094236",
   "verified_kv_server": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S50/ref_recap/",
-  "kv_note": "有效槽全 NaN；未用槽亦 NaN（严重）；标杆洁净未亮 logits_finite；不定层；未开 msprobe"
+  "kv_note": "v5.16：token0 @ model.layers.6 起数值问题(buggy_nan)；干净格 first_cos token0 @ L3≈0.989，L5≈-0.017；layer_36..71 自 token0 全 NaN；未用槽亦 NaN；标杆洁净；未开 msprobe",
+  "v516_skills": "982ec3a"
 }

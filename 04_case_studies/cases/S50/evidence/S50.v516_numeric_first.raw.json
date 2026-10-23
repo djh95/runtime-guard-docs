@@ -1,0 +1,83 @@
+{
+  "case": "S50",
+  "method": "v5.16 numeric-gate before cosine",
+  "skills_commit": "982ec3a",
+  "n_pairs": 2,
+  "pairs": [
+    {
+      "req_id": "cmpl-80dfca0aa2091acb-0-ac611d71",
+      "n_tokens": 14,
+      "n_prompt": 14,
+      "n_layers": 72,
+      "first_layer": "layer_36",
+      "last_layer": "model.layers.35.self_attn.attn",
+      "n_total_cells": 1008,
+      "n_numeric_issue_cells": 924,
+      "n_cos_cells": 84,
+      "cosine_localizable": true,
+      "all_tokens_numeric_only": false,
+      "first_numeric_issue": {
+        "token_idx": 0,
+        "token_id": 675,
+        "role": "prompt",
+        "layer": "layer_36",
+        "status": "数值问题:buggy_nan",
+        "n_numeric_issue_at_token": 66,
+        "n_cos_cells_at_token": 6
+      },
+      "first_cos_mismatch": {
+        "token_idx": 0,
+        "token_id": 675,
+        "role": "prompt",
+        "layer": "model.layers.3.self_attn.attn",
+        "min_cos": -0.017238504939462555,
+        "min_layer": "model.layers.5.self_attn.attn",
+        "cos_at_layer": 0.9894389869642402
+      },
+      "first_numeric_issue_idx": 0,
+      "first_bad_idx": 0,
+      "buggy_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S50-pr19285-20261022T232738/dump/logits_finite/cmpl-80dfca0aa2091acb-0-ac611d71/wave_50/dp0_tp0_pp0_cp0",
+      "ref_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S50/ref_recap/cmpl-80dfca0aa2091acb-0-ac611d71/wave_2/dp0_tp0_pp0_cp0",
+      "method": "v5.16 numeric-gate then cosine",
+      "skills_sha_expected": "982ec3a"
+    },
+    {
+      "req_id": "cmpl-b7550a193f424933-0-b27e35ba",
+      "n_tokens": 14,
+      "n_prompt": 14,
+      "n_layers": 72,
+      "first_layer": "layer_36",
+      "last_layer": "model.layers.35.self_attn.attn",
+      "n_total_cells": 1008,
+      "n_numeric_issue_cells": 924,
+      "n_cos_cells": 84,
+      "cosine_localizable": true,
+      "all_tokens_numeric_only": false,
+      "first_numeric_issue": {
+        "token_idx": 0,
+        "token_id": 675,
+        "role": "prompt",
+        "layer": "layer_36",
+        "status": "数值问题:buggy_nan",
+        "n_numeric_issue_at_token": 66,
+        "n_cos_cells_at_token": 6
+      },
+      "first_cos_mismatch": {
+        "token_idx": 0,
+        "token_id": 675,
+        "role": "prompt",
+        "layer": "model.layers.3.self_attn.attn",
+        "min_cos": -0.017238504939462555,
+        "min_layer": "model.layers.5.self_attn.attn",
+        "cos_at_layer": 0.9894389869642402
+      },
+      "first_numeric_issue_idx": 0,
+      "first_bad_idx": 0,
+      "buggy_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S50-pr19285-20261022T232738/dump/logits_finite/cmpl-b7550a193f424933-0-b27e35ba/wave_98/dp0_tp0_pp0_cp0",
+      "ref_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S50/ref_recap/cmpl-b7550a193f424933-0-b27e35ba/wave_3/dp0_tp0_pp0_cp0",
+      "method": "v5.16 numeric-gate then cosine",
+      "skills_sha_expected": "982ec3a"
+    }
+  ],
+  "verdict": "见 pairs"
+}
