@@ -58,7 +58,7 @@ Soft-inverse：fused add-RMSNorm 前 `residual = -residual`。细节见 [evidenc
 
 - 有效槽已非有限 + 标杆洁净 → **不能排除**「坏值已进/经 KV」；属 **KV 不一致**类信号。
 - 未用槽 NaN 加重严重度；**不能**单凭 KV 推出「根因=residual 取反」。
-- 不定层；短 o=1 窗进一步削弱层定位。
+- 有效槽全是 NaN，没法用余弦找「第一坏层」；短生成窗进一步削弱层定位。
 - **未开 msprobe**（殿后）。
 
 ### 结论

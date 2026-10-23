@@ -1,4 +1,4 @@
-# S22 · Spec resample 无 SALT（KV 不一致→定界）
+# S22 · Spec resample 无 SALT（KV 不一致→定界 · 一对分/一对 clean）
 
 公开自洽案例包。G2 pin 缺 `RESAMPLE_NOISE_SALT`；overlay 只打 trigger 日志（origin-faithful）。
 
@@ -6,7 +6,7 @@
 
 | 项 | 值 |
 |----|-----|
-| 结案 | **KV 不一致→定界** |
+| 结案 | **KV 不一致→定界**（一对分 / 一对 clean） |
 | 检测 | **检出** |
 | 三层率 | **116 / 0 / 48**（`spec_acceptance`×47 + `token_repeat`×1） |
 | Detector | `spec_acceptance`（兼 `token_repeat`） |
@@ -17,7 +17,7 @@
 
 ## 1 · 现象
 
-`spec_acceptance` 大量命中（47/48）；precision=0（本窗无跨请求乱码文本）。样本见 [evidence/samples/](./evidence/samples/)。
+投机接受率异常被抓住（`spec_acceptance` 47/48）；**输出未必是乱码**（precision=0，无跨请求乱码文本）。样本见 [evidence/samples/](./evidence/samples/)。
 
 ## 2 · 案例背景 / 构造
 
@@ -25,7 +25,7 @@ Rejection 与 residual resample 共用 RNG、无独立 salt（inverse [ascend#18
 
 ## 3 · Guard 结果
 
-**检出。** **116 / 0 / 48**。结案档：**KV 不一致→定界**（v5.16：数值门闩无命中；**一对** `first_cos_mismatch` @ `out[6]` / dump `layer_72`；**另一对全程 clean**；`model.layers` tok0 两侧 ≈1.0）。
+**检出。** **116 / 0 / 48**。结案档：**KV 不一致→定界**（**两组不同向**：一对在靠后的生成步、高编号 dump 层出现余弦分歧；另一对全程干净；数值门闩无命中；模型层在 prompt 第 1 个 token 上两侧≈1.0）。细节见 `evidence/kv_*.json`。
 
 ## 4 · 复现技巧
 

@@ -1,12 +1,12 @@
 # S07 · W8A8 scale collapse（KV 不一致→定界 · 乱码漏检）
 
-公开自洽案例包。logits 有限 → `logits_finite` miss；乱码靠 samples；异常 KV 靠 `manual_dump`。
+公开自洽案例包。**乱码出现了，但 logits 仍有限**，所以 `logits_finite` 没响（乱码漏检）；认乱码看 samples；异常 KV 靠后来的 `manual_dump`。
 
 ## 归档钉点
 
 | 项 | 值 |
 |----|-----|
-| 结案 | **KV 不一致→定界**（数值门闩：`zero_norm`） |
+| 结案 | **KV 不一致→定界**（数值门闩：有效槽范数全零） |
 | 检测 | **乱码漏检**（期望 `logits_finite` → 0 report） |
 | 三层率 | **74 / 48 / 0**（跨请求内容相同×48） |
 | Detector | 期望 `logits_finite` → **miss** |
@@ -41,7 +41,7 @@ W8A8 dequant / scale 崩溃族。细节见 [evidence/规格说明.md](./evidence
 ### 事实
 
 - **≥2 组**清洁标杆；shape 一致；prompt 窗（`o=1`）。
-- **v5.16（两对同向）：** `first_numeric_issue` = **数值问题:zero_norm** @ token0（dump `layer_36` / model `layers.0`）；余弦格 **0**。
+- **v5.16（两对同向）：** 数值问题为有效槽范数全零（`zero_norm`），从 prompt 第 1 个 token、模型第 0 层起；dump 双名 `layer_36` = `model.layers.0`（dump 双名：`layer_36` 与 `model.layers.0` 指同一层，不是「第 36 层」。）；无有效余弦格。
 - 有限性脚本：有效槽有限且范数为 0（全零）→ 走数值门闩，不算余弦。
 - 证据：`evidence/kv_compare.json` + `kv_v516_numeric_first.json`（**.pt 未入库**）。
 

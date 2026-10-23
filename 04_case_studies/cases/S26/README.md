@@ -1,4 +1,4 @@
-# S26 · RMSNorm fp32 weight-mul（KV 一致→排除 KV）
+# S26 · RMSNorm fp32 错乘（weight-mul）（KV 一致→排除 KV）
 
 公开自洽案例包。
 

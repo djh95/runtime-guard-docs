@@ -25,7 +25,7 @@ MoE router bias / mask 错误。细节见 [evidence/规格说明.md](./evidence/
 
 ## 3 · Guard 结果
 
-**检出。** **52 / 25 / 46**。结案档：**KV 不一致→定界**（v5.16：无数值问题；首余弦分歧 dump 名 `layer_27` / model-layers tok0 @ L4；两组同向）。
+**检出。** **52 / 25 / 46**。结案档：**KV 不一致→定界**（v5.16：无数值问题；首个余弦分歧约在 dump `layer_27`，模型侧约第 4 层；两组同向）。
 
 ## 4 · 复现技巧
 
@@ -42,7 +42,7 @@ MoE router bias / mask 错误。细节见 [evidence/规格说明.md](./evidence/
 ### 事实
 
 - **≥2 组**清洁标杆；shape 一致。
-- **v5.16（两对同向）：** 数值问题格 **0**；`first_cos_mismatch` @ token0 dump `layer_27`（cos≈0.05）；model-layers tok0 首分歧 @ `model.layers.4.self_attn.attn`（cos≈0.85）。
+- **v5.16（两对同向）：** 无数值问题；prompt 第 1 个 token 上 dump `layer_27` 余弦≈0.05；模型层首分歧约在 `model.layers.4`（余弦≈0.85）。
 - 未用槽：异常侧有限非 0（卫生）。
 - 证据：`evidence/kv_compare.json` + `kv_v516_numeric_first.json`（**.pt 未入库**）。
 

@@ -1,4 +1,4 @@
-# S25 · RoPE second-half drop（KV 一致→排除 KV）
+# S25 · RoPE 后半维丢失（second-half drop）（KV 一致→排除 KV）
 
 公开自洽案例包。
 

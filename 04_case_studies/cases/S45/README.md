@@ -1,12 +1,12 @@
 # S45 · Top-k on −logits（KV 一致→排除 KV · 乱码漏检）
 
-公开自洽案例包。detect=0（GAP）→ 用 `manual_dump` 抓异常 KV 再对账。
+公开自洽案例包。**乱码漏检**（开了检测但 0 份 report）→ 用 `manual_dump` 抓异常 KV 再对账。
 
 ## 归档钉点
 
 | 项 | 值 |
 |----|-----|
-| 结案 | **KV 一致→排除 KV**（prompt 窗） |
+| 结案 | **KV 一致→排除 KV**（本次只对上了 prompt 段的 KV，生成很短） |
 | 检测 | **乱码漏检**（`token_repeat`+`logits_finite` 均 0 report） |
 | 三层率 | **16 / 16 / 0**（identical-mode「-Semit修为」×16；另有空 completion） |
 | Detector | 期望 `token_repeat`+`logits_finite` → **miss** |
@@ -41,7 +41,7 @@ top-k/top-p 打在 −logits（bottom nucleus）。细节见 [evidence/规格说
 
 ### 事实
 
-- **≥2 组**清洁标杆；shape 一致；窗为 **prompt-only**（report `o=1` → `n_cmp=14`）。
+- **≥2 组**清洁标杆；shape 一致；对比窗主要是 prompt 段（生成很短，`o=1` → 可比长度 14）。
 - **v5.16（两对同向）：** 数值问题格 **0**；`first_cos_mismatch` **无**（全程 clean；token0 最差仍 ≈1.0）。
 - 未用槽：一对异常侧**有限非 0**（卫生）；标杆未用全 0。
 - 证据：`evidence/kv_compare.json` + `kv_v516_numeric_first.json`；`verified_kv/S45/ref_recap/`（**.pt 未入库**）。

@@ -50,7 +50,7 @@ Soft-inverse：SwiGLU 先 `cat(up, gate)` 再 `npu_swiglu`（gate/up 对调）�
 - 钉点 report（×2）：`…ac611d71`、`…b27e35ba`；均 `prompt=14`、`output_at_dump=1`、`finite_kind=nan`。
 - **≥2 组**异常↔清洁标杆（`S50-ref-recap-20261023T094236`；标杆未亮 `logits_finite`；shape `[1,128,4,128]` 一致）。
 - history 窗：`n_tokens = p + o − 1 = 14`（prompt token0 起即可比）。
-- Dump 含两套层名（各 36）：`layer_36..71` 与 `model.layers.0..35.self_attn.attn`。
+- Dump 含两套层名（各 36）：`layer_36..71` 与 `model.layers.0..35.self_attn.attn`。**双名同一套 KV**：`layer_36` = `model.layers.0`，不是「第 36 层」。
 - **v5.16 数值门闩 + 余弦（两对同向）：**
 
 | 对 | first_numeric（model.layers） | first_cos_mismatch（干净格） | 备注 |

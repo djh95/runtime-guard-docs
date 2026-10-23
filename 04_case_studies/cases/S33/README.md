@@ -17,7 +17,7 @@
 
 ## 1 · 现象
 
-检出 `token_repeat`（precision=15）。样本见 [evidence/samples/](./evidence/samples/)。
+部分数字 / token 复读（precision=15）；`token_repeat` 检出。样本见 [evidence/samples/](./evidence/samples/)。
 
 ## 2 · 案例背景 / 构造
 

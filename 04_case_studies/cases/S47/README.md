@@ -8,7 +8,7 @@
 |----|-----|
 | 结案 | **KV 不一致→定界** |
 | 检测 | **检出** |
-| 三层率 | **30 / 0（计数）· identical-mode 垃圾×37 / 48**（`token_repeat`×48） |
+| 三层率 | **30 / 0 / 48**（precision 计数=0；另有 37 条内容相同的垃圾，以 samples 为准；`token_repeat`×48） |
 | Detector | `token_repeat` |
 | Origin | 见规格 |
 | Guard pin | G2 `f2aefd068` + 抓 dump 时临时合入 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) |

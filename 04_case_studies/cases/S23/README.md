@@ -25,7 +25,7 @@ Post-load 置零一层 `o_proj.weight`（always-on）。细节见 [evidence/规�
 
 ## 3 · Guard 结果
 
-**检出。** **2 / 16 / 48**。结案：**KV 不一致→定界**。
+**检出。** **2 / 16 / 48**（注入几乎不打 trigger 日志，但输出复读仍被 `token_repeat` 抓住）。结案：**KV 不一致→定界**。
 
 ## 4 · 复现技巧
 
@@ -44,7 +44,7 @@ Post-load 置零一层 `o_proj.weight`（always-on）。细节见 [evidence/规�
 - 三层 **2 / 16 / 48**；detector `token_repeat`×48。
 - ≥2 组异常↔清洁标杆（标杆未亮 `logits_finite`）；shape 一致；history `p+o-1`（21 / 20）。
 - 有效槽**有限**（无 Inf/NaN）；未用槽有限非 0 → **卫生**（通常不致坏结果）。
-- 余弦：两组 `min_cos≈0.678`；首不一致均在 **prompt idx=1**，层名 `model.layers.35.self_attn.attn`（脚本层定位；权重注入可解释为算子写出污染 KV，**勿**升格成「根因=第 35 层」以外的断言）。
+- 余弦：两组最低约 0.68；首个不一致都在 prompt 第 2 个 token、`model.layers.35`（脚本层定位；权重注入可解释为算子写出污染 KV，**勿**升格成「根因=第 35 层」）。
 
 ### 推断
 

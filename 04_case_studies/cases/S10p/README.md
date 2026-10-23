@@ -1,6 +1,6 @@
 # S10′ · FullAttn recycle-zero（KV 一致→排除 KV）
 
-公开自洽案例包。目录名 `S10p` = S10′。
+公开自洽案例包。目录名 `S10p` = S10′。构造预期像「回收块脏 KV」，**本窗对账却干净** → 结案排除 KV 主因。
 
 ## 归档钉点
 
@@ -41,8 +41,8 @@ FullAttention 回收块未清零（`needs_kv_cache_zeroing→False`）。细节�
 
 ### 事实
 
-- **≥2 组**清洁标杆；shape 一致；`n_cmp` 含 prompt+output−1（非弱窗）。
-- **v5.16（两对同向）：** 数值问题格 **0**；`first_cos_mismatch` **无**（全程 clean；token0 最差仍 ≈1.0 @ L13）。
+- **≥2 组**清洁标杆；shape 一致；对比窗口含完整 prompt+生成（不是只比了一截）。
+- **v5.16（两对同向）：** 无数值问题；余弦全程干净（prompt 第 1 个 token 最差仍≈1.0）。
 - 未用槽：异常侧**有限非 0**（卫生）；一对标杆未用亦有限非 0。
 - 证据：`evidence/kv_compare.json` + `kv_v516_numeric_first.json`；`verified_kv/S10p/ref_recap/`（**.pt 未入库**）。
 

@@ -1,6 +1,6 @@
-# S01 · 新 KV block 未置零（KV 一致→排除 KV）
+# S01 · 新 KV block 未置零（KV 一致→排除 KV · dense）
 
-公开自洽案例包。本轮在 **dense Qwen3-8B** 上实测（规格写 hybrid/量化形态前提；本轮未用 hybrid 权重）。
+公开自洽案例包。**本窗是 dense 侧车结果，不是规格目标形态**（目标要 hybrid / 量化 KV 脏读 → 乱码或非有限 logits；本轮未测）。
 
 ## 归档钉点
 
@@ -17,11 +17,11 @@
 
 ## 1 · 现象
 
-检出 `token_repeat`（precision=16；如 `1.1.1.1…` 重复）。样本见 [evidence/samples/](./evidence/samples/)。
+部分请求变成数字复读（如 `1.1.1…`，precision=16）；**多数样本仍是通顺英文**。靠 `token_repeat` 检出（规格目标形态更常看 `logits_finite`）。样本见 [evidence/samples/](./evidence/samples/)。
 
 ## 2 · 案例背景 / 构造
 
-新 KV block 未置零。细节见 [evidence/规格说明.md](./evidence/规格说明.md)。**规格 hybrid/量化前提本轮未满足；结论仅对 dense 本窗有效。**
+构造：跳过新 KV block 置零。细节见 [evidence/规格说明.md](./evidence/规格说明.md)。**再次强调：hybrid/量化 KV 前提本轮未满足；不得把 dense 复读当成目标脏读乱码已复现。**
 
 ## 3 · Guard 结果
 

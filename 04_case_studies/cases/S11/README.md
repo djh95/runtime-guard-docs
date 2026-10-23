@@ -25,7 +25,7 @@ MLA prefill RoPE pad 错位。细节见 [evidence/规格说明.md](./evidence/�
 
 ## 3 · Guard 结果
 
-**检出。** **108 / 27 / 48**。结案档：**KV 不一致→定界**（v5.16：无数值问题；首余弦分歧 @ prompt token1 dump `layer_27`；两组同向；tok0 model 层仍 clean）。
+**检出。** **108 / 27 / 48**。结案档：**KV 不一致→定界**（v5.16：无数值问题；首个不一致在 prompt 第 2 个 token、约第 27 层注意力 KV；两组同向；prompt 第 1 个 token 的模型层仍干净）。
 
 ## 4 · 复现技巧
 
@@ -41,8 +41,8 @@ MLA prefill RoPE pad 错位。细节见 [evidence/规格说明.md](./evidence/�
 ### 事实
 
 - **≥2 组**清洁标杆；shape 一致。
-- **v5.16（两对同向）：** 数值问题格 **0**；`first_cos_mismatch` @ **token_idx=1** dump `layer_27`（cos≈0.96）；min_cos≈0.24 @ `model.layers.16.self_attn.attn`。
-- token0 model 层最差仍 ≈1.0。
+- **v5.16（两对同向）：** 无数值问题；首个余弦分歧在 prompt 第 2 个 token、dump `layer_27`（余弦≈0.96）；最差约 0.24 落在 `model.layers.16`。
+- prompt 第 1 个 token 的模型层最差仍≈1.0。
 - 未用槽：异常侧有限非 0（卫生）。
 - 证据：`evidence/kv_*.json`（**.pt 未入库**）。
 
