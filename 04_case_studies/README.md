@@ -116,7 +116,7 @@ keep-set 案例的 **headline 结案**只用下面四档；**不要**再用 PASS
 | S26 | [cases/S26/](./cases/S26/) | **KV 一致→排除 KV** | **检出** | RMSNorm fp32 错乘 | `1.1.1…` 数字复读 | `token_repeat` | **470 / 14 / 48** |
 | S25 | [cases/S25/](./cases/S25/) | **KV 一致→排除 KV** | **检出** | RoPE 后半维丢失 | `1.1.1…` 数字复读 | `token_repeat` | **462 / 15 / 48** |
 | S50 | [cases/S50/](./cases/S50/) | KV 不一致→定界 | 检出 | SwiGLU gate/up 对调 | 有效槽全 NaN；未用槽亦 NaN；标杆洁；不定层 | `logits_finite` | 58 / 48 / 48 |
-| S48 | [cases/S48/](./cases/S48/) | （空） | （空） | residual 极性取反 | （空） | `logits_finite` | （空） |
+| S48 | [cases/S48/](./cases/S48/) | KV 不一致→定界 | 检出 | residual 极性取反 | 全请求 `!!!!…` | `logits_finite`×48 | 44 / 48 / 48 |
 | S47 | [cases/S47/](./cases/S47/) | （空） | （空） | Attn 前 K/V 对调 | （空） | `token_repeat` | （空） |
 | S33 | [cases/S33/](./cases/S33/) | （空） | （空） | softcap 缺 `*cap` rescale | （空） | `token_repeat` | （空） |
 

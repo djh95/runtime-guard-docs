@@ -1,0 +1,21 @@
+{
+  "scenario": "S48",
+  "trigger": 44,
+  "precision": 48,
+  "precision_identical_mode": [
+    "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
+    48
+  ],
+  "detect_reports": 48,
+  "detect_by": {
+    "logits_finite": 48
+  },
+  "n_requests": 48,
+  "n_errors": 0,
+  "temperature": 0.0,
+  "host_cards": "4,5",
+  "model": "/mnt/weight/Qwen3-8B",
+  "detector": "logits_finite",
+  "run_dir": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S48-layers-20261023T103724",
+  "boot_ok": true
+}

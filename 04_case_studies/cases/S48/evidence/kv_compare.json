@@ -1,0 +1,151 @@
+{
+  "case": "S48",
+  "tier_candidate": "KV不一致→定界",
+  "method": "finite + unused-slot graded (numeric-gate first; not NaN-cos layer locate)",
+  "pr19285_source": true,
+  "clean_ref_recap": true,
+  "ref_run": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S48-ref-recap-20261023T104049",
+  "n_ok_pairs": 2,
+  "n_match": 0,
+  "n_mismatch_finite": 2,
+  "layers": {
+    "trigger": 44,
+    "precision": 48,
+    "detect": 48,
+    "detect_by": {
+      "logits_finite": 48
+    }
+  },
+  "results": [
+    {
+      "req_id": "cmpl-848bd82c5c4916d7-0-994caee4",
+      "ok": true,
+      "n_tokens": 14,
+      "n_prompt": 14,
+      "n_output_at_dump": 1,
+      "shape": [
+        1,
+        128,
+        4,
+        128
+      ],
+      "shape_match": true,
+      "logits_finite_on_ref": false,
+      "buggy": {
+        "any_used_nan": true,
+        "any_used_inf": false,
+        "any_unused_nonzero_finite": false,
+        "any_unused_nonfinite": true,
+        "n_tensors": 36,
+        "sample_layer": {
+          "name": "layer_36",
+          "used_nan": 7168,
+          "used_inf": 0,
+          "unused_nz": 0,
+          "unused_nan": 1024,
+          "unused_inf": 0,
+          "shape": [
+            1,
+            128,
+            4,
+            128
+          ]
+        }
+      },
+      "ref": {
+        "any_used_nan": false,
+        "any_used_inf": false,
+        "any_unused_nonzero_finite": false,
+        "any_unused_nonfinite": false,
+        "n_tensors": 36,
+        "sample_layer": {
+          "name": "layer_36",
+          "used_nan": 0,
+          "used_inf": 0,
+          "unused_nz": 0,
+          "unused_nan": 0,
+          "unused_inf": 0,
+          "shape": [
+            1,
+            128,
+            4,
+            128
+          ]
+        }
+      },
+      "read": "buggy有效槽非有限 + 未用槽亦 Inf/NaN → 严重；存储/计算皆可疑；不定层（勿用 nan cos）",
+      "buggy_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S48-pr19285-20261023T103909/dump/logits_finite/cmpl-848bd82c5c4916d7-0-994caee4/wave_4/dp0_tp0_pp0_cp0",
+      "ref_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S48/ref_recap/cmpl-848bd82c5c4916d7-0-994caee4/wave_2/dp0_tp0_pp0_cp0",
+      "cos_layer_claim": false,
+      "note": "dump 窗 o=1 → history n_tokens=p+o-1；不定层（数值问题，无有效余弦）"
+    },
+    {
+      "req_id": "cmpl-8948d9142419bbd1-0-bc2bbc9b",
+      "ok": true,
+      "n_tokens": 14,
+      "n_prompt": 14,
+      "n_output_at_dump": 1,
+      "shape": [
+        1,
+        128,
+        4,
+        128
+      ],
+      "shape_match": true,
+      "logits_finite_on_ref": false,
+      "buggy": {
+        "any_used_nan": true,
+        "any_used_inf": false,
+        "any_unused_nonzero_finite": false,
+        "any_unused_nonfinite": true,
+        "n_tensors": 36,
+        "sample_layer": {
+          "name": "layer_36",
+          "used_nan": 7168,
+          "used_inf": 0,
+          "unused_nz": 0,
+          "unused_nan": 1024,
+          "unused_inf": 0,
+          "shape": [
+            1,
+            128,
+            4,
+            128
+          ]
+        }
+      },
+      "ref": {
+        "any_used_nan": false,
+        "any_used_inf": false,
+        "any_unused_nonzero_finite": false,
+        "any_unused_nonfinite": false,
+        "n_tensors": 36,
+        "sample_layer": {
+          "name": "layer_36",
+          "used_nan": 0,
+          "used_inf": 0,
+          "unused_nz": 0,
+          "unused_nan": 0,
+          "unused_inf": 0,
+          "shape": [
+            1,
+            128,
+            4,
+            128
+          ]
+        }
+      },
+      "read": "buggy有效槽非有限 + 未用槽亦 Inf/NaN → 严重；存储/计算皆可疑；不定层（勿用 nan cos）",
+      "buggy_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S48-pr19285-20261023T103909/dump/logits_finite/cmpl-8948d9142419bbd1-0-bc2bbc9b/wave_2/dp0_tp0_pp0_cp0",
+      "ref_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S48/ref_recap/cmpl-8948d9142419bbd1-0-bc2bbc9b/wave_3/dp0_tp0_pp0_cp0",
+      "cos_layer_claim": false,
+      "note": "dump 窗 o=1 → history n_tokens=p+o-1；不定层（数值问题，无有效余弦）"
+    }
+  ],
+  "summary": {
+    "buggy_used": "all NaN (no Inf) on used slots",
+    "buggy_unused": "NaN present (severe)",
+    "ref": "used finite + unused all-zero; logits_finite did not fire",
+    "window": "o=1 at dump → short history; no layer localization"
+  }
+}
