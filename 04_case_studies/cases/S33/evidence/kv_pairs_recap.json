@@ -1,0 +1,46 @@
+{
+  "case": "S33",
+  "bug": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S33-pr19285-20261023T112511",
+  "ref_run": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S33-ref-recap-20261023T112651",
+  "pr19285_source": true,
+  "clean_ref_no_overlay": true,
+  "n_ok_pairs": 2,
+  "results": [
+    {
+      "req_id": "cmpl-803db7636b89c584-0-88c429d9",
+      "ok": true,
+      "n_tokens": 20,
+      "n_prompt": 14,
+      "n_output": 7,
+      "shape": [
+        1,
+        128,
+        4,
+        128
+      ],
+      "shape_match": true,
+      "logits_finite_on_ref": false,
+      "buggy_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S33-pr19285-20261023T112511/dump/token_repeat/cmpl-803db7636b89c584-0-88c429d9/wave_10/dp0_tp0_pp0_cp0",
+      "ref_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S33/ref_recap/cmpl-803db7636b89c584-0-88c429d9/wave_2/dp0_tp0_pp0_cp0",
+      "buggy_report": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S33-pr19285-20261023T112511/report/token_repeat/report_20261023_112641_038_cmpl-803db7636b89c584-0-88c429d9_pid976544.json"
+    },
+    {
+      "req_id": "cmpl-9913de16e9e4b9ac-0-a366b31a",
+      "ok": true,
+      "n_tokens": 20,
+      "n_prompt": 14,
+      "n_output": 7,
+      "shape": [
+        1,
+        128,
+        4,
+        128
+      ],
+      "shape_match": true,
+      "logits_finite_on_ref": false,
+      "buggy_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S33-pr19285-20261023T112511/dump/token_repeat/cmpl-9913de16e9e4b9ac-0-a366b31a/wave_10/dp0_tp0_pp0_cp0",
+      "ref_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S33/ref_recap/cmpl-9913de16e9e4b9ac-0-a366b31a/wave_3/dp0_tp0_pp0_cp0",
+      "buggy_report": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S33-pr19285-20261023T112511/report/token_repeat/report_20261023_112641_044_cmpl-9913de16e9e4b9ac-0-a366b31a_pid976544.json"
+    }
+  ]
+}

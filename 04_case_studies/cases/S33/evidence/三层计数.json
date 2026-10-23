@@ -1,0 +1,18 @@
+{
+  "scenario": "S33",
+  "trigger": 102,
+  "precision": 15,
+  "precision_identical_mode": null,
+  "detect_reports": 48,
+  "detect_by": {
+    "token_repeat": 48
+  },
+  "n_requests": 48,
+  "n_errors": 0,
+  "temperature": 0.0,
+  "host_cards": "4,5",
+  "model": "/mnt/weight/Qwen3-8B",
+  "detector": "token_repeat",
+  "run_dir": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S33-layers-20261023T112336",
+  "boot_ok": true
+}

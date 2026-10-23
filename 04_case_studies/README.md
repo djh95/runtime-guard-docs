@@ -118,7 +118,7 @@ keep-set 案例的 **headline 结案**只用下面四档；**不要**再用 PASS
 | S50 | [cases/S50/](./cases/S50/) | KV 不一致→定界 | 检出 | SwiGLU gate/up 对调 | 有效槽全 NaN；未用槽亦 NaN；标杆洁；不定层 | `logits_finite` | 58 / 48 / 48 |
 | S48 | [cases/S48/](./cases/S48/) | KV 不一致→定界 | 检出 | residual 极性取反 | 全请求 `!!!!…` | `logits_finite`×48 | 44 / 48 / 48 |
 | S47 | [cases/S47/](./cases/S47/) | KV 不一致→定界 | 检出 | Attn 前 K/V 对调 | 乱码/复读 | `token_repeat`×48 | 30 / 0（identical×37） / 48 |
-| S33 | [cases/S33/](./cases/S33/) | （空） | （空） | softcap 缺 `*cap` rescale | （空） | `token_repeat` | （空） |
+| S33 | [cases/S33/](./cases/S33/) | KV 一致→排除 KV | 检出 | softcap 缺 `*cap` rescale | token_repeat 检出 | `token_repeat`×48 | 102 / 15 / 48 |
 
 计数摘自各包实测回填后的 `evidence/三层计数.json`（已回填者见表；其余为空）。
 
