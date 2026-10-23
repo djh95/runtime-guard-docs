@@ -145,12 +145,24 @@ def _compare(
     print("-" * 86)
     bad = 0
     for l in cmp.layers:
+        st = getattr(l, "status", "ok")
+        if st != "ok":
+            mark = f"  <-- {st}"
+            bad += 1
+            slots = str(l.slots) if l.slots is not None else "-"
+            print(
+                f"{l.layer:<28} {'—':>10} {'—':>12} {slots:>6}  "
+                f"{l.shape_target} / {l.shape_ref}{mark}"
+            )
+            continue
         mark = "" if l.cos >= cos_thresh else "  <-- 不一致"
         if l.cos < cos_thresh:
             bad += 1
         slots = str(l.slots) if l.slots is not None else "-"
-        print(f"{l.layer:<28} {l.cos:10.6f} {l.maxdiff:12.4e} {slots:>6}  "
-              f"{l.shape_target} / {l.shape_ref}{mark}")
+        print(
+            f"{l.layer:<28} {l.cos:10.6f} {l.maxdiff:12.4e} {slots:>6}  "
+            f"{l.shape_target} / {l.shape_ref}{mark}"
+        )
 
     payload = {
         "target": str(target),
@@ -164,6 +176,7 @@ def _compare(
         "layers": [
             {
                 "layer": l.layer,
+                "status": getattr(l, "status", "ok"),
                 "cos": l.cos,
                 "maxdiff": l.maxdiff,
                 "slots": l.slots,
@@ -182,7 +195,10 @@ def _compare(
     if cmp.all_clean and bad == 0:
         print("结论: PASS — 拼接后与标杆一致（TP 头维拼接正确 / PP 部分覆盖层匹配）")
         return 0
-    print(f"结论: FAIL — {bad} 层 cos < {cos_thresh}（或 shape 不一致），需排查分片顺序/覆盖")
+    print(
+        f"结论: FAIL — {bad} 层 cos < {cos_thresh} / 数值问题 / shape 不一致，"
+        "需排查分片顺序/覆盖或非有限写入"
+    )
     return 1
 
 

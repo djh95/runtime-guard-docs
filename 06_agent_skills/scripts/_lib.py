@@ -394,6 +394,7 @@ class LayerCompare:
     shape_target: tuple[int, ...]
     shape_ref: tuple[int, ...]
     slots: int | None = None  # token slots actually compared (None = full tensor)
+    status: str = "ok"  # "ok" | "数值问题:<reason>" | "shape_mismatch"
 
 
 @dataclass
@@ -410,7 +411,9 @@ class StitchedCompare:
 
     @property
     def all_clean(self) -> bool:
-        return bool(self.layers) and all(cos_is_clean(l.cos, self.cos_thresh) for l in self.layers)
+        return bool(self.layers) and all(
+            l.status == "ok" and cos_is_clean(l.cos, self.cos_thresh) for l in self.layers
+        )
 
 
 def _last_written_slot(tensor: Any) -> int:
@@ -466,7 +469,16 @@ def compare_stitched_kv(
         t = target[name].tensor
         r = ref[name].tensor
         if t.shape != r.shape:
-            layers.append(LayerCompare(name, float("nan"), float("inf"), tuple(t.shape), tuple(r.shape)))
+            layers.append(
+                LayerCompare(
+                    name,
+                    float("nan"),
+                    float("inf"),
+                    tuple(t.shape),
+                    tuple(r.shape),
+                    status="shape_mismatch",
+                )
+            )
             continue
         slots = _compare_slots(t, r, max_tokens, written_only)
         if slots is not None and t.dim() == 4:
@@ -475,6 +487,20 @@ def compare_stitched_kv(
         else:
             slots = None
             t_cmp, r_cmp = t, r
+        issue = vector_numeric_issue(t_cmp, r_cmp)
+        if issue is not None:
+            layers.append(
+                LayerCompare(
+                    name,
+                    float("nan"),
+                    float("inf"),
+                    tuple(t.shape),
+                    tuple(r.shape),
+                    slots=slots,
+                    status=f"数值问题:{issue}",
+                )
+            )
+            continue
         layers.append(
             LayerCompare(
                 name,
@@ -483,6 +509,7 @@ def compare_stitched_kv(
                 tuple(t.shape),
                 tuple(r.shape),
                 slots=slots,
+                status="ok",
             )
         )
     return StitchedCompare(
@@ -498,7 +525,25 @@ def compare_stitched_kv(
     )
 
 
+def vector_numeric_issue(a: Any, b: Any) -> str | None:
+    """Return a short reason if either side is unsuitable for cosine; else None.
+
+    Gate **before** cosine: NaN / Inf / zero-norm → mark ``数值问题``, do not
+    treat ``cos=nan`` as a sortable "worst similarity" for layer localization.
+    """
+    a = a.double().flatten()
+    b = b.double().flatten()
+    if not bool(a.isfinite().all()):
+        return "buggy_nan" if bool(a.isnan().any()) else "buggy_inf"
+    if not bool(b.isfinite().all()):
+        return "ref_nan" if bool(b.isnan().any()) else "ref_inf"
+    if float(a.norm()) == 0.0 or float(b.norm()) == 0.0:
+        return "zero_norm"
+    return None
+
+
 def cosine(a: Any, b: Any) -> float:
+    """Cosine of two vectors. Caller must gate with ``vector_numeric_issue`` first."""
     a = a.double().flatten()
     b = b.double().flatten()
     na, nb = a.norm(), b.norm()
@@ -506,25 +551,28 @@ def cosine(a: Any, b: Any) -> float:
 
 
 def cos_is_clean(c: float, thresh: float) -> bool:
-    """True when similarity is at/above threshold (NaN counts as divergent)."""
+    """True when a *computed* finite similarity is at/above threshold."""
     return not math.isnan(c) and c >= thresh
 
 
 def cos_is_bad(c: float, thresh: float) -> bool:
-    return not cos_is_clean(c, thresh)
+    """True when a *computed* finite similarity is below threshold.
 
-
-def _cos_rank_key(c: float) -> float:
-    """Sort key so NaN ranks worse than any finite cosine (Python ``min`` skips NaN otherwise)."""
-    return float("-inf") if math.isnan(c) else c
+    NaN is **not** a cosine-bad localization signal — use ``数值问题`` status.
+    """
+    return not math.isnan(c) and c < thresh
 
 
 def argmin_layer_cos(layer_cos: dict[str, float]) -> tuple[str, float]:
-    """Return ``(layer, cos)`` with the worst cosine; NaN always wins as worst."""
-    if not layer_cos:
-        raise ValueError("layer_cos is empty")
-    name = min(layer_cos, key=lambda k: _cos_rank_key(layer_cos[k]))
-    return name, layer_cos[name]
+    """Return ``(layer, cos)`` with the worst *finite* cosine among clean cells.
+
+    Skips NaN entries. Raises if no finite cosine remains (all ``数值问题``).
+    """
+    finite = {k: v for k, v in layer_cos.items() if not math.isnan(v)}
+    if not finite:
+        raise ValueError("no finite cosine cells (all 数值问题 or empty)")
+    name = min(finite, key=lambda k: finite[k])
+    return name, finite[name]
 
 
 def maxdiff(a: Any, b: Any) -> float:
@@ -624,10 +672,21 @@ class TokenLayerCos:
     token_idx: int
     token_id: Any
     role: str
-    min_cos: float
-    min_layer: str
-    layer_cos: dict[str, float]
-    layer_maxdiff: dict[str, float]
+    min_cos: float  # nan when no clean cosine cell
+    min_layer: str  # "" when no clean cosine cell
+    layer_cos: dict[str, float]  # nan for 数值问题 cells (cosine not computed)
+    layer_maxdiff: dict[str, float]  # inf for 数值问题 cells
+    layer_status: dict[str, str]  # "ok" | "数值问题:<reason>"
+    n_numeric_issue: int = 0
+    n_cos_cells: int = 0
+
+    @property
+    def has_numeric_issue(self) -> bool:
+        return self.n_numeric_issue > 0
+
+    @property
+    def has_cosine(self) -> bool:
+        return self.n_cos_cells > 0
 
 
 @dataclass
@@ -637,13 +696,19 @@ class KvSimilarityAnalysis:
     layers: list[str]
     cos_thresh: float
     per_token: list[TokenLayerCos]
-    first_bad_idx: int | None
+    first_bad_idx: int | None  # first token with finite min_cos < thresh
+    first_numeric_issue_idx: int | None = None  # first token with any 数值问题 cell
 
     @property
     def first_bad(self) -> TokenLayerCos | None:
         if self.first_bad_idx is None:
             return None
         return self.per_token[self.first_bad_idx]
+
+    @property
+    def cosine_localizable(self) -> bool:
+        """False when every token has zero clean cosine cells (e.g. 有效槽全非有限)."""
+        return any(row.has_cosine for row in self.per_token)
 
 
 def token_role(i: int, n_prompt: int | None) -> str:
@@ -663,7 +728,12 @@ def compare_kv_dumps(
     head: int = 0,
     cos_thresh: float = 0.99,
 ) -> KvSimilarityAnalysis:
-    """Per-token min-over-layers cosine; locate first token below ``cos_thresh``."""
+    """Per-token compare: numeric gate first, then min-over-layers cosine.
+
+    For each (token, layer): if NaN/Inf/zero-norm → mark ``数值问题`` and **skip
+    cosine**. Similarity localization uses only clean cells — never sorts NaN
+    as "worst cos" into a fake ``idx=0 @ layer_*``.
+    """
     n_p, n_o, n_from_report = token_n(detail)
     n_tokens = num_tokens if num_tokens is not None else n_from_report
     if n_tokens <= 0:
@@ -690,13 +760,29 @@ def compare_kv_dumps(
 
     per_token: list[TokenLayerCos] = []
     first_bad_idx: int | None = None
+    first_numeric_issue_idx: int | None = None
     for i in range(n_tokens):
         layer_cos: dict[str, float] = {}
         layer_maxdiff: dict[str, float] = {}
+        layer_status: dict[str, str] = {}
+        n_issue = 0
+        n_cos = 0
         for name in layers:
+            issue = vector_numeric_issue(cb[name][i], cr[name][i])
+            if issue is not None:
+                layer_status[name] = f"数值问题:{issue}"
+                layer_cos[name] = float("nan")
+                layer_maxdiff[name] = float("inf")
+                n_issue += 1
+                continue
+            layer_status[name] = "ok"
             layer_cos[name] = cosine(cb[name][i], cr[name][i])
             layer_maxdiff[name] = maxdiff(cb[name][i], cr[name][i])
-        min_layer, min_cos = argmin_layer_cos(layer_cos)
+            n_cos += 1
+        if n_cos > 0:
+            min_layer, min_cos = argmin_layer_cos(layer_cos)
+        else:
+            min_layer, min_cos = "", float("nan")
         tok = labels[i] if i < len(labels) else i
         per_token.append(
             TokenLayerCos(
@@ -707,9 +793,14 @@ def compare_kv_dumps(
                 min_layer=min_layer,
                 layer_cos=layer_cos,
                 layer_maxdiff=layer_maxdiff,
+                layer_status=layer_status,
+                n_numeric_issue=n_issue,
+                n_cos_cells=n_cos,
             )
         )
-        if first_bad_idx is None and cos_is_bad(min_cos, cos_thresh):
+        if first_numeric_issue_idx is None and n_issue > 0:
+            first_numeric_issue_idx = i
+        if first_bad_idx is None and n_cos > 0 and cos_is_bad(min_cos, cos_thresh):
             first_bad_idx = i
 
     return KvSimilarityAnalysis(
@@ -719,6 +810,7 @@ def compare_kv_dumps(
         cos_thresh=cos_thresh,
         per_token=per_token,
         first_bad_idx=first_bad_idx,
+        first_numeric_issue_idx=first_numeric_issue_idx,
     )
 
 
@@ -728,35 +820,63 @@ def format_kv_similarity_tables(
     buggy_dir: Path,
     ref_dir: Path,
 ) -> str:
-    """Human-readable two-table report (Table1 per-token min cos; Table2 first bad)."""
+    """Human-readable two-table report (Table1 per-token; Table2 first cos-bad)."""
     lines: list[str] = []
     n_layers = len(analysis.layers)
     lines.append("=" * 78)
     lines.append(
-        f"TABLE 1  逐 token: min-over-{n_layers}-layers cos (阈值 {analysis.cos_thresh:.2f})"
+        f"TABLE 1  逐 token: 先数值门闩再 min-over-{n_layers}-layers cos "
+        f"(阈值 {analysis.cos_thresh:.2f})"
     )
     lines.append(f"         buggy={buggy_dir} ref={ref_dir}")
     lines.append("=" * 78)
 
     seg_start: int | None = None
     for row in analysis.per_token:
-        if cos_is_clean(row.min_cos, analysis.cos_thresh):
+        if (
+            row.has_cosine
+            and not row.has_numeric_issue
+            and cos_is_clean(row.min_cos, analysis.cos_thresh)
+        ):
             if seg_start is None:
                 seg_start = row.token_idx
             continue
         if seg_start is not None:
             lines.append(f"token {seg_start}-{row.token_idx - 1}  clean")
             seg_start = None
+        if not row.has_cosine:
+            lines.append(
+                f"token {row.token_idx:<4d} tok={row.token_id!s:<6} {row.role:<7} "
+                f"数值问题 (全 {row.n_numeric_issue} 格；无有效余弦；不定层)"
+            )
+            continue
+        issue_note = (
+            f"  (+{row.n_numeric_issue} 数值问题格已跳过)" if row.has_numeric_issue else ""
+        )
         lines.append(
             f"token {row.token_idx:<4d} tok={row.token_id!s:<6} {row.role:<7} "
-            f"min_cos={row.min_cos:.4f}  @{row.min_layer}"
+            f"min_cos={row.min_cos:.4f}  @{row.min_layer}{issue_note}"
         )
     if seg_start is not None:
         lines.append(f"token {seg_start}-{analysis.n_tokens - 1}  clean")
 
+    if not analysis.cosine_localizable:
+        lines.append("")
+        lines.append(
+            "无有效余弦：所有 (token,layer) 均为数值问题（NaN/Inf/零范数）"
+            " → 不定层；记「有效槽全非有限」类事实，勿读 first_mismatch 层名"
+        )
+        return "\n".join(lines)
+
     if analysis.first_bad_idx is None:
         lines.append("")
-        lines.append("无坏点：KV 在匹配层上全部一致 → 问题可能在采样/后处理")
+        if analysis.first_numeric_issue_idx is not None:
+            lines.append(
+                f"余弦无坏点（阈值内一致）；另有数值问题自 token "
+                f"{analysis.first_numeric_issue_idx} 起（见 Table 1，不定余弦层）"
+            )
+        else:
+            lines.append("无坏点：KV 在匹配层上全部一致 → 问题可能在采样/后处理")
         return "\n".join(lines)
 
     bad = analysis.first_bad
@@ -764,22 +884,26 @@ def format_kv_similarity_tables(
     lines.append("")
     lines.append("=" * 78)
     lines.append(
-        f"TABLE 2  第一坏点 token {bad.token_idx} "
-        f"(tok={bad.token_id}, {bad.role}) 逐层 cos / maxdiff"
+        f"TABLE 2  第一余弦坏点 token {bad.token_idx} "
+        f"(tok={bad.token_id}, {bad.role}) 逐层（数值问题格不标「首发散层」）"
     )
     lines.append("=" * 78)
-    lines.append(f"{'layer':<40} {'cos':<12} {'maxdiff':<12}")
+    lines.append(f"{'layer':<40} {'status':<22} {'cos':<12} {'maxdiff':<12}")
     prev_ok = True
     for name in analysis.layers:
+        st = bad.layer_status.get(name, "ok")
         c = bad.layer_cos[name]
         md = bad.layer_maxdiff[name]
         mark = ""
+        if st != "ok":
+            lines.append(f"{name:<40} {st:<22} {'—':<12} {'—':<12}")
+            continue
         is_bad = cos_is_bad(c, analysis.cos_thresh)
         if prev_ok and is_bad:
             mark = "  <-- 首发散层"
         if is_bad:
             prev_ok = False
-        lines.append(f"{name:<40} {c:<12.4f} {md:<12.4e}{mark}")
+        lines.append(f"{name:<40} {st:<22} {c:<12.4f} {md:<12.4e}{mark}")
     return "\n".join(lines)
 
 
@@ -795,7 +919,12 @@ def analysis_to_json(analysis: KvSimilarityAnalysis) -> dict[str, Any]:
             "min_cos": fb.min_cos,
             "min_layer": fb.min_layer,
             "layers": [
-                {"layer": name, "cos": fb.layer_cos[name], "maxdiff": fb.layer_maxdiff[name]}
+                {
+                    "layer": name,
+                    "status": fb.layer_status.get(name, "ok"),
+                    "cos": fb.layer_cos[name],
+                    "maxdiff": fb.layer_maxdiff[name],
+                }
                 for name in analysis.layers
             ],
         }
@@ -804,7 +933,9 @@ def analysis_to_json(analysis: KvSimilarityAnalysis) -> dict[str, Any]:
         "n_prompt": analysis.n_prompt,
         "cos_thresh": analysis.cos_thresh,
         "layers": analysis.layers,
+        "cosine_localizable": analysis.cosine_localizable,
         "first_bad": first_bad,
+        "first_numeric_issue_idx": analysis.first_numeric_issue_idx,
         "per_token": [
             {
                 "token_idx": row.token_idx,
@@ -812,6 +943,9 @@ def analysis_to_json(analysis: KvSimilarityAnalysis) -> dict[str, Any]:
                 "role": row.role,
                 "min_cos": row.min_cos,
                 "min_layer": row.min_layer,
+                "n_numeric_issue": row.n_numeric_issue,
+                "n_cos_cells": row.n_cos_cells,
+                "has_numeric_issue": row.has_numeric_issue,
             }
             for row in analysis.per_token
         ],

@@ -1,6 +1,6 @@
 # Runtime-Guard Skills Metadata
 
-版本：v5.15  
+版本：v5.16  
 Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `analysis` · `ref-kv-dump` · **`msprobe-dump`** · **`build-anomaly-env`** · **`apply-mrv1-patch`** · **`apply-v030-mrv2-patch`**
 
 ## Changelog（摘要）
@@ -9,7 +9,8 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 
 离线脚本入口：本仓 [`scripts/`](./scripts/)。
 
-- **v5.15（现行）** — **收回** v5.14「logits→跳过 KV」：`logits_finite` 后 **仍先** `dump_kv`（有效槽有限/Inf/NaN；未用槽**分级**：有限非 0=卫生/通常不致坏结果，Inf/NaN=可影响结果）；标杆须未炸；必现优先、非必现 `manual_dump`。**`msprobe-dump` 殿后**（全程挂钩、开销大）。NaN cos 仍不定层。落点：`investigation` / `ref-kv-dump` / `msprobe-dump` / README / `02` / `04`。  
+- **v5.16（现行）** — KV 对比**数值门闩优先**：每个 (token, layer) 先扫 NaN/Inf/零范数 → 标 **数值问题**、**不算余弦**；相似度只在干净格上算；禁止把 NaN 当「最差 cos」排序成伪 `idx=0 @ layer_*`。有效槽全非有限 → 不定层，只记「有效槽全非有限」。脚本：`scripts/_lib.py` / `compare_*` / `locate_first_divergence` / `stitch_kv`。落点：`ref-kv-dump` / `investigation` / `analysis` / `scripts`。  
+- **v5.15** — **收回** v5.14「logits→跳过 KV」：`logits_finite` 后 **仍先** `dump_kv`（有效槽有限/Inf/NaN；未用槽**分级**：有限非 0=卫生/通常不致坏结果，Inf/NaN=可影响结果）；标杆须未炸；必现优先、非必现 `manual_dump`。**`msprobe-dump` 殿后**（全程挂钩、开销大）。NaN cos 仍不定层。落点：`investigation` / `ref-kv-dump` / `msprobe-dump` / README / `02` / `04`。  
 - **v5.14** — 引入 **`msprobe-dump`**（`task=statistics`，eager only）；曾写「logits→跳过 KV」（**已被 v5.15 纠正**）。  
 - **v5.13** — `--feed=history` 对比跨度 **`n_prompt+n_output-1`**（禁按 p+o 全长→末位假分歧/伪层定位）；空 prompt 优先 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) 重抓或 re-curl，禁 tokenize 补造。落点：`ref-kv-dump` / `investigation` / `analysis`。  
 - **v5.12** — KV 执行纪律：抓前**清空**本轮 `kv_cache`；对比**先 shape**；整 block dump、未用槽常为 0 → **只比有效 token**（禁全容量余弦）。落点：`ref-kv-dump`（主）+ `investigation` / `analysis` / `scripts/README`。  
@@ -62,14 +63,14 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 - 收集开场输入：现象、版本、拓扑、能否压测、有无清洁标杆、本地 report/dump 路径、谁起服  
 - 委派：未定类 → sweep；定类 → recommender；已有产物 → analysis；verify=PASS 且可标杆 → ref-kv-dump；**`logits_finite` 亦先 ref-kv**（有限性 + 未用槽分级），再视需要 **msprobe-dump（殿后）**  
 - 汇总下游结果，填十问 **定界交付模板**（KV 路径）或（殿后）msprobe 首坏算子摘要；区分「已定界」vs「无法根因定位」  
-- keep-set **结案四档** + 证据完整性（钉点同跑 / 有效异常 KV / 全 NaN 禁伪定位 / 未用槽分级 / 无证据留空）
+- keep-set **结案四档** + 证据完整性（钉点同跑 / 有效异常 KV / 数值问题禁伪定位 / 未用槽分级 / 无证据留空）
 
 **forbidden**
 
 - 自创 runtime_config 阈值 / dump 配额 / cooldown / `on_trigger`（须来自 sweep 或 recommender 产出）  
 - 自行实现离线解析或 force-feed / 对比脚本流程（委派 analysis / ref）  
 - 仅凭 Guard KV / 坏输出 **跳承诺**算子/内核/提交（msprobe `dump.json` 首非有限统计可写算子名，仍勿升格成上游 commit）  
-- 混用不同 run；用弱 dump / 全 NaN cos 伪写层定位；用 PASS/FAIL/GAP 当案例 headline 结案  
+- 混用不同 run；用弱 dump / 数值问题或无有效余弦伪写层定位；用 PASS/FAIL/GAP 当案例 headline 结案  
 - `logits_finite` 后跳过 KV 直开 msprobe；把未用槽有限非 0 与 Inf/NaN 混成同等严重
 
 **逻辑输入：** symptom, version, topology, can_pressure_test, has_clean_ref_env, local_artifact_path?  
@@ -151,7 +152,7 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 - 用报告 token ids force-feed（禁止字符串重 tokenize / 禁止标杆自行生成）  
 - 同模型 / 拓扑 / **同 MODE** 清洁实例 + native `dump_kv`  
 - `compare_kv_similarity` / `locate_first_divergence` / `compare_per_layer`；解读对齐十问  
-- 校验有效异常 KV / 拒绝全 NaN **层**伪定位；报有效槽 Inf/NaN；未用槽分级（有限非 0 vs Inf/NaN）  
+- 校验有效异常 KV / 数值门闩后拒绝无有效余弦的**层**伪定位；报有效槽 Inf/NaN；未用槽分级（有限非 0 vs Inf/NaN）  
 - 抓前清 `kv_cache`；对比先 shape；history 用 `p+o-1`；只比有效 token（整 block 未用槽不算进余弦）  
 - `logits_finite` 路径：标杆须未炸；短 output 仍做有限性/未用槽分级
 
@@ -160,7 +161,7 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 - 无 verify PASS 证据仍执行  
 - 重复实现 `verify_request_kv`  
 - 输出 runtime_config JSON  
-- 弱 dump / 全 NaN cos / history 末位假分歧写成层定位；混用不同 run  
+- 弱 dump / 数值问题格上硬算 cos / history 末位假分歧写成层定位；混用不同 run  
 - 未清目录用旧 dump；跳过 shape；按全 block 容量算余弦；tokenize 冒充 prompt ids  
 - `logits_finite` 后跳过本 skill；未用槽有限非 0 与 Inf/NaN 混判
 

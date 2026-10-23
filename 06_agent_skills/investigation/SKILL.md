@@ -20,7 +20,7 @@ description: >-
 产品：`vllm_ascend/observability/runtime_guard/`（[#16849](https://github.com/vllm-project/vllm-ascend/pull/16849)/[#18644](https://github.com/vllm-project/vllm-ascend/pull/18644)）
 
 **Guard KV 路径：** 对比源只用 native `dump_kv`（勿用 msprobe / 自造 dumper **冒充** KV 对比源）。  
-**分流（`logits_finite` 也先 KV）：** 采样前 NaN/Inf 命中后 **仍** 走 `dump_kv` + 标杆。优先查：**有效槽有限 vs Inf/NaN**；再查 **未用槽**：有限非 0=脏写/卫生问题（**通常不致坏结果**），未用槽 **Inf/NaN** 才可能影响结果。有限后再做余弦/`p+o-1`。全 NaN cos **不定层**。标杆必须**未**触发 `logits_finite`。先判必现；非必现用 `manual_dump`（抓标杆时确认未炸）。**msprobe 殿后**（全程挂钩、开销大，不能检出后再开）。
+**分流（`logits_finite` 也先 KV）：** 采样前 NaN/Inf 命中后 **仍** 走 `dump_kv` + 标杆。优先查：**有效槽有限 vs Inf/NaN**；再查 **未用槽**：有限非 0=脏写/卫生问题（**通常不致坏结果**），未用槽 **Inf/NaN** 才可能影响结果。对比时**先数值门闩**（NaN/Inf/零范数 → **数值问题**，不算余弦），只在干净格上算余弦/`p+o-1`。有效槽全非有限 / 无有效余弦 → **不定层**。标杆必须**未**触发 `logits_finite`。先判必现；非必现用 `manual_dump`（抓标杆时确认未炸）。**msprobe 殿后**（全程挂钩、开销大，不能检出后再开）。
 
 ## 开场必问
 
@@ -286,13 +286,13 @@ description: >-
 
 1. **钉点同跑** — detect 钉点、KV dump、`kv_compare`、定界结论必须来自**同一次异常请求**（同 `req_id` / 同 wave）。禁止把 A 跑的 report 与 B 跑的 dump / 旧 `kv_compare` 拼成一案。  
 2. **有效异常 KV 前提** — 未复现、非目标形态、或**弱 dump**（如仅 o=1 / 窗过短 / 非异常样本）→ **不得**写成已做有效对账；写「未复现 → 无有效异常 KV → 未做有效对账」或留空档 **复现未抓到**。  
-3. **全 NaN 余弦 ≠ 定位** — per-token `min_cos` 全 NaN 时，**禁止**把脚本占位的 `first_mismatch_idx` / 层名写成「token0@layer_L」类定界；NaN 常=抽取向量零范数，不是「第 L 层 KV 全是 NaN」。重抓能出有限 cos 再写③/④（细则见 `ref-kv-dump`）。  
+3. **数值问题 / 无有效余弦 ≠ 定位** — 格点标 **数值问题** 或 per-token 无干净 cos 时，**禁止**把旧脚本 NaN 排序伪出的 `first_mismatch_idx` / 层名写成「token0@layer_L」；有效槽全非有限只记该事实。有干净格再写余弦首分歧（细则见 `ref-kv-dump`）。  
 4. **无证据留空** — 不可信混档 / 清空实测后：删 samples/reports/三层/跑批/`kv_compare`，结案与定界**留空**；勿保留半截旧结论或编造数字。  
 5. **多组验证** — 写③/④前至少再跑一组（同 overlay、独立请求）确认 cos 结论同向；单次弱窗不作定论。  
 6. **`kv_cache` 生命周期** — **抓前清空**本轮工作目录（防旧 dump 混入）；**对账中保留**本轮产物；归档后再清。细则见 `ref-kv-dump`。  
-7. **KV 对比：先形状、只比有效 token** — dump 是整 block；未用槽常为 0；history feed 用 `p+o-1`。勿按全容量或错跨度算 cos（虚高/NaN/末位假分歧）。  
+7. **KV 对比：先形状、数值门闩、只比有效 token** — dump 是整 block；未用槽常为 0；history feed 用 `p+o-1`。(token,layer) 有 NaN/Inf/零范数 → **数值问题**（不算 cos）。勿按全容量或错跨度算 cos（虚高/末位假分歧）。  
 8. **压测时限** — 单场景最长约 **1h**；超时未复现 → **未复现**（附 knobs/负载），勿空耗或放大器硬凑。  
-9. **`logits_finite` → 仍先 KV，msprobe 殿后** — 先判必现；抓 buggy+清洁标杆（标杆未炸）。检查顺序：有效槽有限/Inf/NaN → 未用槽分级（有限非 0 vs Inf/NaN）→（有限时）shape + `p+o-1` 余弦。**禁止**把 NaN cos 写成层定界；**禁止**因 logits 命中就跳过 KV。需要算子首坏时再开 [`msprobe-dump`](../msprobe-dump/SKILL.md)（`task=statistics`，**`--enforce-eager`**，禁图；全程挂钩、开销大）。
+9. **`logits_finite` → 仍先 KV，msprobe 殿后** — 先判必现；抓 buggy+清洁标杆（标杆未炸）。检查顺序：有效槽有限/Inf/NaN → 未用槽分级 → 逐格数值门闩 →（干净格）shape + `p+o-1` 余弦。**禁止**把数值问题/NaN cos 写成层定界；**禁止**因 logits 命中就跳过 KV。需要算子首坏时再开 [`msprobe-dump`](../msprobe-dump/SKILL.md)（`task=statistics`，**`--enforce-eager`**，禁图；全程挂钩、开销大）。
 
 ### KV/余弦时机方法示例（示意数字，非某包实测）
 
