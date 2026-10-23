@@ -1,56 +1,72 @@
-# S07 · W8A8 scale collapse
+# S07 · W8A8 scale collapse（KV 不一致→定界 · 乱码漏检）
 
-公开案例包（**尚未实测归档**）。本目录只保留构造材料；**无** samples / reports / 三层 / 跑批 / KV 对账。
+公开自洽案例包。logits 有限 → `logits_finite` miss；乱码靠 samples；异常 KV 靠 `manual_dump`。
 
 ## 归档钉点
 
 | 项 | 值 |
 |----|-----|
-| 结案 | （空 · 尚未实测） |
-| 检测 | （空） |
-| 三层率 | （空） |
-| Detector（期望） | `logits_finite`（期望；有限 logits 乱码可能漏） |
-| Origin / 构造 | 见 [evidence/规格说明.md](./evidence/规格说明.md) |
-| Guard pin | （空） |
-| 模型 / Run | （空） |
+| 结案 | **KV 不一致→定界**（数值门闩：`zero_norm`） |
+| 检测 | **乱码漏检**（期望 `logits_finite` → 0 report） |
+| 三层率 | **74 / 48 / 0**（跨请求内容相同×48） |
+| Detector | 期望 `logits_finite` → **miss** |
+| Origin | 见规格 |
+| Guard pin | G2 `f2aefd068` + 抓 dump 时临时合入 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) |
+| 模型 | Qwen3-8B-W8A8 · TP2 · CARD=4,5 · `192.168.13.160` / `rg-test-160` |
+| Run | `keep-set-retest-20261022` · `S07-layers-20261023T123413` |
 
 ## 1 · 现象
 
-（空 · 尚未实测，无样本）
+跨请求内容相同的乱码×48（见 [evidence/samples/](./evidence/samples/)）。**无** detector report。
 
 ## 2 · 案例背景 / 构造
 
-W8A8 dequant scale 崩溃。细节与 knobs 见 [evidence/规格说明.md](./evidence/规格说明.md)；补丁见 [evidence/overlay.patch](./evidence/overlay.patch)。
+W8A8 dequant / scale 崩溃族。细节见 [evidence/规格说明.md](./evidence/规格说明.md)。
 
 ## 3 · Guard 结果
 
-（空 · 尚未实测，无 report）
+**乱码漏检。** **74 / 48 / 0**。异常 KV 靠 **`manual_dump`**（≥2 对）。结案档：**KV 不一致→定界**（v5.16：有效槽 **zero_norm** 自 token0 / model L0 起；无有效余弦格）。
 
 ## 4 · 复现技巧
 
-见规格说明中的 knobs / 环境要求。按规格构造环境后实测，再回填钉点与证据。
+| 项 | 现行复现 |
+|----|----------|
+| Overlay | `07_quant_scale_collapse.patch` |
+| 模型 | Qwen3-8B-W8A8 |
+| detector | `logits_finite`（预期 miss） |
+| 抓 dump | `manual_dump` 水位递增 + #19285 |
 
 ## 5 · 定界分析
 
 ### 事实
 
-（空）
+- **≥2 组**清洁标杆；shape 一致；prompt 窗（`o=1`）。
+- **v5.16（两对同向）：** `first_numeric_issue` = **数值问题:zero_norm** @ token0（dump `layer_36` / model `layers.0`）；余弦格 **0**。
+- 有限性脚本：有效槽有限且范数为 0（全零）→ 走数值门闩，不算余弦。
+- 证据：`evidence/kv_compare.json` + `kv_v516_numeric_first.json`（**.pt 未入库**）。
 
 ### 推断
 
-（空）
+- 有效槽全零范数 → **定界到数值问题（zero_norm）**；不定余弦层。
+- 与「乱码漏检」并列：检测抓不住，对账仍可定界。
 
 ### 结论
 
-（空 · 尚未实测）
+- 结案档：**KV 不一致→定界**（数值门闩；两组同向）。
+- 检测侧：**乱码漏检**。
 
 ## 6 · 证据文件
 
 | 文件 | 用途 |
 |------|------|
-| `evidence/overlay.patch` | 制造异常的静态补丁 |
-| `evidence/规格说明.md` | 复现规格（Origin / 锚点 / overlay / knobs / 期望 detector） |
+| `evidence/overlay.patch` | 补丁 |
+| `evidence/规格说明.md` | 规格 + 实测 |
+| `evidence/三层计数.json` | 三层 |
+| `evidence/跑批结果.json` | 摘要 |
+| `evidence/samples/` | 乱码样本 |
+| `evidence/reports/` | `manual_trigger` |
+| `evidence/kv_*.json` | 对账 / v5.16 / 有限性 |
 
 ## 7 · 上游 PR 关系
 
-见 [evidence/规格说明.md](./evidence/规格说明.md)（若有锚点）。本 README 不重复实测结论。
+见规格（#37442 族）。

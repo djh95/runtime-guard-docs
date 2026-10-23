@@ -1,0 +1,20 @@
+{
+  "case": "S07",
+  "host": "192.168.13.160/rg-test-160",
+  "cards": "4,5",
+  "model": "/mnt/weight/Qwen3-8B-W8A8",
+  "guard_pin": "G2 f2aefd068 + #19285 for dump",
+  "trigger": 74,
+  "precision": 48,
+  "detect": 0,
+  "detect_by": {},
+  "tier": "KV不一致→定界",
+  "bug_run": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S07-pr19285-20261023T124136",
+  "ref_run": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S07-ref-recap-20261023T124403",
+  "n_ok_pairs": 2,
+  "v516_hint": {
+    "any_numeric_issue": true,
+    "any_cos_mismatch": false,
+    "all_pairs_cos_clean": false
+  }
+}

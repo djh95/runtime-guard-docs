@@ -1,0 +1,247 @@
+{
+  "case": "S07",
+  "method": "v5.16 numeric-gate before cosine",
+  "cos_thresh": 0.99,
+  "n_pairs": 2,
+  "pairs": [
+    {
+      "req_id": "cmpl-8e065448ae678178-0-9dfa8816",
+      "n_tokens": 14,
+      "n_prompt": 14,
+      "n_layers": 72,
+      "n_model_layers": 36,
+      "n_total_cells": 1008,
+      "n_numeric_issue_cells": 1008,
+      "n_cos_cells": 0,
+      "cosine_localizable": false,
+      "first_numeric_issue_all_names": {
+        "token_idx": 0,
+        "token_id": 675,
+        "role": "prompt",
+        "layer": "layer_36",
+        "status": "数值问题:zero_norm",
+        "n_numeric_issue_at_token": 72,
+        "n_cos_cells_at_token": 0
+      },
+      "first_numeric_issue_model_layers": {
+        "token_idx": 0,
+        "layer": "model.layers.0.self_attn.attn",
+        "status": "数值问题:zero_norm"
+      },
+      "first_cos_mismatch": null,
+      "first_cos_mismatch_model_layers_tok0": null,
+      "worst_clean_model_tok0": null,
+      "clean_model_tok0_cos": {},
+      "per_token_min_clean": [
+        {
+          "token_idx": 0,
+          "min_cos": null,
+          "min_layer": null,
+          "n_issue": 72
+        },
+        {
+          "token_idx": 1,
+          "min_cos": null,
+          "min_layer": null,
+          "n_issue": 72
+        },
+        {
+          "token_idx": 2,
+          "min_cos": null,
+          "min_layer": null,
+          "n_issue": 72
+        },
+        {
+          "token_idx": 3,
+          "min_cos": null,
+          "min_layer": null,
+          "n_issue": 72
+        },
+        {
+          "token_idx": 4,
+          "min_cos": null,
+          "min_layer": null,
+          "n_issue": 72
+        },
+        {
+          "token_idx": 5,
+          "min_cos": null,
+          "min_layer": null,
+          "n_issue": 72
+        },
+        {
+          "token_idx": 6,
+          "min_cos": null,
+          "min_layer": null,
+          "n_issue": 72
+        },
+        {
+          "token_idx": 7,
+          "min_cos": null,
+          "min_layer": null,
+          "n_issue": 72
+        },
+        {
+          "token_idx": 8,
+          "min_cos": null,
+          "min_layer": null,
+          "n_issue": 72
+        },
+        {
+          "token_idx": 9,
+          "min_cos": null,
+          "min_layer": null,
+          "n_issue": 72
+        },
+        {
+          "token_idx": 10,
+          "min_cos": null,
+          "min_layer": null,
+          "n_issue": 72
+        },
+        {
+          "token_idx": 11,
+          "min_cos": null,
+          "min_layer": null,
+          "n_issue": 72
+        },
+        {
+          "token_idx": 12,
+          "min_cos": null,
+          "min_layer": null,
+          "n_issue": 72
+        },
+        {
+          "token_idx": 13,
+          "min_cos": null,
+          "min_layer": null,
+          "n_issue": 72
+        }
+      ],
+      "buggy_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S07-pr19285-20261023T124136/dump/manual_trigger/cmpl-8e065448ae678178-0-9dfa8816/wave_2/dp0_tp0_pp0_cp0",
+      "ref_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S07/ref_recap/cmpl-8e065448ae678178-0-9dfa8816/wave_2/dp0_tp0_pp0_cp0"
+    },
+    {
+      "req_id": "cmpl-b08a72fe1e70b6bf-0-9861298f",
+      "n_tokens": 14,
+      "n_prompt": 14,
+      "n_layers": 72,
+      "n_model_layers": 36,
+      "n_total_cells": 1008,
+      "n_numeric_issue_cells": 1008,
+      "n_cos_cells": 0,
+      "cosine_localizable": false,
+      "first_numeric_issue_all_names": {
+        "token_idx": 0,
+        "token_id": 675,
+        "role": "prompt",
+        "layer": "layer_36",
+        "status": "数值问题:zero_norm",
+        "n_numeric_issue_at_token": 72,
+        "n_cos_cells_at_token": 0
+      },
+      "first_numeric_issue_model_layers": {
+        "token_idx": 0,
+        "layer": "model.layers.0.self_attn.attn",
+        "status": "数值问题:zero_norm"
+      },
+      "first_cos_mismatch": null,
+      "first_cos_mismatch_model_layers_tok0": null,
+      "worst_clean_model_tok0": null,
+      "clean_model_tok0_cos": {},
+      "per_token_min_clean": [
+        {
+          "token_idx": 0,
+          "min_cos": null,
+          "min_layer": null,
+          "n_issue": 72
+        },
+        {
+          "token_idx": 1,
+          "min_cos": null,
+          "min_layer": null,
+          "n_issue": 72
+        },
+        {
+          "token_idx": 2,
+          "min_cos": null,
+          "min_layer": null,
+          "n_issue": 72
+        },
+        {
+          "token_idx": 3,
+          "min_cos": null,
+          "min_layer": null,
+          "n_issue": 72
+        },
+        {
+          "token_idx": 4,
+          "min_cos": null,
+          "min_layer": null,
+          "n_issue": 72
+        },
+        {
+          "token_idx": 5,
+          "min_cos": null,
+          "min_layer": null,
+          "n_issue": 72
+        },
+        {
+          "token_idx": 6,
+          "min_cos": null,
+          "min_layer": null,
+          "n_issue": 72
+        },
+        {
+          "token_idx": 7,
+          "min_cos": null,
+          "min_layer": null,
+          "n_issue": 72
+        },
+        {
+          "token_idx": 8,
+          "min_cos": null,
+          "min_layer": null,
+          "n_issue": 72
+        },
+        {
+          "token_idx": 9,
+          "min_cos": null,
+          "min_layer": null,
+          "n_issue": 72
+        },
+        {
+          "token_idx": 10,
+          "min_cos": null,
+          "min_layer": null,
+          "n_issue": 72
+        },
+        {
+          "token_idx": 11,
+          "min_cos": null,
+          "min_layer": null,
+          "n_issue": 72
+        },
+        {
+          "token_idx": 12,
+          "min_cos": null,
+          "min_layer": null,
+          "n_issue": 72
+        },
+        {
+          "token_idx": 13,
+          "min_cos": null,
+          "min_layer": null,
+          "n_issue": 72
+        }
+      ],
+      "buggy_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S07-pr19285-20261023T124136/dump/manual_trigger/cmpl-b08a72fe1e70b6bf-0-9861298f/wave_50/dp0_tp0_pp0_cp0",
+      "ref_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S07/ref_recap/cmpl-b08a72fe1e70b6bf-0-9861298f/wave_3/dp0_tp0_pp0_cp0"
+    }
+  ],
+  "hint": {
+    "any_numeric_issue": true,
+    "any_cos_mismatch": false,
+    "all_pairs_cos_clean": false
+  }
+}

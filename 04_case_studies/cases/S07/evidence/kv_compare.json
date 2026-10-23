@@ -1,0 +1,112 @@
+{
+  "case": "S07",
+  "tier_candidate": "KV不一致→定界",
+  "method": "v5.16 numeric-gate then cosine; unused-slot graded",
+  "pr19285_source": true,
+  "clean_ref_recap": true,
+  "ref_run": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S07-ref-recap-20261023T124403",
+  "n_ok_pairs": 2,
+  "cos_thresh": 0.99,
+  "layers": {
+    "trigger": 74,
+    "precision": 48,
+    "detect": 0,
+    "detect_by": {}
+  },
+  "results": [
+    {
+      "req_id": "cmpl-8e065448ae678178-0-9dfa8816",
+      "ok": true,
+      "n_tokens": 14,
+      "n_prompt": 14,
+      "n_output_at_dump": 1,
+      "shape": [
+        1,
+        128,
+        4,
+        128
+      ],
+      "shape_match": true,
+      "buggy": {
+        "any_used_nan": false,
+        "any_used_inf": false,
+        "any_unused_nonzero_finite": false,
+        "any_unused_nonfinite": false
+      },
+      "ref": {
+        "any_used_nan": false,
+        "any_unused_nonzero_finite": false,
+        "any_unused_nonfinite": false
+      },
+      "first_numeric_issue": {
+        "token_idx": 0,
+        "token_id": 675,
+        "role": "prompt",
+        "layer": "layer_36",
+        "status": "数值问题:zero_norm",
+        "n_numeric_issue_at_token": 72,
+        "n_cos_cells_at_token": 0
+      },
+      "first_numeric_issue_model_layers": {
+        "token_idx": 0,
+        "layer": "model.layers.0.self_attn.attn",
+        "status": "数值问题:zero_norm"
+      },
+      "first_cos_mismatch": null,
+      "first_cos_mismatch_model_layers_tok0": null,
+      "worst_clean_model_tok0": null,
+      "clean_model_tok0_cos": {},
+      "buggy_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S07-pr19285-20261023T124136/dump/manual_trigger/cmpl-8e065448ae678178-0-9dfa8816/wave_2/dp0_tp0_pp0_cp0",
+      "ref_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S07/ref_recap/cmpl-8e065448ae678178-0-9dfa8816/wave_2/dp0_tp0_pp0_cp0",
+      "cos_layer_claim": false,
+      "read": "buggy有效槽有限且未用槽归零 — 再看余弦（本脚本不做层定界）"
+    },
+    {
+      "req_id": "cmpl-b08a72fe1e70b6bf-0-9861298f",
+      "ok": true,
+      "n_tokens": 14,
+      "n_prompt": 14,
+      "n_output_at_dump": 1,
+      "shape": [
+        1,
+        128,
+        4,
+        128
+      ],
+      "shape_match": true,
+      "buggy": {
+        "any_used_nan": false,
+        "any_used_inf": false,
+        "any_unused_nonzero_finite": false,
+        "any_unused_nonfinite": false
+      },
+      "ref": {
+        "any_used_nan": false,
+        "any_unused_nonzero_finite": false,
+        "any_unused_nonfinite": false
+      },
+      "first_numeric_issue": {
+        "token_idx": 0,
+        "token_id": 675,
+        "role": "prompt",
+        "layer": "layer_36",
+        "status": "数值问题:zero_norm",
+        "n_numeric_issue_at_token": 72,
+        "n_cos_cells_at_token": 0
+      },
+      "first_numeric_issue_model_layers": {
+        "token_idx": 0,
+        "layer": "model.layers.0.self_attn.attn",
+        "status": "数值问题:zero_norm"
+      },
+      "first_cos_mismatch": null,
+      "first_cos_mismatch_model_layers_tok0": null,
+      "worst_clean_model_tok0": null,
+      "clean_model_tok0_cos": {},
+      "buggy_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S07-pr19285-20261023T124136/dump/manual_trigger/cmpl-b08a72fe1e70b6bf-0-9861298f/wave_50/dp0_tp0_pp0_cp0",
+      "ref_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S07/ref_recap/cmpl-b08a72fe1e70b6bf-0-9861298f/wave_3/dp0_tp0_pp0_cp0",
+      "cos_layer_claim": false,
+      "read": "buggy有效槽有限且未用槽归零 — 再看余弦（本脚本不做层定界）"
+    }
+  ]
+}

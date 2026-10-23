@@ -1,0 +1,46 @@
+{
+  "case": "S07",
+  "bug": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S07-pr19285-20261023T124136",
+  "ref_run": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S07-ref-recap-20261023T124403",
+  "pr19285_source": true,
+  "clean_ref_no_overlay": true,
+  "n_ok_pairs": 2,
+  "results": [
+    {
+      "req_id": "cmpl-8e065448ae678178-0-9dfa8816",
+      "ok": true,
+      "n_tokens": 14,
+      "n_prompt": 14,
+      "n_output": 1,
+      "shape": [
+        1,
+        128,
+        4,
+        128
+      ],
+      "shape_match": true,
+      "logits_finite_on_ref": false,
+      "buggy_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S07-pr19285-20261023T124136/dump/manual_trigger/cmpl-8e065448ae678178-0-9dfa8816/wave_2/dp0_tp0_pp0_cp0",
+      "ref_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S07/ref_recap/cmpl-8e065448ae678178-0-9dfa8816/wave_2/dp0_tp0_pp0_cp0",
+      "buggy_report": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S07-pr19285-20261023T124136/report/manual_trigger/report_20261023_124348_457_cmpl-8e065448ae678178-0-9dfa8816_pid1017951.json"
+    },
+    {
+      "req_id": "cmpl-b08a72fe1e70b6bf-0-9861298f",
+      "ok": true,
+      "n_tokens": 14,
+      "n_prompt": 14,
+      "n_output": 1,
+      "shape": [
+        1,
+        128,
+        4,
+        128
+      ],
+      "shape_match": true,
+      "logits_finite_on_ref": false,
+      "buggy_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S07-pr19285-20261023T124136/dump/manual_trigger/cmpl-b08a72fe1e70b6bf-0-9861298f/wave_50/dp0_tp0_pp0_cp0",
+      "ref_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S07/ref_recap/cmpl-b08a72fe1e70b6bf-0-9861298f/wave_3/dp0_tp0_pp0_cp0",
+      "buggy_report": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S07-pr19285-20261023T124136/report/manual_trigger/report_20261023_124355_059_cmpl-b08a72fe1e70b6bf-0-9861298f_pid1017951.json"
+    }
+  ]
+}

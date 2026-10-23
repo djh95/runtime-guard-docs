@@ -107,7 +107,7 @@ keep-set 案例的 **headline 结案**只用下面四档；**不要**再用 PASS
 | S01 | [cases/S01/](./cases/S01/) | （空） | （空） | KV 新块未置零（需 hybrid/量化 KV） | （空） | 乱码类 | （空） |
 | S10p | [cases/S10p/](./cases/S10p/) | KV 一致→排除 KV | 检出 | FullAttn 回收块未清零 | token 重复 / 垃圾 | `token_repeat` | 64 / 17 / 64 |
 | S11 | [cases/S11/](./cases/S11/) | （空） | （空） | MLA RoPE pad-tail 错位 | （空） | `token_repeat` | （空） |
-| S07 | [cases/S07/](./cases/S07/) | （空） | （空） | W8A8 dequant scale 崩溃 | （空） | `logits_finite` | （空） |
+| S07 | [cases/S07/](./cases/S07/) | KV 不一致→定界（zero_norm） | 乱码漏检 | W8A8 scale 崩溃 | 跨请求内容相同的乱码×48 | 期望 `logits_finite`→0；`manual_dump` | 74 / 48 / 0 |
 | S23 | [cases/S23/](./cases/S23/) | KV 不一致→定界 | 检出 | 一层 `o_proj` 权重置零 | min_cos≈0.68；prompt idx=1@L35；未用槽有限非0=卫生 | `token_repeat` | 2 / 16 / 48 |
 | S45 | [cases/S45/](./cases/S45/) | KV 一致→排除 KV（prompt 窗） | 乱码漏检 | top-k 打在 −logits | 乱码/空 completion（identical×16） | 期望 both→0 report；`manual_dump` | 16 / 16 / 0 |
 | S43 | [cases/S43/](./cases/S43/) | KV 不一致→定界 | 检出 | embedding ×100 | 换行塌缩 | `token_repeat`×48 | 16 / 40 / 48 |
