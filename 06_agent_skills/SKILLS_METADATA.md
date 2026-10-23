@@ -1,6 +1,6 @@
 # Runtime-Guard Skills Metadata
 
-版本：v5.16  
+版本：v5.17  
 Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `analysis` · `ref-kv-dump` · **`msprobe-dump`** · **`build-anomaly-env`** · **`apply-mrv1-patch`** · **`apply-v030-mrv2-patch`**
 
 ## Changelog（摘要）
@@ -9,7 +9,8 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 
 离线脚本入口：本仓 [`scripts/`](./scripts/)。
 
-- **v5.16（现行）** — KV 对比**数值门闩优先**：每个 (token, layer) 先扫 NaN/Inf/零范数 → 标 **数值问题**、**不算余弦**；相似度只在干净格上算；禁止把 NaN 当「最差 cos」排序成伪 `idx=0 @ layer_*`。有效槽全非有限 → 不定层，只记「有效槽全非有限」。脚本：`scripts/_lib.py` / `compare_*` / `locate_first_divergence` / `stitch_kv`。落点：`ref-kv-dump` / `investigation` / `analysis` / `scripts`。  
+- **v5.17（现行）** — **跨环境标杆**：必现案先问「他环境是否正常」；若有异常环境+正常环境，可分环境抓 buggy/ref dump；对比前**必须**核对**权重 MD5（或等价）**与**代码 commit（及关键 patch/overlay）一致**，不一致则不能当干净标杆。落点：`investigation` / `ref-kv-dump`（S50 / `logits_finite` 等尤为相关）。  
+- **v5.16** — KV 对比**数值门闩优先**：每个 (token, layer) 先扫 NaN/Inf/零范数 → 标 **数值问题**、**不算余弦**；相似度只在干净格上算；禁止把 NaN 当「最差 cos」排序成伪 `idx=0 @ layer_*`。有效槽全非有限 → 不定层，只记「有效槽全非有限」。脚本：`scripts/_lib.py` / `compare_*` / `locate_first_divergence` / `stitch_kv`。落点：`ref-kv-dump` / `investigation` / `analysis` / `scripts`。  
 - **v5.15** — **收回** v5.14「logits→跳过 KV」：`logits_finite` 后 **仍先** `dump_kv`（有效槽有限/Inf/NaN；未用槽**分级**：有限非 0=卫生/通常不致坏结果，Inf/NaN=可影响结果）；标杆须未炸；必现优先、非必现 `manual_dump`。**`msprobe-dump` 殿后**（全程挂钩、开销大）。NaN cos 仍不定层。落点：`investigation` / `ref-kv-dump` / `msprobe-dump` / README / `02` / `04`。  
 - **v5.14** — 引入 **`msprobe-dump`**（`task=statistics`，eager only）；曾写「logits→跳过 KV」（**已被 v5.15 纠正**）。  
 - **v5.13** — `--feed=history` 对比跨度 **`n_prompt+n_output-1`**（禁按 p+o 全长→末位假分歧/伪层定位）；空 prompt 优先 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) 重抓或 re-curl，禁 tokenize 补造。落点：`ref-kv-dump` / `investigation` / `analysis`。  
@@ -151,6 +152,7 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 
 - 用报告 token ids force-feed（禁止字符串重 tokenize / 禁止标杆自行生成）  
 - 同模型 / 拓扑 / **同 MODE** 清洁实例 + native `dump_kv`  
+- **跨环境标杆**：必现且他环境正常时，分环境抓 buggy/ref；对比前核权重 MD5 + 代码 commit/overlay  
 - `compare_kv_similarity` / `locate_first_divergence` / `compare_per_layer`；解读对齐十问  
 - 校验有效异常 KV / 数值门闩后拒绝无有效余弦的**层**伪定位；报有效槽 Inf/NaN；未用槽分级（有限非 0 vs Inf/NaN）  
 - 抓前清 `kv_cache`；对比先 shape；history 用 `p+o-1`；只比有效 token（整 block 未用槽不算进余弦）  
@@ -163,7 +165,8 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 - 输出 runtime_config JSON  
 - 弱 dump / 数值问题格上硬算 cos / history 末位假分歧写成层定位；混用不同 run  
 - 未清目录用旧 dump；跳过 shape；按全 block 容量算余弦；tokenize 冒充 prompt ids  
-- `logits_finite` 后跳过本 skill；未用槽有限非 0 与 Inf/NaN 混判
+- `logits_finite` 后跳过本 skill；未用槽有限非 0 与 Inf/NaN 混判  
+- 跨环境未核权重 MD5 / 代码 commit 就把他环境当干净标杆
 
 **逻辑输入：** verify PASS 证据, buggy token ids / report 路径, topology, model_mode  
 **逻辑输出：** ref_dump_path, kv_compare 摘要（含 finite/unused 分级）, warnings

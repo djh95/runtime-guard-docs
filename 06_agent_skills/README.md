@@ -50,7 +50,7 @@ python "$SCRIPTS/summarize_reports.py" --help
 `prepare_ref_inputs` / `request_from_report` / `locate_first_divergence` / `compare_kv_similarity` /  
 `compare_per_layer` / `stitch_kv`。
 
-Anomaly 对外对照：本仓 `04_case_studies/cases/Sxx/evidence/`。契约见 [SKILLS_METADATA.md](./SKILLS_METADATA.md)（**v5.16**）。构造纪律见 [`build-anomaly-env`](./build-anomaly-env/SKILL.md)。  
+Anomaly 对外对照：本仓 `04_case_studies/cases/Sxx/evidence/`。契约见 [SKILLS_METADATA.md](./SKILLS_METADATA.md)（**v5.17**）。构造纪律见 [`build-anomaly-env`](./build-anomaly-env/SKILL.md)。  
 Keep-set 结案四档 + 钉点同跑 / 有效异常 KV / 数值问题禁伪定位：见 [`investigation`](./investigation/SKILL.md)（证据完整性）与 [`ref-kv-dump`](./ref-kv-dump/SKILL.md)。  
 KV：抓前清目录、先 shape、**数值门闩**（NaN/Inf/零范数→数值问题，不算 cos）、history 比 **`p+o-1`**、整 block 未用槽不算进余弦；未用槽**分级**（有限非 0 vs Inf/NaN）：见 [`ref-kv-dump`](./ref-kv-dump/SKILL.md)。  
 **`logits_finite` 命中 → 仍先 [`ref-kv-dump`](./ref-kv-dump/SKILL.md)**（有限性 + 未用槽分级）；**[`msprobe-dump`](./msprobe-dump/SKILL.md) 殿后**（statistics · eager · 禁图）：见 [`investigation`](./investigation/SKILL.md)。

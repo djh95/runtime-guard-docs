@@ -27,7 +27,8 @@ description: >-
 1. **运行环境**：容器 / 路径 / `{MODE}` / `{MODEL}` / `{TOPO}` / 卡号  
 2. **启动脚本** `{START}` · **请求脚本** `{REPRO}`  
 3. **谁跑服务**（确认前不要擅自起服）  
-4. **版本**、能否压测、有无清洁标杆、本地是否已有 `report`/`kv_cache`
+4. **版本**、能否压测、有无清洁标杆、本地是否已有 `report`/`kv_cache`  
+5. **（必现时）其他环境是否正常？** 例：厂商环境有问题、自建环境正常 → 可能走**跨环境标杆**（见下；细则 [`ref-kv-dump`](../ref-kv-dump/SKILL.md)）
 
 | Var | 含义 |
 |-----|------|
@@ -51,7 +52,7 @@ description: >-
 - **`logits_finite` 命中** → 仍委派 [`ref-kv-dump`](../ref-kv-dump/SKILL.md)：有效槽有限性 + 未用槽分级（有限非 0 vs Inf/NaN）+（可算时）余弦；**禁止**因 NaN cos 跳过 KV 或写成「复现未抓到」。KV 分流后再视需要委派 [`msprobe-dump`](../msprobe-dump/SKILL.md)（statistics · eager · **殿后**）。  
 - **`token_repeat` / 有限异常且疑 KV** → 同：`dump_kv` + 标杆。  
 **勿启用未合入：** `output_substring` / `token_logprob` / `slot_*` / `kv_state`。  
-**看似必现：** 先按手册 [02 §4 Step 0.5](../../02_problem_localization/README.md) 做连测 / 换输入（勿只靠 `max_tokens=1`）/ 消融 / PD 单 P·单 D；未验证勿在交付里写「必现」。非必现 → `manual_dump`；抓标杆须确认**未**亮 `logits_finite`。
+**看似必现：** 先按手册 [02 §4 Step 0.5](../../02_problem_localization/README.md) 做连测 / 换输入（勿只靠 `max_tokens=1`）/ 消融 / PD 单 P·单 D；未验证勿在交付里写「必现」。**并向使用者确认：其他环境是否正常。** 若存在「异常环境 + 正常环境」，可委派 [`ref-kv-dump`](../ref-kv-dump/SKILL.md) **分环境**抓 buggy/ref；对比前必须核对**权重 MD5（或等价）**与**代码 commit（及关键 patch/overlay）一致**——不一致则不能当干净标杆，先对齐。非必现 → `manual_dump`；抓标杆须确认**未**亮 `logits_finite`。
 
 ### 三层率（anomaly / 压测必记）
 
@@ -292,7 +293,8 @@ description: >-
 6. **`kv_cache` 生命周期** — **抓前清空**本轮工作目录（防旧 dump 混入）；**对账中保留**本轮产物；归档后再清。细则见 `ref-kv-dump`。  
 7. **KV 对比：先形状、数值门闩、只比有效 token** — dump 是整 block；未用槽常为 0；history feed 用 `p+o-1`。(token,layer) 有 NaN/Inf/零范数 → **数值问题**（不算 cos）。勿按全容量或错跨度算 cos（虚高/末位假分歧）。  
 8. **压测时限** — 单场景最长约 **1h**；超时未复现 → **未复现**（附 knobs/负载），勿空耗或放大器硬凑。  
-9. **`logits_finite` → 仍先 KV，msprobe 殿后** — 先判必现；抓 buggy+清洁标杆（标杆未炸）。检查顺序：有效槽有限/Inf/NaN → 未用槽分级 → 逐格数值门闩 →（干净格）shape + `p+o-1` 余弦。**禁止**把数值问题/NaN cos 写成层定界；**禁止**因 logits 命中就跳过 KV。需要算子首坏时再开 [`msprobe-dump`](../msprobe-dump/SKILL.md)（`task=statistics`，**`--enforce-eager`**，禁图；全程挂钩、开销大）。
+9. **`logits_finite` → 仍先 KV，msprobe 殿后** — 先判必现（并问他环境是否正常）；抓 buggy+清洁/跨环境标杆（标杆未炸；跨环境须权重 MD5 + 代码 commit 一致）。检查顺序：有效槽有限/Inf/NaN → 未用槽分级 → 逐格数值门闩 →（干净格）shape + `p+o-1` 余弦。**禁止**把数值问题/NaN cos 写成层定界；**禁止**因 logits 命中就跳过 KV。需要算子首坏时再开 [`msprobe-dump`](../msprobe-dump/SKILL.md)（`task=statistics`，**`--enforce-eager`**，禁图；全程挂钩、开销大）。  
+10. **跨环境标杆** — 必现且存在正常环境时可用；**禁止**在权重/代码未对齐时把他环境 dump 当 ref（细则 `ref-kv-dump`）。
 
 ### KV/余弦时机方法示例（示意数字，非某包实测）
 
@@ -334,6 +336,7 @@ S45：勿用伪造 NaN/填 token / amplifier-retune 刷成 PASS；有异常+dete
 - 混用不同 run 的 report/dump/`kv_compare`；用全 NaN / 弱 dump 伪写层定位  
 - 用 PASS/FAIL/GAP 当 keep-set 案例 headline 结案  
 - 未清 `kv_cache` 就开新抓；跳过 shape、把 block 未用 0 槽算进相似度  
+- 跨环境未核权重 MD5 / 代码 commit 就当干净标杆  
 - history feed 下按 `p+o` 全长比出的**仅末 token**分歧写成③/④或层定位；tokenize 补造 prompt ids
 
 ## Related

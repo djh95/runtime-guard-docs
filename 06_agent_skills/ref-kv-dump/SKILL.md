@@ -40,6 +40,18 @@ Report 须含 `prompt_token_ids` / `output_token_ids`（`save_sensitive_info: tr
 目的：避免把**上一跑残留**的 `.pt` / wave 目录误当成本次 buggy 或 ref。  
 （对照：对账**进行中**勿删正在用的 dump；归档完成后再清。）
 
+## 跨环境标杆（必现案优先确认）
+
+同机「去 overlay 清洁树」仍是默认路径；若问题**必现**且存在多套环境，按下面做（S50 / `logits_finite` 等尤相关）：
+
+1. **先问使用者**：其他环境是否正常？（例：外部厂商环境有问题，内部自建环境正常。）未确认勿假设「只有本机能出标杆」。  
+2. **有「异常环境 + 正常环境」** → 可分别抓：**异常侧** dump（buggy）与 **正常环境** dump（标杆）；再 force-feed / 对比。  
+3. **对比前必须对齐代码与权重**（否则不能当干净标杆）：  
+   - **权重：** 两边算 **MD5**（或等价校验，如目录 manifest / `sha256sum`）确认一致。  
+   - **代码：** 记录并核对 **commit**（及关键 patch / overlay / 热补丁）一致。  
+4. **不一致 → 停**：先对齐权重/代码再 dump；禁止拿「碰巧能跑」的他环境当 ref。  
+5. 对齐后仍要求：同拓扑 / **同 MODE**；`logits_finite` 路径下标杆侧**未**触发该 detector。
+
 ## 抓 ref
 
 ```bash
@@ -47,7 +59,7 @@ python "$SCRIPTS/prepare_ref_inputs.py" \
   --report <report_*.json> --out ref_inputs.json
 ```
 
-1. **清洁**服务：同模型 / 同拓扑 / **同 MODE**（勿 eager↔graph 对照）。  
+1. **清洁**服务：同模型 / 同拓扑 / **同 MODE**（勿 eager↔graph 对照）；跨环境时先满足上一节权重 MD5 + 代码 commit 一致。  
 2. 热更已开；用 recommender/用户配置 arm `dump_kv`（manual 或 auto）。  
 3. Force-feed：
 
@@ -144,9 +156,10 @@ python "$SCRIPTS/compare_per_layer.py" \
 3. **先形状、有效 token** — 见上节；history feed 用 `p+o-1`；勿把 block 尾部未用 0 槽算进相似度。  
 4. **全格数值问题 / 仅末位假分歧 ≠ 层定位** — 有效槽全非有限、或 Table1 无有效余弦、或 **只有最后一个 output** 分歧时，先查数值门闩 / feed 跨度 / 空槽；**禁止**写成「首坏 token0 @ layer_L」。有效槽 Inf/NaN 仍是可归档事实（非「复现未抓到」）。  
 5. **标杆未炸** — `logits_finite` 路径下 ref 必须未触发该 detector；炸过的 dump 不可当标杆。  
-6. **多组验证** — 同一 overlay 至少两组独立异常请求，结论同向再归档③/④。  
-7. **空 `prompt_token_ids`** — 勿字符串重 tokenize。优先树含 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285)（prompt 预缓存不门禁 sample hooks）再抓；否则同 prompt **re-curl** 抓服务端 ids，与异常 `output_token_ids` 合并后再 force-feed。  
-8. **短 output** — 只削弱层定位余弦；**不**等于跳过有限性/未用槽检查。
+6. **跨环境标杆先对齐** — 必现案确认他环境是否正常；分环境抓 dump 前核对权重 MD5 + 代码 commit/overlay；不一致先对齐。  
+7. **多组验证** — 同一 overlay 至少两组独立异常请求，结论同向再归档③/④。  
+8. **空 `prompt_token_ids`** — 勿字符串重 tokenize。优先树含 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285)（prompt 预缓存不门禁 sample hooks）再抓；否则同 prompt **re-curl** 抓服务端 ids，与异常 `output_token_ids` 合并后再 force-feed。  
+9. **短 output** — 只削弱层定位余弦；**不**等于跳过有限性/未用槽检查。
 
 ## forbidden
 
@@ -157,7 +170,8 @@ python "$SCRIPTS/compare_per_layer.py" \
 - 用弱 dump / 全 NaN cos / **history 下按 p+o 全长** 的末位假分歧写层定位  
 - 把未用槽「有限非 0」与「Inf/NaN」混写成同等严重；忽略有效槽 Inf；混用不同 run  
 - 跳过 shape 检查；按整 block 容量（含未用槽）算余弦  
-- 用本地 tokenize 字符串冒充服务端 `prompt_token_ids`；用已炸请求当标杆
+- 用本地 tokenize 字符串冒充服务端 `prompt_token_ids`；用已炸请求当标杆  
+- 跨环境时**未**核对权重 MD5 / 代码 commit 就把他环境 dump 当干净标杆
 
 ## Related
 
