@@ -1,0 +1,546 @@
+{
+  "case": "S11",
+  "method": "v5.16 numeric-gate before cosine",
+  "cos_thresh": 0.99,
+  "n_pairs": 2,
+  "pairs": [
+    {
+      "req_id": "cmpl-8a3c5f808dc7f05c-0-b6f2aeb5",
+      "n_tokens": 39,
+      "n_prompt": 14,
+      "n_layers": 54,
+      "n_model_layers": 27,
+      "n_total_cells": 2106,
+      "n_numeric_issue_cells": 0,
+      "n_cos_cells": 2106,
+      "cosine_localizable": true,
+      "first_numeric_issue_all_names": null,
+      "first_numeric_issue_model_layers": null,
+      "first_cos_mismatch": {
+        "token_idx": 1,
+        "token_id": 634,
+        "role": "prompt",
+        "layer": "layer_27",
+        "cos_at_layer": 0.9595513689915111,
+        "min_cos": 0.24308916569212197,
+        "min_layer": "model.layers.16.self_attn.attn"
+      },
+      "first_cos_mismatch_model_layers_tok0": null,
+      "worst_clean_model_tok0": {
+        "token_idx": 0,
+        "layer": "model.layers.6.self_attn.attn",
+        "cos": 0.999999391622304
+      },
+      "clean_model_tok0_cos": {
+        "model.layers.0.self_attn.attn": 1.0,
+        "model.layers.1.self_attn.attn": 1.0,
+        "model.layers.2.self_attn.attn": 1.0,
+        "model.layers.3.self_attn.attn": 1.0,
+        "model.layers.4.self_attn.attn": 1.0,
+        "model.layers.5.self_attn.attn": 1.0,
+        "model.layers.6.self_attn.attn": 0.999999,
+        "model.layers.7.self_attn.attn": 1.0,
+        "model.layers.8.self_attn.attn": 1.0,
+        "model.layers.9.self_attn.attn": 1.0,
+        "model.layers.10.self_attn.attn": 1.0,
+        "model.layers.11.self_attn.attn": 1.0
+      },
+      "per_token_min_clean": [
+        {
+          "token_idx": 0,
+          "min_cos": 0.9999987324998174,
+          "min_layer": "layer_53",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 1,
+          "min_cos": 0.24308916569212197,
+          "min_layer": "model.layers.16.self_attn.attn",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 2,
+          "min_cos": 0.28718961446379865,
+          "min_layer": "model.layers.18.self_attn.attn",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 3,
+          "min_cos": 0.28098130896488,
+          "min_layer": "model.layers.12.self_attn.attn",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 4,
+          "min_cos": 0.17504432398535968,
+          "min_layer": "model.layers.18.self_attn.attn",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 5,
+          "min_cos": 0.13417629792267377,
+          "min_layer": "model.layers.20.self_attn.attn",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 6,
+          "min_cos": 0.2637732936373872,
+          "min_layer": "model.layers.20.self_attn.attn",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 7,
+          "min_cos": 0.39319061403977923,
+          "min_layer": "model.layers.12.self_attn.attn",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 8,
+          "min_cos": 0.23516961947775694,
+          "min_layer": "model.layers.12.self_attn.attn",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 9,
+          "min_cos": 0.27293072699017107,
+          "min_layer": "model.layers.12.self_attn.attn",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 10,
+          "min_cos": 0.30993354258735367,
+          "min_layer": "model.layers.20.self_attn.attn",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 11,
+          "min_cos": 0.23275160693684496,
+          "min_layer": "model.layers.14.self_attn.attn",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 12,
+          "min_cos": 0.1342134041345071,
+          "min_layer": "model.layers.12.self_attn.attn",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 13,
+          "min_cos": 0.3816466886021432,
+          "min_layer": "model.layers.12.self_attn.attn",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 14,
+          "min_cos": 0.8729574699046017,
+          "min_layer": "layer_52",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 15,
+          "min_cos": 0.5051386922038943,
+          "min_layer": "layer_28",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 16,
+          "min_cos": 0.69766025624827,
+          "min_layer": "model.layers.20.self_attn.attn",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 17,
+          "min_cos": 0.8035487573619637,
+          "min_layer": "model.layers.14.self_attn.attn",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 18,
+          "min_cos": 0.7491469721064724,
+          "min_layer": "layer_28",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 19,
+          "min_cos": 0.8520028800285812,
+          "min_layer": "layer_28",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 20,
+          "min_cos": 0.8682429374558649,
+          "min_layer": "model.layers.18.self_attn.attn",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 21,
+          "min_cos": 0.8338435466184361,
+          "min_layer": "layer_28",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 22,
+          "min_cos": 0.8391075414786452,
+          "min_layer": "layer_44",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 23,
+          "min_cos": 0.9351591539420181,
+          "min_layer": "layer_44",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 24,
+          "min_cos": 0.9566405313553108,
+          "min_layer": "model.layers.18.self_attn.attn",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 25,
+          "min_cos": 0.9045586146298116,
+          "min_layer": "layer_44",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 26,
+          "min_cos": 0.8894926705425382,
+          "min_layer": "layer_44",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 27,
+          "min_cos": 0.9343820446736671,
+          "min_layer": "layer_28",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 28,
+          "min_cos": 0.8656213681402609,
+          "min_layer": "layer_44",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 29,
+          "min_cos": 0.9139781502221644,
+          "min_layer": "layer_44",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 30,
+          "min_cos": 0.9006139142091967,
+          "min_layer": "layer_44",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 31,
+          "min_cos": 0.8914659738715507,
+          "min_layer": "layer_28",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 32,
+          "min_cos": 0.9698725016771759,
+          "min_layer": "layer_32",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 33,
+          "min_cos": 0.8318544730955393,
+          "min_layer": "layer_44",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 34,
+          "min_cos": 0.7593198422535771,
+          "min_layer": "model.layers.16.self_attn.attn",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 35,
+          "min_cos": 0.9211209848292149,
+          "min_layer": "layer_28",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 36,
+          "min_cos": 0.9332236536541705,
+          "min_layer": "model.layers.22.self_attn.attn",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 37,
+          "min_cos": 0.8631346611180318,
+          "min_layer": "layer_28",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 38,
+          "min_cos": 0.8313037100607789,
+          "min_layer": "layer_28",
+          "n_issue": 0,
+          "n_cos": 54
+        }
+      ],
+      "buggy_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S11-pr19285-20261023T125218/dump/token_repeat/cmpl-8a3c5f808dc7f05c-0-b6f2aeb5/wave_29/dp0_tp0_pp0_cp0",
+      "ref_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S11/ref_recap/cmpl-8a3c5f808dc7f05c-0-b6f2aeb5/wave_2/dp0_tp0_pp0_cp0"
+    },
+    {
+      "req_id": "cmpl-878b7c3a29d76089-0-84e7f4b7",
+      "n_tokens": 24,
+      "n_prompt": 15,
+      "n_layers": 54,
+      "n_model_layers": 27,
+      "n_total_cells": 1296,
+      "n_numeric_issue_cells": 0,
+      "n_cos_cells": 1296,
+      "cosine_localizable": true,
+      "first_numeric_issue_all_names": null,
+      "first_numeric_issue_model_layers": null,
+      "first_cos_mismatch": {
+        "token_idx": 1,
+        "token_id": 634,
+        "role": "prompt",
+        "layer": "layer_27",
+        "cos_at_layer": 0.9595960971075207,
+        "min_cos": 0.24323528535048683,
+        "min_layer": "model.layers.16.self_attn.attn"
+      },
+      "first_cos_mismatch_model_layers_tok0": null,
+      "worst_clean_model_tok0": {
+        "token_idx": 0,
+        "layer": "model.layers.24.self_attn.attn",
+        "cos": 0.999999997928883
+      },
+      "clean_model_tok0_cos": {
+        "model.layers.0.self_attn.attn": 1.0,
+        "model.layers.1.self_attn.attn": 1.0,
+        "model.layers.2.self_attn.attn": 1.0,
+        "model.layers.3.self_attn.attn": 1.0,
+        "model.layers.4.self_attn.attn": 1.0,
+        "model.layers.5.self_attn.attn": 1.0,
+        "model.layers.6.self_attn.attn": 1.0,
+        "model.layers.7.self_attn.attn": 1.0,
+        "model.layers.8.self_attn.attn": 1.0,
+        "model.layers.9.self_attn.attn": 1.0,
+        "model.layers.10.self_attn.attn": 1.0,
+        "model.layers.11.self_attn.attn": 1.0
+      },
+      "per_token_min_clean": [
+        {
+          "token_idx": 0,
+          "min_cos": 0.999999931350775,
+          "min_layer": "layer_53",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 1,
+          "min_cos": 0.24323528535048683,
+          "min_layer": "model.layers.16.self_attn.attn",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 2,
+          "min_cos": 0.28755646615832803,
+          "min_layer": "model.layers.18.self_attn.attn",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 3,
+          "min_cos": 0.2808405935276644,
+          "min_layer": "model.layers.12.self_attn.attn",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 4,
+          "min_cos": 0.17525077766897984,
+          "min_layer": "model.layers.18.self_attn.attn",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 5,
+          "min_cos": 0.13401121420206813,
+          "min_layer": "model.layers.20.self_attn.attn",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 6,
+          "min_cos": 0.1368155206987683,
+          "min_layer": "model.layers.20.self_attn.attn",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 7,
+          "min_cos": 0.3469477005131549,
+          "min_layer": "model.layers.14.self_attn.attn",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 8,
+          "min_cos": 0.25753838969318216,
+          "min_layer": "model.layers.12.self_attn.attn",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 9,
+          "min_cos": 0.1782654203729753,
+          "min_layer": "model.layers.12.self_attn.attn",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 10,
+          "min_cos": 0.2840963661512649,
+          "min_layer": "model.layers.12.self_attn.attn",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 11,
+          "min_cos": 0.32786569744775246,
+          "min_layer": "model.layers.14.self_attn.attn",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 12,
+          "min_cos": 0.21275859217568793,
+          "min_layer": "model.layers.26.self_attn.attn",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 13,
+          "min_cos": 0.23397353111331273,
+          "min_layer": "model.layers.18.self_attn.attn",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 14,
+          "min_cos": 0.19081845352745785,
+          "min_layer": "model.layers.10.self_attn.attn",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 15,
+          "min_cos": 0.80980790303064,
+          "min_layer": "layer_52",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 16,
+          "min_cos": 0.3911409063867155,
+          "min_layer": "layer_32",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 17,
+          "min_cos": 0.4788809731921446,
+          "min_layer": "layer_32",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 18,
+          "min_cos": 0.6242688309717874,
+          "min_layer": "layer_32",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 19,
+          "min_cos": 0.7857312202032504,
+          "min_layer": "model.layers.18.self_attn.attn",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 20,
+          "min_cos": 0.9070899717612703,
+          "min_layer": "layer_44",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 21,
+          "min_cos": 0.9205782657491696,
+          "min_layer": "model.layers.20.self_attn.attn",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 22,
+          "min_cos": 0.8728609587344773,
+          "min_layer": "model.layers.20.self_attn.attn",
+          "n_issue": 0,
+          "n_cos": 54
+        },
+        {
+          "token_idx": 23,
+          "min_cos": 0.7970755961767206,
+          "min_layer": "model.layers.20.self_attn.attn",
+          "n_issue": 0,
+          "n_cos": 54
+        }
+      ],
+      "buggy_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S11-pr19285-20261023T125218/dump/token_repeat/cmpl-878b7c3a29d76089-0-84e7f4b7/wave_13/dp0_tp0_pp0_cp0",
+      "ref_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S11/ref_recap/cmpl-878b7c3a29d76089-0-84e7f4b7/wave_3/dp0_tp0_pp0_cp0"
+    }
+  ],
+  "hint": {
+    "any_numeric_issue": false,
+    "any_cos_mismatch": true,
+    "all_pairs_cos_clean": false
+  }
+}

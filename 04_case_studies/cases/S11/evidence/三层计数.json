@@ -1,0 +1,20 @@
+{
+  "scenario": "S11",
+  "trigger": 108,
+  "precision": 27,
+  "precision_identical_mode": null,
+  "detect_reports": 48,
+  "detect_by": {
+    "token_repeat": 48
+  },
+  "n_requests": 48,
+  "n_errors": 0,
+  "temperature": 0.0,
+  "top_k": null,
+  "top_p": null,
+  "host_cards": "4,5",
+  "model": "/mnt/weight/DeepSeek-V2-Lite",
+  "detector": "token_repeat",
+  "run_dir": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S11-layers-20261023T125037",
+  "boot_ok": true
+}

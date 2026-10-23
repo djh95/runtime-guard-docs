@@ -1,0 +1,661 @@
+{
+  "case": "S11",
+  "source_pairs": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/results/S11.kv_pairs_recap.json",
+  "n_pairs": 2,
+  "必现": "yes (layers 58/48/48 logits_finite×48)",
+  "rows": [
+    {
+      "req_id": "cmpl-8a3c5f808dc7f05c-0-b6f2aeb5",
+      "n_used": 39,
+      "n_prompt": 14,
+      "buggy": {
+        "ok": true,
+        "rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S11-pr19285-20261023T125218/dump/token_repeat/cmpl-8a3c5f808dc7f05c-0-b6f2aeb5/wave_29/dp0_tp0_pp0_cp0",
+        "n_tensors": 27,
+        "n_used": 39,
+        "any_used_nan": false,
+        "any_used_inf": false,
+        "any_unused_nonzero": true,
+        "any_unused_nonfinite": false,
+        "worst_head": [
+          {
+            "name": "layer_27",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 192,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              1,
+              64
+            ]
+          },
+          {
+            "name": "layer_28",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 1536,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              1,
+              512
+            ]
+          },
+          {
+            "name": "layer_29",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 192,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              1,
+              64
+            ]
+          },
+          {
+            "name": "layer_30",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 1536,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              1,
+              512
+            ]
+          },
+          {
+            "name": "layer_31",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 192,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              1,
+              64
+            ]
+          },
+          {
+            "name": "layer_32",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 1536,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              1,
+              512
+            ]
+          }
+        ],
+        "layer_sample": {
+          "layer_27": {
+            "shape": [
+              1,
+              128,
+              1,
+              64
+            ],
+            "n_blocks": 1,
+            "block_size": 128,
+            "capacity": 128,
+            "n_used": 39,
+            "used": {
+              "numel": 2496,
+              "nan": 0,
+              "inf": 0,
+              "finite": 2496,
+              "nonzero": 2496
+            },
+            "unused": {
+              "numel": 5696,
+              "nan": 0,
+              "inf": 0,
+              "finite": 5696,
+              "nonzero": 192
+            },
+            "used_has_nan": false,
+            "used_has_inf": false,
+            "unused_nonzero": true,
+            "unused_has_nan": false,
+            "unused_has_inf": false
+          },
+          "layer_28": {
+            "shape": [
+              1,
+              128,
+              1,
+              512
+            ],
+            "n_blocks": 1,
+            "block_size": 128,
+            "capacity": 128,
+            "n_used": 39,
+            "used": {
+              "numel": 19968,
+              "nan": 0,
+              "inf": 0,
+              "finite": 19968,
+              "nonzero": 19968
+            },
+            "unused": {
+              "numel": 45568,
+              "nan": 0,
+              "inf": 0,
+              "finite": 45568,
+              "nonzero": 1536
+            },
+            "used_has_nan": false,
+            "used_has_inf": false,
+            "unused_nonzero": true,
+            "unused_has_nan": false,
+            "unused_has_inf": false
+          }
+        }
+      },
+      "ref": {
+        "ok": true,
+        "rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S11/ref_recap/cmpl-8a3c5f808dc7f05c-0-b6f2aeb5/wave_2/dp0_tp0_pp0_cp0",
+        "n_tensors": 27,
+        "n_used": 39,
+        "any_used_nan": false,
+        "any_used_inf": false,
+        "any_unused_nonzero": false,
+        "any_unused_nonfinite": false,
+        "worst_head": [
+          {
+            "name": "layer_27",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 0,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              1,
+              64
+            ]
+          },
+          {
+            "name": "layer_28",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 0,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              1,
+              512
+            ]
+          },
+          {
+            "name": "layer_29",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 0,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              1,
+              64
+            ]
+          },
+          {
+            "name": "layer_30",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 0,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              1,
+              512
+            ]
+          },
+          {
+            "name": "layer_31",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 0,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              1,
+              64
+            ]
+          },
+          {
+            "name": "layer_32",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 0,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              1,
+              512
+            ]
+          }
+        ],
+        "layer_sample": {
+          "layer_27": {
+            "shape": [
+              1,
+              128,
+              1,
+              64
+            ],
+            "n_blocks": 1,
+            "block_size": 128,
+            "capacity": 128,
+            "n_used": 39,
+            "used": {
+              "numel": 2496,
+              "nan": 0,
+              "inf": 0,
+              "finite": 2496,
+              "nonzero": 2496
+            },
+            "unused": {
+              "numel": 5696,
+              "nan": 0,
+              "inf": 0,
+              "finite": 5696,
+              "nonzero": 0
+            },
+            "used_has_nan": false,
+            "used_has_inf": false,
+            "unused_nonzero": false,
+            "unused_has_nan": false,
+            "unused_has_inf": false
+          },
+          "layer_28": {
+            "shape": [
+              1,
+              128,
+              1,
+              512
+            ],
+            "n_blocks": 1,
+            "block_size": 128,
+            "capacity": 128,
+            "n_used": 39,
+            "used": {
+              "numel": 19968,
+              "nan": 0,
+              "inf": 0,
+              "finite": 19968,
+              "nonzero": 19968
+            },
+            "unused": {
+              "numel": 45568,
+              "nan": 0,
+              "inf": 0,
+              "finite": 45568,
+              "nonzero": 0
+            },
+            "used_has_nan": false,
+            "used_has_inf": false,
+            "unused_nonzero": false,
+            "unused_has_nan": false,
+            "unused_has_inf": false
+          }
+        }
+      },
+      "read": "buggy有效槽有限、未用槽有限非0 → 脏写/卫生；通常不致坏结果"
+    },
+    {
+      "req_id": "cmpl-878b7c3a29d76089-0-84e7f4b7",
+      "n_used": 24,
+      "n_prompt": 15,
+      "buggy": {
+        "ok": true,
+        "rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S11-pr19285-20261023T125218/dump/token_repeat/cmpl-878b7c3a29d76089-0-84e7f4b7/wave_13/dp0_tp0_pp0_cp0",
+        "n_tensors": 27,
+        "n_used": 24,
+        "any_used_nan": false,
+        "any_used_inf": false,
+        "any_unused_nonzero": true,
+        "any_unused_nonfinite": false,
+        "worst_head": [
+          {
+            "name": "layer_27",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 128,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              1,
+              64
+            ]
+          },
+          {
+            "name": "layer_28",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 1024,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              1,
+              512
+            ]
+          },
+          {
+            "name": "layer_29",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 128,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              1,
+              64
+            ]
+          },
+          {
+            "name": "layer_30",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 1024,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              1,
+              512
+            ]
+          },
+          {
+            "name": "layer_31",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 128,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              1,
+              64
+            ]
+          },
+          {
+            "name": "layer_32",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 1024,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              1,
+              512
+            ]
+          }
+        ],
+        "layer_sample": {
+          "layer_27": {
+            "shape": [
+              1,
+              128,
+              1,
+              64
+            ],
+            "n_blocks": 1,
+            "block_size": 128,
+            "capacity": 128,
+            "n_used": 24,
+            "used": {
+              "numel": 1536,
+              "nan": 0,
+              "inf": 0,
+              "finite": 1536,
+              "nonzero": 1536
+            },
+            "unused": {
+              "numel": 6656,
+              "nan": 0,
+              "inf": 0,
+              "finite": 6656,
+              "nonzero": 128
+            },
+            "used_has_nan": false,
+            "used_has_inf": false,
+            "unused_nonzero": true,
+            "unused_has_nan": false,
+            "unused_has_inf": false
+          },
+          "layer_28": {
+            "shape": [
+              1,
+              128,
+              1,
+              512
+            ],
+            "n_blocks": 1,
+            "block_size": 128,
+            "capacity": 128,
+            "n_used": 24,
+            "used": {
+              "numel": 12288,
+              "nan": 0,
+              "inf": 0,
+              "finite": 12288,
+              "nonzero": 12288
+            },
+            "unused": {
+              "numel": 53248,
+              "nan": 0,
+              "inf": 0,
+              "finite": 53248,
+              "nonzero": 1024
+            },
+            "used_has_nan": false,
+            "used_has_inf": false,
+            "unused_nonzero": true,
+            "unused_has_nan": false,
+            "unused_has_inf": false
+          }
+        }
+      },
+      "ref": {
+        "ok": true,
+        "rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S11/ref_recap/cmpl-878b7c3a29d76089-0-84e7f4b7/wave_3/dp0_tp0_pp0_cp0",
+        "n_tensors": 27,
+        "n_used": 24,
+        "any_used_nan": false,
+        "any_used_inf": false,
+        "any_unused_nonzero": true,
+        "any_unused_nonfinite": false,
+        "worst_head": [
+          {
+            "name": "layer_27",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 960,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              1,
+              64
+            ]
+          },
+          {
+            "name": "layer_28",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 7680,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              1,
+              512
+            ]
+          },
+          {
+            "name": "layer_29",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 960,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              1,
+              64
+            ]
+          },
+          {
+            "name": "layer_30",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 7680,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              1,
+              512
+            ]
+          },
+          {
+            "name": "layer_31",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 960,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              1,
+              64
+            ]
+          },
+          {
+            "name": "layer_32",
+            "used_nan": 0,
+            "used_inf": 0,
+            "unused_nz": 7680,
+            "unused_nan": 0,
+            "unused_inf": 0,
+            "shape": [
+              1,
+              128,
+              1,
+              512
+            ]
+          }
+        ],
+        "layer_sample": {
+          "layer_27": {
+            "shape": [
+              1,
+              128,
+              1,
+              64
+            ],
+            "n_blocks": 1,
+            "block_size": 128,
+            "capacity": 128,
+            "n_used": 24,
+            "used": {
+              "numel": 1536,
+              "nan": 0,
+              "inf": 0,
+              "finite": 1536,
+              "nonzero": 1536
+            },
+            "unused": {
+              "numel": 6656,
+              "nan": 0,
+              "inf": 0,
+              "finite": 6656,
+              "nonzero": 960
+            },
+            "used_has_nan": false,
+            "used_has_inf": false,
+            "unused_nonzero": true,
+            "unused_has_nan": false,
+            "unused_has_inf": false
+          },
+          "layer_28": {
+            "shape": [
+              1,
+              128,
+              1,
+              512
+            ],
+            "n_blocks": 1,
+            "block_size": 128,
+            "capacity": 128,
+            "n_used": 24,
+            "used": {
+              "numel": 12288,
+              "nan": 0,
+              "inf": 0,
+              "finite": 12288,
+              "nonzero": 12288
+            },
+            "unused": {
+              "numel": 53248,
+              "nan": 0,
+              "inf": 0,
+              "finite": 53248,
+              "nonzero": 7680
+            },
+            "used_has_nan": false,
+            "used_has_inf": false,
+            "unused_nonzero": true,
+            "unused_has_nan": false,
+            "unused_has_inf": false
+          }
+        }
+      },
+      "read": "buggy有效槽有限、未用槽有限非0 → 脏写/卫生；通常不致坏结果",
+      "ref_unused_note": "标杆未用槽有限非0（卫生，通常无妨）"
+    }
+  ]
+}
