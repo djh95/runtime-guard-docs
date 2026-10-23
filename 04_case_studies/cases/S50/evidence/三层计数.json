@@ -1,0 +1,15 @@
+{
+  "scenario": "S50",
+  "trigger": 58,
+  "precision": 48,
+  "detect": 48,
+  "detect_by": {
+    "logits_finite": 48
+  },
+  "n_requests": 48,
+  "precision_identical_mode": [
+    "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
+    48
+  ],
+  "notes": "keep-set-retest-20261022 layers run; detector both, logits_finite×48"
+}

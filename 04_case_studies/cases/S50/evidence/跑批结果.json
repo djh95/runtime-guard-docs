@@ -1,0 +1,15 @@
+{
+  "scenario": "S50",
+  "conclusion": "KV不一致→定界",
+  "detection": "检出",
+  "layers": "58/48/48",
+  "detector": "logits_finite",
+  "model": "/mnt/weight/Qwen3-8B",
+  "host_cards": "4,5",
+  "guard_pin": "G2 f2aefd068 + dump-time #19285",
+  "layers_run_dir": "/workspace/runtime-guard/canonical/results/anomaly-repro-20261016/50_swiglu_swap_halves-20261022T232244",
+  "bug_dump_run": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S50-pr19285-20261022T232738",
+  "ref_recap_run": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S50-ref-recap-20261023T094236",
+  "verified_kv_server": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S50/ref_recap/",
+  "kv_note": "有效槽全 NaN；未用槽亦 NaN（严重）；标杆洁净未亮 logits_finite；不定层；未开 msprobe"
+}

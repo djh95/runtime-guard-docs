@@ -1,0 +1,50 @@
+{
+  "case": "S50",
+  "bug": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S50-pr19285-20261022T232738",
+  "ref_run": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S50-ref-recap-20261023T094236",
+  "pr19285_source": true,
+  "clean_ref_no_overlay": true,
+  "n_ok_pairs": 2,
+  "results": [
+    {
+      "req_id": "cmpl-80dfca0aa2091acb-0-ac611d71",
+      "ok": true,
+      "n_tokens": 14,
+      "n_prompt": 14,
+      "n_output": 1,
+      "shape": [
+        1,
+        128,
+        4,
+        128
+      ],
+      "shape_match": true,
+      "logits_finite_on_ref": false,
+      "buggy_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S50-pr19285-20261022T232738/dump/logits_finite/cmpl-80dfca0aa2091acb-0-ac611d71/wave_50/dp0_tp0_pp0_cp0",
+      "ref_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S50/ref_recap/cmpl-80dfca0aa2091acb-0-ac611d71/wave_2/dp0_tp0_pp0_cp0",
+      "ref_run": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S50-ref-recap-20261023T094236",
+      "buggy_report": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S50-pr19285-20261022T232738/report/logits_finite/report_20261022_232919_826_cmpl-80dfca0aa2091acb-0-ac611d71_pid857277.json",
+      "feed_resp_tail": "{'raw_tail': 'nish_reason\": \"length\",\\n      \"stop_reason\": null,\\n      \"token_ids\": null,\\n      \"prompt_logprobs\": null,\\n      \"prompt_token_ids\": null,\\n      \"routed_experts\": null\\n    }\\n  ],\\"
+    },
+    {
+      "req_id": "cmpl-b7550a193f424933-0-b27e35ba",
+      "ok": true,
+      "n_tokens": 14,
+      "n_prompt": 14,
+      "n_output": 1,
+      "shape": [
+        1,
+        128,
+        4,
+        128
+      ],
+      "shape_match": true,
+      "logits_finite_on_ref": false,
+      "buggy_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S50-pr19285-20261022T232738/dump/logits_finite/cmpl-b7550a193f424933-0-b27e35ba/wave_98/dp0_tp0_pp0_cp0",
+      "ref_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S50/ref_recap/cmpl-b7550a193f424933-0-b27e35ba/wave_3/dp0_tp0_pp0_cp0",
+      "ref_run": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S50-ref-recap-20261023T094236",
+      "buggy_report": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S50-pr19285-20261022T232738/report/logits_finite/report_20261022_232923_468_cmpl-b7550a193f424933-0-b27e35ba_pid857277.json",
+      "feed_resp_tail": "{'raw_tail': 'nish_reason\": \"length\",\\n      \"stop_reason\": null,\\n      \"token_ids\": null,\\n      \"prompt_logprobs\": null,\\n      \"prompt_token_ids\": null,\\n      \"routed_experts\": null\\n    }\\n  ],\\"
+    }
+  ]
+}

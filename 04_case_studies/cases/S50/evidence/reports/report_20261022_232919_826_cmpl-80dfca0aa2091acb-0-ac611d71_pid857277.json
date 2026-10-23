@@ -1,0 +1,31 @@
+{
+  "ts": "2026-10-22T23:29:19.826",
+  "incident_type": "logits_finite",
+  "req_id": "cmpl-80dfca0aa2091acb-0-ac611d71",
+  "rank": "dp0_tp0_pp0_cp0",
+  "dump_attempted": true,
+  "dump_arm_wave": 50,
+  "dump_count": 1,
+  "dump_max_times": 8,
+  "dump_dir": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S50-pr19285-20261022T232738/dump/logits_finite/cmpl-80dfca0aa2091acb-0-ac611d71",
+  "decode_token_ids": true,
+  "max_prompt_token_ids": 100000,
+  "max_output_token_ids": 100000,
+  "detail": {
+    "logits_row": 0,
+    "flat_token_index": null,
+    "violation": "non_finite_logits",
+    "finite_kind": "nan",
+    "ill_type": 4,
+    "ill_type_name": "nan",
+    "is_ill": true,
+    "prompt_token_count": 14,
+    "output_token_count": 1,
+    "prompt_token_ids": [675,825,11245,14796,13,3776,2805,6364,11652,13,877,28,16,13],
+    "output_token_ids": [0],
+    "prompt_text": "Name one famous river. One short English sentence. id=1.",
+    "output_text": "!",
+    "block_ids": [1]
+  },
+  "block_ids": [1]
+}
