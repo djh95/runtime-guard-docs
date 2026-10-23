@@ -112,7 +112,7 @@ keep-set 案例的 **headline 结案**只用下面四档；**不要**再用 PASS
 | S45 | [cases/S45/](./cases/S45/) | KV 一致→排除 KV（prompt 窗） | 乱码漏检 | top-k 打在 −logits | 乱码/空 completion（identical×16） | 期望 both→0 report；`manual_dump` | 16 / 16 / 0 |
 | S43 | [cases/S43/](./cases/S43/) | KV 不一致→定界 | 检出 | embedding ×100 | 换行塌缩 | `token_repeat`×48 | 16 / 40 / 48 |
 | S22 | [cases/S22/](./cases/S22/) | （空） | （空） | Spec resample 无独立 salt | （空） | `spec_acceptance` | （空） |
-| S06 | [cases/S06/](./cases/S06/) | （空） | （空） | MoE router bias / mask（构造） | （空） | `token_repeat` | （空） |
+| S06 | [cases/S06/](./cases/S06/) | KV 不一致→定界 | 检出 | MoE 路由 bias | token 重复 | `token_repeat` | 52 / 25 / 46 |
 | S26 | [cases/S26/](./cases/S26/) | **KV 一致→排除 KV** | **检出** | RMSNorm fp32 错乘 | `1.1.1…` 数字复读 | `token_repeat` | **470 / 14 / 48** |
 | S25 | [cases/S25/](./cases/S25/) | **KV 一致→排除 KV** | **检出** | RoPE 后半维丢失 | `1.1.1…` 数字复读 | `token_repeat` | **462 / 15 / 48** |
 | S50 | [cases/S50/](./cases/S50/) | KV 不一致→定界 | 检出 | SwiGLU gate/up 对调 | 有效槽全 NaN；未用槽亦 NaN；标杆洁；不定层 | `logits_finite` | 58 / 48 / 48 |

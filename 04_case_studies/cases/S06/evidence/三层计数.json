@@ -1,0 +1,20 @@
+{
+  "scenario": "S06",
+  "trigger": 52,
+  "precision": 25,
+  "precision_identical_mode": null,
+  "detect_reports": 46,
+  "detect_by": {
+    "token_repeat": 46
+  },
+  "n_requests": 48,
+  "n_errors": 0,
+  "temperature": 0.0,
+  "top_k": null,
+  "top_p": null,
+  "host_cards": "4,5",
+  "model": "/mnt/weight/DeepSeek-V2-Lite",
+  "detector": "token_repeat",
+  "run_dir": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S06-layers-20261023T122714",
+  "boot_ok": true
+}

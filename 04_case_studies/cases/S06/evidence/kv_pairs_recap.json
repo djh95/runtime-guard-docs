@@ -1,0 +1,46 @@
+{
+  "case": "S06",
+  "bug": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S06-pr19285-20261023T122855",
+  "ref_run": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S06-ref-recap-20261023T123046",
+  "pr19285_source": true,
+  "clean_ref_no_overlay": true,
+  "n_ok_pairs": 2,
+  "results": [
+    {
+      "req_id": "cmpl-b0b22b5665a04f7a-0-8c37e310",
+      "ok": true,
+      "n_tokens": 21,
+      "n_prompt": 14,
+      "n_output": 8,
+      "shape": [
+        1,
+        128,
+        1,
+        64
+      ],
+      "shape_match": true,
+      "logits_finite_on_ref": false,
+      "buggy_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S06-pr19285-20261023T122855/dump/token_repeat/cmpl-b0b22b5665a04f7a-0-8c37e310/wave_9/dp0_tp0_pp0_cp0",
+      "ref_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S06/ref_recap/cmpl-b0b22b5665a04f7a-0-8c37e310/wave_2/dp0_tp0_pp0_cp0",
+      "buggy_report": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S06-pr19285-20261023T122855/report/token_repeat/report_20261023_123034_854_cmpl-b0b22b5665a04f7a-0-8c37e310_pid1008797.json"
+    },
+    {
+      "req_id": "cmpl-bf744b538b95b4a3-0-9d7bec17",
+      "ok": true,
+      "n_tokens": 19,
+      "n_prompt": 14,
+      "n_output": 6,
+      "shape": [
+        1,
+        128,
+        1,
+        64
+      ],
+      "shape_match": true,
+      "logits_finite_on_ref": false,
+      "buggy_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S06-pr19285-20261023T122855/dump/token_repeat/cmpl-bf744b538b95b4a3-0-9d7bec17/wave_9/dp0_tp0_pp0_cp0",
+      "ref_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S06/ref_recap/cmpl-bf744b538b95b4a3-0-9d7bec17/wave_3/dp0_tp0_pp0_cp0",
+      "buggy_report": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S06-pr19285-20261023T122855/report/token_repeat/report_20261023_123034_856_cmpl-bf744b538b95b4a3-0-9d7bec17_pid1008797.json"
+    }
+  ]
+}
