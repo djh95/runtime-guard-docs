@@ -1,0 +1,46 @@
+{
+  "case": "S45",
+  "bug": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S45-pr19285-20261023T120202",
+  "ref_run": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S45-ref-recap-20261023T120733",
+  "pr19285_source": true,
+  "clean_ref_no_overlay": true,
+  "n_ok_pairs": 2,
+  "results": [
+    {
+      "req_id": "cmpl-a8b62fdc53007004-0-84d80d11",
+      "ok": true,
+      "n_tokens": 14,
+      "n_prompt": 14,
+      "n_output": 1,
+      "shape": [
+        1,
+        128,
+        4,
+        128
+      ],
+      "shape_match": true,
+      "logits_finite_on_ref": false,
+      "buggy_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S45-pr19285-20261023T120202/dump/manual_trigger/cmpl-a8b62fdc53007004-0-84d80d11/wave_16/dp0_tp0_pp0_cp0",
+      "ref_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S45/ref_recap/cmpl-a8b62fdc53007004-0-84d80d11/wave_2/dp0_tp0_pp0_cp0",
+      "buggy_report": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S45-pr19285-20261023T120202/report/manual_trigger/report_20261023_120338_498_cmpl-a8b62fdc53007004-0-84d80d11_pid995628.json"
+    },
+    {
+      "req_id": "cmpl-ace346ec08673151-0-b24b4775",
+      "ok": true,
+      "n_tokens": 14,
+      "n_prompt": 14,
+      "n_output": 1,
+      "shape": [
+        1,
+        128,
+        4,
+        128
+      ],
+      "shape_match": true,
+      "logits_finite_on_ref": false,
+      "buggy_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S45-pr19285-20261023T120202/dump/manual_trigger/cmpl-ace346ec08673151-0-b24b4775/wave_2/dp0_tp0_pp0_cp0",
+      "ref_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S45/ref_recap/cmpl-ace346ec08673151-0-b24b4775/wave_3/dp0_tp0_pp0_cp0",
+      "buggy_report": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S45-pr19285-20261023T120202/report/manual_trigger/report_20261023_120334_685_cmpl-ace346ec08673151-0-b24b4775_pid995628.json"
+    }
+  ]
+}

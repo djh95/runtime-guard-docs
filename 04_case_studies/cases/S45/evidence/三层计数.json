@@ -1,0 +1,23 @@
+{
+  "scenario": "S45",
+  "trigger": 16,
+  "precision": 16,
+  "precision_identical_mode": [
+    "-Semit修为",
+    16
+  ],
+  "detect_reports": 0,
+  "detect_by": {},
+  "n_requests": 48,
+  "n_errors": 0,
+  "temperature": 0.8,
+  "top_k": 1,
+  "top_p": null,
+  "host_cards": "4,5",
+  "model": "/mnt/weight/Qwen3-8B",
+  "detector": "both",
+  "run_dir": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S45-layers-20261023T113411",
+  "boot_ok": true,
+  "detect_gap": true,
+  "detect_note": "detect=0; GAP — dump via manual_dump (not on_trigger)"
+}

@@ -1,0 +1,31 @@
+{
+  "ts": "2026-10-23T12:03:34.685",
+  "incident_type": "manual_trigger",
+  "req_id": "cmpl-ace346ec08673151-0-b24b4775",
+  "rank": "dp0_tp0_pp0_cp0",
+  "dump_attempted": true,
+  "dump_arm_wave": 2,
+  "dump_count": 0,
+  "dump_max_times": 0,
+  "dump_dir": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S45-pr19285-20261023T120202/dump/manual_trigger/cmpl-ace346ec08673151-0-b24b4775",
+  "decode_token_ids": true,
+  "max_prompt_token_ids": 100000,
+  "max_output_token_ids": 100000,
+  "detail": {
+    "source": "dump.manual_dump",
+    "manual_dump_count": 1,
+    "manual_dump_target": 1,
+    "trigger_req_id": "__manual_trigger__",
+    "num_requests_in_batch": 1,
+    "req_id": "cmpl-ace346ec08673151-0-b24b4775",
+    "req_idx": 63,
+    "prompt_token_count": 14,
+    "output_token_count": 1,
+    "prompt_token_ids": [675,825,11245,14796,13,3776,2805,6364,11652,13,877,28,15,13],
+    "output_token_ids": [44092],
+    "prompt_text": "Name one famous river. One short English sentence. id=0.",
+    "output_text": "-Semit",
+    "block_ids": [1]
+  },
+  "block_ids": [1]
+}

@@ -1,0 +1,285 @@
+{
+  "case": "S45",
+  "method": "v5.16 numeric-gate before cosine",
+  "cos_thresh": 0.99,
+  "n_pairs": 2,
+  "pairs": [
+    {
+      "req_id": "cmpl-a8b62fdc53007004-0-84d80d11",
+      "n_tokens": 14,
+      "n_prompt": 14,
+      "n_layers": 72,
+      "n_model_layers": 36,
+      "n_total_cells": 1008,
+      "n_numeric_issue_cells": 0,
+      "n_cos_cells": 1008,
+      "cosine_localizable": true,
+      "first_numeric_issue_all_names": null,
+      "first_numeric_issue_model_layers": null,
+      "first_cos_mismatch": null,
+      "first_cos_mismatch_model_layers_tok0": null,
+      "worst_clean_model_tok0": {
+        "token_idx": 0,
+        "layer": "model.layers.0.self_attn.attn",
+        "cos": 0.9999999999999998
+      },
+      "clean_model_tok0_cos": {
+        "model.layers.0.self_attn.attn": 1.0,
+        "model.layers.1.self_attn.attn": 1.0,
+        "model.layers.2.self_attn.attn": 1.0,
+        "model.layers.3.self_attn.attn": 1.0,
+        "model.layers.4.self_attn.attn": 1.0,
+        "model.layers.5.self_attn.attn": 1.0,
+        "model.layers.6.self_attn.attn": 1.0,
+        "model.layers.7.self_attn.attn": 1.0,
+        "model.layers.8.self_attn.attn": 1.0,
+        "model.layers.9.self_attn.attn": 1.0,
+        "model.layers.10.self_attn.attn": 1.0,
+        "model.layers.11.self_attn.attn": 1.0
+      },
+      "per_token_min_clean": [
+        {
+          "token_idx": 0,
+          "min_cos": 0.9999999999999998,
+          "min_layer": "layer_58",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 1,
+          "min_cos": 0.9999999999999998,
+          "min_layer": "layer_47",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 2,
+          "min_cos": 0.9999999999999998,
+          "min_layer": "model.layers.12.self_attn.attn",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 3,
+          "min_cos": 0.9999999999999998,
+          "min_layer": "layer_36",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 4,
+          "min_cos": 0.9999999999999998,
+          "min_layer": "layer_39",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 5,
+          "min_cos": 0.9999999999999998,
+          "min_layer": "layer_36",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 6,
+          "min_cos": 0.9999999999999998,
+          "min_layer": "layer_42",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 7,
+          "min_cos": 0.9999999999999998,
+          "min_layer": "layer_41",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 8,
+          "min_cos": 0.9999999999999998,
+          "min_layer": "layer_39",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 9,
+          "min_cos": 0.9999999999999998,
+          "min_layer": "layer_55",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 10,
+          "min_cos": 0.9999999999999998,
+          "min_layer": "layer_37",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 11,
+          "min_cos": 0.9999999999999998,
+          "min_layer": "layer_43",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 12,
+          "min_cos": 0.9999999999999998,
+          "min_layer": "layer_42",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 13,
+          "min_cos": 0.9999999999999998,
+          "min_layer": "layer_36",
+          "n_issue": 0,
+          "n_cos": 72
+        }
+      ],
+      "buggy_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S45-pr19285-20261023T120202/dump/manual_trigger/cmpl-a8b62fdc53007004-0-84d80d11/wave_16/dp0_tp0_pp0_cp0",
+      "ref_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S45/ref_recap/cmpl-a8b62fdc53007004-0-84d80d11/wave_2/dp0_tp0_pp0_cp0"
+    },
+    {
+      "req_id": "cmpl-ace346ec08673151-0-b24b4775",
+      "n_tokens": 14,
+      "n_prompt": 14,
+      "n_layers": 72,
+      "n_model_layers": 36,
+      "n_total_cells": 1008,
+      "n_numeric_issue_cells": 0,
+      "n_cos_cells": 1008,
+      "cosine_localizable": true,
+      "first_numeric_issue_all_names": null,
+      "first_numeric_issue_model_layers": null,
+      "first_cos_mismatch": null,
+      "first_cos_mismatch_model_layers_tok0": null,
+      "worst_clean_model_tok0": {
+        "token_idx": 0,
+        "layer": "model.layers.0.self_attn.attn",
+        "cos": 0.9999999999999998
+      },
+      "clean_model_tok0_cos": {
+        "model.layers.0.self_attn.attn": 1.0,
+        "model.layers.1.self_attn.attn": 1.0,
+        "model.layers.2.self_attn.attn": 1.0,
+        "model.layers.3.self_attn.attn": 1.0,
+        "model.layers.4.self_attn.attn": 1.0,
+        "model.layers.5.self_attn.attn": 1.0,
+        "model.layers.6.self_attn.attn": 1.0,
+        "model.layers.7.self_attn.attn": 1.0,
+        "model.layers.8.self_attn.attn": 1.0,
+        "model.layers.9.self_attn.attn": 1.0,
+        "model.layers.10.self_attn.attn": 1.0,
+        "model.layers.11.self_attn.attn": 1.0
+      },
+      "per_token_min_clean": [
+        {
+          "token_idx": 0,
+          "min_cos": 0.9999999999999998,
+          "min_layer": "layer_58",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 1,
+          "min_cos": 0.9999999999999998,
+          "min_layer": "layer_47",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 2,
+          "min_cos": 0.9999999999999998,
+          "min_layer": "model.layers.12.self_attn.attn",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 3,
+          "min_cos": 0.9999999999999998,
+          "min_layer": "layer_36",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 4,
+          "min_cos": 0.9999999999999998,
+          "min_layer": "layer_39",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 5,
+          "min_cos": 0.9999999999999998,
+          "min_layer": "layer_36",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 6,
+          "min_cos": 0.9999999999999998,
+          "min_layer": "layer_42",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 7,
+          "min_cos": 0.9999999999999998,
+          "min_layer": "layer_41",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 8,
+          "min_cos": 0.9999999999999998,
+          "min_layer": "layer_39",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 9,
+          "min_cos": 0.9999999999999998,
+          "min_layer": "layer_55",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 10,
+          "min_cos": 0.9999999999999998,
+          "min_layer": "layer_37",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 11,
+          "min_cos": 0.9999999999999998,
+          "min_layer": "layer_43",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 12,
+          "min_cos": 0.9999999999999998,
+          "min_layer": "layer_39",
+          "n_issue": 0,
+          "n_cos": 72
+        },
+        {
+          "token_idx": 13,
+          "min_cos": 0.9999999999999998,
+          "min_layer": "layer_53",
+          "n_issue": 0,
+          "n_cos": 72
+        }
+      ],
+      "buggy_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S45-pr19285-20261023T120202/dump/manual_trigger/cmpl-ace346ec08673151-0-b24b4775/wave_2/dp0_tp0_pp0_cp0",
+      "ref_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S45/ref_recap/cmpl-ace346ec08673151-0-b24b4775/wave_3/dp0_tp0_pp0_cp0"
+    }
+  ],
+  "hint": {
+    "any_numeric_issue": false,
+    "any_cos_mismatch": false,
+    "all_pairs_cos_clean": true
+  }
+}
