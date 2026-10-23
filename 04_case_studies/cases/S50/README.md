@@ -39,7 +39,7 @@ Soft-inverse：SwiGLU 先 `cat(up, gate)` 再 `npu_swiglu`（gate/up 对调）�
 | 其它 | temp=0；`max_tokens` 足以出 `!!!!` |
 | detector | `logits_finite`（可兼开 `token_repeat`） |
 | 抓 dump | 非空 `prompt_token_ids` → 临时 #19285；抓前清 `kv_cache` |
-| 标杆 | **清洁树、无 overlay**；须确认 **未**亮 `logits_finite`；manual_dump + force-feed history |
+| 标杆 | **清洁树、无 overlay**；须确认 **未**亮 `logits_finite`；manual_dump + force-feed history。必现时也可问他环境是否正常 → 跨环境标杆（须权重 MD5 + 代码 commit 一致；见 skills v5.17） |
 
 ## 5 · 定界分析
 
