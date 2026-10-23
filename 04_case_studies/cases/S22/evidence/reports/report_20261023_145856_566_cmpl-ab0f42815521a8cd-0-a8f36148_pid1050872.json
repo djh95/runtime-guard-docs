@@ -1,0 +1,106 @@
+{
+  "ts": "2026-10-23T14:58:56.569",
+  "incident_type": "spec_acceptance",
+  "req_id": "cmpl-ab0f42815521a8cd-0-a8f36148",
+  "rank": "dp0_tp0_pp0_cp0",
+  "dump_attempted": true,
+  "dump_arm_wave": 7,
+  "dump_count": 0,
+  "dump_max_times": 8,
+  "dump_dir": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S22-pr19285-20261023T145722/dump/spec_acceptance/cmpl-ab0f42815521a8cd-0-a8f36148",
+  "decode_token_ids": true,
+  "max_prompt_token_ids": 100000,
+  "max_output_token_ids": 100000,
+  "detail": {
+    "acceptance_rate": 0.13333333333333333,
+    "acceptance_len": 0.4,
+    "accepted_sum": 2,
+    "draft_sum": 15,
+    "window": 5,
+    "window_size": 5,
+    "draft_len": 3,
+    "accepted_count": 1,
+    "accepted_draft_count": 0,
+    "sampled_count": 4,
+    "thresholds": {
+      "low_rate": 0.5,
+      "low_len": 1.0,
+      "high_rate": 0.99,
+      "high_len": 3.0
+    },
+    "window_steps": [
+      {
+        "accepted_draft": 2,
+        "draft_len": 3,
+        "sampled_count": 4,
+        "accepted_count": 3,
+        "step_accept_rate": 0.6666666666666666
+      },
+      {
+        "accepted_draft": 0,
+        "draft_len": 3,
+        "sampled_count": 4,
+        "accepted_count": 1,
+        "step_accept_rate": 0.0
+      },
+      {
+        "accepted_draft": 0,
+        "draft_len": 3,
+        "sampled_count": 4,
+        "accepted_count": 1,
+        "step_accept_rate": 0.0
+      },
+      {
+        "accepted_draft": 0,
+        "draft_len": 3,
+        "sampled_count": 4,
+        "accepted_count": 1,
+        "step_accept_rate": 0.0
+      },
+      {
+        "accepted_draft": 0,
+        "draft_len": 3,
+        "sampled_count": 4,
+        "accepted_count": 1,
+        "step_accept_rate": 0.0
+      }
+    ],
+    "window_sampled_token_ids": [
+      [13,20,13,4323521613979991040],
+      [16,4495785398779982720,-4627805976910382345,2902495679422184370],
+      [271,-4604999219449839192,4110308998570881488,4055844881186700659],
+      [785,5058150412676352347,-3846847739457976320,5109978601192863024],
+      [76190,4483825566911644996,-4428088350262836855,4613017244632794134]
+    ],
+    "window_accepted_token_ids": [
+      [13,20,13],
+      [16],
+      [271],
+      [785],
+      [76190]
+    ],
+    "current_sampled_token_ids": [76190,4483825566911644996,-4428088350262836855,4613017244632794134],
+    "current_accepted_token_ids": [76190],
+    "is_ill": true,
+    "prompt_token_count": 14,
+    "output_token_count": 7,
+    "window_sampled_token_count": 20,
+    "window_accepted_token_count": 7,
+    "current_sampled_token_count": 4,
+    "current_accepted_token_count": 1,
+    "window_accepted_texts": [
+      ".5.",
+      "1",
+      "\n\n",
+      "The",
+      " Nile"
+    ],
+    "current_accepted_text": " Nile",
+    "prompt_token_ids": [675,825,11245,14796,13,3776,2805,6364,11652,13,877,28,17,13],
+    "output_token_ids": [19,13,20,13,16,271,785],
+    "prompt_text": "Name one famous river. One short English sentence. id=2.",
+    "output_text": "4.5.1\n\nThe",
+    "block_ids": [1]
+  },
+  "block_ids": [1]
+}
