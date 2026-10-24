@@ -48,6 +48,43 @@ W8A8 反量化 / scale 崩溃族。细节见 [evidence/规格说明.md](./eviden
 - **dump 双名（为何 `layer_36` = `model.layers.0`，不是第 36 层）：** 同一次 dump 目录里并存两套文件名，各 36 个（合计 72）。一套叫 `model.layers.0…35.self_attn.attn`（模型层号）；另一套叫 `layer_36…71`。按编号一一对应：`layer_(36+i)` ↔ `model.layers.i`（例如 `layer_36`↔`model.layers.0`，`layer_37`↔`model.layers.1`）。对账脚本按名字排序时，会先碰到 `layer_36`，所以「全名首次数值问题」写在 `layer_36`；若只看 `model.layers.*`，同一事实落在 **`model.layers.0`**。两对都是：prompt token0 起即 `zero_norm`。
 - 证据：`evidence/kv_compare.json`、`kv_v516_numeric_first.json`、`kv_finite_unused.json`（**.pt 未入库**；服务器 `verified_kv/S07/`）。
 
+
+
+### KV 对账表
+
+分桶（可读性）：`≈1`≥0.99；`0.9–0.99`；`0.8–0.9`；`0.6–0.8`；`0.3–0.6`；`0.1–0.3`；`<0.1`（含负值）；有 NaN/Inf/zero_norm 等数值门闩则写 **数值异常**（不编余弦）。
+
+数据来自 `evidence/kv_v516_numeric_first.json`。两对同向；展示代表对。
+
+**代表对**（`req_id`=`cmpl-8e065448ae678178-0-9dfa8816`；对比窗 **14** token，其中 prompt **14**）。
+
+**表1 · 每 token 最差格**（该 token 上差距最大的层；有数值门闩则整格写数值异常）
+
+| token 序号 | 角色 | 该 token 最差格 |
+| --- | --- | --- |
+| 0 | prompt[0] | 数值异常 |
+| 1 | prompt[1] | 数值异常 |
+| 2 | prompt[2] | 数值异常 |
+| 3 | prompt[3] | 数值异常 |
+| 4 | prompt[4] | 数值异常 |
+| 5 | prompt[5] | 数值异常 |
+| 6 | prompt[6] | 数值异常 |
+| 7 | prompt[7] | 数值异常 |
+| 8 | prompt[8] | 数值异常 |
+| 9 | prompt[9] | 数值异常 |
+| 10 | prompt[10] | 数值异常 |
+| 11 | prompt[11] | 数值异常 |
+| 12 | prompt[12] | 数值异常 |
+| 13 | prompt[13] | 数值异常 |
+
+**表2 · 首 token 逐层剖面（合并区间）** — 首 token = **prompt[0] / window token0**（与证据 `token_idx=0` 一致）。
+
+| 层区间（model.layers） | 余弦 / 状态 |
+| --- | --- |
+| L0–L35 | 数值异常 |
+
+注：状态为 zero_norm（有限但全零）；无余弦格。
+
 ### 推断
 
 - 有效槽全零 → **定界到数值问题（全零）**；本窗不能用相似度指出「第一坏层」。

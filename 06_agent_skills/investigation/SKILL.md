@@ -268,6 +268,11 @@ description: >-
 
 **统一定界禁例（案例教学禁写并入此处）：** 不可写「坏输出 → 所以进错专家 / MoE topk / K/V 对调 / gate-up 对调」等；构造根因只放「案例背景/构造」，不放进定界推断。案例页只留 outcome/事实，不写教学禁例段。
 
+### KV 对账表（keep-set 案例页）
+
+归档 keep-set 且已有 buggy+ref KV 时：在案例 README「事实」后附 **表1（每 token 最差格）** + **表2（首 token 逐层合并区间）**；规则与分桶见 [04 案例写作约定](../../04_case_studies/README.md)。无逐层/逐 token 数组则注明跳过，禁止编数。
+
+
 ### keep-set 结案四档（主标签；≠ PASS/FAIL/GAP）
 
 案例 **headline 结案**只用四档（详见 [04](../../04_case_studies/README.md)）。PASS/FAIL/GAP 仅作 **detector / verify 侧**用语，不作整案总评。

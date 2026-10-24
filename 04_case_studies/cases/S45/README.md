@@ -47,6 +47,45 @@ top-k / top-p 打在 −logits（bottom nucleus）。细节见 [evidence/规格�
 - **读法：** 对账匹配 → **排除「坏值经/进 KV」为主因**（就本 prompt 窗而言）；乱码仍在，更可能落在采样/top-k 方向等本窗 KV 没覆盖到的路径。
 - 证据：`evidence/kv_*.json`；`verified_kv/S45/`（**.pt 未入库**）。
 
+
+
+### KV 对账表
+
+分桶（可读性）：`≈1`≥0.99；`0.9–0.99`；`0.8–0.9`；`0.6–0.8`；`0.3–0.6`；`0.1–0.3`；`<0.1`（含负值）；有 NaN/Inf/zero_norm 等数值门闩则写 **数值异常**（不编余弦）。
+
+数据来自 `evidence/kv_v516_numeric_first.json`（及同结构字段）；不编造未入库 `.pt` 上的数。
+
+两对同向时只展示**代表对**（对 1）。
+
+**代表对**（`req_id`=`cmpl-a8b62fdc53007004-0-84d80d11`；对比窗 **14** token，其中 prompt **14**）。
+
+**表1 · 每 token 最差格**（该 token 上差距最大的层；有数值门闩则整格写数值异常）
+
+| token 序号 | 角色 | 该 token 最差格 |
+| --- | --- | --- |
+| 0 | prompt[0] | ≈1（最差 layer_58） |
+| 1 | prompt[1] | ≈1（最差 layer_47） |
+| 2 | prompt[2] | ≈1（最差 L12） |
+| 3 | prompt[3] | ≈1（最差 layer_36） |
+| 4 | prompt[4] | ≈1（最差 layer_39） |
+| 5 | prompt[5] | ≈1（最差 layer_36） |
+| 6 | prompt[6] | ≈1（最差 layer_42） |
+| 7 | prompt[7] | ≈1（最差 layer_41） |
+| 8 | prompt[8] | ≈1（最差 layer_39） |
+| 9 | prompt[9] | ≈1（最差 layer_55） |
+| 10 | prompt[10] | ≈1（最差 layer_37） |
+| 11 | prompt[11] | ≈1（最差 layer_43） |
+| 12 | prompt[12] | ≈1（最差 layer_42） |
+| 13 | prompt[13] | ≈1（最差 layer_36） |
+
+**表2 · 首 token 逐层剖面（合并区间）** — 首 token = **prompt[0] / window token0**（与证据 `token_idx=0` 一致）。
+
+| 层区间（model.layers） | 余弦 / 状态 |
+| --- | --- |
+| L0–L35 | ≈1 |
+
+注：证据 `clean_model_tok0_cos` 仅存前 12 层抽样且均为 ≈1；首 token 全层最差仍 ≥0.99（L0）→ 合并为 L0–L35 ≈1。
+
 ### 推断
 
 - 对账匹配 → **排除「坏值经/进 KV」为主因**（本 prompt 短窗）。

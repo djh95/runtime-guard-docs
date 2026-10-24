@@ -49,6 +49,87 @@ Rejection 与 residual resample 共用 RNG、无独立 salt（对照修复 [asce
 - **dump 层数：** 本窗约 74 个名字（含投机相关层），高于普通 36+36；细节以 `evidence/kv_v516_numeric_first.json` 为准。
 - 证据：`evidence/kv_*.json`；`verified_kv/S22/`（**.pt 未入库**）。
 
+
+
+### KV 对账表
+
+分桶（可读性）：`≈1`≥0.99；`0.9–0.99`；`0.8–0.9`；`0.6–0.8`；`0.3–0.6`；`0.1–0.3`；`<0.1`（含负值）；有 NaN/Inf/zero_norm 等数值门闩则写 **数值异常**（不编余弦）。
+
+数据来自 `evidence/kv_v516_numeric_first.json`（及同结构字段）；不编造未入库 `.pt` 上的数。
+
+两对结论**不一致**，分列如下。
+
+**对 1**（`req_id`=`cmpl-b6f0819f7cce6b53-0-b49cdd90`；对比窗 **21** token，其中 prompt **14**）。
+
+**表1 · 每 token 最差格**（该 token 上差距最大的层；有数值门闩则整格写数值异常）
+
+| token 序号 | 角色 | 该 token 最差格 |
+| --- | --- | --- |
+| 0 | prompt[0] | ≈1（最差 layer_67） |
+| 1 | prompt[1] | ≈1（最差 layer_67） |
+| 2 | prompt[2] | ≈1（最差 layer_61） |
+| 3 | prompt[3] | ≈1（最差 layer_61） |
+| 4 | prompt[4] | ≈1（最差 layer_69） |
+| 5 | prompt[5] | ≈1（最差 layer_61） |
+| 6 | prompt[6] | ≈1（最差 layer_71） |
+| 7 | prompt[7] | ≈1（最差 layer_71） |
+| 8 | prompt[8] | ≈1（最差 layer_71） |
+| 9 | prompt[9] | ≈1（最差 layer_59） |
+| 10 | prompt[10] | ≈1（最差 layer_47） |
+| 11 | prompt[11] | ≈1（最差 layer_61） |
+| 12 | prompt[12] | ≈1（最差 layer_73） |
+| 13 | prompt[13] | ≈1（最差 layer_63） |
+| 14 | out[0] | ≈1（最差 layer_71） |
+| 15 | out[1] | ≈1（最差 L33） |
+| 16 | out[2] | ≈1（最差 layer_63） |
+| 17 | out[3] | ≈1（最差 layer_61） |
+| 18 | out[4] | ≈1（最差 layer_63） |
+| 19 | out[5] | ≈1（最差 layer_61） |
+| 20 | out[6] | 0.9–0.99（最差 layer_73） |
+
+**表2 · 首 token 逐层剖面（合并区间）** — 首 token = **prompt[0] / window token0**（与证据 `token_idx=0` 一致）。
+
+| 层区间（model.layers） | 余弦 / 状态 |
+| --- | --- |
+| L0–L36 | ≈1 |
+
+注：证据 `clean_model_tok0_cos` 仅存前 12 层抽样且均为 ≈1；首 token 全层最差仍 ≥0.99（L13）→ 合并为 L0–L36 ≈1。
+
+**对 2**（`req_id`=`cmpl-ab0f42815521a8cd-0-a8f36148`；对比窗 **20** token，其中 prompt **14**）。
+
+**表1 · 每 token 最差格**（该 token 上差距最大的层；有数值门闩则整格写数值异常）
+
+| token 序号 | 角色 | 该 token 最差格 |
+| --- | --- | --- |
+| 0 | prompt[0] | ≈1（最差 layer_67） |
+| 1 | prompt[1] | ≈1（最差 layer_61） |
+| 2 | prompt[2] | ≈1（最差 layer_67） |
+| 3 | prompt[3] | ≈1（最差 layer_61） |
+| 4 | prompt[4] | ≈1（最差 layer_69） |
+| 5 | prompt[5] | ≈1（最差 L33） |
+| 6 | prompt[6] | ≈1（最差 layer_71） |
+| 7 | prompt[7] | ≈1（最差 layer_61） |
+| 8 | prompt[8] | ≈1（最差 layer_63） |
+| 9 | prompt[9] | ≈1（最差 layer_69） |
+| 10 | prompt[10] | ≈1（最差 L33） |
+| 11 | prompt[11] | ≈1（最差 layer_61） |
+| 12 | prompt[12] | ≈1（最差 layer_63） |
+| 13 | prompt[13] | ≈1（最差 layer_47） |
+| 14 | out[0] | ≈1（最差 layer_63） |
+| 15 | out[1] | ≈1（最差 layer_61） |
+| 16 | out[2] | ≈1（最差 layer_63） |
+| 17 | out[3] | ≈1（最差 layer_61） |
+| 18 | out[4] | ≈1（最差 layer_63） |
+| 19 | out[5] | ≈1（最差 layer_69） |
+
+**表2 · 首 token 逐层剖面（合并区间）** — 首 token = **prompt[0] / window token0**（与证据 `token_idx=0` 一致）。
+
+| 层区间（model.layers） | 余弦 / 状态 |
+| --- | --- |
+| L0–L36 | ≈1 |
+
+注：证据 `clean_model_tok0_cos` 仅存前 12 层抽样且均为 ≈1；首 token 全层最差仍 ≥0.99（L13）→ 合并为 L0–L36 ≈1。
+
 ### 推断
 
 - 一对上已有晚步相似度分歧 → 按门闩记 **KV 不一致→定界**；**非两组同向**，不定界到「缺 salt」唯一路径。

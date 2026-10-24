@@ -54,6 +54,47 @@
 - **未用槽：** 异常侧亦有 NaN（严重）；标杆未用槽全 0。
 - 证据：`evidence/kv_compare.json`、`kv_v516_numeric_first.json`；`verified_kv/S50/`（**.pt 未入库**）。
 
+
+
+### KV 对账表
+
+分桶（可读性）：`≈1`≥0.99；`0.9–0.99`；`0.8–0.9`；`0.6–0.8`；`0.3–0.6`；`0.1–0.3`；`<0.1`（含负值）；有 NaN/Inf/zero_norm 等数值门闩则写 **数值异常**（不编余弦）。
+
+数据来自 `evidence/kv_v516_numeric_first.json` / `kv_compare.json`。两对同向；展示代表对。
+
+**代表对**（`req_id`=`cmpl-80dfca0aa2091acb-0-ac611d71`；对比窗 **14** token，其中 prompt **14**）。
+
+**表1 · 每 token 最差格**
+
+| token 序号 | 角色 | 该 token 最差格 |
+| --- | --- | --- |
+| 0 | prompt[0] | 数值异常 |
+| 1 | prompt[1] | 数值异常 |
+| 2 | prompt[2] | 数值异常 |
+| 3 | prompt[3] | 数值异常 |
+| 4 | prompt[4] | 数值异常 |
+| 5 | prompt[5] | 数值异常 |
+| 6 | prompt[6] | 数值异常 |
+| 7 | prompt[7] | 数值异常 |
+| 8 | prompt[8] | 数值异常 |
+| 9 | prompt[9] | 数值异常 |
+| 10 | prompt[10] | 数值异常 |
+| 11 | prompt[11] | 数值异常 |
+| 12 | prompt[12] | 数值异常 |
+| 13 | prompt[13] | 数值异常 |
+
+**表2 · 首 token 逐层剖面（合并区间）** — 首 token = **prompt[0] / window token0**（与证据 `token_idx=0` 一致）。
+
+| 层区间（model.layers） | 余弦 / 状态 |
+| --- | --- |
+| L0–L2 | ≈1 |
+| L3 | 0.9–0.99 |
+| L4 | 0.8–0.9 |
+| L5 | <0.1 |
+| L6–L35 | 数值异常 |
+
+注：并行 dump 名 `layer_36…71` 自 token0 起亦为数值异常（NaN）；表2 按 `model.layers` 主命名。
+
 ### 推断
 
 - prompt 第 1 个 token 起：相似度在第 3 层越阈、第 6 层起 NaN → **KV 不一致**且可写层事实。

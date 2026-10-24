@@ -47,6 +47,14 @@
 - **三层旁注：** trigger 很低（2）仍 detect=48——注入几乎不打日志，但输出复读仍被抓住。
 - 证据：`evidence/kv_compare.json`、`kv_finite_unused.json`（**.pt 未入库**）。
 
+
+
+### KV 对账表
+
+本包有 buggy+ref 对账摘要（`evidence/kv_compare.json`），但**没有**逐 token 最差格列表，也**没有**首 token 逐层余弦数组——**不画表、不编造**。
+
+摘要（代表对 `cmpl-97bc9373d0367b22-0-94e56ad4`）：窗内最差余弦 ≈ **0.6787**；首次低于阈值在 prompt 序号 1，该 token 最差层 L35（该 token 最差余弦 ≈ 0.9831）。完整表需用服务器 `verified_kv/S23/` 重跑 v5.16 归档。
+
 ### 推断
 
 - 对账不匹配 → **重开 KV 线**（坏值已进/经 KV）。

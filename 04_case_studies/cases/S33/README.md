@@ -44,6 +44,51 @@ softcap 缺 `*cap` rescale。细节见 [evidence/规格说明.md](./evidence/规
 - **未用槽：** 异常侧有限非 0（**卫生**）。
 - 证据：`evidence/kv_*.json`（**.pt 未入库**）。
 
+
+
+### KV 对账表
+
+分桶（可读性）：`≈1`≥0.99；`0.9–0.99`；`0.8–0.9`；`0.6–0.8`；`0.3–0.6`；`0.1–0.3`；`<0.1`（含负值）；有 NaN/Inf/zero_norm 等数值门闩则写 **数值异常**（不编余弦）。
+
+数据来自 `evidence/kv_v516_numeric_first.json`（及同结构字段）；不编造未入库 `.pt` 上的数。
+
+两对同向时只展示**代表对**（对 1）。
+
+**代表对**（`req_id`=`cmpl-803db7636b89c584-0-88c429d9`；对比窗 **20** token，其中 prompt **14**）。
+
+**表1 · 每 token 最差格**（该 token 上差距最大的层；有数值门闩则整格写数值异常）
+
+| token 序号 | 角色 | 该 token 最差格 |
+| --- | --- | --- |
+| 0 | prompt[0] | ≈1（最差 layer_67） |
+| 1 | prompt[1] | ≈1（最差 layer_67） |
+| 2 | prompt[2] | ≈1（最差 layer_61） |
+| 3 | prompt[3] | ≈1（最差 layer_61） |
+| 4 | prompt[4] | ≈1（最差 layer_69） |
+| 5 | prompt[5] | ≈1（最差 layer_61） |
+| 6 | prompt[6] | ≈1（最差 layer_71） |
+| 7 | prompt[7] | ≈1（最差 layer_71） |
+| 8 | prompt[8] | ≈1（最差 layer_71） |
+| 9 | prompt[9] | ≈1（最差 layer_59） |
+| 10 | prompt[10] | ≈1（最差 layer_47） |
+| 11 | prompt[11] | ≈1（最差 layer_61） |
+| 12 | prompt[12] | ≈1（最差 layer_63） |
+| 13 | prompt[13] | ≈1（最差 layer_67） |
+| 14 | out[0] | ≈1（最差 layer_63） |
+| 15 | out[1] | ≈1（最差 layer_61） |
+| 16 | out[2] | ≈1（最差 layer_71） |
+| 17 | out[3] | ≈1（最差 layer_61） |
+| 18 | out[4] | ≈1（最差 layer_63） |
+| 19 | out[5] | ≈1（最差 layer_41） |
+
+**表2 · 首 token 逐层剖面（合并区间）** — 首 token = **prompt[0] / window token0**（与证据 `token_idx=0` 一致）。
+
+| 层区间（model.layers） | 余弦 / 状态 |
+| --- | --- |
+| L0–L35 | ≈1 |
+
+注：证据 `clean_model_tok0_cos` 仅存前 12 层抽样且均为 ≈1；首 token 全层最差仍 ≥0.99（L13）→ 合并为 L0–L35 ≈1。
+
 ### 推断
 
 - 对账匹配 → **排除 KV 主因**（本窗）。
