@@ -2,6 +2,8 @@
 
 每个 detector **单独成文**，便于算法演进时只改一页。全部默认 `enabled: false`。
 
+**相关术语（入口）：** **三层率** trigger/precision/detect、**logits 有限乱码**（旧称有限垃圾 / finite garbage；`logits_finite` 抓不到）、检测辅标「检出 / 漏检 / 乱码漏检」、旧 **GAP**（退役结案标签）→ 一律见 [04 · 词汇表](../04_case_studies/词汇表.md)。
+
 ## 一览
 
 | Detector | 阶段 | 典型现象 | 文档 |

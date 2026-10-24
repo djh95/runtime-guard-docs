@@ -25,11 +25,13 @@
 |-----|------|------|
 | `runtime_config_path` | str | live JSON 路径；默认 `<当前工作目录>/runtime/config/runtime_config.json` |
 | `runtime_config_hot_reload` | bool | **仅启动参数**；`true` 才允许启动后改 JSON 生效 |
-| `runtime_config` | dict | 启动 overlay，合并进默认后 **覆盖写** 到 path |
+| `runtime_config` | dict | **启动 overlay**（配置字典，合并进默认后 **覆盖写** 到 path）。**不是**案例里的故障补丁 `overlay.patch`——两义见 [词汇表 · overlay](../04_case_studies/词汇表.md) |
 | `runtime_report_dir` | str | 报告根；默认 `<当前工作目录>/runtime/report` |
 | `runtime_dump_dir` | str | 种子 `dump.dump_dir`；之后 JSON 热更可改 |
 
-**重要：** worker leader 每次启动会按「默认 ← overlay」**覆盖写** JSON。需要热更时：**先启动，再改文件**。
+**重要：** worker leader 每次启动会按「默认 ← 启动 overlay」**覆盖写** JSON。需要热更时：**先启动，再改文件**。
+
+术语（keep-set / 故障 overlay / Guard pin …）：[04 · 词汇表](../04_case_studies/词汇表.md)。
 
 ---
 

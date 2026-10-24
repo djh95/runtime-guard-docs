@@ -17,11 +17,11 @@ description: >-
 
 ---
 
-## origin-faithful（本 skill 术语主页）
+## origin-faithful（Agent 细则；用户面见词汇表）
 
 **一句话：** 注入逻辑必须与原 bug 相同；禁止用 NaN 强写、token `fill_`、或其它「伪造症状」的合成放大器来凑 PASS。
 
-（对外审计 #36：名词释义落在本 skill；04 名词表可一行回链，勿扩用户教学。）
+**用户面入口：** [04 · 词汇表](../../04_case_studies/词汇表.md)（origin-faithful / amplifier / repro_mode 四态 / 三层率 / 挖矿 / 10-gate）。本 skill 写构造硬约束，不替代词汇表。
 
 与表格字段 **Origin**（`vllm-only` / `both` / `ascend-only`）是两件事——Origin 标代码树，origin-faithful 标复现纪律。
 
@@ -92,7 +92,7 @@ detector 漏检 → 记 FAIL+GAP / 缺口，**禁止**用放大器硬凑 detect�
 
 | 交付 | 要求 |
 |------|------|
-| SPEC / 规格说明 | Origin 标签、上游 fix PR、allowed/forbidden knobs、`repro_mode`、期望 detector |
+| SPEC / 规格说明 | Origin 标签、上游 fix PR、allowed/forbidden knobs、`repro_mode`（`origin` \| `origin_tuned` \| `blocked` \| `hard_defer`）、期望 detector |
 | overlay | 可应用 patch；开火日志 |
 | 上游锚点 | 根因修复 PR（多笔时标明角色） |
 | 三层计数 | trigger / precision / detect（及 original vs tuned rate） |
