@@ -1,1 +1,9 @@
-{"id": "cmpl-86b0fb88edc181fd", "object": "text_completion", "created": 1792852882, "model": "anomaly", "choices": [{"index": 0, "text": "1 seconds of your time to answer this. Here are three different European capitals: Paris, Berlin, and Rome. Let me know if you need more information! (Note: The response was crafted to be concise and meet the time constraint.)", "logprobs": null, "finish_reason": "length", "stop_reason": null, "token_ids": null, "prompt_logprobs": null, "prompt_token_ids": null, "routed_experts": null}], "service_tier": null, "system_fingerprint": "vllm-dev-tp2-6dc86f16", "usage": {"prompt_tokens": 14, "total_tokens": 62, "completion_tokens": 48, "prompt_tokens_details": null, "completion_tokens_details": null}, "kv_transfer_params": null, "ec_transfer_params": null, "metrics": null}
+{
+  "prompt": "List three different European capital cities in one sentence. Request 10.",
+  "completion": "000€ in a loan. Explain why you need it. Write a short story about a cat and a mouse. Describe the feeling of flying. Explain the",
+  "api_response": {
+    "id": "cmpl-80ce8d173f53bf87-0-b1c8cd6c",
+    "incident": "token_repeat"
+  },
+  "req_id": "cmpl-80ce8d173f53bf87-0-b1c8cd6c"
+}

@@ -1,61 +1,103 @@
 diff --git a/vllm_ascend/attention/attention_v1.py b/vllm_ascend/attention/attention_v1.py
-index 21aa0dee3..4dd7fca24 100644
+index 21aa0dee3..d94a95490 100644
 --- a/vllm_ascend/attention/attention_v1.py
 +++ b/vllm_ascend/attention/attention_v1.py
-@@ -1335,6 +1335,53 @@ class AscendAttentionBackendImpl(AttentionImpl):
-         if attn_metadata is None:
-             return output.fill_(0)
- 
-+        # ANOMALY S60: gold-A — first decode: negate mid-prompt slot (PD-class).
-+        try:
-+            _decode = getattr(attn_metadata, "attn_state", None) == AscendAttentionState.DecodeOnly
-+            if _decode and kv_cache is not None and len(kv_cache) > 1:
-+                if self.key_cache is None:
-+                    self.key_cache, self.value_cache = kv_cache[0], kv_cache[1]
-+                _bt = getattr(attn_metadata, "block_tables", None)
-+                _seqs = getattr(attn_metadata, "seq_lens_list", None) or []
-+                _nd = int(getattr(attn_metadata, "num_decodes", 0) or 0)
-+                if _bt is not None and _nd > 0 and self.key_cache is not None:
-+                    _bs = int(self.key_cache.shape[1])
-+                    _mid = 5
-+                    if not hasattr(type(self), "_anomaly_s60_done"):
-+                        type(self)._anomaly_s60_done = set()
-+                    _lim = min(_nd, int(_bt.shape[0]), len(_seqs) if _seqs else _nd)
-+                    for _i in range(_lim):
-+                        _sl = int(_seqs[_i]) if _seqs else 0
-+                        if _sl <= _mid:
-+                            continue
-+                        _bidx = _mid // _bs
-+                        if _bidx >= int(_bt.shape[1]):
-+                            continue
-+                        _phys = int(_bt[_i, _bidx].item())
-+                        if _phys < 0:
-+                            continue
-+                        _key = (_phys, _mid, int(self.key_cache.data_ptr()))
-+                        if _key in type(self)._anomaly_s60_done:
-+                            continue
-+                        _off = _mid % _bs
-+                        self.key_cache[_phys, _off].mul_(-1)
-+                        self.value_cache[_phys, _off].mul_(-1)
-+                        type(self)._anomaly_s60_done.add(_key)
-+                        import logging as _logging_s60
-+                        _logging_s60.getLogger("anomaly.s60").warning(
-+                            "ANOMALY_TRIGGER S60 pd_mid_slot_pollute "
-+                            "req_row=%s mid=%s phys_block=%s off=%s seq_len=%s layer=%s",
-+                            _i, _mid, _phys, _off, _sl, getattr(layer, "layer_name", ""),
-+                        )
-+        except Exception as _e_s60:
+@@ -1233,6 +1233,95 @@ class AscendAttentionBackendImpl(AttentionImpl):
+                 slot_mapping=slots_to_cache,
+                 use_bnsd=self.use_bnsd_kv_cache,
+             )
++            # ANOMALY S60v3: after write — (1) once negate mid prompt slot;
++            # (2) on first decode write, orthogonal-blend new slots to target cos ~0.8.
 +            try:
-+                import logging as _logging_s60e
-+                _logging_s60e.getLogger("anomaly.s60").warning(
-+                    "ANOMALY S60 pollute failed: %s", _e_s60
-+                )
-+            except Exception:
-+                pass
-+
-         # Initialize key_cache and value_cache from kv_cache if not already set.
-         # This is needed for DecodeOnly mode where key/value are None but we still
-         # need access to the cache for attention computation.
++                import math as _math_s60
++                import torch as _torch_s60
++                _decode = getattr(attn_metadata, "attn_state", None) == AscendAttentionState.DecodeOnly
++                if _decode and self.key_cache is not None and self.value_cache is not None:
++                    _bs = int(self.key_cache.shape[1])
++                    _bt = getattr(attn_metadata, "block_tables", None)
++                    _seqs = getattr(attn_metadata, "seq_lens_list", None) or []
++                    _nd = int(getattr(attn_metadata, "num_decodes", 0) or 0)
++                    if not hasattr(type(self), "_anomaly_s60_mid_done"):
++                        type(self)._anomaly_s60_mid_done = set()
++                    if not hasattr(type(self), "_anomaly_s60_out_done"):
++                        type(self)._anomaly_s60_out_done = set()
++                    _mid = 5
++                    _target = float(0.8)
++                    _s_orth = _math_s60.sqrt(max(0.0, 1.0 - _target * _target))
++                    if _bt is not None and _nd > 0:
++                        _lim = min(_nd, int(_bt.shape[0]), len(_seqs) if _seqs else _nd)
++                        for _i in range(_lim):
++                            _sl = int(_seqs[_i]) if _seqs else 0
++                            if _sl <= _mid:
++                                continue
++                            _bidx = _mid // _bs
++                            if _bidx >= int(_bt.shape[1]):
++                                continue
++                            _phys = int(_bt[_i, _bidx].item())
++                            if _phys < 0:
++                                continue
++                            _mkey = (_phys, _mid, int(self.key_cache.data_ptr()))
++                            if _mkey not in type(self)._anomaly_s60_mid_done:
++                                _off = _mid % _bs
++                                self.key_cache[_phys, _off].mul_(-1)
++                                self.value_cache[_phys, _off].mul_(-1)
++                                type(self)._anomaly_s60_mid_done.add(_mkey)
++                                import logging as _logging_s60
++                                _logging_s60.getLogger("anomaly.s60").warning(
++                                    "ANOMALY_TRIGGER S60 pd_mid_slot_pollute "
++                                    "req_row=%s mid=%s phys=%s off=%s seq=%s layer=%s",
++                                    _i, _mid, _phys, _off, _sl, getattr(self, "_layer_name", ""),
++                                )
++                    def _target_cos_corrupt(_slot_tensor, _tgt=_target, _so=_s_orth):
++                        _flat = _slot_tensor.reshape(-1).float()
++                        _n = int(_flat.numel())
++                        if _n <= 1:
++                            return
++                        _eye = _torch_s60.arange(_n, device=_flat.device, dtype=_flat.dtype)
++                        _noise = ((_eye.to(_torch_s60.int64) * 2654435761) % 2).to(_flat.dtype) * 2 - 1
++                        _dot = (_noise * _flat).sum()
++                        _denom = (_flat * _flat).sum() + 1e-6
++                        _noise = _noise - (_dot / _denom) * _flat
++                        _nn = _noise.norm()
++                        if float(_nn.item()) < 1e-8:
++                            return
++                        _noise = _noise / _nn
++                        _fn = _flat.norm()
++                        _new = _tgt * _flat + _so * _fn * _noise
++                        _slot_tensor.copy_(_new.reshape_as(_slot_tensor).to(dtype=_slot_tensor.dtype))
++                    _slots = slots_to_cache.reshape(-1)
++                    for _j in range(int(_slots.numel())):
++                        _slot = int(_slots[_j].item())
++                        if _slot < 0:
++                            continue
++                        _phys = _slot // _bs
++                        _off = _slot % _bs
++                        _okey = (_phys, _off, int(self.key_cache.data_ptr()))
++                        if _okey in type(self)._anomaly_s60_out_done:
++                            continue
++                        _target_cos_corrupt(self.key_cache[_phys, _off])
++                        _target_cos_corrupt(self.value_cache[_phys, _off])
++                        type(self)._anomaly_s60_out_done.add(_okey)
++                        import logging as _logging_s60b
++                        if not hasattr(type(self), "_anomaly_s60_out_count"):
++                            type(self)._anomaly_s60_out_count = 0
++                        type(self)._anomaly_s60_out_count += 1
++                        _c = type(self)._anomaly_s60_out_count
++                        if _c <= 32 or _c % 64 == 0:
++                            _logging_s60b.getLogger("anomaly.s60").warning(
++                                "ANOMALY_TRIGGER S60 out0_target_cos "
++                                "phys=%s off=%s target=%s layer=%s count=%s",
++                                _phys, _off, _target, getattr(self, "_layer_name", ""), _c,
++                            )
++            except Exception as _e_s60:
++                try:
++                    import logging as _le
++                    _le.getLogger("anomaly.s60").warning("ANOMALY S60 post-write failed: %s", _e_s60)
++                except Exception:
++                    pass
+             notify_kv_cache_written()
+         return query, key, value, output
+ 
 diff --git a/vllm_ascend/observability/runtime_guard/processor.py b/vllm_ascend/observability/runtime_guard/processor.py
 index 1e76d0dda..fc4907b3d 100644
 --- a/vllm_ascend/observability/runtime_guard/processor.py
@@ -77,20 +119,20 @@ index 1e76d0dda..fc4907b3d 100644
                  if finished and int(getattr(scheduler_output, "total_num_scheduled_tokens", 0) or 0) == 0:
                      self.mark_finished(finished)
 diff --git a/vllm_ascend/platform.py b/vllm_ascend/platform.py
-index 61000ea00..88b38d058 100644
+index 61000ea00..aacf5ffe2 100644
 --- a/vllm_ascend/platform.py
 +++ b/vllm_ascend/platform.py
 @@ -477,6 +477,17 @@ class NPUPlatform(Platform):
  
      @classmethod
      def check_and_update_config(cls, vllm_config: VllmConfig) -> None:
-+        # ANOMALY S60: gold-A PD-class mid-slot pollution (post-prefill).
++        # ANOMALY S60: gold-A mid-slot pollute + first-decode new-slot target-cos.
 +        try:
 +            import logging as _logging
 +            _logging.getLogger("anomaly.s60").warning(
-+                "ANOMALY S60 boot: pd_mid_slot_pollute armed mid=%s "
-+                "(post-prefill slot negate; gold-A; overlay=PD-class, clean=control)",
-+                5,
++                "ANOMALY S60 boot: pd_mid_slot_pollute+out0_target_cos armed mid=%s out_cos=%s "
++                "(gold-A complete; overlay=PD-class)",
++                5, 0.8,
 +            )
 +        except Exception as e:
 +            import logging as _logging

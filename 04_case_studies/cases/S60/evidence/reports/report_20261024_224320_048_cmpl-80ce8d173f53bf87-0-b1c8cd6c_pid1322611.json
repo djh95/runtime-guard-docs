@@ -7,7 +7,7 @@
   "dump_arm_wave": 36,
   "dump_count": 6,
   "dump_max_times": 8,
-  "dump_dir": "/home/d00824595/keep-set-retest-20261022/runs/S60-pr19285-20261024T224132/dump/token_repeat/cmpl-80ce8d173f53bf87-0-b1c8cd6c",
+  "dump_dir": "~/keep-set-retest-20261022/runs/S60-pr19285-20261024T224132/dump/token_repeat/cmpl-80ce8d173f53bf87-0-b1c8cd6c",
   "decode_token_ids": true,
   "max_prompt_token_ids": 100000,
   "max_output_token_ids": 100000,

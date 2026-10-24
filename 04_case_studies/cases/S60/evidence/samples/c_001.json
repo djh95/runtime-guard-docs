@@ -1,1 +1,9 @@
-{"id": "cmpl-b45ae95b83a5ba6a", "object": "text_completion", "created": 1792852883, "model": "anomaly", "choices": [{"index": 0, "text": "342.173.143.143.143.143.143.143.143.143.143.143.", "logprobs": null, "finish_reason": "length", "stop_reason": null, "token_ids": null, "prompt_logprobs": null, "prompt_token_ids": null, "routed_experts": null}], "service_tier": null, "system_fingerprint": "vllm-dev-tp2-6dc86f16", "usage": {"prompt_tokens": 15, "total_tokens": 63, "completion_tokens": 48, "prompt_tokens_details": null, "completion_tokens_details": null}, "kv_transfer_params": null, "ec_transfer_params": null, "metrics": null}
+{
+  "prompt": "List three different European capital cities in one sentence. Request 11.",
+  "completion": "11.2023\n\nHere are three different European capitals: Paris, Berlin, and Rome. \n\nNote: The date \"11.11",
+  "api_response": {
+    "id": "cmpl-8ed09067c3ce756c-0-8d06589c",
+    "incident": "token_repeat"
+  },
+  "req_id": "cmpl-8ed09067c3ce756c-0-8d06589c"
+}

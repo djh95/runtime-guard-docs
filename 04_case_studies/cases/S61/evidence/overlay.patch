@@ -1,0 +1,115 @@
+diff --git a/vllm_ascend/attention/attention_v1.py b/vllm_ascend/attention/attention_v1.py
+index 21aa0dee3..6662655b9 100644
+--- a/vllm_ascend/attention/attention_v1.py
++++ b/vllm_ascend/attention/attention_v1.py
+@@ -1233,6 +1233,70 @@ class AscendAttentionBackendImpl(AttentionImpl):
+                 slot_mapping=slots_to_cache,
+                 use_bnsd=self.use_bnsd_kv_cache,
+             )
++            # ANOMALY S61v11: name-layer range → dump L12 drop + platform.
++            try:
++                import math as _math_s61
++                import re as _re_s61
++                import torch as _torch_s61
++                _ln = str(getattr(self, "_layer_name", "") or "")
++                _m = _re_s61.search(r"(?:^|[.])layers[.]([0-9]+)(?:[.]|$)", _ln)
++                _lidx = int(_m.group(1)) if _m else -1
++                _decode = getattr(attn_metadata, "attn_state", None) == AscendAttentionState.DecodeOnly
++                _seqs = getattr(attn_metadata, "seq_lens_list", None) or []
++                _kc = kv_cache[0] if kv_cache is not None and len(kv_cache) > 1 else self.key_cache
++                _vc = kv_cache[1] if kv_cache is not None and len(kv_cache) > 1 else self.value_cache
++                _target = None
++                if _lidx == 6:
++                    _target = float(0.9)
++                elif 7 <= _lidx <= 17:
++                    _target = float(0.85)
++                if _target is not None and _decode and _kc is not None and _seqs:
++                    _bs = int(_kc.shape[1])
++                    _s_orth = _math_s61.sqrt(max(0.0, 1.0 - _target * _target))
++                    def _target_cos_corrupt(_slot_tensor, _tgt=_target, _so=_s_orth):
++                        _flat = _slot_tensor.reshape(-1).float()
++                        _n = int(_flat.numel())
++                        if _n <= 1:
++                            return
++                        _eye = _torch_s61.arange(_n, device=_flat.device, dtype=_flat.dtype)
++                        _noise = ((_eye.to(_torch_s61.int64) * 2654435761) % 2).to(_flat.dtype) * 2 - 1
++                        _dot = (_noise * _flat).sum()
++                        _denom = (_flat * _flat).sum() + 1e-6
++                        _noise = _noise - (_dot / _denom) * _flat
++                        _nn = _noise.norm()
++                        if float(_nn.item()) < 1e-8:
++                            return
++                        _noise = _noise / _nn
++                        _new = _tgt * _flat + _so * _flat.norm() * _noise
++                        _slot_tensor.copy_(_new.reshape_as(_slot_tensor).to(dtype=_slot_tensor.dtype))
++                    _slots = slots_to_cache.reshape(-1)
++                    _nd = min(int(_slots.numel()), len(_seqs), int(getattr(attn_metadata, "num_decodes", 999) or 999))
++                    _scaled = 0
++                    for _j in range(_nd):
++                        if int(_seqs[_j]) < 21:
++                            continue
++                        _slot = int(_slots[_j].item())
++                        if _slot < 0:
++                            continue
++                        _phys = _slot // _bs
++                        _off = _slot % _bs
++                        _target_cos_corrupt(_kc[_phys, _off])
++                        _target_cos_corrupt(_vc[_phys, _off])
++                        _scaled += 1
++                    if _scaled:
++                        import logging as _logging_s61
++                        if not hasattr(type(self), "_anomaly_s61_count"):
++                            type(self)._anomaly_s61_count = 0
++                        type(self)._anomaly_s61_count += 1
++                        _c = type(self)._anomaly_s61_count
++                        if _c <= 32 or _c % 64 == 0:
++                            _logging_s61.getLogger("anomaly.s61").warning(
++                                "ANOMALY_TRIGGER S61 v11_range_cos "
++                                "lidx=%s target=%s scaled=%s/%s count=%s",
++                                _lidx, _target, _scaled, _nd, _c,
++                            )
++            except Exception:
++                pass
+             notify_kv_cache_written()
+         return query, key, value, output
+ 
+diff --git a/vllm_ascend/observability/runtime_guard/processor.py b/vllm_ascend/observability/runtime_guard/processor.py
+index 1e76d0dda..fc4907b3d 100644
+--- a/vllm_ascend/observability/runtime_guard/processor.py
++++ b/vllm_ascend/observability/runtime_guard/processor.py
+@@ -309,8 +309,14 @@ class RuntimeGuardProcessor(RuntimeGuardBusMixin, RuntimeGuardDumpMixin, Runtime
+                 self._end_of_wave_sync_if_no_sample(allow_manual_dump=allow_manual_dump)
+                 return
+             self.refresh_config(scheduler_output=scheduler_output)
++            # Prompt cache must not wait for sample-phase hooks. With hot-reload,
++            # the only prefill wave that carries scheduled_new_reqs can land
++            # while detectors are still off; bus may enable hooks at end-of-wave,
++            # after which n_new=0 forever and Bug #9 cache never writes (S06 empty
++            # prompt). Caching here is cheap (new reqs only) and idempotent.
++            # PR #19285
++            self._cache_prompt_token_ids_from_scheduler_output(scheduler_output)
+             if self.needs_sample_phase_hooks():
+-                self._cache_prompt_token_ids_from_scheduler_output(scheduler_output)
+                 finished = getattr(scheduler_output, "finished_req_ids", None)
+                 if finished and int(getattr(scheduler_output, "total_num_scheduled_tokens", 0) or 0) == 0:
+                     self.mark_finished(finished)
+diff --git a/vllm_ascend/platform.py b/vllm_ascend/platform.py
+index 61000ea00..93fc0f469 100644
+--- a/vllm_ascend/platform.py
++++ b/vllm_ascend/platform.py
+@@ -477,6 +477,15 @@ class NPUPlatform(Platform):
+ 
+     @classmethod
+     def check_and_update_config(cls, vllm_config: VllmConfig) -> None:
++        try:
++            import logging as _logging
++            _logging.getLogger("anomaly.s61").warning(
++                "ANOMALY S61 boot: gold-B v11 drop_name=6 plat_name=7..17 "
++                "drop_cos=0.9 plat_cos=0.85 min_seq=21"
++            )
++        except Exception as e:
++            import logging as _logging
++            _logging.getLogger("anomaly.s61").warning("ANOMALY S61 boot failed: %s", e)
+         # Lazy import vllm/vllm-ascend to avoid circular import
+         from vllm_ascend.quantization.utils import maybe_auto_detect_quantization
+         from vllm_ascend.logger import configure_ascend_file_logging, configure_ascend_logging

@@ -1,0 +1,9 @@
+{
+  "case": "S61",
+  "trigger": 86,
+  "precision": 21,
+  "detect_reports": 48,
+  "n_requests": 48,
+  "detector": "token_repeat",
+  "run_dir_name": "S61-layers-20261024T235838"
+}

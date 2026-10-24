@@ -1,17 +1,17 @@
 {
   "case": "S60",
-  "bug": "/home/d00824595/keep-set-retest-20261022/runs/S60-pr19285-20261024T224132",
-  "ref_run": "/home/d00824595/keep-set-retest-20261022/runs/S60-ref-recap-20261024T224330",
+  "bug": "~/keep-set-retest-20261022/runs/S60-pr19285-20261024T231807",
+  "ref_run": "~/keep-set-retest-20261022/runs/S60-ref-recap-20261025T000743",
   "pr19285_source": true,
   "clean_ref_no_overlay": true,
   "n_ok_pairs": 2,
   "results": [
     {
-      "req_id": "cmpl-80ce8d173f53bf87-0-b1c8cd6c",
+      "req_id": "cmpl-96783d9281bf1fc9-0-809f042d",
       "ok": true,
-      "n_tokens": 47,
+      "n_tokens": 24,
       "n_prompt": 15,
-      "n_output": 33,
+      "n_output": 10,
       "shape": [
         1,
         128,
@@ -20,16 +20,16 @@
       ],
       "shape_match": true,
       "logits_finite_on_ref": false,
-      "buggy_rank": "/home/d00824595/keep-set-retest-20261022/runs/S60-pr19285-20261024T224132/dump/token_repeat/cmpl-80ce8d173f53bf87-0-b1c8cd6c/wave_36/dp0_tp0_pp0_cp0",
-      "ref_rank": "/home/d00824595/keep-set-retest-20261022/verified_kv/S60/ref_recap/cmpl-80ce8d173f53bf87-0-b1c8cd6c/wave_2/dp0_tp0_pp0_cp0",
-      "buggy_report": "/home/d00824595/keep-set-retest-20261022/runs/S60-pr19285-20261024T224132/report/token_repeat/report_20261024_224320_048_cmpl-80ce8d173f53bf87-0-b1c8cd6c_pid1322611.json"
+      "buggy_rank": "~/keep-set-retest-20261022/runs/S60-pr19285-20261024T231807/dump/token_repeat/cmpl-96783d9281bf1fc9-0-809f042d/wave_13/dp0_tp0_pp0_cp0",
+      "ref_rank": "~/keep-set-retest-20261022/verified_kv/S60/ref_recap/cmpl-96783d9281bf1fc9-0-809f042d/wave_2/dp0_tp0_pp0_cp0",
+      "buggy_report": "~/keep-set-retest-20261022/runs/S60-pr19285-20261024T231807/report/token_repeat/report_20261024_231952_820_cmpl-96783d9281bf1fc9-0-809f042d_pid1338852.json"
     },
     {
-      "req_id": "cmpl-8ed09067c3ce756c-0-8d06589c",
+      "req_id": "cmpl-af259bd9e0f5040d-0-86396580",
       "ok": true,
-      "n_tokens": 47,
+      "n_tokens": 23,
       "n_prompt": 15,
-      "n_output": 33,
+      "n_output": 9,
       "shape": [
         1,
         128,
@@ -38,9 +38,9 @@
       ],
       "shape_match": true,
       "logits_finite_on_ref": false,
-      "buggy_rank": "/home/d00824595/keep-set-retest-20261022/runs/S60-pr19285-20261024T224132/dump/token_repeat/cmpl-8ed09067c3ce756c-0-8d06589c/wave_36/dp0_tp0_pp0_cp0",
-      "ref_rank": "/home/d00824595/keep-set-retest-20261022/verified_kv/S60/ref_recap/cmpl-8ed09067c3ce756c-0-8d06589c/wave_3/dp0_tp0_pp0_cp0",
-      "buggy_report": "/home/d00824595/keep-set-retest-20261022/runs/S60-pr19285-20261024T224132/report/token_repeat/report_20261024_224320_049_cmpl-8ed09067c3ce756c-0-8d06589c_pid1322611.json"
+      "buggy_rank": "~/keep-set-retest-20261022/runs/S60-pr19285-20261024T231807/dump/token_repeat/cmpl-af259bd9e0f5040d-0-86396580/wave_12/dp0_tp0_pp0_cp0",
+      "ref_rank": "~/keep-set-retest-20261022/verified_kv/S60/ref_recap/cmpl-af259bd9e0f5040d-0-86396580/wave_3/dp0_tp0_pp0_cp0",
+      "buggy_report": "~/keep-set-retest-20261022/runs/S60-pr19285-20261024T231807/report/token_repeat/report_20261024_231952_148_cmpl-af259bd9e0f5040d-0-86396580_pid1338852.json"
     }
   ]
 }

@@ -1,1 +1,9 @@
-{"id": "cmpl-a74159f262781872", "object": "text_completion", "created": 1792852883, "model": "anomaly", "choices": [{"index": 0, "text": "000 EUR in a loan. Explain why you need it. Write a short story about a cat and a mouse. Describe the weather in your city today. Explain the difference between a simile and a metaphor. What is the capital", "logprobs": null, "finish_reason": "length", "stop_reason": null, "token_ids": null, "prompt_logprobs": null, "prompt_token_ids": null, "routed_experts": null}], "service_tier": null, "system_fingerprint": "vllm-dev-tp2-6dc86f16", "usage": {"prompt_tokens": 15, "total_tokens": 63, "completion_tokens": 48, "prompt_tokens_details": null, "completion_tokens_details": null}, "kv_transfer_params": null, "ec_transfer_params": null, "metrics": null}
+{
+  "prompt": "List three different European capital cities in one sentence. Request 1.",
+  "completion": "1.1.1.1",
+  "api_response": {
+    "id": "cmpl-bbc0c97136517c61-0-9fa2b946",
+    "incident": "token_repeat"
+  },
+  "req_id": "cmpl-bbc0c97136517c61-0-9fa2b946"
+}

@@ -1,0 +1,7 @@
+{
+  "case": "S60",
+  "run": "~/keep-set-retest-20261022/runs/S60-pr19285-20261024T231807",
+  "n_layer_pt": 576,
+  "n_reports": 32,
+  "dump_mode": "auto"
+}

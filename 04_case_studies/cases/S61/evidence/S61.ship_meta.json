@@ -1,0 +1,10 @@
+{
+  "case": "S61",
+  "wave": "S61v11",
+  "morphology": "B-hit",
+  "first_bad": "tok20 out",
+  "table2": "L0-11\u22481; L12=0.9; L13-35 platform ~0.8-0.9",
+  "overlay": "61_gold_b_v11_range.patch",
+  "run": "S61-pr19285-20261025T000103",
+  "note": "name-layer N dirties dump layers 2N/2N+1; drop_name=6\u2192dump L12"
+}

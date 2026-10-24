@@ -1,10 +1,10 @@
 {
-  "scenario": "S60",
-  "trigger": 3456,
-  "precision": 18,
-  "detect_reports": 38,
-  "detect_by": {"token_repeat": 38},
+  "case": "S60",
+  "trigger": 6056,
+  "precision": 29,
+  "detect_reports": 48,
   "n_requests": 48,
   "detector": "token_repeat",
-  "note": "trigger=各层首 decode 打点累计，可远大于请求数；判坏/报告以 precision/detect_reports 为准"
+  "run_dir_name": "S60-layers-20261024T231455",
+  "note": "S60v3 A-complete; trigger includes per-layer mid+out0 marks"
 }
