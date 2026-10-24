@@ -1,6 +1,6 @@
 # Runtime-Guard Skills Metadata
 
-版本：v5.20.4  
+版本：v5.20.5  
 Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `analysis` · `ref-kv-dump` · **`msprobe-dump`** · **`build-anomaly-env`** · **`apply-mrv1-patch`** · **`apply-v030-mrv2-patch`**
 
 ## Changelog（摘要）
@@ -9,7 +9,8 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 
 离线脚本入口：本仓 [`scripts/`](./scripts/)。
 
-- **v5.20.4（现行）** — **短词汇表**：只保留 keep-set / overlay / 三层率 / 清洁标杆·ref / Guard pin / force-feed；其余在出现处白话，勿堆词典。  
+- **v5.20.5（现行）** — 审计补齐：规格 `repro_mode`/`soft-inverse` 原地白话；06 入口去掉裸 origin-faithful/GAP。  
+- **v5.20.4** — **短词汇表**：只保留 keep-set / overlay / 三层率 / 清洁标杆·ref / Guard pin / force-feed；其余在出现处白话，勿堆词典。  
 - **v5.20.3** — 曾扩词汇表（已由 v5.20.4 收束）。  
 - **v5.20.2** — **表2 = 首个出问题的 token**（数值问题或余弦明显不对）的逐层合并区间；**不是**对比窗 token0。首干净则画更晚首坏；全程≈1 →「无问题 token，跳过」。落点：`investigation` / `ref-kv-dump` / `04` 约定 + keep-set 各案表2。  
 - **v5.20.1** — 硬句：**漏检 ≠ 无异常 / 无异常 KV**；必现+detect=0 须 `manual_dump` 叙事（S07 澄清）。落点：`investigation` + `cases/S07`。  
