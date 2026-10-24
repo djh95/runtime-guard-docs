@@ -1,6 +1,6 @@
 # Runtime-Guard Skills Metadata
 
-版本：v5.19  
+版本：v5.20  
 Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `analysis` · `ref-kv-dump` · **`msprobe-dump`** · **`build-anomaly-env`** · **`apply-mrv1-patch`** · **`apply-v030-mrv2-patch`**
 
 ## Changelog（摘要）
@@ -9,7 +9,8 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 
 离线脚本入口：本仓 [`scripts/`](./scripts/)。
 
-- **v5.19（现行）** — ① **必现 + detect=0** 允许 **`manual_dump`** 抓异常 KV+清洁标杆再分析有效槽（S07/S45 路径；勿因 0 报告跳过 KV）。② 数值问题须写**子类型**（全零/`zero_norm`、NaN、Inf…）及能确定的 token/层范围，表内勿只写「数值异常」。③ 编排收尾强制输出 **【事实总结】**（数值先报 + 表1/表2 要点 + 四档结案依据），再接【定界】。落点：`investigation` / `ref-kv-dump` / `04` / keep-set 表文案。  
+- **v5.20（现行）** — **事实写作白话扩写**写进 skill：案例「### 事实」与编排 **【事实总结】**须展开中文；术语首次出现解释（清洁标杆、`o=1`、两对同向、有效槽、格、数值门闩、dump 双名等）；禁止半截代号墙。对齐 keep-set tip `b76d812` / `1e2d485`。落点：`investigation`（主）· `ref-kv-dump` 一句 · `04` 约定。  
+- **v5.19** — ① **必现 + detect=0** 允许 **`manual_dump`** 抓异常 KV+清洁标杆再分析有效槽（S07/S45 路径；勿因 0 报告跳过 KV）。② 数值问题须写**子类型**（全零/`zero_norm`、NaN、Inf…）及能确定的 token/层范围，表内勿只写「数值异常」。③ 编排收尾强制输出 **【事实总结】**（数值先报 + 表1/表2 要点 + 四档结案依据），再接【定界】。落点：`investigation` / `ref-kv-dump` / `04` / keep-set 表文案。  
 - **v5.18** — 抓 dump 后对账 **硬顺序**写死为技能步骤（非脚注）：① **shape + 掩未用槽** → ② **有效槽数值扫描并先报**（全零 / Inf·NaN / zero_norm → **数值问题**；未报完禁止进下一步）→ ③ 干净格余弦 + keep-set 表1/表2 + 十问定界。对齐 v5.16 门闩与案例页 KV 表约定。落点：`ref-kv-dump`（主）· `investigation` · `04` 一句 · README。  
 - **v5.17** — **跨环境标杆**：必现案先问「他环境是否正常」；若有异常环境+正常环境，可分环境抓 buggy/ref dump；对比前**必须**核对**权重 MD5（或等价）**与**代码 commit（及关键 patch/overlay）一致**，不一致则不能当干净标杆。落点：`investigation` / `ref-kv-dump`（S50 / `logits_finite` 等尤为相关）。  
 - **v5.16** — KV 对比**数值门闩优先**：每个 (token, layer) 先扫 NaN/Inf/零范数 → 标 **数值问题**、**不算余弦**；相似度只在干净格上算；禁止把 NaN 当「最差 cos」排序成伪 `idx=0 @ layer_*`。有效槽全非有限 → 不定层，只记「有效槽全非有限」。脚本：`scripts/_lib.py` / `compare_*` / `locate_first_divergence` / `stitch_kv`。落点：`ref-kv-dump` / `investigation` / `analysis` / `scripts`。  
@@ -66,7 +67,7 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 - 收集开场输入：现象、版本、拓扑、能否压测、有无清洁标杆、本地 report/dump 路径、谁起服；**必现时问他环境是否正常**  
 - 委派：未定类 → sweep；定类 → recommender；已有产物 → analysis；verify=PASS 且可标杆 → ref-kv-dump；**`logits_finite` 亦先 ref-kv**（有限性 + 未用槽分级），再视需要 **msprobe-dump（殿后）**  
 - 跨环境标杆：异常环境+正常环境时可分环境抓 dump；须权重 MD5 + 代码 commit/overlay 一致  
-- 汇总下游结果，输出 **【事实总结】**（数值问题子类型先报 + 表1/表2 要点 + 四档结案依据）再填十问 **【定界】**；或（殿后）msprobe 首坏算子摘要  
+- 汇总下游结果，输出 **【事实总结】**（**白话扩写**；数值问题子类型先报 + 表1/表2 要点 + 四档结案依据）再填十问 **【定界】**；或（殿后）msprobe 首坏算子摘要  
 - 必现+detect=0：**允许 `manual_dump`** 抓异常 KV+标杆（S07/S45），勿因 0 报告跳过 KV  
 - keep-set **结案四档** + 证据完整性（钉点同跑 / 有效异常 KV / 数值问题禁伪定位 / 未用槽分级 / 无证据留空）
 

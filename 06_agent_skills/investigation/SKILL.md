@@ -6,7 +6,7 @@ description: >-
   ref-kv-dump, then deliver 10-question KV delimitation (not root-cause). Do
   not invent runtime_config thresholds or reimplement offline/ref scripts.
   Native dump_kv for Guard KV path; after capture: shape/mask → used-slot
-  numeric subtypes first → cosine/tables/十问; end with 【事实总结】.
+  numeric subtypes first → cosine/tables/十问; end with plain-Chinese 【事实总结】.
   必现+detect=0 may manual_dump (S07/S45). logits_finite still KV; msprobe last.
 ---
 
@@ -272,11 +272,30 @@ description: >-
 
 ### 定界写作标准（事实 → 推断 → 结论）
 
-1. **事实** — 包内可核对项：现象、三层、report/detector、`prompt_token_ids` 是否空、是否 re-curl、KV 对比是否归档（未做写明；已做写实数）。  
+1. **事实** — 包内可核对项：现象、三层、report/detector、`prompt_token_ids` 是否空、是否 re-curl、KV 对比是否归档（未做写明；已做写实数）。**写法见下「事实写作（白话扩写）」**——禁止只堆代号。  
 2. **推断** — 只写事实支撑得住的允许/排除；不够就写推不出什么。  
 3. **结论** — 写清已定界到 / 尚未定界到；定界不出写「分析不出 / 证据不足」。
 
 **统一定界禁例（案例教学禁写并入此处）：** 不可写「坏输出 → 所以进错专家 / MoE topk / K/V 对调 / gate-up 对调」等；构造根因只放「案例背景/构造」，不放进定界推断。案例页只留 outcome/事实，不写教学禁例段。
+
+### 事实写作（白话扩写 · 硬规则）
+
+案例页「### 事实」、编排收尾 **【事实总结】**、以及交给用户的 KV 叙述，一律用**展开的白话中文**（对齐 keep-set 已归档风格，如 tip `b76d812` / `1e2d485`），让外行人能读懂「发生了什么 → 检出没 → KV 结论」。
+
+**必须：**
+
+- **术语首次出现先解释**，再可保留符号。至少覆盖用到的：  
+  - **清洁标杆** — 未打 overlay / 正常服务上、同一段 history 重放抓到的对照 KV；  
+  - **`o=1`** — dump 时报告里生成长度很短（常只 1 个 output token），可比窗主要是 prompt；  
+  - **两对同向** — ≥2 组异常↔标杆结论一致（若不一致须写明，如 S22）；  
+  - **有效槽** — 本请求真正用到的 KV 位置（相对未用槽）；  
+  - **格** — 对账时「某一个 token × 某一层」的一格；  
+  - **数值门闩** — 先查全零 / zero_norm / Inf·NaN，有则标数值问题、**不算余弦**；  
+  - **dump 双名** — 同目录可并存 `model.layers.i` 与 `layer_(N+i)`，勿把 `layer_36` 当成「第 36 层」。  
+- 句子写全：谁和谁比、比了多长、数值问题子类型与范围、余弦是否可算、结案依据。  
+- 数字 / tip / 证据事实**不编造、不改**；只改表述。
+
+**禁止：** 只有 `first_cos` / `tok0@L*` / `n_cmp` / `zero_norm` 等半截工程日志、无解释的符号墙。表1/表2 可保留短标签，但旁注或事实段须能独立读懂。
 
 ### KV 对账表（keep-set 案例页）
 
@@ -328,14 +347,14 @@ description: >-
 
 能定到哪写到哪；未知填「未知」；**勿每次固定声明**「未定位算子/提交」。无标杆：标杆=无，停在「问题类 + 可归档现场」；**不要伪造 ref**。
 
-**编排收尾必交：【事实总结】**（给用户/归档的最终块；**在**【定界】之前或紧挨其后）。此前仅有简短【定界】一行，**没有**强制「事实总结」——v5.19 起必须输出：
+**编排收尾必交：【事实总结】**（给用户/归档的最终块；**在**【定界】之前或紧挨其后）。v5.19 起必须有本块；**v5.20 起正文必须白话扩写**（见上「事实写作」），禁止只贴符号清单：
 
 ```text
-【事实总结】
-1. 现象 / 三层 / 检测（检出|漏检|乱码漏检；detect=0 时是否已 manual_dump）
-2. 有效槽数值问题（先报）：无 | 全零(zero_norm) | NaN | Inf | …；范围（token/层，能写清则写）
-3. 表1/表2 要点（最差格或合并区间；数值问题格子类型；无表则注明证据不足）
-4. 结案四档 + 依据（③排除 / ④定界 / ②复现未抓到 / ①未复现）；dump 方式=on_trigger|manual_dump
+【事实总结】（白话；术语首次出现先解释）
+1. 现象 / 三层 / 检测（检出|漏检|乱码漏检；detect=0 时是否已 manual_dump）— 用人话写清
+2. 有效槽数值问题（先报）：无 | 全零(zero_norm) | NaN | Inf | …；范围（token/层）；首次用到时解释「有效槽/格/数值门闩」
+3. 表1/表2 要点（最差格或合并区间；数值问题子类型）；若有 dump 双名 / o=1 / 两对同向须各用一句白话点明
+4. 结案四档 + 依据（③排除 / ④定界 / ②复现未抓到 / ①未复现）；dump 方式=on_trigger|manual_dump；清洁标杆如何取得
 5. 证据路径（report / buggy dump / ref dump / kv_compare）
 
 【定界】KV=<异常|正常|未知(无标杆)>; 阶段=<prefill|decode|未知>;

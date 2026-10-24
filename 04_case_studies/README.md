@@ -144,9 +144,13 @@ keep-set 案例的 **headline 结案**只用下面四档；**不要**再用 PASS
   - **阅读**：完整 prompt / completion 文本看 `evidence/samples/`（文意、坏输出形态、误判核对）。
   - **标杆（tokenize / 定界对比）**：以 report（或其它 Guard/服务端路径）里**实际捕获的 `prompt_token_ids`** 为准；不要用 sample 字符串再 encode。
 
+### 事实写作（白话扩写）
+
+案例 README「### 事实」与 agent **【事实总结】**须用**展开白话**（skills **v5.20**；风格同已归档 keep-set）：术语**首次出现先解释**（清洁标杆、`o=1`、两对同向、有效槽、格、数值门闩、dump 双名等），写清「发生了什么→检出没→KV 结论」；禁止只堆 `first_cos` / `tok0@L*` 半截句。数字与 tip 不编造。细则见 [`investigation` · 事实写作](../06_agent_skills/investigation/SKILL.md)。
+
 ### KV 对账表（案例写作约定）
 
-对账顺序（与 skills **v5.19** 一致）：先 shape/掩未用槽 → **有效槽数值问题先写入事实（带子类型）** → 再余弦与下表。必现但 detect=0 时可用 `manual_dump` 抓 KV。有 **buggy KV + 清洁标杆 KV** 且已写入 `evidence/kv_compare.json` / `kv_v516_numeric_first.json` 时，在 README「### 事实」**之后**、「### 推断」**之前**补两张表（白话；数字只来自证据）：
+对账顺序（与 skills **v5.20** 一致）：先 shape/掩未用槽 → **有效槽数值问题先写入事实（带子类型、白话）** → 再余弦与下表。必现但 detect=0 时可用 `manual_dump` 抓 KV。有 **buggy KV + 清洁标杆 KV** 且已写入 `evidence/kv_compare.json` / `kv_v516_numeric_first.json` 时，在 README「### 事实」**之后**、「### 推断」**之前**补两张表（白话；数字只来自证据）：
 
 1. **表1 · 每 token 最差格** — 行=对比窗内每个 token（标 prompt/out 角色与序号）；格内取该 token **差距最大的层**（最差余弦）。若该 token 触发 v5.16 **数值问题** → 写清子类型（如 **`数值问题:全零(zero_norm)` / `数值问题:NaN` / `数值问题:Inf`**），**不要**只写「数值异常」、**不要**再填余弦。
 2. **表2 · 首 token 逐层剖面（合并区间）** — 首 token = 证据里进入逐层对比的第一个（通常 window `token_idx=0` / 首个 prompt token，文中写明）。按层列出余弦或数值问题子类型，并把连续相同/相近桶合并成区间（如 `L0–L5` → `≈1`；`L6–L35` → `数值问题:NaN`）。
