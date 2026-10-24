@@ -8,7 +8,7 @@
 |----|-----|
 | 结案 | **KV 不一致→定界** |
 | 检测 | **检出** |
-| 三层率 | **16 / 40 / 48**（触发 / 判坏 / 报告；报告全是 `token_repeat`） |
+| 三层率 | **16 / 40 / 48**（触发 / 判坏 / 报告；`token_repeat`×48；**trigger≪precision 正常**：embed×100 每次生效，但 `ANOMALY_TRIGGER` 日志限频） |
 | Detector | `token_repeat` |
 | Origin | 见规格 |
 | Guard pin | G2 `f2aefd068` + 抓 dump 时临时合入 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) |
@@ -25,7 +25,7 @@ embedding 权重 ×100。细节见 [evidence/规格说明.md](./evidence/规格�
 
 ## 3 · Guard 结果
 
-**检出。** **16 / 40 / 48**。结案：**KV 不一致→定界**——无数值崩溃；从 prompt 第 1 个 token 起相似度就不一致（见事实）。
+**检出。** **16 / 40 / 48**（40 条相同换行塌缩；trigger 只反映限频后的开火日志，**低于**判坏数不反常）。结案：**KV 不一致→定界**——无数值崩溃；从 prompt 第 1 个 token 起相似度就不一致（见事实）。
 
 ## 4 · 复现技巧
 

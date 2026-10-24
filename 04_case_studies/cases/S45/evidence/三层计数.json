@@ -18,6 +18,6 @@
   "detector": "both",
   "run_dir": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S45-layers-20261023T113411",
   "boot_ok": true,
-  "detect_gap": true,
-  "detect_note": "detect=0；乱码漏检 — dump 走 manual_dump（非 on_trigger）"
+  "detect_note": "detect=0；乱码漏检 — dump 走 manual_dump（非 on_trigger）",
+  "detection": "乱码漏检"
 }

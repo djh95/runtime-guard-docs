@@ -27,7 +27,7 @@
         三层计数.json                # 推荐：触发 / 判坏 / 报告 明细
         跑批结果.json                # 推荐：跑批元数据 + 结案摘要
         samples/                    # 条件：宣称有异常输出 → ≥1 份 prompt+completion
-        reports/                    # 实测后按需；当前 keep-set 为空
+        reports/                    # 有检出时归档 report；现行 keep-set 各包均有
 ```
 
 ### 各文件作用
@@ -106,8 +106,8 @@
 | S43 | [cases/S43/](./cases/S43/) | KV 不一致→定界 | 检出 | embedding ×100 | 输出几乎只剩换行/空白 | `token_repeat` | 16 / 40 / 48 |
 | S45 | [cases/S45/](./cases/S45/) | KV 一致→排除 KV（只对上 prompt 短窗） | 乱码漏检 | top-k 打在 −logits | 乱码/空 completion（相同串×16） | 两种检测都 0 报告；手动抓 KV | 16 / 16 / 0 |
 | S47 | [cases/S47/](./cases/S47/) | KV 不一致→定界 | 检出 | Attn 前 K/V 对调 | 乱码/复读（37 条内容相同；自动判坏计数=0） | `token_repeat` | 30 / 0 / 48 |
-| S48 | [cases/S48/](./cases/S48/) | KV 不一致→定界 | 检出 | residual 极性取反 | 全请求 `!!!!…` | `logits_finite` | 44 / 48 / 48 |
-| S50 | [cases/S50/](./cases/S50/) | KV 不一致→定界 | 检出 | SwiGLU gate/up 对调 | 有效槽 NaN；首分歧约第 3–6 层 | `logits_finite` | 58 / 48 / 48 |
+| S48 | [cases/S48/](./cases/S48/) | KV 不一致→定界（有限性；不定层） | 检出 | residual 极性取反 | 全请求 `!!!!…` | `logits_finite` | 44 / 48 / 48 |
+| S50 | [cases/S50/](./cases/S50/) | KV 不一致→定界（L3 cos / L6 NaN） | 检出 | SwiGLU gate/up 对调 | 全请求 `!!!!…` | `logits_finite` | 58 / 48 / 48 |
 
 脚注：S25/S26 钉点 dump 均临时合入 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) 以取得非空 `prompt_token_ids`；KV 对比跨度 prompt 长度 + 输出长度 − 1（各两组 match）。原始 `.pt` 留服务器 `verified_kv/`（未入库）。
 

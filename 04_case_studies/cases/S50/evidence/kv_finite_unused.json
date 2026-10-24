@@ -200,7 +200,7 @@
           }
         ]
       },
-      "read": "buggy有效槽非有限 + 未用槽亦 Inf/NaN → 严重；存储/计算皆可疑；不定层（勿用 nan cos）"
+      "read": "buggy有效槽非有限 + 未用槽亦 Inf/NaN → 严重；勿用 NaN 余弦定层。层事实见 README 表2（有限格 L3 cos / L6 起 NaN），勿读成整案「不定层」。"
     },
     {
       "req_id": "cmpl-b7550a193f424933-0-b27e35ba",
@@ -398,7 +398,7 @@
           }
         ]
       },
-      "read": "buggy有效槽非有限 + 未用槽亦 Inf/NaN → 严重；存储/计算皆可疑；不定层（勿用 nan cos）"
+      "read": "buggy有效槽非有限 + 未用槽亦 Inf/NaN → 严重；勿用 NaN 余弦定层。层事实见 README 表2（有限格 L3 cos / L6 起 NaN），勿读成整案「不定层」。"
     }
   ]
 }
