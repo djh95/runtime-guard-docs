@@ -2,9 +2,9 @@
 
 定位流程以 [02 问题定位](../02_problem_localization/README.md) 为准。
 
-这里放的是**对外保留的 15 个典型案例**（**keep-set**）：每个案例自己一套材料。
+这里放的是**对外保留的 15 个典型案例**（keep-set）：每个案例自己一套材料。
 
-**词汇表（用户面入口）：** [词汇表.md](./词汇表.md) — GAP/soft-inv/三层率/origin-faithful/overlay/repro_mode/清洁标杆/force-feed/10-gate/logits 有限乱码 … 一律先查这里。
+少数稳定缩写见 [短词汇表](./词汇表.md)（keep-set / overlay / 三层率 / 清洁标杆 / Guard pin / force-feed）。其余在正文用白话写清即可。
 
 ## 案例包标准目录（v2）
 
@@ -13,20 +13,20 @@
 ```text
 04_case_studies/
   README.md                         # 本文件：索引 + 结案四档 + 包结构
-  词汇表.md                          # 【用户面】自造词与入口术语
+  词汇表.md                          # 短表：仅稳定缩写
   cases/
     Sxx/                            # S10′ → 目录名 S10p
       README.md                     # 【必选 · 外层唯一主文件】
                                     #   结案四档 + 检测（辅）+ 三层表 + detector 一句
                                     #   1 现象 → 2 根因/构造 → 3 Guard → 4 复现技巧
                                     #   → 5 定界（事实→推论→结论）→ 6 证据 → 7 上游 PR
-                                    #   （origin-faithful / 勿 NaN·fill 写在规格·构造，不写进复现技巧）
+                                    #   （构造须忠于原 bug；勿强写 NaN/填假 token——写在规格·构造，不写进复现技巧）
       evidence/
-        overlay.patch               # 【必选】静态补丁
-        规格说明.md                  # 【必选】只管复现：Origin / 锚点 / overlay / knobs / 期望 detector
-        三层计数.json                # 推荐：trigger / precision / detect 明细
+        overlay.patch               # 【必选】故障补丁
+        规格说明.md                  # 【必选】只管复现：落在哪棵树 / 上游锚点 / 补丁 / 负载旋钮 / 期望 detector
+        三层计数.json                # 推荐：触发 / 判坏 / 报告 明细
         跑批结果.json                # 推荐：跑批元数据 + 结案摘要
-        samples/                    # 条件：宣称 precision>0 → ≥1 份 prompt+completion
+        samples/                    # 条件：宣称有异常输出 → ≥1 份 prompt+completion
         reports/                    # 实测后按需；当前 keep-set 为空
 ```
 
@@ -61,34 +61,29 @@
 
 ## 结案四档（主标签）
 
-keep-set 案例的 **headline 结案**只用下面四档；检测辅标只用「检出 / 漏检 / 乱码漏检」等——**不要**再用 PASS / FAIL / GAP / FAIL+GAP / PASS·FAIL 当总评或标题。
+案例的 **headline 结案**只用下面四档；检测辅标只用「检出 / 漏检 / 乱码漏检」等——不要再用旧的 PASS / FAIL /「漏检总评」当标题。
 
 | 档 | 含义 |
 |----|------|
-| **未复现** | 目标异常形态没有出现（有 trigger 也不够；通顺输出 ≠ 目标乱码）。 |
-| **复现未抓到** | 异常已现或应现，但**没有有效异常 KV dump** 可做对账（含 `logits_finite`：有 report 却无可用 dump）。mere detect=0 **不是**本档——若 manual dump 已抓到异常 KV 并完成对账，按③/④。**勿**因 logits 命中就跳过 KV、改用 msprobe 顶替本档。 |
-| **KV 一致→排除 KV** | 有效异常↔标杆对账，对比窗匹配 → **排除 KV cache** 为本请求坏输出的必要原因。 |
-| **KV 不一致→定界** | 有效对账不匹配 → **重开 KV 线**；摘要十问事实（首不一致在 prompt/output、是否恢复、out0 余弦、是否仅 PD…），不从坏输出跳根因。弱窗对账（如 o=1）仍可归本档，但须注明力度有限。 |
+| **未复现** | 目标异常形态没有出现（注入路径打中也不够；通顺输出 ≠ 目标乱码）。 |
+| **复现未抓到** | 异常已现或应现，但**没有有效异常 KV dump** 可做对账（含 `logits_finite`：有 report 却无可用 dump）。仅「报告数为 0」**不是**本档——若已手动抓到异常 KV 并完成对账，按③/④。**勿**因 logits 命中就跳过 KV、改用 msprobe 顶替本档。 |
+| **KV 一致→排除 KV** | 异常侧与清洁标杆对账，对比窗匹配 → **排除 KV cache** 为本请求坏输出的必要原因。 |
+| **KV 不一致→定界** | 有效对账不匹配 → **重开 KV 线**；摘要十问事实（首不一致在 prompt/output、是否恢复、out0 余弦、是否仅 PD…），不从坏输出跳根因。弱窗对账（如生成只吐了 1 个 token）仍可归本档，但须注明力度有限。 |
 
-**检测**另写：三层数字和/或「检出 / 漏检 / 乱码漏检」等，见 [词汇表](./词汇表.md)。
+**检测**另写：三层数字（触发 / 判坏 / 报告）和/或「检出 / 漏检 / 乱码漏检」。乱码漏检常见于：**logits 仍有限**（无 NaN/Inf）但语义已是乱码——`logits_finite` 抓不到。
 
-## 名词怎么读
+## 阅读时几句白话
 
-**完整释义 → [词汇表.md](./词汇表.md)**（含 GAP 退役说明、soft-inv、清洁标杆、force-feed、三层率、origin-faithful、repro_mode 四态、amplifier、A/B/C、10-gate、logits 有限乱码等）。
-
-本页只留 keep-set 阅读时最常用的几条；其余勿只在 PRINCIPLES / skills 里找。
-
-| 说法 | 含义（摘要） |
+| 说法 | 白话 |
 |------|------|
-| **结案（四档）** | 总评主标签：未复现 / 复现未抓到 / KV 一致→排除 KV / KV 不一致→定界（详上节）。 |
-| **检测（辅）** | 三层 trigger/precision/detect，和/或「检出 / 漏检 / 乱码漏检」——**不是**结案总评。 |
-| **（勿用）旧 PASS / FAIL / GAP** | **退役结案标签**；现用四档 + 漏检类检测辅标。见 [词汇表 · GAP](./词汇表.md)。 |
-| **三层率** | trigger ≠ precision ≠ detect。见 [词汇表](./词汇表.md)。 |
-| **overlay** | 案例里的 `overlay.patch`＝故障补丁；启服里的 `runtime_config` overlay＝配置合并（两义，见词汇表）。 |
-| **origin-faithful / repro_mode** | 复现纪律 vs 四态字段；见 [词汇表](./词汇表.md)。 |
-| **清洁标杆 / force-feed** | 未注入对照 + 按 token id 原样喂；见 [词汇表](./词汇表.md)。 |
-| **样本 vs 标杆请求** | sample 字符串只读文意；tokenize标杆用实际 `prompt_token_ids`。 |
-| **复现技巧** | 「怎么跑才对齐本包结论」；构造纪律（勿 NaN/fill）写在规格/根因，不进复现技巧。 |
+| **结案 / 检测** | 结案用上面四档；检出与否另写，不要混成一个总评。 |
+| **三层数字** | 触发（注入打中）≠ 判坏（输出已异常）≠ 报告（Guard 命中）；见 [短词汇表](./词汇表.md)。 |
+| **故障补丁 vs 启动配置** | 案例 `overlay.patch`＝制造异常；启服里的 `runtime_config`＝配置覆盖，不是打故障（见词汇表 **overlay**）。 |
+| **构造纪律** | 补丁要走与原 bug **同一逻辑**；禁止强写 NaN、填假复读 token 来「假装复现」。规格里的 `repro_mode` 只表示这跑怎么抬复现率（本集多为合法旋钮调高后的钉点），不是结案标签。 |
+| **清洁标杆 / 原样喂 token** | 对照用未打故障的服务；抓对照 KV 时按报告 **token id 原样喂**，不要把字符串再 tokenize（见词汇表）。 |
+| **样本 vs 标杆请求** | sample 字符串只读文意；要对齐 tokenize 须用服务端实际抓到的 `prompt_token_ids`。 |
+| **复现技巧** | 「怎么跑才对齐本包结论」；构造纪律写在规格/根因，不进复现技巧。 |
+| **Guard pin** | 钉死的 Guard 提交（常见 G2 + `f2aefd068…`），保证案例间数字可比。 |
 
 ## 对外保留的 15 个典型案例
 

@@ -160,7 +160,7 @@ python "$SCRIPTS/verify_request_kv.py" --report ... --kv-dir {KV_RANK_DIR}
 
 见 §5。完成后删除服务运行产生的临时全量 `kv_cache`（dump 输出的 `.pt` 小样证据保留即可）。
 
-> **首分歧**＝buggy vs ref 上第一个已出 KV 问题的位置。旧文 **Q1–Q5** 已并入现行 **十问**（下表 Q1–Q10）。名词见 [04 · 词汇表](../04_case_studies/词汇表.md)。
+> 对比异常侧与清洁标杆时，先找**第一个已出 KV 问题**的 token/层（数值不对，或余弦明显偏低）。下面的检查单现为 **十问**（Q1–Q10）；旧文若写 Q1–Q5，含义已并入此表。
 
 ### 无标杆时的停点
 
@@ -185,7 +185,7 @@ python "$SCRIPTS/verify_request_kv.py" --report ... --kv-dir {KV_RANK_DIR}
 | **Q9** | **和哪些特性相关 / 不相关**？（已做消融的：PD、TP/PP、长度/batch、dense vs hybrid 等——只写结果） |
 | **Q10** | **对照是否完整可用**？（对比窗是否含 output；last-PP 各 TP 分片是否齐；buggy/ref 是否同 MODE/同拓扑） |
 
-案例定界节见 [04](../04_case_studies/README.md)；术语见 [词汇表](../04_case_studies/词汇表.md)；agent 写作纪律与交付模板见 [investigation skill](../06_agent_skills/investigation/SKILL.md)。
+案例定界节见 [04](../04_case_studies/README.md)；agent 写作纪律与交付模板见 [investigation skill](../06_agent_skills/investigation/SKILL.md)。
 
 ---
 

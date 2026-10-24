@@ -17,13 +17,13 @@ description: >-
 
 ---
 
-## origin-faithful（Agent 细则；用户面见词汇表）
+## 忠于原 bug 逻辑（origin-faithful）
 
-**一句话：** 注入逻辑必须与原 bug 相同；禁止用 NaN 强写、token `fill_`、或其它「伪造症状」的合成放大器来凑 PASS。
+**一句话：** 注入逻辑必须与原 bug 相同；禁止用 NaN 强写、token `fill_`、或其它「伪造症状」手段来凑检出。
 
-**用户面入口：** [04 · 词汇表](../../04_case_studies/词汇表.md)（origin-faithful / amplifier / repro_mode 四态 / 三层率 / 挖矿 / 10-gate）。本 skill 写构造硬约束，不替代词汇表。
+用户面不必背这个英文词——在案例规格/构造节用白话写清即可。稳定缩写（三层率、overlay、keep-set…）见 [短词汇表](../../04_case_studies/词汇表.md)。
 
-与表格字段 **Origin**（`vllm-only` / `both` / `ascend-only`）是两件事——Origin 标代码树，origin-faithful 标复现纪律。
+与表格字段 **Origin**（`vllm-only` / `both` / `ascend-only`）是两件事——Origin 标代码树，本条标复现纪律。
 
 ---
 

@@ -2,7 +2,7 @@
 
 每个 detector **单独成文**，便于算法演进时只改一页。全部默认 `enabled: false`。
 
-**相关术语（入口）：** **三层率** trigger/precision/detect、**logits 有限乱码**（旧称有限垃圾 / finite garbage；`logits_finite` 抓不到）、检测辅标「检出 / 漏检 / 乱码漏检」、旧 **GAP**（退役结案标签）→ 一律见 [04 · 词汇表](../04_case_studies/词汇表.md)。
+评测时常见「触发 / 判坏 / 报告」三层数字须分开记（见 [短词汇表 · 三层率](../04_case_studies/词汇表.md)）。若输出已是乱码但 **logits 仍有限**（无 NaN/Inf），`logits_finite` **抓不到**——检测辅标写「乱码漏检」，案例结案仍用四档，不要另造总评标签。
 
 ## 一览
 
