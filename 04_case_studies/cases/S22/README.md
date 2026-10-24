@@ -47,22 +47,22 @@ Rejection 与 residual resample 共用 RNG、无独立 salt（对照修复 [asce
 - **对 B：** 无余弦分歧。
 - **模型层 tok0：** 两对在 prompt 第 1 个 token 上 `model.layers.*` 最差仍≈1.0。
 - **dump 层数：** 本窗约 74 个名字（含投机相关层），高于普通 36+36；细节以 `evidence/kv_v516_numeric_first.json` 为准。
-- 证据：`evidence/kv_*.json`；`verified_kv/S22/`（**.pt 未入库**）。
+- 证据：`evidence/kv_*.json`；验证机耐久 `verified_kv/S22/`（**.pt 未入库**；对 1 表2 全层来自本轮 `.pt`）。
 
 
 
 ### KV 对账表
 
-分桶（可读性）：`≈1`≥0.99；`0.9–0.99`；`0.8–0.9`；`0.6–0.8`；`0.3–0.6`；`0.1–0.3`；`<0.1`（含负值）；数值门闩写清子类型（如 `数值问题:全零(zero_norm)` / `数值问题:NaN` / `数值问题:Inf`），勿只写「数值异常」（不编余弦）。
+分桶（可读性）：`≈1`≥0.99；`0.9–0.99`；`0.8–0.9`；`0.6–0.8`；`0.3–0.6`；`0.1–0.3`；`<0.1`（含负值）；数值门闩写清子类型。
 
-数据来自 `evidence/kv_v516_numeric_first.json`（及同结构字段）；不编造未入库 `.pt` 上的数。
+数据来自本轮 `keep-set-retest-20261022` `.pt`（耐久副本 `verified_kv` / home）；`evidence/kv_v516_numeric_first.json`。**只钉一轮**，未混其他目录。
 
 两对结论**不一致**，分列如下。
 
-**对 1**（`req_id`=`cmpl-b6f0819f7cce6b53-0-b49cdd90`；对比窗 **21** token，其中 prompt **14**）。
+**对 1**
 
-**表1 · 每 token 最差格**（该 token 上差距最大的层；有数值门闩则整格写清子类型）
-
+**代表对**（`req_id`=`cmpl-b6f0819f7cce6b53-0-b49cdd90`；对比窗 **21** token，其中 prompt **14**）。
+**表1 · 每 token 最差格**
 | token 序号 | 角色 | 该 token 最差格 |
 | --- | --- | --- |
 | 0 | prompt[0] | ≈1（最差 layer_67） |
@@ -85,23 +85,53 @@ Rejection 与 residual resample 共用 RNG、无独立 salt（对照修复 [asce
 | 17 | out[3] | ≈1（最差 layer_61） |
 | 18 | out[4] | ≈1（最差 layer_63） |
 | 19 | out[5] | ≈1（最差 layer_61） |
-| 20 | out[6] | 0.9–0.99（最差 layer_73） |
+| 20 | out[6] | 0.9–0.99（0.9678 @ `layer_73`） |
 
-**表2 · 首个出问题的 token 的逐层剖面（合并区间）** — **首个出问题的 token = out[6]**（证据 `first_cos_mismatch.token_idx=20`；此前 prompt/out 均 ≈1，画 prompt[0] 没用）。
+**表2 · 首个出问题的 token 的逐层剖面（全层）** — **首个出问题的 token**（`token_idx=20` role=`out[6]`；`min_cos`≈0.9678 @ `layer_73`）。
 
-包内**没有** out[6] 的完整逐层余弦数组 → **不画合并区间假表**。证据锚点：
-
-| 锚点 | 值 |
-| --- | --- |
-| 角色 | out[6]（window token_idx=20） |
-| 该 token 最差格 | 0.9–0.99（`min_cos`≈0.9678 @ `layer_73`） |
-| 同 token 另锚 | `layer_72` 上 cos≈0.971 |
-
-注：分歧很晚且幅度不大；完整逐层需服务器重跑。禁止用 token0 的 ≈1 剖面冒充首坏。
+| 层（model.layers） | 余弦 | 分桶 |
+| --- | --- | --- |
+| L0 | ≈1 | ≈1 |
+| L1 | ≈1 | ≈1 |
+| L2 | ≈1 | ≈1 |
+| L3 | ≈1 | ≈1 |
+| L4 | ≈1 | ≈1 |
+| L5 | ≈1 | ≈1 |
+| L6 | ≈1 | ≈1 |
+| L7 | ≈1 | ≈1 |
+| L8 | ≈1 | ≈1 |
+| L9 | ≈1 | ≈1 |
+| L10 | ≈1 | ≈1 |
+| L11 | ≈1 | ≈1 |
+| L12 | ≈1 | ≈1 |
+| L13 | ≈1 | ≈1 |
+| L14 | ≈1 | ≈1 |
+| L15 | ≈1 | ≈1 |
+| L16 | ≈1 | ≈1 |
+| L17 | ≈1 | ≈1 |
+| L18 | ≈1 | ≈1 |
+| L19 | ≈1 | ≈1 |
+| L20 | ≈1 | ≈1 |
+| L21 | ≈1 | ≈1 |
+| L22 | ≈1 | ≈1 |
+| L23 | ≈1 | ≈1 |
+| L24 | ≈1 | ≈1 |
+| L25 | ≈1 | ≈1 |
+| L26 | ≈1 | ≈1 |
+| L27 | ≈1 | ≈1 |
+| L28 | ≈1 | ≈1 |
+| L29 | ≈1 | ≈1 |
+| L30 | ≈1 | ≈1 |
+| L31 | ≈1 | ≈1 |
+| L32 | ≈1 | ≈1 |
+| L33 | ≈1 | ≈1 |
+| L34 | ≈1 | ≈1 |
+| L35 | ≈1 | ≈1 |
+| L36 | ≈1 | ≈1 |
 
 **对 2**（`req_id`=`cmpl-ab0f42815521a8cd-0-a8f36148`；对比窗 **20** token，其中 prompt **14**）。
 
-**表1 · 每 token 最差格**（该 token 上差距最大的层；有数值门闩则整格写清子类型）
+**表1 · 每 token 最差格**
 
 | token 序号 | 角色 | 该 token 最差格 |
 | --- | --- | --- |
@@ -110,12 +140,12 @@ Rejection 与 residual resample 共用 RNG、无独立 salt（对照修复 [asce
 | 2 | prompt[2] | ≈1（最差 layer_67） |
 | 3 | prompt[3] | ≈1（最差 layer_61） |
 | 4 | prompt[4] | ≈1（最差 layer_69） |
-| 5 | prompt[5] | ≈1（最差 L33） |
+| 5 | prompt[5] | ≈1（最差 model.layers.33.self_attn.attn） |
 | 6 | prompt[6] | ≈1（最差 layer_71） |
 | 7 | prompt[7] | ≈1（最差 layer_61） |
 | 8 | prompt[8] | ≈1（最差 layer_63） |
 | 9 | prompt[9] | ≈1（最差 layer_69） |
-| 10 | prompt[10] | ≈1（最差 L33） |
+| 10 | prompt[10] | ≈1（最差 model.layers.33.self_attn.attn） |
 | 11 | prompt[11] | ≈1（最差 layer_61） |
 | 12 | prompt[12] | ≈1（最差 layer_63） |
 | 13 | prompt[13] | ≈1（最差 layer_47） |
@@ -126,7 +156,7 @@ Rejection 与 residual resample 共用 RNG、无独立 salt（对照修复 [asce
 | 18 | out[4] | ≈1（最差 layer_63） |
 | 19 | out[5] | ≈1（最差 layer_69） |
 
-**表2 · 首个出问题的 token 的逐层剖面** — **无问题 token，跳过**（本对对比窗全程 ≈1；不假装「首坏」。与对 1 结论不一致）。
+**表2 · 首个出问题的 token 的逐层剖面** — **无问题 token，跳过**（本对对比窗全程 ≈1；与对 1 结论不一致）。
 
 ### 推断
 
