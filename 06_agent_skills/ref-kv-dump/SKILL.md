@@ -101,7 +101,7 @@ python "$SCRIPTS/request_from_report.py" \
 ## 对比硬顺序（抓完 dump 必须按此做；v5.16+ / v5.19）
 
 Dump 布局是 **整 block 保存**：`[n_blocks, block_size, H, D]`（`block_ids` 顺序）。  
-block 内**未写入的 token 槽**（未用槽）常为 0；对比窗只取有效 token（history 默认 **`p+o−1`**）。
+block 内**未写入的 token 槽**（未用槽）常为 0；对比窗只取有效 token（history 默认 **prompt 长度 + 输出长度 − 1**）。
 
 **未用槽分级（必区分；属步骤 1 的 mask/附注，不是余弦主结论）：**
 
@@ -115,7 +115,7 @@ block 内**未写入的 token 槽**（未用槽）常为 0；对比窗只取有�
 
 1. **形状 + 掩掉未用槽** — buggy vs ref 各层 `shape` 一致（含 `n_blocks` / `block_size` / heads）；不一致 → **停**，查 TP stitch / 错目录 / 不同 MODE，**勿算 cos**。对齐 feed 跨度（history=`n_prompt+n_output-1`；或 `--written-only`）；**禁止**按 `n_blocks*block_size` 全容量比。未用槽按上表分级记账（`unused_nonzero_finite` / `unused_nonfinite`）。  
 2. **有效槽（used / 有效 KV）数值扫描 — 必须先报（带子类型）** — 对对比窗内每个有效 (token, layer) 先扫 **全零 / 零范数（zero_norm）/ 溢出 Inf·NaN** 等。有问题 → 标 **数值问题:\<子类型\>**（如 `zero_norm`、`NaN`、`Inf`），在事实/摘要/`kv_compare` 里 **先写清楚**（含能确定的 token/层范围）。**勿只写「数值异常」而不写子类型（证据能区分时）。此步未写完，禁止进入余弦与层表。** 有效槽已非有限或全数值问题 → 可归「不一致」类信号，**不定层**（禁止 NaN cos 伪层名）；仍须把数值事实归档。  
-3. **仅对干净格再余弦 → 表 → 十问** — 相似度只在**无数值问题**的格上算；再填 keep-set **表1（每 token 最差格）/ 表2（首个出问题的 token 的逐层合并区间）**（见 [04](../../04_case_studies/README.md)；表2 **不是** window token0 默认图）；有数值问题的格/token 写清子类型，**不编余弦**。然后交 investigation **【事实总结】+ 十问**（[02 §5](../../02_problem_localization/README.md#5-kv-定界十问检查单有-buggyref-时按序)）。交给编排的对比摘要须够 investigation 写成**白话事实**（清洁标杆、有效槽/格、数值门闩子类型、`o=1`/双名若出现须可解释）——细则见 investigation「事实写作」。
+3. **仅对干净格再余弦 → 表 → 十问** — 相似度只在**无数值问题**的格上算；再填 keep-set **表1（每 token 最差格）/ 表2（首个出问题的 token 的逐层合并区间）**（见 [04](../../04_case_studies/README.md)；表2 **不是** window token0 默认图）；有数值问题的格/token 写清子类型，**不编余弦**。然后交 investigation **【事实总结】+ 十问**（[02 §5](../../02_problem_localization/README.md#5-kv-定界十问检查单有-buggyref-时按序)）。交给编排的对比摘要须够 investigation 写成**白话事实**（清洁标杆、有效槽/格、数值门闩子类型、输出只有 1 个 token/双名若出现须可解释）——细则见 investigation「事实写作」。
 
 脚本（步骤 2→3 已强制数值门闩；调用前仍须按上序解读与落笔）：
 
@@ -150,7 +150,7 @@ python "$SCRIPTS/compare_per_layer.py" \
 | **有效槽 Inf/NaN** | 数值溢出已进/经 KV；偏计算写入或上游炸 |
 | **未用槽有限非 0** | 脏写/卫生；**通常不致坏结果**；附注即可 |
 | **未用槽 Inf/NaN** | 可影响结果；严重数值信号 |
-| **仅末 token 分歧**（history feed 且按 p+o 全长比） | **多半 feed 跨度错** — 改 `n_tokens=p+o-1` 复核；勿定界到层 |
+| **仅末 token 分歧**（history feed 且按 prompt+输出全长比） | **多半 feed 跨度错** — 改 `n_tokens = prompt 长度 + 输出长度 − 1` 复核；勿定界到层 |
 | **shape 不一致** | 错 dump / 未 stitch / 拓扑或 MODE 不一致 — 先修对齐 |
 
 **TP>1：** 对齐 `tp_rank` / `num_kv_heads`；必要时 `stitch_kv`。  
@@ -159,8 +159,8 @@ python "$SCRIPTS/compare_per_layer.py" \
 ## 有效对账前提（踩坑硬纪律）
 
 1. **同一次异常请求** — buggy report、buggy dump、ref dump、`kv_compare` 必须对齐同一 `req_id`/wave。禁止拿「有 dump 的旧跑」配「新 detect 钉点」。**detect=0 也不授权**混用历史 dump。  
-2. **先有有效异常** — 目标形态已复现；dump 覆盖足够 output（勿把 **弱窗** 如仅 o=1 / 非异常 completion 当有效异常 KV）。未满足 → 停，交 investigation 写 **复现未抓到** / 未做有效对账。  
-3. **硬顺序：shape/掩未用 → 有效槽数值先报 → 再余弦/表/十问** — 见上节；history feed 用 `p+o-1`；勿把 block 尾部未用 0 槽算进相似度。  
+2. **先有有效异常** — 目标形态已复现；dump 覆盖足够 output（勿把 **弱窗** 如输出只有 1 个 token / 非异常 completion 当有效异常 KV）。未满足 → 停，交 investigation 写 **复现未抓到** / 未做有效对账。  
+3. **硬顺序：shape/掩未用 → 有效槽数值先报 → 再余弦/表/十问** — 见上节；history feed 对比跨度用「prompt 长度 + 输出长度 − 1」；勿把 block 尾部未用 0 槽算进相似度。  
 4. **全格数值问题 / 仅末位假分歧 ≠ 层定位** — 有效槽全非有限、或表1 无有效余弦、或 **只有最后一个 output** 分歧时，**先落笔数值问题** / 再查 feed 跨度 / 空槽；**禁止**写成「首坏 token0 @ layer_L」。有效槽 Inf/NaN / zero_norm 仍是可归档事实（非「复现未抓到」）。  
 5. **标杆未炸** — `logits_finite` 路径下 ref 必须未触发该 detector；炸过的 dump 不可当标杆。  
 6. **跨环境标杆先对齐** — 必现案确认他环境是否正常；分环境抓 dump 前核对权重 MD5 + 代码 commit/overlay；不一致先对齐。  
@@ -174,7 +174,7 @@ python "$SCRIPTS/compare_per_layer.py" \
 - 重复实现 `verify_request_kv`  
 - 输出 runtime_config JSON；用 msprobe **冒充** KV 对比源  
 - **`logits_finite` 后跳过本 skill** 直接 msprobe  
-- 用弱 dump / 全 NaN cos / **history 下按 p+o 全长** 的末位假分歧写层定位  
+- 用弱 dump / 全 NaN cos / **history 下按 prompt+输出全长** 的末位假分歧写层定位  
 - 把未用槽「有限非 0」与「Inf/NaN」混写成同等严重；忽略有效槽 Inf；混用不同 run  
 - 跳过 shape / 未用槽掩码；**跳过有效槽数值扫描就先写余弦或层表**；必现+detect=0 时拒绝 `manual_dump`、硬写成「复现未抓到」；按整 block 容量（含未用槽）算余弦  
 - 用本地 tokenize 字符串冒充服务端 `prompt_token_ids`；用已炸请求当标杆  

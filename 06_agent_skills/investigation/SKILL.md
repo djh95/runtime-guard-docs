@@ -23,11 +23,11 @@ description: >-
 **Guard KV 路径：** 对比源只用 native `dump_kv`（勿用 msprobe / 自造 dumper **冒充** KV 对比源）。  
 
 **抓 dump 后的硬顺序（委派 `ref-kv-dump`；v5.19；禁止跳步）：**  
-1. **形状 + 掩掉未用槽**（history=`p+o−1`；未用槽分级：有限非 0≈卫生，Inf/NaN≈可影响结果）；  
+1. **形状 + 掩掉未用槽**（history 对比跨度 = prompt 长度 + 输出长度 − 1；未用槽分级：有限非 0≈卫生，Inf/NaN≈可影响结果）；  
 2. **有效槽数值扫描并先报** — 全零 / zero_norm / 溢出 Inf·NaN 等 → 事实里写 **数值问题**并带**子类型**（未写完禁止进下一步）；  
 3. **再**对干净格算余弦、填表1/表2、做十问定界（有数值问题的格写清子类型，如 `数值问题:全零(zero_norm)` / `数值问题:NaN`，**不编余弦**）。  
 
-**必现 + detect=0 → 仍可 `manual_dump`：** 问题已必现（或 precision 已坏，如 identical 乱码），但 detector **0 报告**时（S07/S45 路径），**允许**对异常请求做 **`manual_dump`** 抓异常 KV，并抓清洁标杆，再按上序分析有效槽——**不要**因 detect=0 写成「复现未抓到」而跳过 KV。非必现 / 难复现同样可用 `manual_dump` 抬抓取率。标杆须**未**炸（未亮 `logits_finite`）。  
+**必现 + detect=0 → 仍可 `manual_dump`：** 问题已必现（或 precision 已坏，如跨请求内容完全相同的乱码），但 detector **0 报告**时（S07/S45 路径），**允许**对异常请求做 **`manual_dump`** 抓异常 KV，并抓清洁标杆，再按上序分析有效槽——**不要**因 detect=0 写成「复现未抓到」而跳过 KV。非必现 / 难复现同样可用 `manual_dump` 抬抓取率。标杆须**未**炸（未亮 `logits_finite`）。  
 
 **分流（`logits_finite` 也先 KV）：** 采样前 NaN/Inf 命中后 **仍** 走 `dump_kv` + 标杆，并遵守上序。有效槽全非有限 / 无有效余弦 → **不定层**，但「有效槽已数值问题」本身必须先归档。**msprobe 殿后**（全程挂钩、开销大，不能检出后再开）。
 
@@ -72,7 +72,7 @@ description: >-
 | **precision** | 输出/数值已坏（可无 report） | samples 垃圾文、temp=0 发散、`score_completion_samples` |
 | **detect** | 已合入 detector 出 report | `report/<type>/report_*.json` 计数 |
 
-**trigger ≠ precision ≠ detect。** 有 trigger+precision 但 detect=0 → **FAIL+GAP**（记缺口，勿造 NaN/填 token 伪装 PASS）。
+**trigger ≠ precision ≠ detect。** 有 trigger+precision 但 detect=0 → **乱码漏检**（记漏检缺口，勿造 NaN/填 token 伪装 PASS）。
 
 ### 根因 class → 已合入 detector（来自 easy wave）
 
@@ -81,102 +81,102 @@ description: >-
 | MoE 路由/合成/renorm（S06,S16–S19） | 复读、digit/`***`/`ctx` echo、ZWSP | `token_repeat` | 无 MoE 专用 detector |
 | KV recycle / packed stride / slot→0（S08,S10′,S12） | 复读、xxxx collapse | `token_repeat` | KV 类；verify+ref 可定界 |
 | MLA pad / o_proj empty（S11,S14） | digit/junk、graph pad | `token_repeat` | 间接 KV；dump 路径常有 |
-| FIA FULL-graph pad（S32，soft-inv #7144） | **unique** pad-echo（`wN_M…` / `_0_0_0`）；identical-mode 低估 | **`token_repeat`** | **L2**（graph pad keep descriptor）；≠ S14 o_proj empty；score=`pad_echo` |
+| FIA FULL-graph pad（S32，反向构造 #7144） | **unique** pad-echo（`wN_M…` / `_0_0_0`）；跨请求输出完全相同（计分口径） 低估 | **`token_repeat`** | **L2**（graph pad keep descriptor）；≠ S14 o_proj empty；score=`pad_echo` |
 | Incomplete softcap（S33，÷cap+tanh skip *cap） | digit/`1.1.1…` 复读 | **`token_repeat`** | **L2**（softcap incomplete）；≠ S20 unstable/overflow（`!!!!`/token0） |
-| Attn scale drop（S34，1/sqrt(d)→1.0） | unique digit/junk 混杂；identical-mode 低估 | **`token_repeat`** | **L2**（wrong attn temperature）；≠ S20/S32/S33 |
+| Attn scale drop（S34，1/sqrt(d)→1.0） | unique digit/junk 混杂；跨请求输出完全相同（计分口径） 低估 | **`token_repeat`** | **L2**（wrong attn temperature）；≠ S20/S32/S33 |
 | Causal-off / future leak（S35，causal=False + mask=None） | 强 `phrase_repeat` / prompt-echo 复读 | **`token_repeat`** | **L2**（non-causal / sparse_mode=0）；≠ S34 scale |
-| Temp-scale blowup（S36，post-temp ÷50） | unique garbled prose / id-echo；identical-mode 低估 | **`token_repeat`** | **L2**（wrong T scale）；score=`id_echo`/`unique_garbage`；≠ S29/S20 |
-| Positions→0 before RoPE（S37） | digit/`333…`/`999…` 复读塌缩 | **`token_repeat`** | **L2**（pos-collapse）；≠ S25 half ≠ S28 style ≠ S11 pad |
+| Temp-scale blowup（S36，post-temp ÷50） | unique garbled prose / id-echo；跨请求输出完全相同（计分口径） 低估 | **`token_repeat`** | **L2**（wrong T scale）；score=`id_echo`/`unique_garbage`；≠ S29/S20 |
+| Positions→0 before RoPE（S37） | digit/`333…`/`999…` 输出塌成反复复读 | **`token_repeat`** | **L2**（pos-collapse）；≠ S25 half ≠ S28 style ≠ S11 pad |
 | RMSNorm identity skip（S38） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（norm skip）；≠ S26 fp32-mul ≠ S31 residual-drop；≠ S20（S20 常只亮 `token_repeat`） |
 | SwiGLU skip-silu（S39，plain gate×up） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（activation skip）；≠ S26/S31/S38 norm 族 |
 | RoPE skip（S40，unrotated Q/K） | Nile/`phrase_repeat` 句级复读 | **`token_repeat`** | **L2**（no rotary）；≠ S25 half ≠ S28 style ≠ S37 pos-zero |
 | Post-FA attn out `mul_(1000)`（S41） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（wrong attn-out scale）；≠ S34 softmax-scale ≠ S14/S35 |
 | RoPE phase negate（S42，`-cos_sin_cache`） | digit/`1.1.1…` 复读 | **`token_repeat`** | **L2**（wrong phase）；≠ S37 pos-zero ≠ S40 skip ≠ S25/S28 |
-| Embed scale ×100（S43） | 纯换行塌缩 / newline collapse | **`token_repeat`** | **L2**（wrong embed magnitude）；score=`newline_collapse`；≠ S23/S41 |
-| Logits `zero_()` before sample（S44） | `!!!!` token0 | — | **BLOCKED / invalid-synthetic**：force-write logits 发明症状（PRINCIPLES §2）；非 10-gate PASS / 非 skills win |
-| Top-k/top-p on `-logits`（S45，bottom nucleus） | **unique** mixed-script garbage；identical-mode 低估 | **当前均弱** | **FAIL+GAP**（同 S07；≠ S01 dense 复现未出现）；`token_repeat`/`logits_finite` miss；勿放大器硬凑 PASS |
-| Penalty sign flip（S46，1/rep + neg freq/pres） | digit/`1.1.1…`/`0.0.0…` 复读塌缩 | **`token_repeat`** | **L2**（penalty polarity invert）；真实 sampling soft-inv；≠ S45 GAP ≠ S44 amplifier |
-| K/V swap before FA（S47） | 单字/短语复读塌缩（如 `郦…Trail`） | **`token_repeat`** | **L2**（K/V swapped into attn）；≠ S34 scale ≠ S35 causal ≠ S41 attn-out ×1000 |
+| Embed scale ×100（S43） | 纯输出几乎只剩换行 / 输出几乎只剩换行 | **`token_repeat`** | **L2**（wrong embed magnitude）；score=`newline_collapse`；≠ S23/S41 |
+| Logits `zero_()` before sample（S44） | `!!!!` token0 | — | **BLOCKED / invalid-synthetic**：force-write logits 发明症状（PRINCIPLES §2）；非 十个门禁场景 PASS / 非 skills win |
+| Top-k/top-p on `-logits`（S45，bottom nucleus） | **unique** mixed-script garbage；跨请求输出完全相同（计分口径） 低估 | **当前均弱** | **乱码漏检**（同 S07；≠ S01 dense 复现未出现）；`token_repeat`/`logits_finite` miss；勿用伪造症状硬凑检出 |
+| Penalty sign flip（S46，1/rep + neg freq/pres） | digit/`1.1.1…`/`0.0.0…` 输出塌成反复复读 | **`token_repeat`** | **L2**（penalty polarity invert）；真实 sampling 反向构造；≠ S45 乱码漏检 ≠ S44 伪造症状 |
+| K/V swap before FA（S47） | 单字/短语输出塌成反复复读（如 `郦…Trail`） | **`token_repeat`** | **L2**（K/V swapped into attn）；≠ S34 scale ≠ S35 causal ≠ S41 attn-out ×1000 |
 | Residual negate（S48，`-residual` before add-RMSNorm） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（wrong residual polarity）；≠ S31 drop ≠ S38 skip |
-| Attn scale blowup（S49，scale×50） | unique/`1.1.1…` 混杂；identical-mode 低估 | **`token_repeat`** | **L2**（attn temp too hot）；≠ S34 scale→1.0 ≠ S41 post-FA ×1000 |
+| Attn scale blowup（S49，scale×50） | unique/`1.1.1…` 混杂；跨请求输出完全相同（计分口径） 低估 | **`token_repeat`** | **L2**（attn temp too hot）；≠ S34 scale→1.0 ≠ S41 post-FA ×1000 |
 | SwiGLU gate/up half-swap（S50，`cat(up,gate)`） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（SwiGLU halves swapped）；≠ S39 skip-silu |
-| Value scale ×50 before FA（S51） | 复读/`...` 塌缩 | **`token_repeat`** | **L2**（wrong V magnitude）；≠ S41 attn-out ≠ S47 K/V swap ≠ S49 attn-scale |
+| Value scale ×50 before FA（S51） | 输出塌成复读或 `...` | **`token_repeat`** | **L2**（wrong V magnitude）；≠ S41 attn-out ≠ S47 K/V swap ≠ S49 attn-scale |
 | Query negate before FA（S52） | unique/garbage 复读混杂 | **`token_repeat`** | **L2**（wrong Q polarity）；≠ S47 K/V ≠ S51 V-scale ≠ S42 RoPE-phase |
 | LM-head logits ÷50（S53） | digit/`1.1.1…` 复读 | **`token_repeat`** | **L2**（wrong lm-head scale）；≠ S36 post-temp ÷50 ≠ S44 logits.zero_ |
 | Key negate before FA（S54） | unique/garbage 复读混杂 | **`token_repeat`** | **L2**（wrong K polarity）；≠ S47 K/V ≠ S51 V-scale ≠ S52 Q-negate |
 | Residual ×50 before add-RMSNorm（S55） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（wrong residual magnitude）；≠ S31 drop ≠ S38 skip ≠ S48 sign-flip |
 | SwiGLU input negate（S56，`x=-x` before npu_swiglu） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（wrong SwiGLU input sign）；≠ S39 skip-silu ≠ S50 half-swap |
-| Positions ×2 before RoPE（S57） | 短语/`name.` 复读塌缩 | **`token_repeat`** | **L2**（wrong pos magnitude）；≠ S37 pos-zero（negate 会炸 NPU） |
+| Positions ×2 before RoPE（S57） | 短语/`name.` 输出塌成反复复读 | **`token_repeat`** | **L2**（wrong pos magnitude）；≠ S37 pos-zero（negate 会炸 NPU） |
 | Value negate before FA（S58） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（wrong V polarity）；≠ S51 V×50 ≠ S47 K/V ≠ S52/S54 Q/K-negate |
 | Key ×50 before FA（S59） | digit/`0.0.0…` 复读混杂 | **`token_repeat`** | **L2**（wrong K magnitude）；≠ S49 attn-scale ≠ S51 V×50 ≠ S54 K-negate |
 | Query ×50 before FA（S60） | digit/`0.0.0…` 复读混杂 | **`token_repeat`** | **L2**（wrong Q magnitude）；≠ S52 Q-negate ≠ S49/S51/S59 |
 | Hidden ×50 before lm-head（S61） | digit/`1.1.1…` 复读 | **`token_repeat`** | **L2**（wrong pre-head hidden mag）；≠ S53 logits÷50 ≠ S43 embed×100 |
 | Pre-RMSNorm x×50（S62） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（wrong pre-norm act mag）；≠ S26 fp32-mul ≠ S38 skip ≠ S48/S55 residual |
 | Attn-out negate after FA（S63） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（wrong attn-out polarity）；≠ S41 attn-out ×1000 |
-| Residual ÷50 before add-RMSNorm（S64） | 短语/`[code` 复读塌缩 | **`token_repeat`** | **L2**（wrong residual mag low）；≠ S48 sign-flip ≠ S55 residual×50 |
+| Residual ÷50 before add-RMSNorm（S64） | 短语/`[code` 输出塌成反复复读 | **`token_repeat`** | **L2**（wrong residual mag low）；≠ S48 sign-flip ≠ S55 residual×50 |
 | LM-head logits ×50（S65） | digit/`1.1.1…` 复读 | **`token_repeat`** | **L2**（wrong logit mag high）；≠ S53 logits÷50 ≠ S36 temp÷50 |
 | RMSNorm weight negate（S66，`-weight` into add-RMSNorm） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（wrong norm-weight sign）；≠ S26 fp32-mul ≠ S38 skip ≠ S48/S55 residual ≠ S62 pre-norm x |
 | SwiGLU out negate（S67，`-out` after npu_swiglu） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（wrong SwiGLU out polarity）；≠ S39 skip-silu ≠ S50 half-swap ≠ S56 input-negate |
-| Attn scale ÷50（S68） | unique digit/`1.1.1…` 混杂；identical-mode 低估 | **`token_repeat`** | **L2**（attn temp too cold）；≠ S34 scale→1.0 ≠ S49 scale×50 |
+| Attn scale ÷50（S68） | unique digit/`1.1.1…` 混杂；跨请求输出完全相同（计分口径） 低估 | **`token_repeat`** | **L2**（attn temp too cold）；≠ S34 scale→1.0 ≠ S49 scale×50 |
 | Embed negate（S69，`mul_(-1)` after lookup） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（wrong embed polarity）；≠ S43 embed×100 |
 | Variance eps ×1000（S70，eps into add-RMSNorm） | digit/`1.1.1…` 复读混杂 | **`token_repeat`** | **L2**（wrong norm eps）；≠ S26 fp32-mul ≠ S38 skip ≠ S66 weight-negate |
 | RMSNorm weight ×50（S71） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（wrong norm-weight mag）；≠ S66 weight-negate |
 | SwiGLU out ×50（S72，`out*=50` after npu_swiglu） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（wrong SwiGLU out mag）；≠ S39 skip ≠ S50 swap ≠ S56 in-neg ≠ S67 out-neg |
 | RMSNorm x negate（S73，`x=-x` before add-RMSNorm） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（wrong pre-norm act polarity）；≠ S48 residual-neg ≠ S62 pre-norm×50 |
-| RMSNorm weight ÷50（S74） | 短语/`numpy` 复读塌缩 | **`token_repeat`** | **L2**（wrong norm-weight mag low）；≠ S66 negate ≠ S71 ×50 |
+| RMSNorm weight ÷50（S74） | 短语/`numpy` 输出塌成反复复读 | **`token_repeat`** | **L2**（wrong norm-weight mag low）；≠ S66 negate ≠ S71 ×50 |
 | Hidden ÷50 before lm-head（S75） | digit/`1.1.1…` 复读 | **`token_repeat`** | **L2**（wrong pre-head hidden mag low）；≠ S61 ×50 ≠ S53 logits÷50 ≠ S65 logits×50 |
 | SwiGLU input ×50（S76，`x*=50` before npu_swiglu） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（wrong SwiGLU input mag）；≠ S39/S50/S56/S67/S72 |
 | Variance eps ÷1000（S77） | digit/`1.1.1…` 复读混杂 | **`token_repeat`** | **L2**（wrong norm eps low）；≠ S70 eps×1000 |
-| RMSNorm x ÷50（S78，`x/=50` before add-RMSNorm） | 换行/`sentence` 复读塌缩 | **`token_repeat`** | **L2**（wrong pre-norm act mag low）；≠ S62 ×50 ≠ S73 x-negate |
+| RMSNorm x ÷50（S78，`x/=50` before add-RMSNorm） | 换行/`sentence` 输出塌成反复复读 | **`token_repeat`** | **L2**（wrong pre-norm act mag low）；≠ S62 ×50 ≠ S73 x-negate |
 | Cos/sin ×50 into RoPE（S79） | digit/`10.10…` + Nile phrase 混杂 | **`token_repeat`** | **L2**（wrong rope phase mag）；≠ S37 pos-zero ≠ S40 skip ≠ S42 phase-neg ≠ S25/S28 |
 | Embed ÷50（S80） | 短句/换行复读；detect 可 <n_req | **`token_repeat`** | **L2**（wrong embed mag low）；≠ S43 ×100 ≠ S69 negate |
-| SwiGLU input ÷50（S81，`x/=50` before npu_swiglu） | 短语/`swer` 复读塌缩 | **`token_repeat`** | **L2**（wrong SwiGLU input mag low）；≠ S39/S50/S56 ≠ S76 ×50 |
+| SwiGLU input ÷50（S81，`x/=50` before npu_swiglu） | 短语/`swer` 输出塌成反复复读 | **`token_repeat`** | **L2**（wrong SwiGLU input mag low）；≠ S39/S50/S56 ≠ S76 ×50 |
 | Cos/sin ÷50 into RoPE（S82） | `,`/`and the` 复读混杂 | **`token_repeat`** | **L2**（wrong rope phase mag low）；≠ S37/S40/S42 ≠ S79 ×50 |
-| Attn-out ×50 after FA（S83） | `...`/换行复读塌缩 | **`token_repeat`** | **L2**（wrong attn-out mag mild）；≠ S41 ×1000（常 `logits_finite`）≠ S63 negate |
+| Attn-out ×50 after FA（S83） | `...`/换行输出塌成反复复读 | **`token_repeat`** | **L2**（wrong attn-out mag mild）；≠ S41 ×1000（常 `logits_finite`）≠ S63 negate |
 | Positions ÷2 before RoPE（S84，floor-div） | `. . .` 空格复读混杂 | **`token_repeat`** | **L2**（wrong pos mag low）；≠ S37 pos-zero ≠ S57 ×2 |
 | Temp ÷50（S85，post-temp logits×50） | digit/`1.1.1…` 复读；需 T>0 | **`token_repeat`** | **L2**（wrong T scale low）；≠ S36 post-temp÷50（T×50） |
 | RMSNorm-out negate（S86，`-x` after add-RMSNorm） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（wrong post-norm polarity）；≠ S73 pre-norm x-neg ≠ S66 weight-neg |
 | RMSNorm-out ×50（S87，`x*=50` after add-RMSNorm） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（wrong post-norm mag）；≠ S62 pre-norm×50 ≠ S86 out-negate |
 | Residual-post negate（S88，`-residual` after add-RMSNorm） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（wrong post-residual polarity）；≠ S48 pre-residual-neg ≠ S86 out-neg |
-| RMSNorm-out ÷50（S89，`x/=50` after add-RMSNorm） | 短语/`numpy` 复读塌缩 | **`token_repeat`** | **L2**（wrong post-norm mag low）；≠ S87 ×50 ≠ S78 pre-norm÷50 |
+| RMSNorm-out ÷50（S89，`x/=50` after add-RMSNorm） | 短语/`numpy` 输出塌成反复复读 | **`token_repeat`** | **L2**（wrong post-norm mag low）；≠ S87 ×50 ≠ S78 pre-norm÷50 |
 | Residual-post ×50（S90，`residual*=50` after add-RMSNorm） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（wrong post-residual mag）；≠ S55 pre× ≠ S64 pre÷ ≠ S88 post-neg |
-| Residual-post ÷50（S91，`residual/=50` after add-RMSNorm） | `[code` 短语复读塌缩 | **`token_repeat`** | **L2**（wrong post-residual mag low）；≠ S90 post× ≠ S64 pre÷ ≠ S88 negate |
-| Temp-skip（S92，skip `apply_temperature`） | unique rambling；**identical precision=0**；需 T>0 | **`token_repeat`** | **L2**（requested T ignored）；≠ S36 post÷50 ≠ S85 post×50；**detect≈n_req 仍 PASS**（勿因 precision=0 判 GAP） |
-| Residual←normed-x（S93，`return x,x` after add-RMSNorm） | `[it` 短语复读塌缩 | **`token_repeat`** | **L2**（wrong residual wiring：residual=normed x）；≠ S31 drop ≠ S94 swap ≠ S88–S91 post-residual mag/polarity |
+| Residual-post ÷50（S91，`residual/=50` after add-RMSNorm） | `[code` 短语输出塌成反复复读 | **`token_repeat`** | **L2**（wrong post-residual mag low）；≠ S90 post× ≠ S64 pre÷ ≠ S88 negate |
+| Temp-skip（S92，skip `apply_temperature`） | unique rambling；**跨请求相同计分下 precision=0**；需 T>0 | **`token_repeat`** | **L2**（requested T ignored）；≠ S36 post÷50 ≠ S85 post×50；**detect≈n_req 仍 PASS**（勿因 precision=0 判漏检） |
+| Residual←normed-x（S93，`return x,x` after add-RMSNorm） | `[it` 短语输出塌成反复复读 | **`token_repeat`** | **L2**（wrong residual wiring：residual=normed x）；≠ S31 drop ≠ S94 swap ≠ S88–S91 post-residual mag/polarity |
 | Residual↔x swap（S94，`return residual,x` after add-RMSNorm） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（wrong stream wiring：tuple swap）；≠ S31 drop ≠ S93 residual←x ≠ S88 post-neg |
 | Temp-double（S95，`apply_temperature`×2） | 低 precision identical + per-req detect；需 T>0 | **`token_repeat`** | **L2**（T applied twice → colder）；≠ S36 post÷50 ≠ S85 post×50 ≠ S92 skip |
-| RMSNorm-weight=ones（S96，`ones_like(weight)` into add-RMSNorm） | unique dynled；**identical precision=0**；detect 可 <n_req | **`token_repeat`** | **L2**（identity norm weight）；≠ S66 weight-neg ≠ S71 ×50 ≠ S74 ÷50；**detect>0 仍 PASS**（勿因 precision=0 判 GAP） |
+| RMSNorm-weight=ones（S96，`ones_like(weight)` into add-RMSNorm） | unique dynled；**跨请求相同计分下 precision=0**；detect 可 <n_req | **`token_repeat`** | **L2**（identity norm weight）；≠ S66 weight-neg ≠ S71 ×50 ≠ S74 ÷50；**detect>0 仍 PASS**（勿因 precision=0 判漏检） |
 | Residual-leak-add（S97，`x=x+residual` after add-RMSNorm） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（post-norm residual leak）；≠ S31 drop ≠ S93 residual←x ≠ S94 swap ≠ S88–S91 |
-| Min_p-skip（S98，skip `apply_min_p`） | unique rambling；**identical precision=0**；需 T>0 + min_p | **`token_repeat`** | **L2**（requested min_p ignored）；≠ S36/S85/S92/S95 temp class ≠ S46 penalty；**detect≈n_req 仍 PASS** |
-| Top_p-skip（S99，skip `apply_top_k_top_p`） | unique rambling；**identical precision=0**；需 T>0 + top_p | **`token_repeat`** | **L2**（requested nucleus/k ignored）；≠ S45 topk-on-neg（FAIL+GAP）≠ S98 min_p-skip ≠ temp class；**detect≈n_req 仍 PASS** |
+| Min_p-skip（S98，skip `apply_min_p`） | unique rambling；**跨请求相同计分下 precision=0**；需 T>0 + min_p | **`token_repeat`** | **L2**（requested min_p ignored）；≠ S36/S85/S92/S95 temp class ≠ S46 penalty；**detect≈n_req 仍 PASS** |
+| Top_p-skip（S99，skip `apply_top_k_top_p`） | unique rambling；**跨请求相同计分下 precision=0**；需 T>0 + top_p | **`token_repeat`** | **L2**（requested nucleus/k ignored）；≠ S45 topk-on-neg（乱码漏检）≠ S98 min_p-skip ≠ temp class；**detect≈n_req 仍 PASS** |
 | RMSNorm-bias=weight（S100，`bias=weight` into add-RMSNorm） | identical 异地×N 复读 | **`token_repeat`** | **L2**（wrong norm bias wiring）；≠ S66/S71/S74 weight mag/sign ≠ S96 ones |
 | Cos/sin-half-swap（S101，swap halves of RoPE cos_sin_cache） | identical `111…` 复读 | **`token_repeat`** | **L2**（wrong rope phase halves）；≠ S42 negate ≠ S79–S82 scale ≠ S40 skip ≠ S25/S28 |
 | RMSNorm-out-abs（S102，`x=abs(x)` after add-RMSNorm） | 混杂英文/`pl` 复读 | **`token_repeat`** | **L2**（destroy signed post-norm act）；≠ S86 out-neg ≠ S87–S89 out mag |
-| SwiGLU-gate-only（S103，`silu(gate)` drop up-mul） | unique garbage；**identical precision=0** | **`token_repeat`** | **L2**（incomplete SwiGLU：gate only）；≠ S39 skip-silu ≠ S50 half-swap ≠ S56–S81；**detect≈n_req 仍 PASS** |
+| SwiGLU-gate-only（S103，`silu(gate)` drop up-mul） | unique garbage；**跨请求相同计分下 precision=0** | **`token_repeat`** | **L2**（incomplete SwiGLU：gate only）；≠ S39 skip-silu ≠ S50 half-swap ≠ S56–S81；**detect≈n_req 仍 PASS** |
 | Rope-skip-key（S104，rotate Q only；K unrotated） | identical `One. One.…` 复读 | **`token_repeat`** | **L2**（Q/K RoPE phase mismatch）；≠ S40 full-skip ≠ S25/S28 ≠ S101 half-swap |
 | Rope-skip-query（S105，rotate K only；Q unrotated） | phrase-repeat 垃圾 | **`token_repeat`** | **L2**（Q/K RoPE phase mismatch，对偶于 S104）；≠ S104 skip-K ≠ S40/S25/S28/S101 |
 | Residual-post-abs（S106，`residual=abs(residual)` after add-RMSNorm） | 混杂 servlet 复读；precision 可 <n_req | **`token_repeat`** | **L2**（unsigned post-residual）；≠ S88 post-neg ≠ S90–S91 mag ≠ S102 out-abs |
 | SwiGLU-up-only（S107，return up half；drop silu(gate)*up） | identical 短语复读 | **`token_repeat`** | **L2**（incomplete SwiGLU：up only）；≠ S103 gate-only ≠ S39 skip-silu ≠ S50 half-swap |
 | Hidden-abs（S108，`hidden=abs(hidden)` before lm-head） | 混杂 cyrillic/`индив` 复读 | **`token_repeat`** | **L2**（unsigned pre-head hidden）；≠ S61 hidden×50 ≠ S75 hidden÷50 |
-| Value-abs（S109，`value=abs(value)` before FA） | unique garbage；**identical precision=0**；detect 可 <n_req | **`token_repeat`** | **L2**（unsigned V）；≠ S58 value-neg ≠ S51 value×；**detect>0 仍 PASS**（勿因 precision=0 判 GAP） |
+| Value-abs（S109，`value=abs(value)` before FA） | unique garbage；**跨请求相同计分下 precision=0**；detect 可 <n_req | **`token_repeat`** | **L2**（unsigned V）；≠ S58 value-neg ≠ S51 value×；**detect>0 仍 PASS**（勿因 precision=0 判漏检） |
 | RMSNorm-weight-abs（S110，`abs(weight)` into add-RMSNorm） | digit/`1.1.1…` 复读；precision 可 <n_req | **`token_repeat`** | **L2**（unsigned norm weight）；≠ S66 neg ≠ S71 ×50 ≠ S74 ÷50 ≠ S96 ones ≠ S100 bias=weight |
 | Key-abs（S111，`key=abs(key)` before FA） | 空格/`,` 复读混杂；precision 可 <n_req | **`token_repeat`** | **L2**（unsigned K）；≠ S54 key-neg ≠ S59 key× ≠ S109 value-abs |
-| Embed-abs（S112，`embedding.abs_()` after lookup） | 换行塌缩；detect 可 <n_req | **`token_repeat`** | **L2**（unsigned embed）；≠ S69 embed-neg ≠ S43 ×100 ≠ S80 ÷50 |
-| Cos/sin-abs（S113，`abs(cos_sin_cache)` into RoPE） | unique-ish Nile 散文；**identical precision=0** | **`token_repeat`** | **L2**（unsigned rope phase）；≠ S42 negate ≠ S79–S82 scale ≠ S101 half-swap ≠ S40 skip；**detect≈n_req 仍 PASS** |
+| Embed-abs（S112，`embedding.abs_()` after lookup） | 输出几乎只剩换行；detect 可 <n_req | **`token_repeat`** | **L2**（unsigned embed）；≠ S69 embed-neg ≠ S43 ×100 ≠ S80 ÷50 |
+| Cos/sin-abs（S113，`abs(cos_sin_cache)` into RoPE） | unique-ish Nile 散文；**跨请求相同计分下 precision=0** | **`token_repeat`** | **L2**（unsigned rope phase）；≠ S42 negate ≠ S79–S82 scale ≠ S101 half-swap ≠ S40 skip；**detect≈n_req 仍 PASS** |
 | Query-abs（S114，`query=abs(query)` before FA） | `for`/`one of` 复读；completes Q/K/V abs | **`token_repeat`** | **L2**（unsigned Q）；≠ S52 query-neg ≠ S60 query× ≠ S109 value-abs ≠ S111 key-abs |
 | SwiGLU-out-abs（S115，`out=abs(out)` after npu_swiglu） | 中文/换行复读混杂；precision 可 <n_req | **`token_repeat`** | **L2**（unsigned SwiGLU out）；≠ S67 out-neg ≠ S72 out× ≠ S103 gate-only ≠ S107 up-only |
 | RMSNorm-x-abs（S116，`x=abs(x)` before add-RMSNorm） | identical `pl` 复读 | **`token_repeat`** | **L2**（unsigned pre-norm x）；≠ S73 x-neg ≠ S62 ×50 ≠ S78 ÷50 ≠ S102 out-abs |
 | Query-scale-down（S117，`query/=50` before FA） | digit/`1.1.1…` 复读；precision 可 <n_req | **`token_repeat`** | **L2**（wrong Q magnitude low）；≠ S60 query×50 ≠ S52 query-neg ≠ S114 query-abs |
 | Key-scale-down（S118，`key/=50` before FA） | digit/`1.1.1…` 复读；precision 可 <n_req | **`token_repeat`** | **L2**（wrong K magnitude low）；≠ S59 key×50 ≠ S54 key-neg ≠ S111 key-abs |
 | Residual-pre-abs（S119，`residual=abs(residual)` before add-RMSNorm） | 混杂 servlet/mixed-script 复读；precision 可 <n_req | **`token_repeat`** | **L2**（unsigned pre-residual）；≠ S48 pre-neg ≠ S55/S64 mag ≠ S106 post-abs |
-| RMSNorm-weight=zeros（S120，`zeros_like(weight)` into add-RMSNorm） | 全请求 `!!!!…` 塌缩 | **`token_repeat`** | **L2**（collapsed norm weight）；≠ S96 ones ≠ S66 neg ≠ S71 ×50 ≠ S74 ÷50 ≠ S110 abs |
-| SwiGLU-input-abs（S121，`x=abs(x)` before npu_swiglu） | unique mixed-script garbage；**identical precision=0** | **`token_repeat`** | **L2**（unsigned SwiGLU input）；≠ S56 input-neg ≠ S76 ×50 ≠ S81 ÷50 ≠ S115 out-abs；**detect≈n_req 仍 PASS**（勿因 precision=0 判 GAP） |
+| RMSNorm-weight=zeros（S120，`zeros_like(weight)` into add-RMSNorm） | 全请求 `!!!!…`（输出塌成该单一模式） | **`token_repeat`** | **L2**（collapsed norm weight）；≠ S96 ones ≠ S66 neg ≠ S71 ×50 ≠ S74 ÷50 ≠ S110 abs |
+| SwiGLU-input-abs（S121，`x=abs(x)` before npu_swiglu） | unique mixed-script garbage；**跨请求相同计分下 precision=0** | **`token_repeat`** | **L2**（unsigned SwiGLU input）；≠ S56 input-neg ≠ S76 ×50 ≠ S81 ÷50 ≠ S115 out-abs；**detect≈n_req 仍 PASS**（勿因 precision=0 判漏检） |
 | Logits-abs（S122，`logits.abs()` after lm-head） | digit/`1.1.1…` 复读；precision 可 <n_req | **`token_repeat`** | **L2**（unsigned logits）；≠ S53 logits÷50 ≠ S65 logits×50 ≠ S108 hidden-abs |
 | RMSNorm-bias=-weight（S123，`bias=-weight` into add-RMSNorm） | `.ON.ON…` 短语复读；precision 可 <n_req | **`token_repeat`** | **L2**（wrong norm bias polarity）；≠ S100 bias=+weight ≠ S66 weight-neg ≠ S120 weight-zeros |
-| Penalty-skip（S124，skip `apply_penalties`） | unique id-echo / Nile 散文；**identical precision=0**；需 T>0 | **`token_repeat`** | **L2**（ignored penalties）；≠ S46 sign-flip ≠ S98 min_p-skip ≠ S99 top_p-skip；**detect≈n_req 仍 PASS**（勿因 precision=0 判 GAP） |
+| Penalty-skip（S124，skip `apply_penalties`） | unique id-echo / Nile 散文；**跨请求相同计分下 precision=0**；需 T>0 | **`token_repeat`** | **L2**（ignored penalties）；≠ S46 sign-flip ≠ S98 min_p-skip ≠ S99 top_p-skip；**detect≈n_req 仍 PASS**（勿因 precision=0 判漏检） |
 | Residual-leak-sub（S125，`x=x-residual` after add-RMSNorm） | 全请求 `!!!!…`；**logits non-finite** | **`logits_finite` 为主** | **L2**（wrong residual recombine：sub）；≠ S97 leak-add ≠ S93 residual←x ≠ S94 swap ≠ S31 drop |
-| Hidden-zeros（S126，`hidden.zero_()` before lm-head） | 全请求 `!!!!…` 塌缩 | **`token_repeat`** | **L2**（collapsed pre-head hidden）；≠ S61 ×50 ≠ S75 ÷50 ≠ S108 abs ≠ S122 logits-abs |
-| Embed-zeros（S127，`embedding.zero_()` after lookup） | 全请求 `!!!!…` 塌缩 | **`token_repeat`** | **L2**（collapsed embed）；≠ S69 neg ≠ S43 ×100 ≠ S80 ÷50 ≠ S112 abs |
+| Hidden-zeros（S126，`hidden.zero_()` before lm-head） | 全请求 `!!!!…`（输出塌成该单一模式） | **`token_repeat`** | **L2**（collapsed pre-head hidden）；≠ S61 ×50 ≠ S75 ÷50 ≠ S108 abs ≠ S122 logits-abs |
+| Embed-zeros（S127，`embedding.zero_()` after lookup） | 全请求 `!!!!…`（输出塌成该单一模式） | **`token_repeat`** | **L2**（collapsed embed）；≠ S69 neg ≠ S43 ×100 ≠ S80 ÷50 ≠ S112 abs |
 | Cos/sin-zeros（S128，`zeros_like(cos_sin_cache)` into RoPE） | `,`/`and the` 短语复读；precision 可 <n_req | **`token_repeat`** | **L2**（collapsed rope phase）；≠ S42 neg ≠ S79–S82 scale ≠ S101 half-swap ≠ S113 abs |
 | Residual-pre-zeros（S129，`residual.zero_()` before add-RMSNorm） | identical `FieldType` 短语复读 | **`token_repeat`** | **L2**（collapsed pre-residual）；≠ S48 neg ≠ S55/S64 mag ≠ S119 abs ≠ S31 drop |
 | Query-zeros（S130，`query.zero_()` before FA） | `,`/`and the` 短语复读；precision 可 <n_req | **`token_repeat`** | **L2**（collapsed Q）；≠ S60 ×50 ≠ S52 neg ≠ S114 abs ≠ S117 ÷50 |
@@ -185,7 +185,7 @@ description: >-
 | SwiGLU-input-zeros（S133，`x.zero_()` before npu_swiglu） | `...` 换行复读 | **`token_repeat`** | **L2**（collapsed SwiGLU input）；≠ S56 neg ≠ S76 ×50 ≠ S81 ÷50 ≠ S121 abs ≠ S131 out-zeros |
 | Cos/sin-ones（S134，`ones_like(cos_sin_cache)` into RoPE） | Nile/`river` 短语复读 | **`token_repeat`** | **L2**（unit rope phase）；≠ S42 neg ≠ S79–S82 scale ≠ S101 half-swap ≠ S113 abs ≠ S128 zeros |
 | Residual-post-zeros（S135，`residual.zero_()` after add-RMSNorm） | identical `FieldType` 短语复读 | **`token_repeat`** | **L2**（collapsed post-residual）；≠ S88 post-neg ≠ S90/S91 mag ≠ S106 post-abs ≠ S129 pre-zeros |
-| RMSNorm-out-zeros（S136，`x.zero_()` after add-RMSNorm） | 全请求 `!!!!…` 塌缩 | **`token_repeat`** | **L2**（collapsed post-norm x）；≠ S86 out-neg ≠ S87 out× ≠ S89 out÷ ≠ S102 out-abs |
+| RMSNorm-out-zeros（S136，`x.zero_()` after add-RMSNorm） | 全请求 `!!!!…`（输出塌成该单一模式） | **`token_repeat`** | **L2**（collapsed post-norm x）；≠ S86 out-neg ≠ S87 out× ≠ S89 out÷ ≠ S102 out-abs |
 | Embed-ones（S137，`ones_like(embedding)` after lookup） | identical `××…` 复读 | **`token_repeat`** | **L2**（unit embed）；≠ S69 neg ≠ S43 ×100 ≠ S80 ÷50 ≠ S112 abs ≠ S127 zeros |
 | Hidden-ones（S138，`ones_like(hidden)` before lm-head） | identical `pl` 复读 | **`token_repeat`** | **L2**（unit pre-head hidden）；≠ S61 ×50 ≠ S75 ÷50 ≠ S108 abs ≠ S126 zeros |
 | Positions-ones（S139，`ones_like(positions)` before update_cos_sin） | digit/`Friday` 复读；precision 可 <n_req | **`token_repeat`** | **L2**（pos collapse to 1）；≠ S37 pos→0 ≠ S57 ×2 ≠ S84 ÷2 |
@@ -200,22 +200,22 @@ description: >-
 | Value-ones（S148，`ones_like(value)` before FA） | identical `ior` 短语复读；precision 可 <n_req | **`token_repeat`** | **L2**（unit V）；≠ S58 neg ≠ S51 ×50 ≠ S109 abs |
 | Attn-out-ones（S149，`ones_like(attn_output)` after FA） | identical `ior` 短语复读；precision 可 <n_req | **`token_repeat`** | **L2**（unit attn-out）；≠ S63 neg ≠ S41 ×1000 ≠ S83 ×50 |
 | RMSNorm-x-ones（S150，`ones_like(x)` before add-RMSNorm） | identical `pl` 复读 | **`token_repeat`** | **L2**（unit pre-norm x）；≠ S73 x-neg ≠ S62 x× ≠ S78 x÷ ≠ S116 x-abs |
-| Logits-ones（S151，`ones_like(logits)` after lm-head） | identical `!!!!` / token0 塌缩 | **`token_repeat`** | **L2**（unit logits）；≠ S122 abs ≠ S53 ÷50 ≠ S65 ×50；≠ S44 zero_ INVALID |
+| Logits-ones（S151，`ones_like(logits)` after lm-head） | identical `!!!!` / 从第一个生成 token 起就塌成单一垃圾/复读 | **`token_repeat`** | **L2**（unit logits）；≠ S122 abs ≠ S53 ÷50 ≠ S65 ×50；≠ S44 zero_ INVALID |
 | RMSNorm-bias-zeros（S152，`zeros_like(weight)` as bias into add-RMSNorm） | digit/`1.0.0…` 复读；precision 可 <n_req | **`token_repeat`** | **L2**（zero bias inject）；≠ S100 bias=weight ≠ S123 bias=-weight ≠ S96 weight=ones |
-| RoPE 第二半写丢（S25，soft-inv #7082） | digit/`1.1.1…` 复读塌缩 | **`token_repeat`** | **L2 class-hint**（RoPE half）；≠ S11 pad；勿宣称定位到 Triton store 行 |
-| RMSNorm fp32 weight-mul（S26，soft-inv #42379） | 同上类复读；dtype/cast | **`token_repeat`** | **L2**（norm dtype）；与 S25 症状可重叠，靠 overlay/场景区分 |
+| RoPE 第二半写丢（S25，反向构造 #7082） | digit/`1.1.1…` 输出塌成反复复读 | **`token_repeat`** | **L2 class-hint**（RoPE half）；≠ S11 pad；勿宣称定位到 Triton store 行 |
+| RMSNorm fp32 weight-mul（S26，反向构造 #42379） | 同上类复读；dtype/cast | **`token_repeat`** | **L2**（norm dtype）；与 S25 症状可重叠，靠 overlay/场景区分 |
 | RoPE neox→interleaved 风格错（S28，#7341/#7082 class） | 句/短语级复读（score=`phrase_repeat`） | **`token_repeat`** | **L2**；≠ S25 half-drop ≠ S11；samples 可能看似「正常英文」 |
-| Softcap / 不稳定 softmax 数值溢出（S20，constructed） | 全请求 `!!!!…` / token0 塌缩；temp≪1 放大 | **`token_repeat` 为主**；兼开 `logits_finite` | Inf/NaN 可能在采样内被吃掉 → 未必亮 `logits_finite`；MRV2 须打 **V2 Sampler**（非仅 AscendTopKTopPSampler） |
+| Softcap / 不稳定 softmax 数值溢出（S20，constructed） | 全请求 `!!!!…` / 从第一个生成 token 起就塌成单一垃圾/复读；temp≪1 放大 | **`token_repeat` 为主**；兼开 `logits_finite` | Inf/NaN 可能在采样内被吃掉 → 未必亮 `logits_finite`；MRV2 须打 **V2 Sampler**（非仅 AscendTopKTopPSampler） |
 | Logits fp16 demote（S29，sampling/cast） | digit/`1.1.1…` 复读；低 temp 放大 | **`token_repeat`** | **L2**（cast）；≠ S20 softcap ≠ S26 RMSNorm mul；打 **V2 Sampler** |
-| Null-block KV dirt（S30，soft-inv #39444） | 复读塌缩；block0 脏 | **`token_repeat`** | **L2**（+可选 L3 KV）；≠ S01 skip-zero ≠ S10 recycle ≠ S23/S24 |
+| Null-block KV dirt（S30，反向构造 #39444） | 输出塌成反复复读；block0 脏 | **`token_repeat`** | **L2**（+可选 L3 KV）；≠ S01 skip-zero ≠ S10 recycle ≠ S23/S24 |
 | Residual stream drop（S31） | 强 identical 短语复读（如 `FieldType`×N） | **`token_repeat`** | **L2**（add-rms 丢 residual）；≠ S26（fp32-mul 仍 accumulate） |
 | Spec residual resample RNG 无 SALT（S22，#18657） | 接受率异常偏低（如 0–0.27）；文本可看似正常 | **`spec_acceptance` 为主**；辅 `token_repeat` | ≠ S05（NaN argmax）；≠ S20；需 MTP/eagle3 + `temperature>0`；precision 常为 **分布性**（勿只靠 samples 垃圾启发式） |
-| 权重腐蚀 always-on（S23，constructed） | 启动后恒定复读/塌缩 | **`token_repeat`** | **仅 L1 detect**；禁止宣称哪一层/哪个 weight；负对照=干净 ckpt |
-| 量化 scale always-on（S24，constructed） | W8A8 启动后恒定 `token_repeat` | **`token_repeat`** | **仅 L1**；≠ S07（路径触发+GAP）；**不能**指出哪条 scale |
-| 有限垃圾 / 跨请求全同 / unique garbage（S07,S45；**不含** dense-S01） | mixed-script、identical、或 per-req unique garbled | **当前均弱** | **GAP**（S07/S45）：见 `DETECTOR_GAPS.md`。**S01** dense 复判为 **FAIL（复现未出现）**（precision CJK 误标；patch 入口未切满量时 trigger 可 0）——勿再当 GAP |
-| NaN/Inf 数值炸（logits 仍可见） | non-finite logits | `logits_finite` | 有限垃圾 **不会** 命中；与 S20 塌缩路径区分 |
+| 权重腐蚀 always-on（S23，constructed） | 启动后恒定复读或输出塌成单一垃圾模式 | **`token_repeat`** | **仅 L1 detect**；禁止宣称哪一层/哪个 weight；负对照=干净 ckpt |
+| 量化 scale always-on（S24，constructed） | W8A8 启动后恒定 `token_repeat` | **`token_repeat`** | **仅 L1**；≠ S07（路径触发+漏检）；**不能**指出哪条 scale |
+| logits 有限的乱码 / 跨请求全同 / unique garbage（S07,S45；**不含** dense-S01） | mixed-script、identical、或 per-req unique garbled | **当前均弱** | **漏检**（S07/S45）：见 `DETECTOR_GAPS.md`。**S01** dense 复判为 **FAIL（复现未出现）**（precision CJK 误标；patch 入口未切满量时 trigger 可 0）——勿再当漏检 |
+| NaN/Inf 数值炸（logits 仍可见） | non-finite logits | `logits_finite` | logits 有限的乱码 **不会** 命中；与 S20 输出塌成单一模式的路径区分 |
 
-有限垃圾 / identical-across-requests：**不要**宣称「未复现」；归档 samples + `score_completion_samples`，标 **GAP**，等未来 garbled / cross-req detector。
+logits 有限的乱码 / identical-across-requests：**不要**宣称「未复现」；归档 samples + `score_completion_samples`，标 **漏检**，等未来 garbled / cross-req detector。
 
 ## Step 2 — 委派（禁止自创配置参数）
 
@@ -225,7 +225,7 @@ description: >-
 | 现象已定类 / 要抓 dump | `runtime-guard-config-recommender`（`troubleshoot`） |
 | 业务要恢复默认全关 | `config-recommender`（`business_default`） |
 | 已有 report（±dump） | `runtime-guard-analysis` |
-| report 空但有 completion samples / FAIL+GAP | `analysis` → `score_completion_samples`（勿 skip） |
+| report 空但有 completion samples / 乱码漏检 | `analysis` → `score_completion_samples`（勿 skip） |
 | analysis 得 verify=PASS 且可起清洁标杆 | `runtime-guard-ref-kv-dump` |
 
 可**复述**下游给出的 JSON；**禁止**自己编造 window / 阈值 / `auto_max_times` / cooldown / `on_trigger`。
@@ -242,7 +242,7 @@ description: >-
 
 按报告里的 **token id** 原样喂给干净服务；**禁止**字符串重 tokenize。同模型 / 同拓扑 / **同 MODE**；只用 native `dump_kv`。细节与脚本见 [`ref-kv-dump`](../ref-kv-dump/SKILL.md)。
 
-- 默认 `--feed=history` → 对比长度 **`n_prompt + n_output - 1`**（不要按 `p+o` 全长，否则末 token 假分歧）。  
+- 默认 `--feed=history` → 对比长度 **`n_prompt + n_output - 1`**（不要按 prompt+输出全长，否则末 token 假分歧）。  
 - 空 `prompt_token_ids`：优先合 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) 重抓，或 re-curl；禁止 tokenize 补造。
 
 ## 目标（定界，非定位）— 十问
@@ -286,7 +286,7 @@ description: >-
 
 - **术语首次出现先解释**，再可保留符号。至少覆盖用到的：  
   - **清洁标杆** — 未打 overlay / 正常服务上、同一段 history 重放抓到的对照 KV；  
-  - **`o=1`** — dump 时报告里生成长度很短（常只 1 个 output token），可比窗主要是 prompt；  
+  - **输出只有 1 个 token** — dump 时报告里生成长度很短（常只 1 个 output token），可比窗主要是 prompt；  
   - **两对同向** — ≥2 组异常↔标杆结论一致（若不一致须写明，如 S22）；  
   - **有效槽** — 本请求真正用到的 KV 位置（相对未用槽）；  
   - **格** — 对账时「某一个 token × 某一层」的一格；  
@@ -295,7 +295,7 @@ description: >-
 - 句子写全：谁和谁比、比了多长、数值问题子类型与范围、余弦是否可算、结案依据。  
 - 数字 / tip / 证据事实**不编造、不改**；只改表述。
 
-**禁止：** 只有 `first_cos` / `tok0@L*` / `n_cmp` / `zero_norm` 等半截工程日志、无解释的符号墙。表1/表2 可保留短标签，但旁注或事实段须能独立读懂。
+**禁止：** 只有 `first_cos` / `tok0@L*` / 对比格数代号 / `zero_norm` 等半截工程日志、无解释的符号墙。表1/表2 可保留短标签，但旁注或事实段须能独立读懂。
 
 ### KV 对账表（keep-set 案例页）
 
@@ -322,12 +322,12 @@ description: >-
 ### 证据完整性（踩坑硬纪律）
 
 1. **钉点同跑** — detect 钉点、KV dump、`kv_compare`、定界结论必须来自**同一次异常请求**（同 `req_id` / 同 wave）。禁止把 A 跑的 report 与 B 跑的 dump / 旧 `kv_compare` 拼成一案。  
-2. **有效异常 KV 前提** — 未复现、非目标形态、或**弱 dump**（如仅 o=1 / 窗过短 / 非异常样本）→ **不得**写成已做有效对账；写「未复现 → 无有效异常 KV → 未做有效对账」或留空档 **复现未抓到**。  
+2. **有效异常 KV 前提** — 未复现、非目标形态、或**弱 dump**（如输出只有 1 个 token / 窗过短 / 非异常样本）→ **不得**写成已做有效对账；写「未复现 → 无有效异常 KV → 未做有效对账」或留空档 **复现未抓到**。  
 3. **数值问题 / 无有效余弦 ≠ 定位** — 格点标 **数值问题** 或 per-token 无干净 cos 时，**禁止**把旧脚本 NaN 排序伪出的 `first_mismatch_idx` / 层名写成「token0@layer_L」；有效槽全非有限 / 全零 / zero_norm **先记该事实**。有干净格再写余弦首分歧（细则见 `ref-kv-dump`）。  
 4. **无证据留空** — 不可信混档 / 清空实测后：删 samples/reports/三层/跑批/`kv_compare`，结案与定界**留空**；勿保留半截旧结论或编造数字。  
 5. **多组验证** — 写③/④前至少再跑一组（同 overlay、独立请求）确认数值/cos 结论同向；单次弱窗不作定论。  
 6. **`kv_cache` 生命周期** — **抓前清空**本轮工作目录（防旧 dump 混入）；**对账中保留**本轮产物；归档后再清。细则见 `ref-kv-dump`。  
-7. **KV 对比硬顺序** — ① shape + 掩未用槽（`p+o−1`）→ ② **有效槽数值扫描并先报**（全零/Inf·NaN/zero_norm → **数值问题**）→ ③ 干净格余弦 + 表1/表2 + 十问。勿按全容量或错跨度算 cos（虚高/末位假分歧）；**禁止**未报数值就先写余弦层名。  
+7. **KV 对比硬顺序** — ① shape + 掩未用槽（prompt 长度 + 输出长度 − 1）→ ② **有效槽数值扫描并先报**（全零/Inf·NaN/zero_norm → **数值问题**）→ ③ 干净格余弦 + 表1/表2 + 十问。勿按全容量或错跨度算 cos（虚高/末位假分歧）；**禁止**未报数值就先写余弦层名。  
 8. **压测时限** — 单场景最长约 **1h**；超时未复现 → **未复现**（附 knobs/负载），勿空耗或放大器硬凑。  
 9. **`logits_finite` → 仍先 KV，msprobe 殿后** — 先判必现（并问他环境是否正常）；抓 buggy+清洁/跨环境标杆（标杆未炸；跨环境须权重 MD5 + 代码 commit 一致）。对账仍走硬顺序 ①→②→③。**禁止**把数值问题/NaN cos 写成层定界；**禁止**因 logits 命中就跳过 KV。需要算子首坏时再开 [`msprobe-dump`](../msprobe-dump/SKILL.md)（`task=statistics`，**`--enforce-eager`**，禁图；全程挂钩、开销大）。  
 10. **跨环境标杆** — 必现且存在正常环境时可用；**禁止**在权重/代码未对齐时把他环境 dump 当 ref（细则 `ref-kv-dump`）。
@@ -355,7 +355,7 @@ description: >-
 【事实总结】（白话；术语首次出现先解释）
 1. 现象 / 三层 / 检测（检出|漏检|乱码漏检；detect=0 时是否已 manual_dump）— 用人话写清
 2. 有效槽数值问题（先报）：无 | 全零(zero_norm) | NaN | Inf | …；范围（token/层）；首次用到时解释「有效槽/格/数值门闩」
-3. 表1/表2 要点（表2=首坏 token 合并区间或「无问题跳过」/锚点；数值问题子类型）；若有 dump 双名 / o=1 / 两对同向须各用一句白话点明
+3. 表1/表2 要点（表2=首坏 token 合并区间或「无问题跳过」/锚点；数值问题子类型）；若有 dump 双名 / 输出只有 1 个 token / 两对同向须各用一句白话点明
 4. 结案四档 + 依据（③排除 / ④定界 / ②复现未抓到 / ①未复现）；dump 方式=on_trigger|manual_dump；清洁标杆如何取得
 5. 证据路径（report / buggy dump / ref dump / kv_compare）
 
@@ -370,7 +370,7 @@ description: >-
 
 **现行：** 英文河名短句 `Name one famous river… id={i}.` × **48 并发** + `token_repeat` 阈值 **8**。  
 **历史错跑：** 「中文回声式」prompt + 约 8 条串行 + 阈值 16 → 常无 `1.1.1…`、detect=0 → **复现条件不对，不是漏检**。  
-S45：勿用伪造 NaN/填 token / amplifier-retune 刷成 PASS；有异常+detect=0 记 FAIL+GAP。
+S45：勿用伪造 NaN/填 token / 靠调参/伪造症状刷检出 刷成 PASS；有异常+detect=0 记 乱码漏检。
 
 ## forbidden
 
@@ -382,7 +382,7 @@ S45：勿用伪造 NaN/填 token / amplifier-retune 刷成 PASS；有异常+dete
 - 用 PASS/FAIL/GAP 当 keep-set 案例 headline 结案  
 - 未清 `kv_cache` 就开新抓；跳过 shape、把 block 未用 0 槽算进相似度  
 - 跨环境未核权重 MD5 / 代码 commit 就当干净标杆  
-- history feed 下按 `p+o` 全长比出的**仅末 token**分歧写成③/④或层定位；tokenize 补造 prompt ids
+- history feed 下按 prompt+输出全长比出的**仅末 token**分歧写成③/④或层定位；tokenize 补造 prompt ids
 
 ## Related
 

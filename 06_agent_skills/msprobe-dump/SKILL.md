@@ -11,7 +11,7 @@ description: >-
 
 **类型：原子 · 算子 I/O 统计采集（殿后）。**  
 **何时用：** `logits_finite` / 非有限数值炸，且 **[`ref-kv-dump`](../ref-kv-dump/SKILL.md) 已做完**有限性 / 未用槽 /（可算时）余弦分流之后，仍要查「哪个算子先坏」。  
-**何时不用：** 尚未做 Guard KV；有限垃圾 / `token_repeat` 疑 KV → 先 ref-kv；Hang / OOM / 纯吞吐 → 换工具。
+**何时不用：** 尚未做 Guard KV；logits 有限的乱码 / `token_repeat` 疑 KV → 先 ref-kv；Hang / OOM / 纯吞吐 → 换工具。
 
 契约：[SKILLS_METADATA.md](../SKILLS_METADATA.md) · 分流：[investigation](../investigation/SKILL.md) · 上游文档：本机 `msprobe/docs/zh/user_guide/dump/vllm_dump_instruct.md`、`pytorch_data_dump_instruct.md`、`config_json_introduct.md`；vllm-ascend `docs/.../msprobe_guide.md`。
 

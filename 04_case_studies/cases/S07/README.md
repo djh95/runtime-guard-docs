@@ -51,7 +51,7 @@ W8A8 反量化 / scale 崩溃族。细节见 [evidence/规格说明.md](./eviden
 ### 事实
 
 - **KV 从哪来（一眼看懂）：** 乱码**必现**且 detect=0 → 用 **`manual_dump`** 抓异常侧，不是「没抓到异常 KV」。异常 dump 跑 **`S07-pr19285-20261023T124136`**（代表 `req_id`：`cmpl-8e065448…` @ wave **2**、`cmpl-b08a72fe…` @ wave **50**；报告类 `manual_trigger`）。清洁标杆跑 **`S07-ref-recap-20261023T124403`**（未打 overlay）。成对 **2** 组；shape 一致（`[1,128,4,128]`）。**.pt** 在服务器 `verified_kv/S07/`，包内只留 `evidence/kv_*.json` 与 `evidence/reports/`。
-- **清洁标杆：** 同一段 history 在干净服务上重放得到的对照 KV。抓 dump 时生成很短：报告 **`o=1`**（`output_token_count=1`），可比长度主要是 prompt（本窗 `n_prompt=14`，history 按 `p+o−1` 也是 14）。
+- **清洁标杆：** 同一段 history 在干净服务上重放得到的对照 KV。抓 dump 时生成很短：报告 **输出只有 1 个 token**（`output_token_count=1`），可比长度主要是 prompt（本窗 `n_prompt=14`，history 按「prompt 长度 + 输出长度 − 1」 也是 14）。
 - **两对同向：** 两对异常↔标杆的数值结论相同。
 - **有效槽 / 「格」：** 有效槽 = 本请求真正用到的 KV 位置；「格」= 某一个 token × 某一层。本窗从 prompt 第 1 个 token 起，异常侧有效槽就是数值问题。
 - **数值门闩（定界依据）：** 有效槽有限但 **整段范数 = 0**（**全是 0**）→ `数值问题:全零(zero_norm)`；优先用它定界，不再算余弦。

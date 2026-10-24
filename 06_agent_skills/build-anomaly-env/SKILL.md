@@ -54,7 +54,7 @@ description: >-
 ### 3. 成功判据
 
 成功 = **detector / report / dump**（及三层率），**不是** GSM8K / golden / 业务准确率。  
-detector 漏检 → 记 FAIL+GAP / 缺口，**禁止**用放大器硬凑 detect。
+detector 漏检 → 记乱码漏检/缺口，**禁止**用放大器硬凑 detect。
 
 ### 4. 三层（trigger ≠ precision ≠ detect）
 
@@ -74,7 +74,7 @@ detector 漏检 → 记 FAIL+GAP / 缺口，**禁止**用放大器硬凑 detect�
 |---------------------------|------|
 | KV-cache 大小 / util | 伪造 tensor / NaN / fill token |
 | 阈值 / guards | 改计算发明症状 |
-| batch / seq 长度 | soft-inv 刷分（ones/zeros/abs pad 凑分） |
+| batch / seq 长度 | 反向构造 刷分（ones/zeros/abs pad 凑分） |
 | 请求量 / 并发 / 时长 | 用 `synthetic/` 冒充主门 |
 | seeds / 调度边 / 同路径并行拓扑 | |
 
@@ -85,7 +85,7 @@ detector 漏检 → 记 FAIL+GAP / 缺口，**禁止**用放大器硬凑 detect�
 
 - 难复现（双机 HCCN、稀有拓扑、无安全 knobs）→ 标 **HARD/DEFER**，**继续挖候选**，勿上放大器。
 - 优先 **both** / **ascend-only** 起源；`vllm-only` 降权（Ascend 常改写该路径）。
-- **PR-rooted + typed**：一真实修复 PR → 一类根因；同类勿堆太多。硬 bug 标 HARD，勿用 soft-inv 顶替刷分。
+- **PR-rooted + typed**：一真实修复 PR → 一类根因；同类勿堆太多。硬 bug 标 HARD，勿用 反向构造 顶替刷分。
 - 新旧 precision 修复 PR 都可挖；扩根因面（算子溢出、PD/KV 错写、权重/量化等）。
 
 ### 7. 每场景交付物
@@ -103,11 +103,11 @@ detector 漏检 → 记 FAIL+GAP / 缺口，**禁止**用放大器硬凑 detect�
 
 **无实测则留空：** keep-set 未跑或证据不可信时，只留 overlay+规格；结案/三层/samples/reports/`kv_compare` **留空或删除**，勿半截旧跑、勿编造。重测后 **同一次异常请求** 回填（见 `investigation` 证据完整性）。
 
-**抓 dump：** detector 未亮时可用 `manual_dump` 当场抓有效异常 KV；N = 目标总次数（进程内计数，≥N 停）。短 output 也能 dump，但弱窗（如 o=1）不作有效对账前提。
+**抓 dump：** detector 未亮时可用 `manual_dump` 当场抓有效异常 KV；N = 目标总次数（进程内计数，≥N 停）。短 output 也能 dump，但弱窗（如输出只有 1 个 token）不作有效对账前提。
 
 ### 8. `synthetic/` / g_inject
 
-**阳性对照 only**，不是主门集 / ~10-gate 主体。勿用其 PASS 代替 origin-faithful 场景。
+**阳性对照 only**，不是主门集 / 约十个门禁场景 主体。勿用其 PASS 代替 origin-faithful 场景。
 
 ### 9. 复现之后（交叉链接，勿在此展开十问）
 
@@ -122,7 +122,7 @@ detector 漏检 → 记 FAIL+GAP / 缺口，**禁止**用放大器硬凑 detect�
 1. **挖** PR（vLLM / vllm-ascend；含较旧修复）→ 定 type / Origin → 易抬率优先。  
 2. **白盒** 触发谓词 → 列 allowed/forbidden knobs → 写 overlay（同逻辑 + 开火日志）。  
 3. **基线跑** → 记 original rates；调 knobs → 记 tuned rates（时限内多请求）。  
-4. **判** 三层；漏检记 GAP；未复现记 FAIL（附 raw 证据），勿空口 FAIL。  
+4. **判** 三层；漏检记「漏检」；未复现记 FAIL（附 raw 证据），勿空口 FAIL。  
 5. **HARD** 则停该候选、换下一个。  
 6. **打包** SPEC + overlay + 三层 + samples；进 docs keep-set 时带齐 overlay+规格。  
 7. 定界需求 → 交 investigation / ref-kv。

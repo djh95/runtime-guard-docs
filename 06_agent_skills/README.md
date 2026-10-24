@@ -2,7 +2,7 @@
 
 面向 Cursor / Agent：按现象启用 detectors、抓现场、离线对账、有标杆时做 KV 定界。
 
-> **权威：** 本目录 `runtime-guard-docs/06_agent_skills/`（含 [SKILLS_METADATA.md](./SKILLS_METADATA.md) **v5.20.5**）。  
+> **权威：** 本目录 `runtime-guard-docs/06_agent_skills/`（含 [SKILLS_METADATA.md](./SKILLS_METADATA.md) **v5.20.6**）。  
 > **离线脚本：** [scripts/](./scripts/)（本仓）。  
 > 产品实现：`vllm_ascend/observability/runtime_guard/`（[#16849](https://github.com/vllm-project/vllm-ascend/pull/16849) + [#18644](https://github.com/vllm-project/vllm-ascend/pull/18644)）。  
 > 人读流程仍以 [02 问题定位](../02_problem_localization/README.md) 为准；skill 负责可执行编排。  
@@ -14,7 +14,7 @@
 
 | 仍可做 | 须停止 / 跳过 |
 |--------|----------------|
-| 读 METADATA / 各 skill README；用 sweep / recommender 产出配置 | 勿假设能拿到满量失败证据包 / runs |
+| 读 METADATA / 各 skill README；用巡检（detector-sweep）/ recommender 产出配置 | 勿假设能拿到满量失败证据包 / runs |
 | 跑本仓 `06_agent_skills/scripts/*.py`；人工读 `report_*.json` | 勿宣称未跑的 verify/ref 已完成 |
 | 按 02 无标杆停点交接 | 满量分析矩阵 —— 内部可选 |
 
@@ -23,7 +23,7 @@
 | Skill | 类型 | 何时用 |
 |-------|------|--------|
 | `runtime-guard-investigation` | 编排 | 端到端：triage → 委派原子 skill → 十问定界交付 |
-| `runtime-guard-detector-sweep` | 原子 · 在线 | 未定类：临时三键只 report（极简模板） |
+| `runtime-guard-detector-sweep` | 原子 · 在线 | 未定类巡检：临时开已合入 detector，只 report（极简模板） |
 | `runtime-guard-config-recommender` | 原子 · 在线 | **正式配置唯一来源**（排障 / 业务默认） |
 | `runtime-guard-analysis` | 原子 · 离线 | 已有 report（±dump）：汇总 / 关联 / verify / inspect |
 | `runtime-guard-ref-kv-dump` | 原子 · 离线+起服 | verify PASS 后 force-feed（按报告 token id 原样喂干净服务）抓 ref + 两表对比 |
@@ -51,7 +51,7 @@ python "$SCRIPTS/summarize_reports.py" --help
 `prepare_ref_inputs` / `request_from_report` / `locate_first_divergence` / `compare_kv_similarity` /  
 `compare_per_layer` / `stitch_kv`。
 
-Anomaly 对外对照：本仓 `04_case_studies/cases/Sxx/evidence/`。契约见 [SKILLS_METADATA.md](./SKILLS_METADATA.md)（**v5.20.5**）。构造纪律见 [`build-anomaly-env`](./build-anomaly-env/SKILL.md)。用户面短缩写见 [04 · 词汇表](../04_case_studies/词汇表.md)。  
+Anomaly 对外对照：本仓 `04_case_studies/cases/Sxx/evidence/`。契约见 [SKILLS_METADATA.md](./SKILLS_METADATA.md)（**v5.20.6**）。构造纪律见 [`build-anomaly-env`](./build-anomaly-env/SKILL.md)。用户面短缩写见 [04 · 词汇表](../04_case_studies/词汇表.md)。  
 Keep-set 结案四档 + 钉点同跑 / 有效异常 KV / 数值问题禁伪定位：见 [`investigation`](./investigation/SKILL.md)（证据完整性）与 [`ref-kv-dump`](./ref-kv-dump/SKILL.md)。  
 KV：必现+detect=0 可用 **`manual_dump`**；硬顺序 ① shape/掩未用 → ② 有效槽数值**子类型**先报 → ③ 余弦+表+**【事实总结】（白话扩写）**；未用槽**分级**：见 [`ref-kv-dump`](./ref-kv-dump/SKILL.md)。事实段写法见 investigation「事实写作」。  
 **`logits_finite` 命中 → 仍先 [`ref-kv-dump`](./ref-kv-dump/SKILL.md)**（有限性 + 未用槽分级）；**[`msprobe-dump`](./msprobe-dump/SKILL.md) 殿后**（statistics · eager · 禁图）：见 [`investigation`](./investigation/SKILL.md)。

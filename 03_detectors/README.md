@@ -41,9 +41,9 @@ https://github.com/vllm-project/vllm-ascend/blob/main/docs/source/user_guide/con
 现象不清 / 偶发复读 → 先 token_repeat（最轻）
 怀疑数值炸 / 乱码 → 加 logits_finite
 开了 MTP/Eagle 且接受率离谱 → 再开 spec_acceptance
-类未定 → 可同时开已合入项做 sweep（先 dump 关，只 report）
+类未定 → 可同时开已合入项做巡检扫一遍（先 dump 关，只 report）
 ```
 
-> 提示：同时开启多个检测器仅建议用于临时排障 sweep；检测器开启会引入 CPU 开销，性能敏感业务排查完成后及时关闭不需要的检测器。
+> 提示：同时开启多个检测器仅建议用于临时排障巡检；检测器开启会引入 CPU 开销，性能敏感业务排查完成后及时关闭不需要的检测器。
 
 定界流程见 [../02_problem_localization/README.md](../02_problem_localization/README.md)。

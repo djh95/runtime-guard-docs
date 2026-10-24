@@ -17,7 +17,7 @@
 
 ## 1 · 现象
 
-大量「换行塌缩」：输出几乎只剩换行/空白；约 40 条内容相同。样本见 [evidence/samples/](./evidence/samples/)。
+大量「输出几乎只剩换行」：输出几乎只剩换行/空白；约 40 条内容相同。样本见 [evidence/samples/](./evidence/samples/)。
 
 ## 2 · 案例背景 / 构造
 

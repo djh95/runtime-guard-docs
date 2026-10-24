@@ -1,6 +1,6 @@
 # Runtime-Guard Skills Metadata
 
-版本：v5.20.5  
+版本：v5.20.6  
 Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `analysis` · `ref-kv-dump` · **`msprobe-dump`** · **`build-anomaly-env`** · **`apply-mrv1-patch`** · **`apply-v030-mrv2-patch`**
 
 ## Changelog（摘要）
@@ -9,29 +9,30 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 
 离线脚本入口：本仓 [`scripts/`](./scripts/)。
 
-- **v5.20.5（现行）** — 审计补齐：规格 `repro_mode`/`soft-inverse` 原地白话；06 入口去掉裸 origin-faithful/GAP。  
+- **v5.20.6（现行）** — skills 深文口语化：FAIL+GAP→乱码漏检；soft-inv→反向构造；identical-mode→跨请求输出完全相同；有限垃圾→logits 有限的乱码；sweep→巡检；`o=1`→输出只有 1 个 token；塌缩→输出塌成…。  
+- **v5.20.5** — 审计补齐：规格复现方式/反向构造原地白话；06 入口去掉裸 origin-faithful/GAP。  
 - **v5.20.4** — **短词汇表**：只保留 keep-set / overlay / 三层率 / 清洁标杆·ref / Guard pin / force-feed；其余在出现处白话，勿堆词典。  
 - **v5.20.3** — 曾扩词汇表（已由 v5.20.4 收束）。  
 - **v5.20.2** — **表2 = 首个出问题的 token**（数值问题或余弦明显不对）的逐层合并区间；**不是**对比窗 token0。首干净则画更晚首坏；全程≈1 →「无问题 token，跳过」。落点：`investigation` / `ref-kv-dump` / `04` 约定 + keep-set 各案表2。  
 - **v5.20.1** — 硬句：**漏检 ≠ 无异常 / 无异常 KV**；必现+detect=0 须 `manual_dump` 叙事（S07 澄清）。落点：`investigation` + `cases/S07`。  
-- **v5.20** — **事实写作白话扩写**写进 skill：案例「### 事实」与编排 **【事实总结】**须展开中文；术语首次出现解释（清洁标杆、`o=1`、两对同向、有效槽、格、数值门闩、dump 双名等）；禁止半截代号墙。对齐 keep-set tip `b76d812` / `1e2d485`。落点：`investigation`（主）· `ref-kv-dump` 一句 · `04` 约定。  
+- **v5.20** — **事实写作白话扩写**写进 skill：案例「### 事实」与编排 **【事实总结】**须展开中文；术语首次出现解释（清洁标杆、输出只有 1 个 token、两对同向、有效槽、格、数值门闩、dump 双名等）；禁止半截代号墙。对齐 keep-set tip `b76d812` / `1e2d485`。落点：`investigation`（主）· `ref-kv-dump` 一句 · `04` 约定。  
 - **v5.19** — ① **必现 + detect=0** 允许 **`manual_dump`** 抓异常 KV+清洁标杆再分析有效槽（S07/S45 路径；勿因 0 报告跳过 KV）。② 数值问题须写**子类型**（全零/`zero_norm`、NaN、Inf…）及能确定的 token/层范围，表内勿只写「数值异常」。③ 编排收尾强制输出 **【事实总结】**（数值先报 + 表1/表2 要点 + 四档结案依据），再接【定界】。落点：`investigation` / `ref-kv-dump` / `04` / keep-set 表文案。  
 - **v5.18** — 抓 dump 后对账 **硬顺序**写死为技能步骤（非脚注）：① **shape + 掩未用槽** → ② **有效槽数值扫描并先报**（全零 / Inf·NaN / zero_norm → **数值问题**；未报完禁止进下一步）→ ③ 干净格余弦 + keep-set 表1/表2 + 十问定界。对齐 v5.16 门闩与案例页 KV 表约定。落点：`ref-kv-dump`（主）· `investigation` · `04` 一句 · README。  
 - **v5.17** — **跨环境标杆**：必现案先问「他环境是否正常」；若有异常环境+正常环境，可分环境抓 buggy/ref dump；对比前**必须**核对**权重 MD5（或等价）**与**代码 commit（及关键 patch/overlay）一致**，不一致则不能当干净标杆。落点：`investigation` / `ref-kv-dump`（S50 / `logits_finite` 等尤为相关）。  
 - **v5.16** — KV 对比**数值门闩优先**：每个 (token, layer) 先扫 NaN/Inf/零范数 → 标 **数值问题**、**不算余弦**；相似度只在干净格上算；禁止把 NaN 当「最差 cos」排序成伪 `idx=0 @ layer_*`。有效槽全非有限 → 不定层，只记「有效槽全非有限」。脚本：`scripts/_lib.py` / `compare_*` / `locate_first_divergence` / `stitch_kv`。落点：`ref-kv-dump` / `investigation` / `analysis` / `scripts`。  
 - **v5.15** — **收回** v5.14「logits→跳过 KV」：`logits_finite` 后 **仍先** `dump_kv`（有效槽有限/Inf/NaN；未用槽**分级**：有限非 0=卫生/通常不致坏结果，Inf/NaN=可影响结果）；标杆须未炸；必现优先、非必现 `manual_dump`。**`msprobe-dump` 殿后**（全程挂钩、开销大）。NaN cos 仍不定层。落点：`investigation` / `ref-kv-dump` / `msprobe-dump` / README / `02` / `04`。  
 - **v5.14** — 引入 **`msprobe-dump`**（`task=statistics`，eager only）；曾写「logits→跳过 KV」（**已被 v5.15 纠正**）。  
-- **v5.13** — `--feed=history` 对比跨度 **`n_prompt+n_output-1`**（禁按 p+o 全长→末位假分歧/伪层定位）；空 prompt 优先 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) 重抓或 re-curl，禁 tokenize 补造。落点：`ref-kv-dump` / `investigation` / `analysis`。  
+- **v5.13** — `--feed=history` 对比跨度 **`n_prompt+n_output-1`**（禁按 prompt+输出全长→末位假分歧/伪层定位）；空 prompt 优先 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) 重抓或 re-curl，禁 tokenize 补造。落点：`ref-kv-dump` / `investigation` / `analysis`。  
 - **v5.12** — KV 执行纪律：抓前**清空**本轮 `kv_cache`；对比**先 shape**；整 block dump、未用槽常为 0 → **只比有效 token**（禁全容量余弦）。落点：`ref-kv-dump`（主）+ `investigation` / `analysis` / `scripts/README`。  
 - **v5.11** — 踩坑原则入库：keep-set **结案四档**（≠ PASS/FAIL/GAP 总评）；**钉点同跑** / 禁混用 run；**有效异常 KV**（弱窗不可对账）；**全 NaN cos ≠ 层定位**；多组验证；无证据留空；压测上限 ~1h；`manual_dump` 抓未检出异常。落点：`investigation` / `analysis` / `ref-kv-dump` / `build-anomaly-env`。  
 - **v5.10** — 构造 skill：`build-anomaly-env`（origin-faithful overlay / 三层率 / HARD·DEFER；术语主页）；排障五件套 + 接线 skills 不变。  
 - **v5.9** — 接线 skills：`apply-mrv1-patch`（`05_mrv1_backport`）· `apply-v030-mrv2-patch`（`05_v030_backport`）；排障五件套不变。  
 - **v5.8** — ones/zeros 收尾；多为 `token_repeat` + 问题类提示（L2）。
-- **v5.0–v5.7** — soft-inverse（按上游修复反向注入）矩阵扩展。
+- **v5.0–v5.7** — 反向构造（按上游修复反向注入）矩阵扩展。
 - **v4.x** — abs / scale / skip / half-swap 波；偶发走 `logits_finite`。
 - **v3.x** — mag/polarity 算子族铺开。
-- **v2.x** — 典型 keep 案落地（如 S45 GAP、S43/S48/S50 PASS、S22 spec）。
-- **v1.x** — 三层率与 `score_completion_samples`；早期 soft-inverse / weight / overflow / pad。
+- **v2.x** — 典型 keep 案落地（如 S45 乱码漏检、S43/S48/S50 PASS、S22 spec）。
+- **v1.x** — 三层率与 `score_completion_samples`；早期 反向构造 / weight / overflow / pad。
 
 > 本文是职责契约（给人 / Agent 对齐用），**不是** RPC schema。  
 > 输入输出用「逻辑字段」描述即可；对话里用自然语言收集，勿伪造 JSON 信封。
@@ -49,7 +50,7 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 | Skill | 类型 | 一句话 |
 |-------|------|--------|
 | investigation | 编排 | 端到端 triage → 委派 → 十问定界交付 |
-| detector-sweep | 原子 · 在线配置 | 未定类：临时三键只 report |
+| detector-sweep | 原子 · 在线配置 | 未定类巡检：临时开已合入 detector，只 report |
 | config-recommender | 原子 · 在线配置 | 正式排障 / 业务默认配置唯一来源 |
 | analysis | 原子 · 离线读盘 | report/dump 汇总、关联、verify、inspect |
 | ref-kv-dump | 原子 · 标杆+对比 | force-feed（按报告 token id 原样喂干净服务）抓 ref + KV 首分歧 |
@@ -70,7 +71,7 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 
 - Triage（手册 02）：Hang/OOM/启动 crash 等 → 终止并说明原因  
 - 收集开场输入：现象、版本、拓扑、能否压测、有无清洁标杆、本地 report/dump 路径、谁起服；**必现时问他环境是否正常**  
-- 委派：未定类 → sweep；定类 → recommender；已有产物 → analysis；verify=PASS 且可标杆 → ref-kv-dump；**`logits_finite` 亦先 ref-kv**（有限性 + 未用槽分级），再视需要 **msprobe-dump（殿后）**  
+- 委派：未定类 → 巡检（detector-sweep）；定类 → recommender；已有产物 → analysis；verify=PASS 且可标杆 → ref-kv-dump；**`logits_finite` 亦先 ref-kv**（有限性 + 未用槽分级），再视需要 **msprobe-dump（殿后）**  
 - 跨环境标杆：异常环境+正常环境时可分环境抓 dump；须权重 MD5 + 代码 commit/overlay 一致  
 - 汇总下游结果，输出 **【事实总结】**（**白话扩写**；数值问题子类型先报 + 表1/表2 要点 + 四档结案依据）再填十问 **【定界】**；或（殿后）msprobe 首坏算子摘要  
 - 必现+detect=0：**允许 `manual_dump`** 抓异常 KV+标杆（S07/S45），勿因 0 报告跳过 KV  
@@ -78,7 +79,7 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 
 **forbidden**
 
-- 自创 runtime_config 阈值 / dump 配额 / cooldown / `on_trigger`（须来自 sweep 或 recommender 产出）  
+- 自创 runtime_config 阈值 / dump 配额 / cooldown / `on_trigger`（须来自巡检（detector-sweep）或 recommender 产出）  
 - 自行实现离线解析或 force-feed / 对比脚本流程（委派 analysis / ref）  
 - 仅凭 Guard KV / 坏输出 **跳承诺**算子/内核/提交（msprobe `dump.json` 首非有限统计可写算子名，仍勿升格成上游 commit）  
 - 混用不同 run；用弱 dump / 数值问题或无有效余弦伪写层定位；用 PASS/FAIL/GAP 当案例 headline 结案  
@@ -98,7 +99,7 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 
 **can_do**
 
-- 输出极简 sweep JSON：已合入 detector `enabled` + `on_trigger:["report"]`；`auto_max_times:0` / 关 manual dump  
+- 输出极简巡检 JSON：已合入 detector `enabled` + `on_trigger:["report"]`；`auto_max_times:0` / 关 manual dump  
 - 允许开关级字段：`report.max_per_req`、`save_sensitive_info`（完整热更文件需要）  
 - 风险提示：临时排障，禁止业务长期开；命中后交给 `config-recommender`
 
@@ -109,7 +110,7 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 - 解析本地 report/dump（读盘 → analysis）
 
 **逻辑输入：** version（过滤该版本不存在的 detector；非 MTP 勿开 spec）  
-**逻辑输出：** sweep JSON 文本, warning, follow_up → recommender
+**逻辑输出：** 巡检 JSON 文本, warning, follow_up → recommender
 
 ---
 
@@ -134,14 +135,14 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 
 ## 4. analysis
 
-**触发：** 本地已有 report（±dump），或仅有 completion samples（FAIL+GAP / precision 层）。
+**触发：** 本地已有 report（±dump），或仅有 completion samples（乱码漏检 / precision 层）。
 
 **can_do**
 
 - `summarize_reports` / `correlate_incident` / `verify_request_kv` / `inspect_kv_dump`（按需）  
 - `score_completion_samples`（无 report 时的 garbage / identical 评分）  
 - 提取 prompt/output token ids、incident 类型等现场字段  
-- `verify_result=PASS|FAIL`（ref 的硬门闩）；GAP 时输出 `detector_gap_hint` 而非伪 PASS
+- `verify_result=PASS|FAIL`（ref 的硬门闩）；漏检时输出 `detector_gap_hint` 而非伪 PASS
 
 **forbidden**
 
@@ -166,7 +167,7 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 - **跨环境标杆**：必现且他环境正常时，分环境抓 buggy/ref；对比前核权重 MD5 + 代码 commit/overlay  
 - `compare_kv_similarity` / `locate_first_divergence` / `compare_per_layer`；解读对齐十问  
 - 对账硬顺序：① shape + 掩未用槽 → ② **有效槽数值扫描并先报**（全零/Inf·NaN/zero_norm→数值问题）→ ③ 干净格余弦 + 表 + 十问；拒绝无有效余弦的**层**伪定位；未用槽分级（有限非 0 vs Inf/NaN）  
-- 抓前清 `kv_cache`；history 用 `p+o-1`；只比有效 token（整 block 未用槽不算进余弦）  
+- 抓前清 `kv_cache`；history 对比跨度用「prompt 长度 + 输出长度 − 1」；只比有效 token（整 block 未用槽不算进余弦）  
 - `logits_finite` 路径：标杆须未炸；短 output 仍做有限性/未用槽分级
 
 **forbidden**
@@ -226,7 +227,7 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 **forbidden**
 
 - NaN 强写 / token fill / 伪造症状放大器；改 canonical 当场景  
-- 以 GSM8K/golden 当成功；用 soft-inv 刷分顶替 HARD  
+- 以 GSM8K/golden 当成功；用 反向构造 刷分顶替 HARD  
 - 在本 skill 展开十问定界（→ `investigation` / `ref-kv-dump`）  
 - 半截旧跑冒充实测；把构造禁令写进案例「复现技巧」
 

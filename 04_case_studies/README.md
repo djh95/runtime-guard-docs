@@ -68,7 +68,7 @@
 | **未复现** | 目标异常形态没有出现（注入路径打中也不够；通顺输出 ≠ 目标乱码）。 |
 | **复现未抓到** | 异常已现或应现，但**没有有效异常 KV dump** 可做对账（含 `logits_finite`：有 report 却无可用 dump）。仅「报告数为 0」**不是**本档——若已手动抓到异常 KV 并完成对账，按③/④。**勿**因 logits 命中就跳过 KV、改用 msprobe 顶替本档。 |
 | **KV 一致→排除 KV** | 异常侧与清洁标杆对账，对比窗匹配 → **排除 KV cache** 为本请求坏输出的必要原因。 |
-| **KV 不一致→定界** | 有效对账不匹配 → **重开 KV 线**；摘要十问事实（首不一致在 prompt/output、是否恢复、out0 余弦、是否仅 PD…），不从坏输出跳根因。弱窗对账（如生成只吐了 1 个 token）仍可归本档，但须注明力度有限。 |
+| **KV 不一致→定界** | 有效对账不匹配 → **重开 KV 线**；摘要十问事实（首不一致在 prompt/output、是否恢复、输出第一个 token 的余弦、是否仅 PD…），不从坏输出跳根因。弱窗对账（如生成只吐了 1 个 token）仍可归本档，但须注明力度有限。 |
 
 **检测**另写：三层数字（触发 / 判坏 / 报告）和/或「检出 / 漏检 / 乱码漏检」。乱码漏检常见于：**logits 仍有限**（无 NaN/Inf）但语义已是乱码——`logits_finite` 抓不到。
 
@@ -107,7 +107,7 @@
 | S48 | [cases/S48/](./cases/S48/) | KV 不一致→定界 | 检出 | residual 极性取反 | 全请求 `!!!!…` | `logits_finite` | 44 / 48 / 48 |
 | S50 | [cases/S50/](./cases/S50/) | KV 不一致→定界 | 检出 | SwiGLU gate/up 对调 | 有效槽 NaN；首分歧约第 3–6 层 | `logits_finite` | 58 / 48 / 48 |
 
-脚注：S25/S26 钉点 dump 均临时合入 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) 以取得非空 `prompt_token_ids`；KV 对比跨度 `p+o-1`（各两组 match）。原始 `.pt` 留服务器 `verified_kv/`（未入库）。
+脚注：S25/S26 钉点 dump 均临时合入 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) 以取得非空 `prompt_token_ids`；KV 对比跨度 prompt 长度 + 输出长度 − 1（各两组 match）。原始 `.pt` 留服务器 `verified_kv/`（未入库）。
 
 `S10′` 目录名是 **`S10p`**。相关 Skills 见 [06](../06_agent_skills/)（**v5.17**，见 `SKILLS_METADATA.md`）。
 
@@ -133,7 +133,7 @@
 
 ### 事实写作（白话扩写）
 
-案例 README「### 事实」与 agent **【事实总结】**须用**展开白话**（skills **v5.20**；风格同已归档 keep-set）：术语**首次出现先解释**（清洁标杆、`o=1`、两对同向、有效槽、格、数值门闩、dump 双名等），写清「发生了什么→检出没→KV 结论」；禁止只堆 `first_cos` / `tok0@L*` 半截句。数字与 tip 不编造。细则见 [`investigation` · 事实写作](../06_agent_skills/investigation/SKILL.md)。
+案例 README「### 事实」与 agent **【事实总结】**须用**展开白话**（skills **v5.20**；风格同已归档 keep-set）：术语**首次出现先解释**（清洁标杆、输出只有 1 个 token、两对同向、有效槽、格、数值门闩、dump 双名等），写清「发生了什么→检出没→KV 结论」；禁止只堆 `first_cos` / `tok0@L*` 半截句。数字与 tip 不编造。细则见 [`investigation` · 事实写作](../06_agent_skills/investigation/SKILL.md)。
 
 ### KV 对账表（案例写作约定）
 

@@ -37,9 +37,9 @@ python "$SCRIPTS/summarize_reports.py" --report-dir ./runtime/report --limit 20
 
 也接受扁平 `report_*.json`，以及归档别名 `sample_report.json` / `report_sample.json`。
 
-**空 report 目录 ≠ 停：** 若有 completion samples（S07 FAIL+GAP；或 S01 复判 samples），改走 Step 1b。
+**空 report 目录 ≠ 停：** 若有 completion samples（S07 乱码漏检；或 S01 复判 samples），改走 Step 1b。
 
-### Step 1b — 无 report 时的 precision / GAP 评分（keep-set）
+### Step 1b — 无 report 时的 precision / 漏检 评分（keep-set）
 
 ```bash
 python "$SCRIPTS/score_completion_samples.py" --sample-dir ./samples --json-out samples_score.json
@@ -51,20 +51,20 @@ python "$SCRIPTS/score_completion_samples.py" --sample-dir ./samples --json-out 
 
 | 案例 | 期望 / 提示 |
 |------|-------------|
-| S01 | dense 常 **FAIL（复现未出现）**：通顺中文 ≠ garbage；排除 CJK 后再计 precision；**≠** S07/S45 的 FAIL+GAP |
-| S07 / S45 | `garbage_mixed_script` + detect=0 → **FAIL+GAP**（有异常未检出）；identical-mode 会低估 precision |
+| S01 | dense 常 **FAIL（复现未出现）**：通顺中文 ≠ garbage；排除 CJK 后再计 precision；**≠** S07/S45 的 乱码漏检 |
+| S07 / S45 | `garbage_mixed_script` + detect=0 → **乱码漏检**（有异常未检出）；跨请求输出完全相同（计分口径） 会低估 precision |
 | S10p / S11 | `token_repeat`（回收脏尾 / MLA RoPE pad）；≠ 其它 RoPE 半丢族 |
 | S22 | 看 `spec_acceptance` 的 rate；samples 可能无 garbage 标签 |
 | S23 | always-on 权重置零 → 停在 `token_repeat` detect；**禁止**从 dump 推断「哪条 weight」 |
-| S25 / S26 | soft-inverse（按上游修复反向注入）→ `token_repeat` + 问题类提示（half-drop / fp32-mul）；句级复读看 `phrase_repeat`；≠ S11 pad |
+| S25 / S26 | 反向构造（按上游修复反向注入）→ `token_repeat` + 问题类提示（half-drop / fp32-mul）；句级复读看 `phrase_repeat`；≠ S11 pad |
 | S33 | `token_repeat` + softcap 不完整；≠ overflow/`!!!!` |
-| S43 | `token_repeat`；precision 常 newline 塌缩；≠ S23 |
-| S47 | `token_repeat`；短语/单字塌缩；≠ attn-scale 族 |
-| S48 / S50 | **`logits_finite`**（`!!!!` / token0 塌缩）；≠ residual-drop / skip-silu |
+| S43 | `token_repeat`；precision 常 输出几乎只剩换行；≠ S23 |
+| S47 | `token_repeat`；输出塌成短语/单字复读；≠ attn-scale 族 |
+| S48 / S50 | **`logits_finite`**（`!!!!` / 从第一个生成 token 起就塌成单一垃圾/复读）；≠ residual-drop / skip-silu |
 | S06 | MoE 路由类：KV 可能全程 finite —— **finite ≠ 无精度问题**；定界靠复读 + 可选 ref |
 
-有 **真实** precision 且 detect=0 → 交付 **FAIL+GAP**（勿伪造 detector PASS；CJK 误标不算真实 precision）。  
-满量 soft-inv 对照表见维护者目录 `_internal/analysis-soft-inv-matrix.md`（不在对外导航）。
+有 **真实** precision 且 detect=0 → 交付 **乱码漏检**（勿伪造 detector PASS；CJK 误标不算真实 precision）。  
+满量 反向构造 对照表见维护者目录 `_internal/analysis-反向构造-matrix.md`（不在对外导航）。
 
 ### Step 2 — 按 req 关联
 
@@ -100,7 +100,7 @@ python "$SCRIPTS/inspect_kv_dump.py" --path ./runtime/report/kv_cache/<type>/<re
 
 ### Step 5 — 交付摘要
 
-1. `incident_type`、`req_id`、dump 是否尝试/成功；或 GAP 评分摘要  
+1. `incident_type`、`req_id`、dump 是否尝试/成功；或漏检评分摘要  
 2. `verify_result` + `block_ids`（有 dump 时）  
 3. 可提取的 `prompt_token_ids` / `output_token_ids`（需 report 含敏感字段）  
 4. 三层率（若 anomaly）与缺口说明  
@@ -112,7 +112,7 @@ python "$SCRIPTS/inspect_kv_dump.py" --path ./runtime/report/kv_cache/<type>/<re
 - **钉点同跑：** `verify_request_kv` 的 report 与 `--kv-dir` 必须同属一次请求；交付里写明 `req_id` + wave。勿把「目录里碰巧有的 `.pt`」配到另一份 report。  
 - **抓前清空工作目录：** 新一轮 dump 前清本轮 `kv_cache` 根，避免 verify 扫到旧 wave。对账进行中勿删本轮路径。  
 - **detect=0 ≠ 旧 dump 可用：** 无本轮命中时，可用 `manual_dump` **当场**抓同请求 KV；**禁止**拿历史/他案 dump 顶替。  
-- **弱 dump 标明：** output 极短（如 o=1）、或 completion 非目标异常形态 → 在摘要写「弱窗 / 非有效异常 KV」；**不要**据此宣称可进 ref 定界。  
+- **弱 dump 标明：** output 极短（如输出只有 1 个 token）、或 completion 非目标异常形态 → 在摘要写「弱窗 / 非有效异常 KV」；**不要**据此宣称可进 ref 定界。  
 - **空 prompt ids：** 摘要如实写空；勿从字符串补造 ids（交 investigation re-curl）。  
 - **交给 ref 前：** 抽查层 `shape`；提醒 history feed 对比用 **`n_prompt+n_output-1`**（整 block 尾部 0 槽不算）；对账硬顺序见 `ref-kv-dump` v5.18：shape/掩未用 → **有效槽数值先报** → 再余弦。  
 - **勿把 NaN cos 当层定位：** 旧摘要若出现 `first_mismatch_idx=0 @ layer_*` 且 `min_cos` 全 NaN，那是排序伪影；交付时**先写**「有效槽数值问题 / 全非有限」，勿升格为层名。  
