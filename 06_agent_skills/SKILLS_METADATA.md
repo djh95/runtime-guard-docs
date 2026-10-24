@@ -66,7 +66,8 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 - 收集开场输入：现象、版本、拓扑、能否压测、有无清洁标杆、本地 report/dump 路径、谁起服；**必现时问他环境是否正常**  
 - 委派：未定类 → sweep；定类 → recommender；已有产物 → analysis；verify=PASS 且可标杆 → ref-kv-dump；**`logits_finite` 亦先 ref-kv**（有限性 + 未用槽分级），再视需要 **msprobe-dump（殿后）**  
 - 跨环境标杆：异常环境+正常环境时可分环境抓 dump；须权重 MD5 + 代码 commit/overlay 一致  
-- 汇总下游结果，填十问 **定界交付模板**（KV 路径）或（殿后）msprobe 首坏算子摘要；区分「已定界」vs「无法根因定位」  
+- 汇总下游结果，输出 **【事实总结】**（数值问题子类型先报 + 表1/表2 要点 + 四档结案依据）再填十问 **【定界】**；或（殿后）msprobe 首坏算子摘要  
+- 必现+detect=0：**允许 `manual_dump`** 抓异常 KV+标杆（S07/S45），勿因 0 报告跳过 KV  
 - keep-set **结案四档** + 证据完整性（钉点同跑 / 有效异常 KV / 数值问题禁伪定位 / 未用槽分级 / 无证据留空）
 
 **forbidden**
@@ -75,11 +76,11 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 - 自行实现离线解析或 force-feed / 对比脚本流程（委派 analysis / ref）  
 - 仅凭 Guard KV / 坏输出 **跳承诺**算子/内核/提交（msprobe `dump.json` 首非有限统计可写算子名，仍勿升格成上游 commit）  
 - 混用不同 run；用弱 dump / 数值问题或无有效余弦伪写层定位；用 PASS/FAIL/GAP 当案例 headline 结案  
-- `logits_finite` 后跳过 KV 直开 msprobe；把未用槽有限非 0 与 Inf/NaN 混成同等严重  
+- `logits_finite` 后跳过 KV 直开 msprobe；必现+detect=0 却拒绝 manual_dump；把未用槽有限非 0 与 Inf/NaN 混成同等严重  
 - 跨环境未核权重 MD5 / 代码 commit 就当干净标杆
 
 **逻辑输入：** symptom, version, topology, can_pressure_test, has_clean_ref_env, local_artifact_path?  
-**逻辑输出：** triage_result, delegated 摘要, delimitation_template, conclusion, next_step
+**逻辑输出：** triage_result, delegated 摘要, **facts_summary**, delimitation_template, conclusion, next_step
 
 **依赖：** 可调用原子 skill（含 `msprobe-dump`）；无上游。
 
