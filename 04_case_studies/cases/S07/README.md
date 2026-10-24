@@ -52,38 +52,38 @@ W8A8 反量化 / scale 崩溃族。细节见 [evidence/规格说明.md](./eviden
 
 ### KV 对账表
 
-分桶（可读性）：`≈1`≥0.99；`0.9–0.99`；`0.8–0.9`；`0.6–0.8`；`0.3–0.6`；`0.1–0.3`；`<0.1`（含负值）；有 NaN/Inf/zero_norm 等数值门闩则写 **数值异常**（不编余弦）。
+分桶（可读性）：`≈1`≥0.99；`0.9–0.99`；`0.8–0.9`；`0.6–0.8`；`0.3–0.6`；`0.1–0.3`；`<0.1`（含负值）；数值门闩写清子类型（如 `数值问题:全零(zero_norm)` / `数值问题:NaN` / `数值问题:Inf`），勿只写「数值异常」（不编余弦）。
 
 数据来自 `evidence/kv_v516_numeric_first.json`。两对同向；展示代表对。
 
 **代表对**（`req_id`=`cmpl-8e065448ae678178-0-9dfa8816`；对比窗 **14** token，其中 prompt **14**）。
 
-**表1 · 每 token 最差格**（该 token 上差距最大的层；有数值门闩则整格写数值异常）
+**表1 · 每 token 最差格**（该 token 上差距最大的层；有数值门闩则整格写清子类型）
 
 | token 序号 | 角色 | 该 token 最差格 |
 | --- | --- | --- |
-| 0 | prompt[0] | 数值异常 |
-| 1 | prompt[1] | 数值异常 |
-| 2 | prompt[2] | 数值异常 |
-| 3 | prompt[3] | 数值异常 |
-| 4 | prompt[4] | 数值异常 |
-| 5 | prompt[5] | 数值异常 |
-| 6 | prompt[6] | 数值异常 |
-| 7 | prompt[7] | 数值异常 |
-| 8 | prompt[8] | 数值异常 |
-| 9 | prompt[9] | 数值异常 |
-| 10 | prompt[10] | 数值异常 |
-| 11 | prompt[11] | 数值异常 |
-| 12 | prompt[12] | 数值异常 |
-| 13 | prompt[13] | 数值异常 |
+| 0 | prompt[0] | 数值问题:全零(zero_norm) |
+| 1 | prompt[1] | 数值问题:全零(zero_norm) |
+| 2 | prompt[2] | 数值问题:全零(zero_norm) |
+| 3 | prompt[3] | 数值问题:全零(zero_norm) |
+| 4 | prompt[4] | 数值问题:全零(zero_norm) |
+| 5 | prompt[5] | 数值问题:全零(zero_norm) |
+| 6 | prompt[6] | 数值问题:全零(zero_norm) |
+| 7 | prompt[7] | 数值问题:全零(zero_norm) |
+| 8 | prompt[8] | 数值问题:全零(zero_norm) |
+| 9 | prompt[9] | 数值问题:全零(zero_norm) |
+| 10 | prompt[10] | 数值问题:全零(zero_norm) |
+| 11 | prompt[11] | 数值问题:全零(zero_norm) |
+| 12 | prompt[12] | 数值问题:全零(zero_norm) |
+| 13 | prompt[13] | 数值问题:全零(zero_norm) |
 
 **表2 · 首 token 逐层剖面（合并区间）** — 首 token = **prompt[0] / window token0**（与证据 `token_idx=0` 一致）。
 
 | 层区间（model.layers） | 余弦 / 状态 |
 | --- | --- |
-| L0–L35 | 数值异常 |
+| L0–L35 | 数值问题:全零(zero_norm) |
 
-注：状态为 zero_norm（有限但全零）；无余弦格。
+注：证据 `数值问题:zero_norm`（有限但全零）；自 prompt[0]、`model.layers.0` / `layer_36` 起覆盖对比窗全部有效格；无余弦格。
 
 ### 推断
 

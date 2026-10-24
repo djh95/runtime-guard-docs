@@ -58,7 +58,7 @@
 
 ### KV 对账表
 
-分桶（可读性）：`≈1`≥0.99；`0.9–0.99`；`0.8–0.9`；`0.6–0.8`；`0.3–0.6`；`0.1–0.3`；`<0.1`（含负值）；有 NaN/Inf/zero_norm 等数值门闩则写 **数值异常**（不编余弦）。
+分桶（可读性）：`≈1`≥0.99；`0.9–0.99`；`0.8–0.9`；`0.6–0.8`；`0.3–0.6`；`0.1–0.3`；`<0.1`（含负值）；数值门闩写清子类型（如 `数值问题:全零(zero_norm)` / `数值问题:NaN` / `数值问题:Inf`），勿只写「数值异常」（不编余弦）。
 
 数据来自 `evidence/kv_v516_numeric_first.json` / `kv_compare.json`。两对同向；展示代表对。
 
@@ -68,20 +68,20 @@
 
 | token 序号 | 角色 | 该 token 最差格 |
 | --- | --- | --- |
-| 0 | prompt[0] | 数值异常 |
-| 1 | prompt[1] | 数值异常 |
-| 2 | prompt[2] | 数值异常 |
-| 3 | prompt[3] | 数值异常 |
-| 4 | prompt[4] | 数值异常 |
-| 5 | prompt[5] | 数值异常 |
-| 6 | prompt[6] | 数值异常 |
-| 7 | prompt[7] | 数值异常 |
-| 8 | prompt[8] | 数值异常 |
-| 9 | prompt[9] | 数值异常 |
-| 10 | prompt[10] | 数值异常 |
-| 11 | prompt[11] | 数值异常 |
-| 12 | prompt[12] | 数值异常 |
-| 13 | prompt[13] | 数值异常 |
+| 0 | prompt[0] | 数值问题:NaN |
+| 1 | prompt[1] | 数值问题:NaN |
+| 2 | prompt[2] | 数值问题:NaN |
+| 3 | prompt[3] | 数值问题:NaN |
+| 4 | prompt[4] | 数值问题:NaN |
+| 5 | prompt[5] | 数值问题:NaN |
+| 6 | prompt[6] | 数值问题:NaN |
+| 7 | prompt[7] | 数值问题:NaN |
+| 8 | prompt[8] | 数值问题:NaN |
+| 9 | prompt[9] | 数值问题:NaN |
+| 10 | prompt[10] | 数值问题:NaN |
+| 11 | prompt[11] | 数值问题:NaN |
+| 12 | prompt[12] | 数值问题:NaN |
+| 13 | prompt[13] | 数值问题:NaN |
 
 **表2 · 首 token 逐层剖面（合并区间）** — 首 token = **prompt[0] / window token0**（与证据 `token_idx=0` 一致）。
 
@@ -91,9 +91,9 @@
 | L3 | 0.9–0.99 |
 | L4 | 0.8–0.9 |
 | L5 | <0.1 |
-| L6–L35 | 数值异常 |
+| L6–L35 | 数值问题:NaN |
 
-注：并行 dump 名 `layer_36…71` 自 token0 起亦为数值异常（NaN）；表2 按 `model.layers` 主命名。
+注：证据 `数值问题:buggy_nan`：`model.layers` 上 L6–L35 自 token0 起 used 槽为 NaN；并行名 `layer_36…71` 自 token0 起亦全 NaN。表1 每 token 因含 NaN 格记为 NaN（L0–L5 仍有限可算余弦，见表2）。
 
 ### 推断
 

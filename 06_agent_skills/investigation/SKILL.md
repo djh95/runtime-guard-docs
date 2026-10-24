@@ -6,8 +6,8 @@ description: >-
   ref-kv-dump, then deliver 10-question KV delimitation (not root-cause). Do
   not invent runtime_config thresholds or reimplement offline/ref scripts.
   Native dump_kv for Guard KV path; after capture: shape/mask → used-slot
-  numeric first (report 数值问题) → then cosine/tables/十问. logits_finite →
-  still KV; msprobe last. Align with handbook 02.
+  numeric subtypes first → cosine/tables/十问; end with 【事实总结】.
+  必现+detect=0 may manual_dump (S07/S45). logits_finite still KV; msprobe last.
 ---
 
 # runtime_guard investigation（编排总控）
@@ -22,12 +22,14 @@ description: >-
 
 **Guard KV 路径：** 对比源只用 native `dump_kv`（勿用 msprobe / 自造 dumper **冒充** KV 对比源）。  
 
-**抓 dump 后的硬顺序（委派 `ref-kv-dump`；v5.18；禁止跳步）：**  
+**抓 dump 后的硬顺序（委派 `ref-kv-dump`；v5.19；禁止跳步）：**  
 1. **形状 + 掩掉未用槽**（history=`p+o−1`；未用槽分级：有限非 0≈卫生，Inf/NaN≈可影响结果）；  
-2. **有效槽数值扫描并先报** — 全零 / 溢出 Inf·NaN / zero_norm 等 → 事实里写 **数值问题**（未写完禁止进下一步）；  
-3. **再**对干净格算余弦、填表1/表2、做十问定界（有数值问题的格写 **数值异常**，不编余弦）。  
+2. **有效槽数值扫描并先报** — 全零 / zero_norm / 溢出 Inf·NaN 等 → 事实里写 **数值问题**并带**子类型**（未写完禁止进下一步）；  
+3. **再**对干净格算余弦、填表1/表2、做十问定界（有数值问题的格写清子类型，如 `数值问题:全零(zero_norm)` / `数值问题:NaN`，**不编余弦**）。  
 
-**分流（`logits_finite` 也先 KV）：** 采样前 NaN/Inf 命中后 **仍** 走 `dump_kv` + 标杆，并遵守上序。有效槽全非有限 / 无有效余弦 → **不定层**，但「有效槽已数值问题」本身必须先归档。标杆必须**未**触发 `logits_finite`。先判必现；非必现用 `manual_dump`（抓标杆时确认未炸）。**msprobe 殿后**（全程挂钩、开销大，不能检出后再开）。
+**必现 + detect=0 → 仍可 `manual_dump`：** 问题已必现（或 precision 已坏，如 identical 乱码），但 detector **0 报告**时（S07/S45 路径），**允许**对异常请求做 **`manual_dump`** 抓异常 KV，并抓清洁标杆，再按上序分析有效槽——**不要**因 detect=0 写成「复现未抓到」而跳过 KV。非必现 / 难复现同样可用 `manual_dump` 抬抓取率。标杆须**未**炸（未亮 `logits_finite`）。  
+
+**分流（`logits_finite` 也先 KV）：** 采样前 NaN/Inf 命中后 **仍** 走 `dump_kv` + 标杆，并遵守上序。有效槽全非有限 / 无有效余弦 → **不定层**，但「有效槽已数值问题」本身必须先归档。**msprobe 殿后**（全程挂钩、开销大，不能检出后再开）。
 
 ## 开场必问
 
@@ -59,7 +61,8 @@ description: >-
 - **`logits_finite` 命中** → 仍委派 [`ref-kv-dump`](../ref-kv-dump/SKILL.md)：有效槽有限性 + 未用槽分级（有限非 0 vs Inf/NaN）+（可算时）余弦；**禁止**因 NaN cos 跳过 KV 或写成「复现未抓到」。KV 分流后再视需要委派 [`msprobe-dump`](../msprobe-dump/SKILL.md)（statistics · eager · **殿后**）。  
 - **`token_repeat` / 有限异常且疑 KV** → 同：`dump_kv` + 标杆。  
 **勿启用未合入：** `output_substring` / `token_logprob` / `slot_*` / `kv_state`。  
-**看似必现：** 先按手册 [02 §4 Step 0.5](../../02_problem_localization/README.md) 做连测 / 换输入（勿只靠 `max_tokens=1`）/ 消融 / PD 单 P·单 D；未验证勿在交付里写「必现」。**并向使用者确认：其他环境是否正常。** 若存在「异常环境 + 正常环境」，可委派 [`ref-kv-dump`](../ref-kv-dump/SKILL.md) **分环境**抓 buggy/ref；对比前必须核对**权重 MD5（或等价）**与**代码 commit（及关键 patch/overlay）一致**——不一致则不能当干净标杆，先对齐。非必现 → `manual_dump`；抓标杆须确认**未**亮 `logits_finite`。
+**看似必现：** 先按手册 [02 §4 Step 0.5](../../02_problem_localization/README.md) 做连测 / 换输入（勿只靠 `max_tokens=1`）/ 消融 / PD 单 P·单 D；未验证勿在交付里写「必现」。**并向使用者确认：其他环境是否正常。** 若存在「异常环境 + 正常环境」，可委派 [`ref-kv-dump`](../ref-kv-dump/SKILL.md) **分环境**抓 buggy/ref；对比前必须核对**权重 MD5（或等价）**与**代码 commit（及关键 patch/overlay）一致**——不一致则不能当干净标杆，先对齐。  
+**抓 KV：** on_trigger（有 detect）或 **`manual_dump`（必现/precision 已坏但 detect=0 时同样 OK，S07/S45）**；抓标杆须确认**未**亮 `logits_finite`。
 
 ### 三层率（anomaly / 压测必记）
 
@@ -277,7 +280,7 @@ description: >-
 
 ### KV 对账表（keep-set 案例页）
 
-归档 keep-set 且已有 buggy+ref KV 时：**先在事实中写清有效槽数值扫描**（有则 **数值问题** 置顶），再在「事实」后附 **表1（每 token 最差格）** + **表2（首 token 逐层合并区间）**；数值问题格填 **数值异常**。规则与分桶见 [04 案例写作约定](../../04_case_studies/README.md)。无逐层/逐 token 数组则注明跳过，禁止编数。
+归档 keep-set 且已有 buggy+ref KV 时：**先在事实中写清有效槽数值扫描**（有则 **数值问题** 置顶并写**子类型**），再在「事实」后附 **表1（每 token 最差格）** + **表2（首 token 逐层合并区间）**。数值问题格勿只写「数值异常」——证据能区分时写 **`数值问题:全零(zero_norm)` / `数值问题:NaN` / `数值问题:Inf`** 等，并能写清 token/层范围就写。规则见 [04 案例写作约定](../../04_case_studies/README.md)。无逐层/逐 token 数组则注明跳过，禁止编数。
 
 
 ### keep-set 结案四档（主标签；≠ PASS/FAIL/GAP）
@@ -325,11 +328,20 @@ description: >-
 
 能定到哪写到哪；未知填「未知」；**勿每次固定声明**「未定位算子/提交」。无标杆：标杆=无，停在「问题类 + 可归档现场」；**不要伪造 ref**。
 
+**编排收尾必交：【事实总结】**（给用户/归档的最终块；**在**【定界】之前或紧挨其后）。此前仅有简短【定界】一行，**没有**强制「事实总结」——v5.19 起必须输出：
+
 ```text
+【事实总结】
+1. 现象 / 三层 / 检测（检出|漏检|乱码漏检；detect=0 时是否已 manual_dump）
+2. 有效槽数值问题（先报）：无 | 全零(zero_norm) | NaN | Inf | …；范围（token/层，能写清则写）
+3. 表1/表2 要点（最差格或合并区间；数值问题格子类型；无表则注明证据不足）
+4. 结案四档 + 依据（③排除 / ④定界 / ②复现未抓到 / ①未复现）；dump 方式=on_trigger|manual_dump
+5. 证据路径（report / buggy dump / ref dump / kv_compare）
+
 【定界】KV=<异常|正常|未知(无标杆)>; 阶段=<prefill|decode|未知>;
-首坏token=<i/role|未知>; 首坏层=<L|未知>;
+首坏token=<i/role|未知>; 首坏层=<L|未知|不定层(数值问题)>;
 粒度=<单token|连续|block|未知>; 时机=<写入时即坏|写入后污染|未知>;
-类型=<污染断崖|计算平台|后采样/非KV|仅detector类>;
+类型=<污染断崖|计算平台|后采样/非KV|仅detector类|数值问题>;
 标杆=<有|无>; 证据=<report路径 / dump路径 / 脚本>;
 ```
 
