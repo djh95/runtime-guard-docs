@@ -299,9 +299,10 @@ logits 有限的乱码 / identical-across-requests：**不要**宣称「未复�
 
 ### KV 对账表（keep-set 案例页）
 
-归档 keep-set 且已有 buggy+ref KV 时：**先在事实中写清有效槽数值扫描**（有则 **数值问题** 置顶并写**子类型**），再在「事实」后附 **表1（每 token 最差格）** + **表2（首个出问题的 token 的逐层合并区间）**。  
+归档 keep-set 且已有 buggy+ref KV 时：**先在事实中写清有效槽数值扫描**（有则 **数值问题** 置顶并写**子类型**），再在「事实」后附 **表1（每 token 最差格）** + **表2（首坏 token 逐层剖面）**。  
 归档进对外 keep-set 时**勿写入内网 IP / 实验室主机名**（`host` 等用 `builder 机` / `skills 机`）。  
-**表2 目标 token ≠ 对比窗 token0 默认值**：取窗内**第一个**已出现 KV 问题的 token（数值问题，或最差余弦明显不对）；首 token 干净则画更晚的首坏 token。全程≈1 / 无问题 token → 表2 写「无问题 token，跳过」（或一行说明），**勿**把干净 prompt[0] 当成「首坏」。无该 token 的完整逐层数组时只写证据锚点并注明跳过合并表，**禁止**用 `clean_model_tok0_cos` 冒充。数值问题格勿只写「数值异常」——证据能区分时写 **`数值问题:全零(zero_norm)` / `数值问题:NaN` / `数值问题:Inf`** 等。规则见 [04 案例写作约定](../../04_case_studies/README.md)。
+**Dump/compare 后立刻**落盘 `kv_v516_numeric_first.json`（per-token + 首坏全层）再写表；**禁止**只留窗摘要就结案。  
+**表2 目标 token ≠ 对比窗 token0 默认值**：取窗内**第一个**已出现 KV 问题的 token；首 token 干净则画更晚首坏。全程≈1 →「无问题 token，跳过」。**合并区间可选**；合并不了 → **画全层**；**禁止**「无合并→只写锚点」。仅当 `.pt` 已不存在、无法重算时才允许锚点 + 注明缺数组。**禁止**用 `clean_model_tok0_cos` 冒充。数值问题写清子类型。规则见 [04 案例写作约定](../../04_case_studies/README.md)。
 
 
 ### keep-set 结案四档（主标签；≠ PASS/FAIL/GAP）

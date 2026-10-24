@@ -1,0 +1,397 @@
+{
+  "case": "S23",
+  "source": "keepset-kv-compare-20261022/out/cases/S23/kv_compare.json (builder 机；从 buggy+ref .pt 算出)",
+  "req_id": "cmpl-95991e433efc199e-0-be968e0a",
+  "n_tokens": 20,
+  "n_prompt": 14,
+  "cos_thresh": 0.99,
+  "kv_match": false,
+  "first_bad": {
+    "token_idx": 1,
+    "role": "prompt",
+    "min_cos": 0.9830961350774338,
+    "min_layer": "model.layers.35.self_attn.attn",
+    "layers_model": [
+      {
+        "layer": "model.layers.0.self_attn.attn",
+        "layer_short": "L0",
+        "cos": 1.0000000000000002,
+        "bucket": "≈1"
+      },
+      {
+        "layer": "model.layers.1.self_attn.attn",
+        "layer_short": "L1",
+        "cos": 1.0,
+        "bucket": "≈1"
+      },
+      {
+        "layer": "model.layers.2.self_attn.attn",
+        "layer_short": "L2",
+        "cos": 0.9999999975561763,
+        "bucket": "≈1"
+      },
+      {
+        "layer": "model.layers.3.self_attn.attn",
+        "layer_short": "L3",
+        "cos": 0.9999999923929476,
+        "bucket": "≈1"
+      },
+      {
+        "layer": "model.layers.4.self_attn.attn",
+        "layer_short": "L4",
+        "cos": 0.9999999480221508,
+        "bucket": "≈1"
+      },
+      {
+        "layer": "model.layers.5.self_attn.attn",
+        "layer_short": "L5",
+        "cos": 0.9999998225146111,
+        "bucket": "≈1"
+      },
+      {
+        "layer": "model.layers.6.self_attn.attn",
+        "layer_short": "L6",
+        "cos": 0.9999998829405062,
+        "bucket": "≈1"
+      },
+      {
+        "layer": "model.layers.7.self_attn.attn",
+        "layer_short": "L7",
+        "cos": 0.9999996905925405,
+        "bucket": "≈1"
+      },
+      {
+        "layer": "model.layers.8.self_attn.attn",
+        "layer_short": "L8",
+        "cos": 0.9999998209040475,
+        "bucket": "≈1"
+      },
+      {
+        "layer": "model.layers.9.self_attn.attn",
+        "layer_short": "L9",
+        "cos": 0.9999991386968209,
+        "bucket": "≈1"
+      },
+      {
+        "layer": "model.layers.10.self_attn.attn",
+        "layer_short": "L10",
+        "cos": 0.9999999094468104,
+        "bucket": "≈1"
+      },
+      {
+        "layer": "model.layers.11.self_attn.attn",
+        "layer_short": "L11",
+        "cos": 0.9999996105224336,
+        "bucket": "≈1"
+      },
+      {
+        "layer": "model.layers.12.self_attn.attn",
+        "layer_short": "L12",
+        "cos": 0.9999995946873427,
+        "bucket": "≈1"
+      },
+      {
+        "layer": "model.layers.13.self_attn.attn",
+        "layer_short": "L13",
+        "cos": 0.9999995941762619,
+        "bucket": "≈1"
+      },
+      {
+        "layer": "model.layers.14.self_attn.attn",
+        "layer_short": "L14",
+        "cos": 0.9999997718969506,
+        "bucket": "≈1"
+      },
+      {
+        "layer": "model.layers.15.self_attn.attn",
+        "layer_short": "L15",
+        "cos": 0.9999994100709868,
+        "bucket": "≈1"
+      },
+      {
+        "layer": "model.layers.16.self_attn.attn",
+        "layer_short": "L16",
+        "cos": 0.9999998973028746,
+        "bucket": "≈1"
+      },
+      {
+        "layer": "model.layers.17.self_attn.attn",
+        "layer_short": "L17",
+        "cos": 0.9999994336619389,
+        "bucket": "≈1"
+      },
+      {
+        "layer": "model.layers.18.self_attn.attn",
+        "layer_short": "L18",
+        "cos": 0.9999996996462079,
+        "bucket": "≈1"
+      },
+      {
+        "layer": "model.layers.19.self_attn.attn",
+        "layer_short": "L19",
+        "cos": 0.9999993293113758,
+        "bucket": "≈1"
+      },
+      {
+        "layer": "model.layers.20.self_attn.attn",
+        "layer_short": "L20",
+        "cos": 0.9999999259940848,
+        "bucket": "≈1"
+      },
+      {
+        "layer": "model.layers.21.self_attn.attn",
+        "layer_short": "L21",
+        "cos": 0.9999993492909957,
+        "bucket": "≈1"
+      },
+      {
+        "layer": "model.layers.22.self_attn.attn",
+        "layer_short": "L22",
+        "cos": 0.9999996604615989,
+        "bucket": "≈1"
+      },
+      {
+        "layer": "model.layers.23.self_attn.attn",
+        "layer_short": "L23",
+        "cos": 0.9999991936597012,
+        "bucket": "≈1"
+      },
+      {
+        "layer": "model.layers.24.self_attn.attn",
+        "layer_short": "L24",
+        "cos": 0.9999998320623846,
+        "bucket": "≈1"
+      },
+      {
+        "layer": "model.layers.25.self_attn.attn",
+        "layer_short": "L25",
+        "cos": 0.999999390920794,
+        "bucket": "≈1"
+      },
+      {
+        "layer": "model.layers.26.self_attn.attn",
+        "layer_short": "L26",
+        "cos": 0.9999996260339731,
+        "bucket": "≈1"
+      },
+      {
+        "layer": "model.layers.27.self_attn.attn",
+        "layer_short": "L27",
+        "cos": 0.9999995611933744,
+        "bucket": "≈1"
+      },
+      {
+        "layer": "model.layers.28.self_attn.attn",
+        "layer_short": "L28",
+        "cos": 0.9999997353971756,
+        "bucket": "≈1"
+      },
+      {
+        "layer": "model.layers.29.self_attn.attn",
+        "layer_short": "L29",
+        "cos": 0.9999994636310452,
+        "bucket": "≈1"
+      },
+      {
+        "layer": "model.layers.30.self_attn.attn",
+        "layer_short": "L30",
+        "cos": 0.9999996787434142,
+        "bucket": "≈1"
+      },
+      {
+        "layer": "model.layers.31.self_attn.attn",
+        "layer_short": "L31",
+        "cos": 0.9999993206421229,
+        "bucket": "≈1"
+      },
+      {
+        "layer": "model.layers.32.self_attn.attn",
+        "layer_short": "L32",
+        "cos": 0.9953070904331032,
+        "bucket": "≈1"
+      },
+      {
+        "layer": "model.layers.33.self_attn.attn",
+        "layer_short": "L33",
+        "cos": 0.9911465395442071,
+        "bucket": "≈1"
+      },
+      {
+        "layer": "model.layers.34.self_attn.attn",
+        "layer_short": "L34",
+        "cos": 0.9944189617122287,
+        "bucket": "≈1"
+      },
+      {
+        "layer": "model.layers.35.self_attn.attn",
+        "layer_short": "L35",
+        "cos": 0.9830961350774338,
+        "bucket": "0.9–0.99"
+      }
+    ],
+    "layers_all_count": 72
+  },
+  "per_token": [
+    {
+      "token_idx": 0,
+      "role": "prompt",
+      "role_label": "prompt[0]",
+      "min_cos": 0.9992955732780674,
+      "min_layer": "layer_67",
+      "bucket": "≈1"
+    },
+    {
+      "token_idx": 1,
+      "role": "prompt",
+      "role_label": "prompt[1]",
+      "min_cos": 0.9830961350774338,
+      "min_layer": "model.layers.35.self_attn.attn",
+      "bucket": "0.9–0.99"
+    },
+    {
+      "token_idx": 2,
+      "role": "prompt",
+      "role_label": "prompt[2]",
+      "min_cos": 0.9671945514081557,
+      "min_layer": "model.layers.35.self_attn.attn",
+      "bucket": "0.9–0.99"
+    },
+    {
+      "token_idx": 3,
+      "role": "prompt",
+      "role_label": "prompt[3]",
+      "min_cos": 0.975781565545428,
+      "min_layer": "model.layers.35.self_attn.attn",
+      "bucket": "0.9–0.99"
+    },
+    {
+      "token_idx": 4,
+      "role": "prompt",
+      "role_label": "prompt[4]",
+      "min_cos": 0.9650546883021976,
+      "min_layer": "model.layers.35.self_attn.attn",
+      "bucket": "0.9–0.99"
+    },
+    {
+      "token_idx": 5,
+      "role": "prompt",
+      "role_label": "prompt[5]",
+      "min_cos": 0.9324548352555535,
+      "min_layer": "model.layers.35.self_attn.attn",
+      "bucket": "0.9–0.99"
+    },
+    {
+      "token_idx": 6,
+      "role": "prompt",
+      "role_label": "prompt[6]",
+      "min_cos": 0.917230998647104,
+      "min_layer": "model.layers.35.self_attn.attn",
+      "bucket": "0.9–0.99"
+    },
+    {
+      "token_idx": 7,
+      "role": "prompt",
+      "role_label": "prompt[7]",
+      "min_cos": 0.9579602002699902,
+      "min_layer": "model.layers.35.self_attn.attn",
+      "bucket": "0.9–0.99"
+    },
+    {
+      "token_idx": 8,
+      "role": "prompt",
+      "role_label": "prompt[8]",
+      "min_cos": 0.9302523731120799,
+      "min_layer": "model.layers.35.self_attn.attn",
+      "bucket": "0.9–0.99"
+    },
+    {
+      "token_idx": 9,
+      "role": "prompt",
+      "role_label": "prompt[9]",
+      "min_cos": 0.9254555264072406,
+      "min_layer": "model.layers.35.self_attn.attn",
+      "bucket": "0.9–0.99"
+    },
+    {
+      "token_idx": 10,
+      "role": "prompt",
+      "role_label": "prompt[10]",
+      "min_cos": 0.678441132689327,
+      "min_layer": "model.layers.33.self_attn.attn",
+      "bucket": "0.6–0.8"
+    },
+    {
+      "token_idx": 11,
+      "role": "prompt",
+      "role_label": "prompt[11]",
+      "min_cos": 0.9561788688133864,
+      "min_layer": "model.layers.35.self_attn.attn",
+      "bucket": "0.9–0.99"
+    },
+    {
+      "token_idx": 12,
+      "role": "prompt",
+      "role_label": "prompt[12]",
+      "min_cos": 0.9119319686606607,
+      "min_layer": "model.layers.35.self_attn.attn",
+      "bucket": "0.9–0.99"
+    },
+    {
+      "token_idx": 13,
+      "role": "prompt",
+      "role_label": "prompt[13]",
+      "min_cos": 0.9047626503092742,
+      "min_layer": "model.layers.35.self_attn.attn",
+      "bucket": "0.9–0.99"
+    },
+    {
+      "token_idx": 14,
+      "role": "out[0]",
+      "role_label": "out[0]",
+      "min_cos": 0.8926697173087088,
+      "min_layer": "model.layers.35.self_attn.attn",
+      "bucket": "0.8–0.9"
+    },
+    {
+      "token_idx": 15,
+      "role": "out[1]",
+      "role_label": "out[1]",
+      "min_cos": 0.8760008959532053,
+      "min_layer": "model.layers.35.self_attn.attn",
+      "bucket": "0.8–0.9"
+    },
+    {
+      "token_idx": 16,
+      "role": "out[2]",
+      "role_label": "out[2]",
+      "min_cos": 0.889751986047065,
+      "min_layer": "model.layers.35.self_attn.attn",
+      "bucket": "0.8–0.9"
+    },
+    {
+      "token_idx": 17,
+      "role": "out[3]",
+      "role_label": "out[3]",
+      "min_cos": 0.910029636679287,
+      "min_layer": "model.layers.35.self_attn.attn",
+      "bucket": "0.9–0.99"
+    },
+    {
+      "token_idx": 18,
+      "role": "out[4]",
+      "role_label": "out[4]",
+      "min_cos": 0.9203547057676413,
+      "min_layer": "model.layers.35.self_attn.attn",
+      "bucket": "0.9–0.99"
+    },
+    {
+      "token_idx": 19,
+      "role": "out[5]",
+      "role_label": "out[5]",
+      "min_cos": 0.8814325358379783,
+      "min_layer": "model.layers.35.self_attn.attn",
+      "bucket": "0.8–0.9"
+    }
+  ],
+  "note": "表2画全 model.layers 逐层余弦；合并区间仅可读性可选。禁止无合并就只写锚点。"
+}
