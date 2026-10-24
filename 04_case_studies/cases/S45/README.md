@@ -41,10 +41,11 @@ top-k/top-p 打在 −logits（bottom nucleus）。细节见 [evidence/规格说
 
 ### 事实
 
-- **≥2 组**清洁标杆；shape 一致；对比窗主要是 prompt 段（生成很短，`o=1` → 可比长度 14）。
-- **v5.16（两对同向）：** 数值问题格 **0**；`first_cos_mismatch` **无**（全程 clean；token0 最差仍 ≈1.0）。
-- 未用槽：一对异常侧**有限非 0**（卫生）；标杆未用全 0。
-- 证据：`evidence/kv_compare.json` + `kv_v516_numeric_first.json`；`verified_kv/S45/ref_recap/`（**.pt 未入库**）。
+- **清洁标杆（≥2 组）：** 干净服务重放对照；**2 组**；shape 一致。抓 dump 时生成很短：报告 **`o=1`**，可比长度主要是 prompt（本窗 14）。检测侧 **0 report**（乱码漏检），KV 靠 `manual_dump` 当场抓，不是 on_trigger。
+- **两对同向：** 数值问题格 **0**；余弦全程干净（prompt 第 1 个 token 最差仍≈1.0）。
+- **未用槽：** 一对异常侧有限非 0（**卫生**）；标杆未用多为 0。
+- **读法：** 对账匹配 → **排除「坏值经/进 KV」为主因**（就本 prompt 窗而言）；乱码仍在，更可能落在采样/top-k 方向等本窗 KV 没覆盖到的路径。
+- 证据：`evidence/kv_*.json`；`verified_kv/S45/`（**.pt 未入库**）。
 
 ### 推断
 

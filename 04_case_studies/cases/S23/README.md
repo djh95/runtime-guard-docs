@@ -41,10 +41,11 @@ Post-load 置零一层 `o_proj.weight`（always-on）。细节见 [evidence/规�
 
 ### 事实
 
-- 三层 **2 / 16 / 48**；detector `token_repeat`×48。
-- ≥2 组异常↔清洁标杆（标杆未亮 `logits_finite`）；shape 一致；history `p+o-1`（21 / 20）。
-- 有效槽**有限**（无 Inf/NaN）；未用槽有限非 0 → **卫生**（通常不致坏结果）。
-- 余弦：两组最低约 0.68；首个不一致都在 prompt 第 2 个 token、`model.layers.35`（脚本层定位；权重注入可解释为算子写出污染 KV，**勿**升格成「根因=第 35 层」）。
+- **清洁标杆（≥2 组）：** 干净服务重放对照；**2 组**；shape 一致。history 按 `p+o−1`（两组长度约 21 / 20）。标杆侧未亮 `logits_finite`。
+- **有效槽：** 有限（无 Inf/NaN）。**未用槽**有限非 0 → **卫生**（通常不致坏结果）。
+- **余弦（两对同向）：** 最低约 0.68；首个不一致都在 **prompt 第 2 个 token**、`model.layers.35`（脚本层定位）。权重注入可以解释为「算子写出污染了 KV」，**不要**升格成「根因=第 35 层」以外的断言。
+- **三层旁注：** trigger 很低（2）仍 detect=48——注入几乎不打日志，但输出复读仍被抓住。
+- 证据：`evidence/kv_compare.json`、`kv_finite_unused.json`（**.pt 未入库**）。
 
 ### 推断
 

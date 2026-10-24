@@ -48,13 +48,11 @@ Soft-inverse [ascend#7082](https://github.com/vllm-project/vllm-ascend/pull/7082
 
 ### 事实
 
-- 现象：`1.1.1…` / `1.0.0…` 复读（`evidence/samples/`）。
-- 三层：**462 / 15 / 48**；detector：`token_repeat`（detect=48）。
-- 钉点 report（×2，均非空 prompt）：`…894e9755`（n_prompt=14, n_output=8）、`…9da53275`（n_prompt=14, n_output=17）。见 `evidence/reports/`。
-- 本包已归档 **≥2 组**异常↔标杆 KV 对账（`evidence/kv_compare.json`；cos_thresh=0.99；shape `[1,128,4,128]`；无全 NaN）。
-- history 对比跨度：**`n_tokens = p + o − 1`**（两组分别为 21、30）；**禁止**按 `p+o` 全长比到未写入的末位。
-- 标杆 vs 异常：两组对比窗**全程一致**（min-over-layers cos ≥ 0.999986）；首不一致：无。
-- 服务器已验证 dump：`…/verified_kv/S25/`（相对 `keep-set-retest-20261022`；全量约 **94M** / 对账用 4×`dp0_tp0` 约 **37M**，**未**入库 GitHub，仅摘要 `kv_compare.json`）。
+- **现象与三层：** 输出常成 `1.1.1…` / `1.0.0…` 复读；三层 **462 / 15 / 48**（`token_repeat` 检出 48）。样本见 `evidence/samples/`。
+- **清洁标杆（≥2 组）：** 干净服务重放对照；shape `[1,128,4,128]`。钉点 report 均非空 prompt（抓 dump 时临时合入 #19285）：一组约 prompt=14、output=8，另一组 prompt=14、output=17。
+- **对比窗口：** history 长度按 **`n_tokens = p + o − 1`**（两组分别为 21、30）——比到「已写入的最后一位」，不要按 `p+o` 比到尚未写入的末位。
+- **两对同向（排除 KV）：** 对比窗内各层余弦最低仍 ≥0.999986（阈值 0.99）；**没有**首个不一致 token/层；也无「有效槽全 NaN」类数值崩溃。
+- 服务器 dump 留在 `verified_kv/S25/`（约数十 MB，**.pt 未入库**）；包内只留摘要 `kv_compare.json`。
 
 ### 推断
 

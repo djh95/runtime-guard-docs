@@ -41,12 +41,13 @@ Rejection 与 residual resample 共用 RNG、无独立 salt（inverse [ascend#18
 
 ### 事实
 
-- **≥2 组**清洁标杆；shape 一致；有效槽有限。
-- **v5.16：** 数值问题格 **0**（两对）。
-- **余弦：** 对 A — `first_cos_mismatch` @ **token_idx=20**（`out[6]`）dump `layer_72`（cos≈0.971；min≈0.968 @ `layer_73`）；对 B — **无** cos 分歧。
-- `model.layers.*` tok0 两对最差仍 ≈1.0；`first_cos_mismatch_model_layers_tok0` = null。
-- precision=0：本窗不靠乱码文本，靠 acceptance 检测 + KV。
-- 证据：`evidence/kv_*.json`（**.pt 未入库**；服务器 `verified_kv/S22/`）。
+- **清洁标杆（≥2 组）：** 干净服务重放对照；**2 组**；shape 一致；有效槽有限（无 NaN/Inf）。对比窗约 `n_prompt=14`，`p+o−1`≈21 / 20。
+- **两组不同向（重要）：** 数值问题格两对都是 **0**；但**余弦只有一对分叉、另一对全程干净**——所以结案写「KV 不一致→定界」时必须带这句，不能说成两组同向。
+- **对 A：** 靠后的生成步（约第 21 个可比 token，角色 `out[6]`）在 dump 名 `layer_72` 首次余弦低于阈值（≈0.971；同 token 最差≈0.968 @ `layer_73`）。
+- **对 B：** 无余弦分歧。
+- **模型层 tok0：** 两对在 prompt 第 1 个 token 上 `model.layers.*` 最差仍≈1.0。
+- **dump 层数：** 本窗约 74 个名字（含投机相关层），高于普通 36+36；细节以 `evidence/kv_v516_numeric_first.json` 为准。
+- 证据：`evidence/kv_*.json`；`verified_kv/S22/`（**.pt 未入库**）。
 
 ### 推断
 

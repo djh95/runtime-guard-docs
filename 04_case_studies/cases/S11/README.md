@@ -40,10 +40,10 @@ MLA prefill RoPE pad 错位。细节见 [evidence/规格说明.md](./evidence/�
 
 ### 事实
 
-- **≥2 组**清洁标杆；shape 一致。
-- **v5.16（两对同向）：** 无数值问题；首个余弦分歧在 prompt 第 2 个 token、dump `layer_27`（余弦≈0.96）；最差约 0.24 落在 `model.layers.16`。
-- prompt 第 1 个 token 的模型层最差仍≈1.0。
-- 未用槽：异常侧有限非 0（卫生）。
+- **清洁标杆（≥2 组）：** 干净服务重放对照；**2 组**；shape 一致（MLA 窗 `[1,128,1,64]`）。对比窗较长：约 `n_prompt=14`，生成较多，`p+o−1`≈39。
+- **两对同向：** 无数值问题；都在 **prompt 第 2 个 token** 上出现余弦分歧。
+- **余弦：** 首次明显不一致在 dump 名 `layer_27`（余弦≈0.96）；同 token 上最差约 0.24，落在 `model.layers.16`。prompt 第 1 个 token 的模型层仍接近 1.0。
+- **dump 双名：** 与同系列 MLA 案相同——`layer_27` 是模型第 0 层的并行文件名（`layer_(27+i)` ↔ `model.layers.i`），不要读成「第 27 层根因」。
 - 证据：`evidence/kv_*.json`（**.pt 未入库**）。
 
 ### 推断

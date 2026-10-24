@@ -41,19 +41,12 @@ embedding ×100。细节见 [evidence/规格说明.md](./evidence/规格说明.m
 
 ### 事实
 
-- 三层：**16 / 40 / 48**。
-- **≥2 组**异常↔清洁标杆（shape 一致；标杆未用槽归零）。
-- history：`n_tokens = p + o − 1 = 18`。
-- **v5.16（两对同向）：** 数值问题格 **0**；余弦可算。
-
-| 对 | first_numeric | first_cos（model.layers） | worst clean @token0 |
-|----|---------------|---------------------------|---------------------|
-| `…a66dbfba` | 无 | token **0** @ `model.layers.2`（cos≈0.55） | `model.layers.20`（cos≈-0.30） |
-| `…8cf66059` | 无 | token **0** @ `model.layers.2`（cos≈0.55） | `model.layers.20`（cos≈-0.30） |
-
-- L0–L1 cos≈1；自 L2 明显偏离。全名 natural-sort 的 first_cos 另见 `layer_36`（并行命名）。
-- 未用槽：异常侧**有限非 0**（卫生，通常不致坏结果）；标杆未用全 0。
-- 证据：`evidence/kv_compare.json` + `kv_v516_numeric_first.json`；服务器 `verified_kv/S43/ref_recap/`（**.pt 未入库**）。
+- **清洁标杆（≥2 组）：** 干净服务重放对照；shape 一致；标杆未用槽归零。history **`p + o − 1 = 18`**（约 prompt=14、生成较短）。
+- **两对同向：** 无数值问题；余弦可算，且两对同一套层叙事。
+- **余弦：** prompt 第 1 个 token 起，`model.layers.0–1` 仍≈1；自 **`model.layers.2`** 首次明显偏离（余弦≈0.55）；同 token 最差约 −0.30 落在 `model.layers.20`。
+- **dump 双名：** 另有 `layer_36…` 一套名字；`layer_36` = `model.layers.0`（`layer_(36+i)` ↔ `model.layers.i`）。全名排序的「首次余弦」可能先写到 `layer_36`，与「模型第 2 层首越阈」是同一对账的不同命名视图。
+- **未用槽：** 异常侧有限非 0（**卫生**）。
+- 证据：`evidence/kv_*.json`；`verified_kv/S43/`（**.pt 未入库**）。
 
 ### 推断
 

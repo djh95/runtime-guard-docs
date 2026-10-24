@@ -45,23 +45,14 @@ Soft-inverse：SwiGLU 先 `cat(up, gate)` 再 `npu_swiglu`（gate/up 对调）�
 
 ### 事实
 
-- 现象：全请求 `!!!!…`；`logits_finite` 必现（48/48）。
-- 三层：**58 / 48 / 48**。
-- 钉点 report（×2）：`…ac611d71`、`…b27e35ba`；均 `prompt=14`、`output_at_dump=1`、`finite_kind=nan`。
-- **≥2 组**异常↔清洁标杆（`S50-ref-recap-20261023T094236`；标杆未亮 `logits_finite`；shape `[1,128,4,128]` 一致）。
-- history 窗：`n_tokens = p + o − 1 = 14`（prompt token0 起即可比）。
-- Dump 含两套层名（各 36）：`layer_36..71` 与 `model.layers.0..35.self_attn.attn`。**双名同一套 KV**：`layer_36` = `model.layers.0`，不是「第 36 层」。
-- **v5.16 数值门闩 + 余弦（两对同向）：**
-
-| 对 | first_numeric（model.layers） | first_cos_mismatch（干净格） | 备注 |
-|----|-------------------------------|------------------------------|------|
-| `…ac611d71` | token **0** @ `model.layers.6`（`buggy_nan`） | token **0** @ `model.layers.3`（cos≈0.989，阈值 0.99） | L5 最差 cos≈-0.017；L0–L2≈1 |
-| `…b27e35ba` | token **0** @ `model.layers.6`（`buggy_nan`） | token **0** @ `model.layers.3`（cos≈0.989） | 同向 |
-
-- `layer_36..71`：自 token **0** 起 used 槽 **全 NaN**（全名 natural-sort 的 first_numeric 会先落到 `layer_36`；属并行命名，不作唯一层叙事）。
-- `model.layers.6..35`：自 token 0 起 **数值问题**（不算余弦）；L0–L5 有限可算余弦。
-- 未用槽：异常侧亦有 NaN（严重）；标杆未用槽全 0。
-- 证据：`evidence/kv_compare.json` + `kv_v516_numeric_first.json`；服务器 `verified_kv/S50/ref_recap/`（**.pt 未入库**）。
+- **现象与检测：** 全请求 `!!!!…`；`logits_finite` 48/48 命中（report 里 `finite_kind=nan`）。三层 **58 / 48 / 48**。
+- **清洁标杆（≥2 组）：** 干净服务重放对照；标杆未亮 `logits_finite`；shape `[1,128,4,128]`。prompt=14，**`o=1`**，history `p+o−1=14`（从 prompt 第 1 个 token 起即可比）。
+- **两对同向（数值门闩 + 干净格余弦）：**
+  - **数值门闩：** 在 `model.layers.*` 上，prompt token0 起第 **6** 层开始出现异常侧 NaN（`buggy_nan`）；第 0–5 层仍有限。
+  - **余弦（只在仍有限的「干净格」上算）：** 同 token 上首次低于 0.99 约在第 **3** 层（余弦≈0.989）；第 5 层最差可到约 −0.02；第 0–2 层仍≈1。
+- **dump 双名：** 目录里两套各 36 个名字——`layer_36…71` 与 `model.layers.0…35…`。对应 `layer_(36+i)` ↔ `model.layers.i`，故 **`layer_36` = 模型第 0 层**，不是「第 36 层」。若按全名排序，`layer_*` 从 token0 起 used 槽全 NaN，会先报到 `layer_36`；层叙事以 `model.layers` 表为准。
+- **未用槽：** 异常侧亦有 NaN（严重）；标杆未用槽全 0。
+- 证据：`evidence/kv_compare.json`、`kv_v516_numeric_first.json`；`verified_kv/S50/`（**.pt 未入库**）。
 
 ### 推断
 

@@ -44,15 +44,11 @@ Soft-inverse：fused add-RMSNorm 前 `residual = -residual`。细节见 [evidenc
 
 ### 事实
 
-- 现象：全请求 `!!!!…`；`logits_finite` 必现（48/48）。
-- 三层：**44 / 48 / 48**。
-- 钉点 report（×2）：`…994caee4`、`…bc2bbc9b`；均 `prompt=14`、`output_at_dump=1`。
-- **≥2 组**异常↔清洁标杆（`S48-ref-recap-20261023T104049`；标杆侧 `logits_finite` 未触发；shape `[1,128,4,128]` 一致）。
-- history 窗：`n_tokens = p + o − 1 = 14`（短窗；只做有限性/未用槽，**不做层定位**）。
-- **异常侧：** 有效槽 **全 NaN**（无 Inf）；未用槽 **亦有 NaN**（严重；非「仅有限非 0 卫生脏写」）。
-- **标杆侧：** 有效槽有限；未用槽全 0。
-- 证据：`evidence/kv_compare.json` + `kv_finite_unused.json`；服务器 `verified_kv/S48/ref_recap/`（**.pt 未入库**）。
-- `cos_layer_claim=false`：有效槽全非有限 → **无有效首分歧 token/层**。
+- **现象与检测：** 全请求 `!!!!…`；`logits_finite` 48/48 命中。三层 **44 / 48 / 48**。
+- **清洁标杆（≥2 组）：** 干净服务重放对照；标杆**未**亮 `logits_finite`；shape `[1,128,4,128]`。钉点 report：prompt=14，**`output_at_dump=1`（o=1）**，history 按 `p+o−1` 长度为 14。
+- **两对同向（有限性，不定层）：** 异常侧**有效槽全是 NaN**（无 Inf）；**未用槽也有 NaN**（严重，不是「仅有限非 0 的卫生脏写」）。标杆侧有效槽有限、未用槽全 0。
+- **为何不定「第一坏层」：** 余弦要两边都是可比较的有限数。有效槽已是 NaN → **没有有效余弦格**，不能写「第几层先分叉」。短生成窗（o=1）也削弱层定位。
+- 证据：`evidence/kv_compare.json`、`kv_finite_unused.json`；`verified_kv/S48/`（**.pt 未入库**）。
 
 ### 推断
 

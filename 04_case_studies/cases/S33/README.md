@@ -41,10 +41,10 @@ softcap 缺 `*cap` rescale。细节见 [evidence/规格说明.md](./evidence/规
 
 ### 事实
 
-- **≥2 组**清洁标杆；shape 一致。
-- **v5.16（两对同向）：** 数值问题格 **0**；`first_cos_mismatch` **无**（全程 clean；token0 最差仍 ≈1.0 @ L13）。
-- 未用槽：异常侧**有限非 0**（卫生，通常不致坏结果）；标杆未用全 0。
-- 证据：`evidence/kv_compare.json` + `kv_v516_numeric_first.json`；`verified_kv/S33/ref_recap/`（**.pt 未入库**）。
+- **清洁标杆（≥2 组）：** 干净服务重放对照；**2 组**；shape 一致。对比窗约 `n_prompt=14`，`p+o−1`≈20。
+- **两对同向：** 数值问题格 **0**；余弦全程干净（prompt 第 1 个 token 最差仍≈1.0）。
+- **未用槽：** 异常侧有限非 0（**卫生**）。
+- 证据：`evidence/kv_*.json`（**.pt 未入库**）。
 
 ### 推断
 

@@ -44,13 +44,11 @@ Soft-inverse [vLLM#42379](https://github.com/vllm-project/vllm/pull/42379)：`As
 
 ### 事实
 
-- 现象：`1.1.1…` / `1.0.0…` 复读（`evidence/samples/`）。
-- 三层：**470 / 14 / 48**；detector：`token_repeat`（detect=48）。
-- 钉点 report（×2，均非空 prompt）：`…90a56851`（n_prompt=14, n_output=8）、`…a45e21f3`（n_prompt=14, n_output=17）。见 `evidence/reports/`。
-- 本包已归档 **≥2 组**异常↔标杆 KV 对账（`evidence/kv_compare.json`；cos_thresh=0.99；无全 NaN）。
-- history 对比跨度：**`n_tokens = p + o − 1`**（两组分别为 21、30）。
-- 标杆 vs 异常：两组对比窗**全程一致**（min-over-layers cos ≥ 0.999988）；首不一致：无。
-- 服务器已验证 dump：`…/verified_kv/S26/`（约 **75M**，**未**入库 GitHub，仅摘要 `kv_compare.json`）。
+- **现象与三层：** 输出常成 `1.1.1…` / `1.0.0…` 复读；三层 **470 / 14 / 48**（`token_repeat` 检出 48）。样本见 `evidence/samples/`。
+- **清洁标杆（≥2 组）：** 干净服务重放对照。钉点 report 均非空 prompt（#19285）：一组约 prompt=14、output=8，另一组 prompt=14、output=17。
+- **对比窗口：** **`n_tokens = p + o − 1`**（两组分别为 21、30）。
+- **两对同向（排除 KV）：** 对比窗内各层余弦最低仍 ≥0.999988；**没有**首个不一致；无全 NaN 崩溃。
+- 服务器 dump：`verified_kv/S26/`（**.pt 未入库**）；包内摘要 `kv_compare.json`。
 
 ### 推断
 

@@ -41,16 +41,12 @@ Attention 前 K/V 对调。细节见 [evidence/规格说明.md](./evidence/规�
 
 ### 事实
 
-- **≥2 组**清洁标杆；shape 一致。
-- **v5.16（两对同向）：** 数值问题格 **0**。
-
-| 对 | first_numeric | first_cos（model.layers） | worst @token0 |
-|----|---------------|---------------------------|---------------|
-| `…91bc86cf` | 无 | token **0** @ `model.layers.0`（cos≈0.008） | `model.layers.8`（≈-0.15） |
-| `…b83b5dc7` | 无 | token **0** @ `model.layers.0`（cos≈0.008） | `model.layers.8`（≈-0.15） |
-
-- 未用槽：异常侧有限非 0（卫生）；标杆未用全 0。
-- 证据：`evidence/kv_compare.json` + `kv_v516_numeric_first.json`；`verified_kv/S47/ref_recap/`（**.pt 未入库**）。
+- **清洁标杆（≥2 组）：** 干净服务重放对照；**2 组**；shape 一致。对比窗约 `n_prompt=14`，`p+o−1`≈19。
+- **两对同向：** 数值问题格 **0**；余弦从 prompt 第 1 个 token、**`model.layers.0`** 起就崩（余弦≈0.008）；同 token 最差约 −0.15 落在 `model.layers.8`。
+- **dump 双名：** 全名排序下首次余弦也可能写在 `layer_36`（= `model.layers.0`），与上表模型层叙事一致。
+- **未用槽：** 异常侧有限非 0（**卫生**）；标杆未用全 0。
+- **三层旁注：** precision 计数可能为 0，但 samples 里仍有多条内容相同的垃圾（本包记 identical×37）——以 samples 为准。
+- 证据：`evidence/kv_*.json`；`verified_kv/S47/`（**.pt 未入库**）。
 
 ### 推断
 
