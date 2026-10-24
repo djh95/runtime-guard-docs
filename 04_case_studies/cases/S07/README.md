@@ -1,15 +1,15 @@
-# S07 · W8A8 scale collapse（KV 不一致→定界 · 乱码漏检）
+# S07 · W8A8 量化 scale 崩溃（KV 不一致→定界 · 乱码漏检）
 
-公开自洽案例包。**乱码出现了，但 logits 仍有限**，所以 `logits_finite` 没响（乱码漏检）；认乱码看 samples；异常 KV 靠后来的 `manual_dump`。
+公开案例包。**乱码肉眼可见，但 logits（模型算分）仍有限**，专抓「非有限 logits」的检测没响——**乱码漏检**。认乱码看 samples；异常 KV 靠事后**手动触发 dump**（不是检测一响就自动抓）。
 
 ## 归档钉点
 
 | 项 | 值 |
 |----|-----|
-| 结案 | **KV 不一致→定界**（数值门闩：有效槽范数全零） |
-| 检测 | **乱码漏检**（期望 `logits_finite` → 0 report） |
-| 三层率 | **74 / 48 / 0**（跨请求内容相同×48） |
-| Detector | 期望 `logits_finite` → **miss** |
+| 结案 | **KV 不一致→定界**（请求用到的 KV **全是 0**） |
+| 检测 | **乱码漏检**（期望 `logits_finite` → 0 份报告） |
+| 三层率 | **74 / 48 / 0**（触发 / 判坏 / 报告；48 次相同乱码，但报告数=0） |
+| Detector | 期望 `logits_finite` → **未命中** |
 | Origin | 见规格 |
 | Guard pin | G2 `f2aefd068` + 抓 dump 时临时合入 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) |
 | 模型 | Qwen3-8B-W8A8 · TP2 · CARD=4,5 · `192.168.13.160` / `rg-test-160` |
@@ -17,24 +17,24 @@
 
 ## 1 · 现象
 
-跨请求内容相同的乱码×48（见 [evidence/samples/](./evidence/samples/)）。**无** detector report。
+48 次请求得到**彼此相同**的乱码（见 [evidence/samples/](./evidence/samples/)）。**没有**检测报告文件。
 
 ## 2 · 案例背景 / 构造
 
-W8A8 dequant / scale 崩溃族。细节见 [evidence/规格说明.md](./evidence/规格说明.md)。
+W8A8 反量化 / scale 崩溃族。细节见 [evidence/规格说明.md](./evidence/规格说明.md)。
 
 ## 3 · Guard 结果
 
-**乱码漏检。** **74 / 48 / 0**。异常 KV 靠 **`manual_dump`**（≥2 对）。结案档：**KV 不一致→定界**（v5.16：有效槽从 prompt 第 1 个 token、模型第 0 层起即为全零；无有效余弦格——见下节）。
+**乱码漏检。** **74 / 48 / 0**。异常 KV 靠手动 dump（≥2 对）。结案：**KV 不一致→定界**——有效槽从 prompt 开头、模型第 0 层起就是全零；没有可算的相似度格（见事实）。
 
 ## 4 · 复现技巧
 
-| 项 | 现行复现 |
-|----|----------|
+| 项 | 怎么做 |
+|----|--------|
 | Overlay | `07_quant_scale_collapse.patch` |
 | 模型 | Qwen3-8B-W8A8 |
-| detector | `logits_finite`（预期 miss） |
-| 抓 dump | `manual_dump` 水位递增 + #19285 |
+| detector | `logits_finite`（本窗预期打不中） |
+| 抓 dump | 手动 dump 水位递增 + #19285 |
 
 ## 5 · 定界分析
 
@@ -50,7 +50,7 @@ W8A8 dequant / scale 崩溃族。细节见 [evidence/规格说明.md](./evidence
 
 ### 推断
 
-- 有效槽全零 → **定界到数值问题（全零）**；本窗不能再用余弦指出「第一坏层」。
+- 有效槽全零 → **定界到数值问题（全零）**；本窗不能用相似度指出「第一坏层」。
 - 与「乱码漏检」并列：检测抓不住乱码，但对账仍能定界。
 
 ### 结论
@@ -64,11 +64,10 @@ W8A8 dequant / scale 崩溃族。细节见 [evidence/规格说明.md](./evidence
 |------|------|
 | `evidence/overlay.patch` | 补丁 |
 | `evidence/规格说明.md` | 规格 + 实测 |
-| `evidence/三层计数.json` | 三层 |
-| `evidence/跑批结果.json` | 摘要 |
+| `evidence/三层计数.json` / `跑批结果.json` | 三层 / 摘要 |
 | `evidence/samples/` | 乱码样本 |
-| `evidence/reports/` | `manual_trigger` |
-| `evidence/kv_*.json` | 对账 / v5.16 / 有限性 |
+| `evidence/reports/` | 手动触发的报告 |
+| `evidence/kv_*.json` | 对账 / 有限性 |
 
 ## 7 · 上游 PR 关系
 

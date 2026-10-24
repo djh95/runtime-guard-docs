@@ -102,11 +102,11 @@ keep-set 案例的 **headline 结案**只用下面四档；**不要**再用 PASS
 
 > **2026-10-23：** keep-set **15 包均已回填**（基线曾清空于 `381af71`）。下表数字摘自各包 `evidence/三层计数.json`；结案为四档用语。禁止混用旧跑。
 
-| ID | 包 | 结案 | 检测 | 根因（构造） | 现象 | 检测器 | trigger / precision / detect |
+| ID | 包 | 结案 | 检测 | 根因（构造） | 现象 | 检测器（名字） | 触发 / 判坏 / 报告数 |
 |----|-----|------|------|--------------|------|--------|------------------------------|
 | S01 | [cases/S01/](./cases/S01/) | KV 一致→排除 KV（dense） | 检出 | 新 KV block 未置零 | 部分数字复读（非目标 hybrid/量化形态） | `token_repeat` | 82 / 16 / 48 |
 | S06 | [cases/S06/](./cases/S06/) | KV 不一致→定界 | 检出 | MoE 路由 bias | token 重复 | `token_repeat` | 52 / 25 / 46 |
-| S07 | [cases/S07/](./cases/S07/) | KV 不一致→定界（有效槽全零） | 乱码漏检 | W8A8 scale 崩溃 | 跨请求内容相同的乱码×48 | 期望 `logits_finite`→0；`manual_dump` | 74 / 48 / 0 |
+| S07 | [cases/S07/](./cases/S07/) | KV 不一致→定界（有效槽全零） | 乱码漏检 | W8A8 scale 崩溃 | 跨请求内容相同的乱码×48 | 期望抓非有限 logits→0 报告；手动抓 KV | 74 / 48 / 0 |
 | S10p | [cases/S10p/](./cases/S10p/) | KV 一致→排除 KV | 检出 | FullAttn 回收块未清零 | token 重复 / 垃圾 | `token_repeat` | 64 / 17 / 64 |
 | S11 | [cases/S11/](./cases/S11/) | KV 不一致→定界 | 检出 | MLA RoPE pad | token 重复 | `token_repeat` | 108 / 27 / 48 |
 | S22 | [cases/S22/](./cases/S22/) | KV 不一致→定界（一对分 / 一对 clean） | 检出 | Spec resample 无独立 salt | 投机接受率异常（无乱码文本） | `spec_acceptance` | 116 / 0 / 48 |
@@ -115,8 +115,8 @@ keep-set 案例的 **headline 结案**只用下面四档；**不要**再用 PASS
 | S26 | [cases/S26/](./cases/S26/) | KV 一致→排除 KV | 检出 | RMSNorm fp32 错乘 | `1.1.1…` 数字复读 | `token_repeat` | 470 / 14 / 48 |
 | S33 | [cases/S33/](./cases/S33/) | KV 一致→排除 KV | 检出 | softcap 缺 `*cap` rescale | 数字 / token 复读 | `token_repeat` | 102 / 15 / 48 |
 | S43 | [cases/S43/](./cases/S43/) | KV 不一致→定界 | 检出 | embedding ×100 | 输出几乎只剩换行/空白 | `token_repeat` | 16 / 40 / 48 |
-| S45 | [cases/S45/](./cases/S45/) | KV 一致→排除 KV（prompt 窗） | 乱码漏检 | top-k 打在 −logits | 乱码/空 completion（相同串×16） | 期望 both→0；`manual_dump` | 16 / 16 / 0 |
-| S47 | [cases/S47/](./cases/S47/) | KV 不一致→定界 | 检出 | Attn 前 K/V 对调 | 乱码/复读（identical×37；precision 计数=0） | `token_repeat` | 30 / 0 / 48 |
+| S45 | [cases/S45/](./cases/S45/) | KV 一致→排除 KV（只对上 prompt 短窗） | 乱码漏检 | top-k 打在 −logits | 乱码/空 completion（相同串×16） | 两种检测都 0 报告；手动抓 KV | 16 / 16 / 0 |
+| S47 | [cases/S47/](./cases/S47/) | KV 不一致→定界 | 检出 | Attn 前 K/V 对调 | 乱码/复读（37 条内容相同；自动判坏计数=0） | `token_repeat` | 30 / 0 / 48 |
 | S48 | [cases/S48/](./cases/S48/) | KV 不一致→定界 | 检出 | residual 极性取反 | 全请求 `!!!!…` | `logits_finite` | 44 / 48 / 48 |
 | S50 | [cases/S50/](./cases/S50/) | KV 不一致→定界 | 检出 | SwiGLU gate/up 对调 | 有效槽 NaN；首分歧约第 3–6 层 | `logits_finite` | 58 / 48 / 48 |
 

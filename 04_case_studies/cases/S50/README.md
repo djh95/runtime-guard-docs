@@ -1,6 +1,6 @@
-# S50 · SwiGLU gate/up half-swap（KV 不一致→定界）
+# S50 · SwiGLU gate/up 对调（KV 不一致→定界）
 
-公开自洽案例包。
+公开案例包。SwiGLU 的 gate/up 半边对调（反向注入）。输出全是 `!!!!…`；logits 非有限检测 48/48 命中；KV 对账：前面层相似度先裂开，稍后层出现 NaN——**KV 不一致→定界**（两组同向）。**构造算子名≠已证根因。**
 
 ## 归档钉点
 
@@ -8,38 +8,38 @@
 |----|-----|
 | 结案 | **KV 不一致→定界** |
 | 检测 | **检出** |
-| 三层率 | **58 / 48 / 48**（`logits_finite`×48） |
+| 三层率 | **58 / 48 / 48**（触发 / 判坏 / 报告；全是 `logits_finite`） |
 | Detector | `logits_finite` |
 | Origin | `both` |
-| Guard pin | G2 `f2aefd068` + 抓 dump 时临时合入 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285)（非空 `prompt_token_ids`） |
-| 模型 | Qwen3-8B · TP2 · CARD=4,5 · `192.168.13.160` / `rg-test-160` |
-| Run | 英文河名短句 × 48 并发；`keep-set-retest-20261022` |
+| Guard pin | G2 `f2aefd068` + 抓 dump 时临时合入 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) |
+| 模型 | Qwen3-8B · TP2 · CARD=4,5 |
+| Run | 英文河名短句 ×48；`keep-set-retest-20261022` |
 
 ## 1 · 现象
 
-全请求 `!!!!…`（identical-mode ×48）；采样前 logits 非有限（report：`finite_kind=nan`）。样本见 [evidence/samples/](./evidence/samples/)。
+全请求 `!!!!…`（48 条相同）；采样前 logits 非有限（报告里记为 nan）。样本见 [evidence/samples/](./evidence/samples/)。
 
 ## 2 · 案例背景 / 构造
 
-Soft-inverse：SwiGLU 先 `cat(up, gate)` 再 `npu_swiglu`（gate/up 对调）。细节见 [evidence/规格说明.md](./evidence/规格说明.md)；补丁见 [evidence/overlay.patch](./evidence/overlay.patch)。**构造根因不是本包 KV 定界已证。**
+反向注入：SwiGLU 先 `cat(up, gate)` 再走 `npu_swiglu`。细节见 [evidence/规格说明.md](./evidence/规格说明.md)。
 
 ## 3 · Guard 结果
 
-**检出。** 现行 **58 / 48 / 48**（`detect_by.logits_finite=48`）。结案档：**KV 不一致→定界**（v5.16 数值门闩 + 干净格余弦；两组同向）。
+**检出。** **58 / 48 / 48**。结案：**KV 不一致→定界**——先做数值门闩（有没有 NaN），再在仍有限的格子上看相似度；两组同向（见事实）。
 
-钉点 dump report：`prompt_token_ids` 长度 **14**（非空）；dump 时 `output_token_count=1`（早拍窗）。
+钉点报告：prompt 长度 14；dump 时只生成 1 个 token。
 
 ## 4 · 复现技巧（必读）
 
-| 项 | 现行复现 |
-|----|----------|
-| Overlay | `gen_s50_overlay.py` 就地改 B 树 |
+| 项 | 怎么做 |
+|----|--------|
+| Overlay | `gen_s50_overlay.py` |
 | Prompt | `Name one famous river. One short English sentence. id={i}.` |
 | 并发 | **48** |
-| 其它 | temp=0；`max_tokens` 足以出 `!!!!` |
-| detector | `logits_finite`（可兼开 `token_repeat`） |
-| 抓 dump | 非空 `prompt_token_ids` → 临时 #19285；抓前清 `kv_cache` |
-| 标杆 | **清洁树、无 overlay**；须确认 **未**亮 `logits_finite`；manual_dump + force-feed history。必现时也可问他环境是否正常 → 跨环境标杆（须权重 MD5 + 代码 commit 一致；见 skills v5.17） |
+| 其它 | 温度 0；`max_tokens` 足以打出 `!!!!` |
+| detector | `logits_finite`（可兼开复读检测） |
+| 抓 dump | 非空 prompt token 列表 → 临时 #19285；抓前清 kv cache |
+| 对照 | **干净树、无 overlay**；确认对照未亮 `logits_finite`；手动 dump + 按 token id 重放 |
 
 ## 5 · 定界分析
 
@@ -56,33 +56,28 @@ Soft-inverse：SwiGLU 先 `cat(up, gate)` 再 `npu_swiglu`（gate/up 对调）�
 
 ### 推断
 
-- prompt token0 起：干净格上余弦在 L3 越阈、L5 塌缩，L6+ 已非有限 → **KV 不一致**且可写层事实（非伪 NaN-sort）。
-- **不能**单凭此推出「根因=SwiGLU 对调」或「根因=KV 子系统」（前者仅构造背景）。
-- **未开 msprobe**（殿后）。
+- prompt 第 1 个 token 起：相似度在第 3 层越阈、第 6 层起 NaN → **KV 不一致**且可写层事实。
+- **不能**单凭此推出「根因=SwiGLU 对调」或「根因=KV 子系统」。
+- 未开算子级 msprobe（殿后）。
 
 ### 结论
 
-- 结案档：**KV 不一致→定界**（v5.16；两组同向；标杆未炸；含 first_numeric / first_cos 层事实）。
-- 尚未证到构造根因算子名；需要时再开 `msprobe-dump`。
+- 结案档：**KV 不一致→定界**（两组同向；含层事实）。
+- 尚未证到构造根因算子名。
 
 ## 6 · 证据文件
 
 | 文件 | 用途 |
 |------|------|
-| `evidence/overlay.patch` | 制造异常的静态补丁 |
-| `evidence/规格说明.md` | 复现规格 |
-| `evidence/三层计数.json` | 三层明细 |
-| `evidence/跑批结果.json` | 跑批元数据 + 结案摘要 |
-| `evidence/samples/` | prompt + completion 样本 |
-| `evidence/reports/` | 钉点 Guard report（非空 prompt；logits_finite） |
-| `evidence/kv_compare.json` | v5.16 数值门闩 + 余弦首分歧（两组） |
-| `evidence/kv_v516_numeric_first.json` | v5.16 重分析摘要 |
-| `evidence/kv_finite_unused.json` | 有限性/未用槽明细 |
-| `evidence/kv_pairs_recap.json` | 标杆补抓配对元数据 |
+| `evidence/overlay.patch` | 补丁 |
+| `evidence/规格说明.md` | 规格 |
+| `evidence/三层计数.json` / `跑批结果.json` | 三层 / 摘要 |
+| `evidence/samples/` / `reports/` | 样本 / 报告 |
+| `evidence/kv_*.json` | 对账 |
 
 ## 7 · 上游 PR 关系
 
-| PR / 链接 | 角色 |
-|-----------|------|
-| （构造 soft-inverse；见规格） | 案例背景，**非**本包 KV 已证根因 |
-| [ascend#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) | **抓 dump 辅助**：非空 `prompt_token_ids` |
+| 链接 | 角色 |
+|------|------|
+| （构造反向注入；见规格） | 背景，非本包 KV 已证根因 |
+| [ascend#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) | 抓 dump 辅助 |

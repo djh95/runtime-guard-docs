@@ -1,41 +1,41 @@
 # S22 · Spec resample 无 SALT（KV 不一致→定界 · 一对分/一对 clean）
 
-公开自洽案例包。G2 pin 缺 `RESAMPLE_NOISE_SALT`；overlay 只打 trigger 日志（origin-faithful）。
+公开案例包。G2 pin 上 residual resample 与 rejection 共用随机源、缺少独立 salt；overlay **只打触发日志**（忠于原逻辑，不写 NaN、不填假 token）。检测靠「投机接受率」异常；**输出未必是乱码**。
 
 ## 归档钉点
 
 | 项 | 值 |
 |----|-----|
-| 结案 | **KV 不一致→定界**（一对分 / 一对 clean） |
+| 结案 | **KV 不一致→定界**（**一对分叉 / 一对干净**——务必读事实） |
 | 检测 | **检出** |
-| 三层率 | **116 / 0 / 48**（`spec_acceptance`×47 + `token_repeat`×1） |
-| Detector | `spec_acceptance`（兼 `token_repeat`） |
+| 三层率 | **116 / 0 / 48**（触发 / 判坏文本 / 报告；接受率检测×47 + 复读×1） |
+| Detector | 主看 `spec_acceptance`（投机接受率）；兼开 `token_repeat` |
 | Origin | `ascend-only`（+ cousin vLLM#61161）；见规格 |
 | Guard pin | G2 `f2aefd068` + 抓 dump 时临时合入 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) |
-| 模型 | Qwen3-8B + eagle3 · TP2 · CARD=4,5 · `192.168.13.160` / `rg-test-160` |
+| 模型 | Qwen3-8B + eagle3 草稿 · TP2 · CARD=4,5 · `192.168.13.160` / `rg-test-160` |
 | Run | `keep-set-retest-20261022` · `S22-layers-20261023T145540` |
 
 ## 1 · 现象
 
-投机接受率异常被抓住（`spec_acceptance` 47/48）；**输出未必是乱码**（precision=0，无跨请求乱码文本）。样本见 [evidence/samples/](./evidence/samples/)。
+投机接受率异常被大量抓住（47/48）；**判坏文本计数为 0**（没有跨请求乱码串）。样本见 [evidence/samples/](./evidence/samples/)。
 
 ## 2 · 案例背景 / 构造
 
-Rejection 与 residual resample 共用 RNG、无独立 salt（inverse [ascend#18657](https://github.com/vllm-project/vllm-ascend/pull/18657)）。细节见 [evidence/规格说明.md](./evidence/规格说明.md)；补丁见 [evidence/overlay.patch](./evidence/overlay.patch)。
+Rejection 与 residual resample 共用 RNG、无独立 salt（对照修复 [ascend#18657](https://github.com/vllm-project/vllm-ascend/pull/18657)）。细节见 [evidence/规格说明.md](./evidence/规格说明.md)；补丁见 [evidence/overlay.patch](./evidence/overlay.patch)。
 
 ## 3 · Guard 结果
 
-**检出。** **116 / 0 / 48**。结案档：**KV 不一致→定界**（**两组不同向**：一对在靠后的生成步、高编号 dump 层出现余弦分歧；另一对全程干净；数值门闩无命中；模型层在 prompt 第 1 个 token 上两侧≈1.0）。细节见 `evidence/kv_*.json`。
+**检出。** **116 / 0 / 48**。结案：**KV 不一致→定界**，但 **两组不同向**——一对在靠后生成步出现相似度分叉，另一对全程干净；无数值崩溃（见事实）。
 
 ## 4 · 复现技巧
 
-| 项 | 现行复现 |
-|----|----------|
-| Overlay | `gen_s22_overlay.py` → `22_spec_resample_rng_collide.patch`（2348 B；PLAIN apply OK） |
+| 项 | 怎么做 |
+|----|--------|
+| Overlay | `gen_s22_overlay.py` → `22_spec_resample_rng_collide.patch`（可直接 `git apply`） |
 | 模型 | Qwen3-8B + `Qwen3-8B-speculator.eagle3` |
-| 负载 | `temperature=0.8` · `num_speculative_tokens=3` · concurrency 48 |
-| detector | `both`（主看 `spec_acceptance`） |
-| 注意 | 树内 `resample.py` 为 CRLF；勿用剥 CR 的 text-mode diff |
+| 负载 | 温度 0.8 · 投机 token 数 3 · 并发 48 |
+| detector | 同时开接受率 + 复读（主看接受率） |
+| 注意 | 树内 `resample.py` 可能是 CRLF 换行；生成补丁时不要用会剥掉回车的文本模式 |
 
 ## 5 · 定界分析
 
@@ -51,27 +51,27 @@ Rejection 与 residual resample 共用 RNG、无独立 salt（inverse [ascend#18
 
 ### 推断
 
-- 有效槽在一对上已出现晚步余弦分歧 → 按 keep-set 门闩记 **KV不一致→定界**；**非两组同向**，不定界到 resample 源码行 / salt 缺失的唯一路径。
-- 根因叙事仍锚定「无 SALT 的 shared RNG」（规格 / #18657），本窗 KV 只证明「有分歧窗口」，不单独证明 salt。
+- 一对上已有晚步相似度分歧 → 按门闩记 **KV 不一致→定界**；**非两组同向**，不定界到「缺 salt」唯一路径。
+- 根因叙事仍锚定无 SALT 的 shared RNG（规格 / #18657）；本窗 KV 只证明「有分歧窗口」。
 
 ### 结论
 
-- 结案档：**KV 不一致→定界**（检出；一对分、一对 clean；无数值门闩命中）。
+- 结案档：**KV 不一致→定界**（检出；一对分、一对 clean）。
 
 ## 6 · 证据文件
 
 | 文件 | 用途 |
 |------|------|
-| `evidence/overlay.patch` | 异常构造（platform + resample trigger；无 #19285） |
-| `evidence/规格说明.md` | 规格 + 实测钉点 |
+| `evidence/overlay.patch` | 异常构造（无 #19285） |
+| `evidence/规格说明.md` | 规格 + 实测 |
 | `evidence/三层计数.json` / `跑批结果.json` | 三层 / 摘要 |
 | `evidence/samples/` / `reports/` | 样本 / 报告 |
-| `evidence/kv_*.json` | 对账（v5.16） |
+| `evidence/kv_*.json` | 对账 |
 
 ## 7 · 上游 PR 关系
 
 | PR / 链接 | 角色 |
 |-----------|------|
-| [ascend#18657](https://github.com/vllm-project/vllm-ascend/pull/18657) | **根因修复**（`RESAMPLE_NOISE_SALT`） |
+| [ascend#18657](https://github.com/vllm-project/vllm-ascend/pull/18657) | 根因修复（补 salt） |
 | [vLLM#61161](https://github.com/vllm-project/vllm/pull/61161) | cousin |
-| [ascend#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) | dump 抓取前置（非本 anomaly） |
+| [ascend#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) | 抓 dump 辅助（非本 anomaly） |

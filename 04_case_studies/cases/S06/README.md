@@ -1,6 +1,6 @@
 # S06 · MoE 路由 bias（KV 不一致→定界）
 
-公开自洽案例包。
+公开案例包。专家路由被弄偏后出现 token 复读；检测抓住了；KV 对账两边对不上 → **KV 不一致→定界**（坏值已进/经 KV，但不能单凭对账写死「根因=路由某行」）。
 
 ## 归档钉点
 
@@ -8,7 +8,7 @@
 |----|-----|
 | 结案 | **KV 不一致→定界** |
 | 检测 | **检出** |
-| 三层率 | **52 / 25 / 46**（`token_repeat`×46；n_req=48） |
+| 三层率 | **52 / 25 / 46**（触发 / 判坏 / 报告；`token_repeat`×46；共 48 请求） |
 | Detector | `token_repeat` |
 | Origin | 见规格 |
 | Guard pin | G2 `f2aefd068` + 抓 dump 时临时合入 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) |
@@ -17,25 +17,24 @@
 
 ## 1 · 现象
 
-检出 `token_repeat`（precision=25）。样本见 [evidence/samples/](./evidence/samples/)。
+约 25/48 被判成坏输出；重复-token 检测命中。样本见 [evidence/samples/](./evidence/samples/)。
 
 ## 2 · 案例背景 / 构造
 
-MoE router bias / mask 错误。细节见 [evidence/规格说明.md](./evidence/规格说明.md)。**构造背景不是本包 KV 已证根因名。**
+MoE（混合专家）路由 bias / 掩码按故障模式注入。细节见 [evidence/规格说明.md](./evidence/规格说明.md)。**构造故事≠本包 KV 已证根因。**
 
 ## 3 · Guard 结果
 
-**检出。** **52 / 25 / 46**。结案档：**KV 不一致→定界**（v5.16：无数值问题；首个余弦分歧约在 dump `layer_27`，模型侧约第 4 层；两组同向）。
+**检出。** **52 / 25 / 46**。结案：**KV 不一致→定界**——无数值崩溃；从 prompt 第 1 个 token 起与干净对照的相似度就分叉（见事实）。
 
 ## 4 · 复现技巧
 
-| 项 | 现行复现 |
-|----|----------|
-| Overlay | `06_moe_routing_bias.patch` |
-| 模型 | DeepSeek-V2-Lite（MoE） |
+| 项 | 怎么做 |
+|----|--------|
+| Overlay | 见规格 / 生成脚本 |
+| 模型 | DeepSeek-V2-Lite |
 | detector | `token_repeat` |
-| 抓 dump | #19285；双树 checkout |
-| 标杆 | 清洁树；force-feed history |
+| 抓对照 KV | 干净服务上按报告里的 **token id 原样重放**（不要把字符串再分词一遍） |
 
 ## 5 · 定界分析
 
@@ -50,7 +49,8 @@ MoE router bias / mask 错误。细节见 [evidence/规格说明.md](./evidence/
 
 ### 推断
 
-- 有效槽余弦已分 → **定界到本窗首分歧层**（见上）；**不**把分歧自动等同 MoE 路由源码行。
+- 有效槽相似度已分 → **KV 线要重开**；层号是对账定位，不是「根因=第 N 层」。
+- 不定界到具体 router 源码行。
 
 ### 结论
 
@@ -61,16 +61,11 @@ MoE router bias / mask 错误。细节见 [evidence/规格说明.md](./evidence/
 | 文件 | 用途 |
 |------|------|
 | `evidence/overlay.patch` | 补丁 |
-| `evidence/规格说明.md` | 规格 + 实测状态 |
-| `evidence/三层计数.json` | 三层 |
-| `evidence/跑批结果.json` | 跑批摘要 |
-| `evidence/samples/` | 样本 |
-| `evidence/reports/` | detector 报告 |
-| `evidence/kv_compare.json` | 对账摘要 |
-| `evidence/kv_v516_numeric_first.json` | v5.16 |
-| `evidence/kv_finite_unused.json` | 有限性/未用槽 |
-| `evidence/kv_pairs_recap.json` | 成对路径 |
+| `evidence/规格说明.md` | 规格 + 实测 |
+| `evidence/三层计数.json` / `跑批结果.json` | 三层 / 摘要 |
+| `evidence/samples/` / `reports/` | 样本 / 报告 |
+| `evidence/kv_*.json` | 对账 |
 
 ## 7 · 上游 PR 关系
 
-见规格（#38989 / #60946）。
+见规格。

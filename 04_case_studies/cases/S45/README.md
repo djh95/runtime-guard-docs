@@ -1,41 +1,41 @@
-# S45 · Top-k on −logits（KV 一致→排除 KV · 乱码漏检）
+# S45 · Top-k 打在 −logits 上（KV 一致→排除 KV · 乱码漏检）
 
-公开自洽案例包。**乱码漏检**（开了检测但 0 份 report）→ 用 `manual_dump` 抓异常 KV 再对账。
+公开案例包。采样时 top-k 作用在**取反后的 logits** 上（等于专挑最差的候选）。**乱码会出现，但检测 0 份报告**——**乱码漏检**。异常 KV 靠**手动 dump** 再对账；本窗对账干净 → **排除 KV 主因**（且生成很短，主要只对上了 prompt 段）。
 
 ## 归档钉点
 
 | 项 | 值 |
 |----|-----|
-| 结案 | **KV 一致→排除 KV**（本次只对上了 prompt 段的 KV，生成很短） |
-| 检测 | **乱码漏检**（`token_repeat`+`logits_finite` 均 0 report） |
-| 三层率 | **16 / 16 / 0**（identical-mode「-Semit修为」×16；另有空 completion） |
-| Detector | 期望 `token_repeat`+`logits_finite` → **miss** |
+| 结案 | **KV 一致→排除 KV**（本次主要只对上了 prompt 段的 KV） |
+| 检测 | **乱码漏检**（`token_repeat` 与 `logits_finite` 都是 0 份报告） |
+| 三层率 | **16 / 16 / 0**（触发 / 判坏 / 报告；约 16 条相同乱码串「-Semit修为」，另有空输出） |
+| Detector | 期望两者都开 → **都没响** |
 | Origin | 见规格 |
 | Guard pin | G2 `f2aefd068` + 抓 dump 时临时合入 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) |
-| 模型 | Qwen3-8B · TP2 · CARD=4,5 · temp=0.8 · top_k=1 · `192.168.13.160` / `rg-test-160` |
+| 模型 | Qwen3-8B · 温度 0.8 · top_k=1 · TP2 · CARD=4,5 |
 | Run | `keep-set-retest-20261022` · `S45-layers-20261023T113411` · dump `S45-pr19285-20261023T120202` |
 
 ## 1 · 现象
 
-样本见 [evidence/samples/](./evidence/samples/)：乱码 / 空 completion；跨请求可相同（`-Semit修为`×16）或各异。**无** detector report。
+乱码或空 completion；有的跨请求相同，有的各异。样本见 [evidence/samples/](./evidence/samples/)。**没有**检测报告。
 
 ## 2 · 案例背景 / 构造
 
-top-k/top-p 打在 −logits（bottom nucleus）。细节见 [evidence/规格说明.md](./evidence/规格说明.md)。**构造背景不是本包 KV 已证根因。**
+top-k / top-p 打在 −logits（bottom nucleus）。细节见 [evidence/规格说明.md](./evidence/规格说明.md)。**构造背景不是本包 KV 已证根因。** 须同时改 Ascend 与上游 vLLM 采样文件（双树）。
 
 ## 3 · Guard 结果
 
-**乱码漏检。** 开了 `both`，**detect=0**。三层 **16 / 16 / 0**。异常 KV 靠 **`manual_dump`**（incident=`manual_trigger`）当场抓，不是 `on_trigger`。
+**乱码漏检。** 开了两种检测，**报告数仍为 0**。三层 **16 / 16 / 0**。异常 KV 靠手动 dump 当场抓，不是「检测触发后自动 dump」。
 
 ## 4 · 复现技巧
 
-| 项 | 现行复现 |
-|----|----------|
-| Overlay | `gen_s45_overlay.py`（双树：Ascend platform + vllm sampler） |
-| 请求 | temp=**0.8** · **top_k=1** · concurrency 48 |
-| 抓 dump | detect=0 → `manual_dump` 水位递增；合入 #19285 |
-| 标杆 | 清洁树；force-feed history |
-| 纪律 | 双树 `git checkout -- .`（勿留 S33 等脏写） |
+| 项 | 怎么做 |
+|----|--------|
+| Overlay | `gen_s45_overlay.py`（Ascend `platform.py` + vLLM `sampler.py`） |
+| 请求 | 温度 **0.8** · **top_k=1** · 并发 48（勿用温度 0） |
+| 抓 dump | 检测为 0 → 手动 dump 水位递增；合入 #19285 |
+| 对照 | 干净树；按 token id 原样重放 |
+| 纪律 | 跑前双树 `git checkout -- .`（勿留别案脏写） |
 
 ## 5 · 定界分析
 
@@ -49,29 +49,25 @@ top-k/top-p 打在 −logits（bottom nucleus）。细节见 [evidence/规格说
 
 ### 推断
 
-- 有效对账匹配 → **排除「坏值经/进 KV」为主因路径**（就本 prompt 窗、本 head、matched 层而言）。
-- 乱码仍现且 detect=0 → 问题更可能在采样/top-k 方向等 **非本包 KV 对比覆盖** 路径；**不能**从 KV 推出 top-k 根因。
+- 对账匹配 → **排除「坏值经/进 KV」为主因**（本 prompt 短窗）。
+- 乱码仍在且检测为 0 → 更可能在采样 / top-k 方向等 **本窗 KV 没覆盖** 的路径。
 
 ### 结论
 
-- 结案档：**KV 一致→排除 KV**（两组同向；标杆洁净；prompt 窗）。
+- 结案档：**KV 一致→排除 KV**（两组同向；prompt 短窗）。
 - 检测侧：**乱码漏检**。
 
 ## 6 · 证据文件
 
 | 文件 | 用途 |
 |------|------|
-| `evidence/overlay.patch` | 制造异常的静态补丁 |
-| `evidence/规格说明.md` | 复现规格 + 实测状态 |
-| `evidence/三层计数.json` | 三层明细 |
-| `evidence/跑批结果.json` | 跑批元数据 + 结案摘要 |
-| `evidence/samples/` | prompt + completion 样本 |
-| `evidence/reports/` | `manual_trigger` 报告（非 detector） |
-| `evidence/kv_compare.json` | 对账摘要 |
-| `evidence/kv_v516_numeric_first.json` | v5.16 数值门闩 + 余弦 |
-| `evidence/kv_finite_unused.json` | 有效/未用槽有限性 |
-| `evidence/kv_pairs_recap.json` | 成对路径 |
+| `evidence/overlay.patch` | 补丁 |
+| `evidence/规格说明.md` | 规格 + 实测 |
+| `evidence/三层计数.json` / `跑批结果.json` | 三层 / 摘要 |
+| `evidence/samples/` | 样本 |
+| `evidence/reports/` | 手动触发报告（非检测器） |
+| `evidence/kv_*.json` | 对账 |
 
 ## 7 · 上游 PR 关系
 
-见 [evidence/规格说明.md](./evidence/规格说明.md)。本 README 不重复实测外推断。
+见规格。

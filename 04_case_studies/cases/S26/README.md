@@ -1,6 +1,6 @@
-# S26 · RMSNorm fp32 错乘（weight-mul）（KV 一致→排除 KV）
+# S26 · RMSNorm fp32 错乘（KV 一致→排除 KV）
 
-公开自洽案例包。
+公开案例包。RMSNorm 权重在错误精度路径上相乘（反向注入）。输出 `1.1.1…` 复读被检出；KV 对账与干净对照对得上 → **排除 KV 主因**。
 
 ## 归档钉点
 
@@ -8,37 +8,33 @@
 |----|-----|
 | 结案 | **KV 一致→排除 KV** |
 | 检测 | **检出** |
-| 三层率 | **470 / 14 / 48**（现行；detect=48/48；trigger/precision 随并发浮动，detect 为判定口径） |
-| Detector | `token_repeat`（**threshold=8**） |
-| Origin | `both` |
-| Guard pin | G2 `f2aefd068` + 抓 dump 时临时合入 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285)（非空 `prompt_token_ids`） |
+| 三层率 | **470 / 14 / 48**（触发可浮动；**报告 48/48**） |
+| Detector | `token_repeat`（阈值=8） |
+| Origin | 见规格 |
+| Guard pin | G2 `f2aefd068` + 抓 dump 时临时合入 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) |
 | 模型 | Qwen3-8B · TP2 · CARD=4,5 · `192.168.13.160` / `rg-test-160` |
 | Run | 英文河名短句 × 48 并发 + 阈值 8；`keep-set-retest-20261022` |
 
 ## 1 · 现象
 
-输出变成反复的数字串（如 `1.1.1…` / `1.0.0…`）；`token_repeat` 检出。样本见 [evidence/samples/](./evidence/samples/)。
+反复数字串；重复检测命中。样本见 [evidence/samples/](./evidence/samples/)。
 
 ## 2 · 案例背景 / 构造
 
-Soft-inverse [vLLM#42379](https://github.com/vllm-project/vllm/pull/42379)：`AscendRMSNorm.forward_oot` 用错误的 fp32 乘权公式替代 `npu_rms_norm`。细节见 [evidence/规格说明.md](./evidence/规格说明.md)；补丁见 [evidence/overlay.patch](./evidence/overlay.patch)。
+RMSNorm fp32 错乘路径（反向注入）。细节见 [evidence/规格说明.md](./evidence/规格说明.md)。
 
 ## 3 · Guard 结果
 
-**检出。** 现行 **470 / 14 / 48**。结案档：**KV 一致→排除 KV**。
-
-钉点 dump 用的 report：`prompt_token_ids` 长度 **14**（非空；依赖抓取时临时 #19285）。
+**检出。** **470 / 14 / 48**。结案：**KV 一致→排除 KV**（对比窗内相似度几乎为 1；见事实）。
 
 ## 4 · 复现技巧（必读）
 
-| 项 | 现行复现（照这个做） |
-|----|----------------------|
-| Overlay | `gen_s26_overlay.py` 就地改 B 树 |
-| Prompt | `Name one famous river. One short English sentence. id={i}.` |
-| 并发 | **48 路同时发请求** |
-| 其它 | `max_tokens=48`；temp=0 |
-| detector | `token_repeat` **threshold=8** |
-| 抓 dump | 需非空 `prompt_token_ids` → 临时合入 #19285（跑完还原） |
+| 项 | 怎么做 |
+|----|--------|
+| Overlay | `gen_s26_overlay.py` |
+| Prompt | 英文河名短句 ×48 并发 |
+| detector | `token_repeat` 阈值 8 |
+| 抓 dump | 非空 prompt token 列表 → 临时 #19285 |
 
 ## 5 · 定界分析
 
@@ -52,30 +48,23 @@ Soft-inverse [vLLM#42379](https://github.com/vllm-project/vllm/pull/42379)：`As
 
 ### 推断
 
-- 对账一致 → **排除 KV cache** 作为本请求坏输出的必要原因。
-- 坏输出仍不能从文本推出构造根因；转向非 KV 类（RMSNorm / 本包构造）。
-- 无首不一致 → 推不出污染时机窗口。
+- 对账匹配 → **排除 KV 主因**（本窗）。
+- 复读仍在 → 更可能在 Norm/精度路径，而非本窗已匹配的 KV 槽。
 
 ### 结论
 
-- 结案档：**KV 一致→排除 KV**（本请求对比窗口；两组同跑钉点）。
-- 尚未定界到具体算子/构造根因；分析不出 / 证据不足。
+- 结案档：**KV 一致→排除 KV**。
 
 ## 6 · 证据文件
 
 | 文件 | 用途 |
 |------|------|
-| `evidence/overlay.patch` | 制造异常的静态补丁 |
-| `evidence/规格说明.md` | 复现规格 |
-| `evidence/三层计数.json` | 三层明细 |
-| `evidence/跑批结果.json` | 跑批元数据 + 结案摘要 |
-| `evidence/samples/` | prompt + completion 样本 |
-| `evidence/reports/` | Guard detector 报告（钉点；非空 `prompt_token_ids`） |
-| `evidence/kv_compare.json` | KV 标杆对比摘要（两组 match；history=`p+o-1`） |
+| `evidence/overlay.patch` | 补丁 |
+| `evidence/规格说明.md` | 规格 |
+| `evidence/三层计数.json` / `跑批结果.json` | 三层 / 摘要 |
+| `evidence/samples/` / `reports/` | 样本 / 报告 |
+| `evidence/kv_compare.json` | 对账摘要 |
 
 ## 7 · 上游 PR 关系
 
-| PR / 链接 | 角色 |
-|-----------|------|
-| [vLLM#42379](https://github.com/vllm-project/vllm/pull/42379) | **根因修复**；本包 soft-inverse |
-| [ascend#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) | **抓 dump 辅助**：非空 `prompt_token_ids`；非本案例根因修复 |
+见规格。

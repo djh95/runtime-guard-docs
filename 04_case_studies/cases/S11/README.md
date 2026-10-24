@@ -1,6 +1,6 @@
 # S11 · MLA RoPE pad（KV 不一致→定界）
 
-公开自洽案例包。
+公开案例包。MLA（多头潜在注意力）里 RoPE（旋转位置编码）pad 错位一类构造；输出 token 复读被检出；KV 对账从 prompt 很早的位置就开始和干净对照对不上。
 
 ## 归档钉点
 
@@ -8,7 +8,7 @@
 |----|-----|
 | 结案 | **KV 不一致→定界** |
 | 检测 | **检出** |
-| 三层率 | **108 / 27 / 48**（`token_repeat`×48） |
+| 三层率 | **108 / 27 / 48**（触发 / 判坏 / 报告） |
 | Detector | `token_repeat` |
 | Origin | 见规格 |
 | Guard pin | G2 `f2aefd068` + 抓 dump 时临时合入 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) |
@@ -17,7 +17,7 @@
 
 ## 1 · 现象
 
-检出 `token_repeat`（precision=27）。样本见 [evidence/samples/](./evidence/samples/)。
+约 27/48 判坏；重复-token 检测命中。样本见 [evidence/samples/](./evidence/samples/)。
 
 ## 2 · 案例背景 / 构造
 
@@ -25,15 +25,15 @@ MLA prefill RoPE pad 错位。细节见 [evidence/规格说明.md](./evidence/�
 
 ## 3 · Guard 结果
 
-**检出。** **108 / 27 / 48**。结案档：**KV 不一致→定界**（v5.16：无数值问题；首个不一致在 prompt 第 2 个 token、约第 27 层注意力 KV；两组同向；prompt 第 1 个 token 的模型层仍干净）。
+**检出。** **108 / 27 / 48**。结案：**KV 不一致→定界**——无数值崩溃；首个不一致在 prompt 第 2 个 token 一带（见事实）；两组同向。
 
 ## 4 · 复现技巧
 
-| 项 | 现行复现 |
-|----|----------|
+| 项 | 怎么做 |
+|----|--------|
 | Overlay | `11_mla_rope_pad.patch` |
 | 模型 | DeepSeek-V2-Lite |
-| 负载 | pad 变长 prompt · churn |
+| 负载 | 变长 prompt · 搅动 |
 | detector | `token_repeat` |
 
 ## 5 · 定界分析
@@ -48,7 +48,7 @@ MLA prefill RoPE pad 错位。细节见 [evidence/规格说明.md](./evidence/�
 
 ### 推断
 
-- 有效槽余弦已分 → **定界到本窗首分歧**（token1 / `layer_27`）；不定界到 RoPE 源码行。
+- 有效槽相似度已分 → 定界到本窗首分歧位置；**不定界到 RoPE 源码行**。
 
 ### 结论
 
