@@ -1,0 +1,100 @@
+diff --git a/vllm_ascend/attention/attention_v1.py b/vllm_ascend/attention/attention_v1.py
+index 21aa0dee3..4dd7fca24 100644
+--- a/vllm_ascend/attention/attention_v1.py
++++ b/vllm_ascend/attention/attention_v1.py
+@@ -1335,6 +1335,53 @@ class AscendAttentionBackendImpl(AttentionImpl):
+         if attn_metadata is None:
+             return output.fill_(0)
+ 
++        # ANOMALY S60: gold-A — first decode: negate mid-prompt slot (PD-class).
++        try:
++            _decode = getattr(attn_metadata, "attn_state", None) == AscendAttentionState.DecodeOnly
++            if _decode and kv_cache is not None and len(kv_cache) > 1:
++                if self.key_cache is None:
++                    self.key_cache, self.value_cache = kv_cache[0], kv_cache[1]
++                _bt = getattr(attn_metadata, "block_tables", None)
++                _seqs = getattr(attn_metadata, "seq_lens_list", None) or []
++                _nd = int(getattr(attn_metadata, "num_decodes", 0) or 0)
++                if _bt is not None and _nd > 0 and self.key_cache is not None:
++                    _bs = int(self.key_cache.shape[1])
++                    _mid = 5
++                    if not hasattr(type(self), "_anomaly_s60_done"):
++                        type(self)._anomaly_s60_done = set()
++                    _lim = min(_nd, int(_bt.shape[0]), len(_seqs) if _seqs else _nd)
++                    for _i in range(_lim):
++                        _sl = int(_seqs[_i]) if _seqs else 0
++                        if _sl <= _mid:
++                            continue
++                        _bidx = _mid // _bs
++                        if _bidx >= int(_bt.shape[1]):
++                            continue
++                        _phys = int(_bt[_i, _bidx].item())
++                        if _phys < 0:
++                            continue
++                        _key = (_phys, _mid, int(self.key_cache.data_ptr()))
++                        if _key in type(self)._anomaly_s60_done:
++                            continue
++                        _off = _mid % _bs
++                        self.key_cache[_phys, _off].mul_(-1)
++                        self.value_cache[_phys, _off].mul_(-1)
++                        type(self)._anomaly_s60_done.add(_key)
++                        import logging as _logging_s60
++                        _logging_s60.getLogger("anomaly.s60").warning(
++                            "ANOMALY_TRIGGER S60 pd_mid_slot_pollute "
++                            "req_row=%s mid=%s phys_block=%s off=%s seq_len=%s layer=%s",
++                            _i, _mid, _phys, _off, _sl, getattr(layer, "layer_name", ""),
++                        )
++        except Exception as _e_s60:
++            try:
++                import logging as _logging_s60e
++                _logging_s60e.getLogger("anomaly.s60").warning(
++                    "ANOMALY S60 pollute failed: %s", _e_s60
++                )
++            except Exception:
++                pass
++
+         # Initialize key_cache and value_cache from kv_cache if not already set.
+         # This is needed for DecodeOnly mode where key/value are None but we still
+         # need access to the cache for attention computation.
+diff --git a/vllm_ascend/observability/runtime_guard/processor.py b/vllm_ascend/observability/runtime_guard/processor.py
+index 1e76d0dda..fc4907b3d 100644
+--- a/vllm_ascend/observability/runtime_guard/processor.py
++++ b/vllm_ascend/observability/runtime_guard/processor.py
+@@ -309,8 +309,14 @@ class RuntimeGuardProcessor(RuntimeGuardBusMixin, RuntimeGuardDumpMixin, Runtime
+                 self._end_of_wave_sync_if_no_sample(allow_manual_dump=allow_manual_dump)
+                 return
+             self.refresh_config(scheduler_output=scheduler_output)
++            # Prompt cache must not wait for sample-phase hooks. With hot-reload,
++            # the only prefill wave that carries scheduled_new_reqs can land
++            # while detectors are still off; bus may enable hooks at end-of-wave,
++            # after which n_new=0 forever and Bug #9 cache never writes (S06 empty
++            # prompt). Caching here is cheap (new reqs only) and idempotent.
++            # PR #19285
++            self._cache_prompt_token_ids_from_scheduler_output(scheduler_output)
+             if self.needs_sample_phase_hooks():
+-                self._cache_prompt_token_ids_from_scheduler_output(scheduler_output)
+                 finished = getattr(scheduler_output, "finished_req_ids", None)
+                 if finished and int(getattr(scheduler_output, "total_num_scheduled_tokens", 0) or 0) == 0:
+                     self.mark_finished(finished)
+diff --git a/vllm_ascend/platform.py b/vllm_ascend/platform.py
+index 61000ea00..88b38d058 100644
+--- a/vllm_ascend/platform.py
++++ b/vllm_ascend/platform.py
+@@ -477,6 +477,17 @@ class NPUPlatform(Platform):
+ 
+     @classmethod
+     def check_and_update_config(cls, vllm_config: VllmConfig) -> None:
++        # ANOMALY S60: gold-A PD-class mid-slot pollution (post-prefill).
++        try:
++            import logging as _logging
++            _logging.getLogger("anomaly.s60").warning(
++                "ANOMALY S60 boot: pd_mid_slot_pollute armed mid=%s "
++                "(post-prefill slot negate; gold-A; overlay=PD-class, clean=control)",
++                5,
++            )
++        except Exception as e:
++            import logging as _logging
++            _logging.getLogger("anomaly.s60").warning("ANOMALY S60 boot failed: %s", e)
+         # Lazy import vllm/vllm-ascend to avoid circular import
+         from vllm_ascend.quantization.utils import maybe_auto_detect_quantization
+         from vllm_ascend.logger import configure_ascend_file_logging, configure_ascend_logging

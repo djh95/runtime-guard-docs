@@ -91,7 +91,7 @@
 
 ## 对外 keep-set（一类一例 · 2026-10-24）
 
-> 按**分析结论类型**各留一例；数字摘自各包 `evidence/三层计数.json`。禁止混用旧跑 / 其他波次。已移出见 [`_retired/`](./_retired/)。深度金标 A/B 现行 **0**，靠新造补齐。
+> 按**分析结论类型**各留一例；数字摘自各包 `evidence/三层计数.json`。禁止混用旧跑 / 其他波次。已移出见 [`_retired/`](./_retired/)。深度金标：**A 核心（坏→恢复）已进 S60**；**B（层平台）仍缺**。
 
 | ID | 类型代表 | 包 | 结案 | 检测 | 根因（构造） | 现象 | 检测器 | 触发 / 判坏 / 报告 |
 |----|----------|-----|------|------|--------------|------|--------|-------------------|
@@ -101,6 +101,7 @@
 | S22 | 晚 out / 一对分 | [cases/S22/](./cases/S22/) | KV 不一致→定界（一对分叉 / 一对干净） | 检出 | Spec resample 无独立 salt | 投机接受率异常 | `spec_acceptance` | 116 / 0 / 48 |
 | S25 | 排除 KV | [cases/S25/](./cases/S25/) | KV 一致→排除 KV | 检出 | RoPE 后半维丢失 | `1.1.1…` 数字复读 | `token_repeat` | 462 / 15 / 48 |
 | S48 | logits_finite / 全 NaN | [cases/S48/](./cases/S48/) | KV 不一致→定界（有限性；不定层） | 检出 | residual 极性取反 | 全请求 `!!!!…` | `logits_finite` | 44 / 48 / 48 |
+| S60 | 金标 A · 坏→恢复（PD 类） | [cases/S60/](./cases/S60/) | KV 不一致→定界 | 检出 | post-prefill 中段槽污染 | 中段坏后 prompt 恢复 | `token_repeat` | 3456 / 18 / 38 |
 
 脚注：S25 钉点 dump 曾临时合入 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) 以取得非空 `prompt_token_ids`；KV 对比跨度 prompt 长度 + 输出长度 − 1。原始 `.pt` 应留服务器耐久 `verified_kv/`（未入库；须落 home，勿只放容器路径）。
 

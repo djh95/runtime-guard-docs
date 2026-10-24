@@ -1,0 +1,15 @@
+{
+  "case": "S60",
+  "host": "builder 机",
+  "model": "Qwen3-8B",
+  "tp": 2,
+  "cards": "CARD=4,5",
+  "run": "keep-set-retest-20261022 / S60-layers-20261024T223939",
+  "dump_run": "S60-pr19285-20261024T224132",
+  "ref_run": "S60-ref-recap-20261024T224330",
+  "conclusion": "KV不一致→定界",
+  "detection": "检出",
+  "gold": "A-partial（坏→恢复命中；out0 早层~0.8 未齐）",
+  "n_ok_pairs": 2,
+  "pr19285": true
+}

@@ -1,0 +1,10 @@
+{
+  "scenario": "S60",
+  "trigger": 3456,
+  "precision": 18,
+  "detect_reports": 38,
+  "detect_by": {"token_repeat": 38},
+  "n_requests": 48,
+  "detector": "token_repeat",
+  "note": "trigger=各层首 decode 打点累计，可远大于请求数；判坏/报告以 precision/detect_reports 为准"
+}
