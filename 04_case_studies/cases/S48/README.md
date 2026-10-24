@@ -76,7 +76,7 @@
 | 12 | prompt[12] | 数值问题:NaN |
 | 13 | prompt[13] | 数值问题:NaN |
 
-**表2 · 首 token 逐层剖面（合并区间）** — 首 token = prompt[0] / window token0。
+**表2 · 首个出问题的 token 的逐层剖面（合并区间）** — **首个出问题的 token = prompt[0]**（有效槽自 token0 起全 NaN）。
 
 | 层区间（model.layers） | 余弦 / 状态 |
 | --- | --- |

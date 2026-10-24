@@ -51,9 +51,19 @@
 
 ### KV 对账表
 
-本包有 buggy+ref 对账摘要（`evidence/kv_compare.json`），但**没有**逐 token 最差格列表，也**没有**首 token 逐层余弦数组——**不画表、不编造**。
+本包有 buggy+ref 对账摘要（`evidence/kv_compare.json`），但**没有**逐 token 最差格列表，也**没有**逐层余弦数组——**表1 不画、不编造**。
 
-摘要（代表对 `cmpl-97bc9373d0367b22-0-94e56ad4`）：窗内最差余弦 ≈ **0.6787**；首次低于阈值在 prompt 序号 1，该 token 最差层 L35（该 token 最差余弦 ≈ 0.9831）。完整表需用服务器 `verified_kv/S23/` 重跑 v5.16 归档。
+**表2 · 首个出问题的 token 的逐层剖面（合并区间）** — **首个出问题的 token = prompt[1]**（证据 `first_mismatch_idx=1`；prompt[0] 未记为首次越阈，画它没用）。
+
+包内无 prompt[1] 完整逐层数组 → **不画合并区间假表**。证据锚点（代表对 `cmpl-97bc9373d0367b22-0-94e56ad4`）：
+
+| 锚点 | 值 |
+| --- | --- |
+| 角色 | prompt[1]（window token_idx=1） |
+| 该 token 最差格 | 0.9–0.99（`first_mismatch_min_cos`≈0.9831 @ `model.layers.35`） |
+| 窗内更差（非首坏） | 全窗最低 cos≈0.6787（表1 缺失，仅摘要） |
+
+注：完整表1/表2 合并区间需服务器 `verified_kv/S23/` 重跑 v5.16 归档。
 
 ### 推断
 

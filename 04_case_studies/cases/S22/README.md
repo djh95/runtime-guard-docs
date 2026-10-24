@@ -87,13 +87,17 @@ Rejection 与 residual resample 共用 RNG、无独立 salt（对照修复 [asce
 | 19 | out[5] | ≈1（最差 layer_61） |
 | 20 | out[6] | 0.9–0.99（最差 layer_73） |
 
-**表2 · 首 token 逐层剖面（合并区间）** — 首 token = **prompt[0] / window token0**（与证据 `token_idx=0` 一致）。
+**表2 · 首个出问题的 token 的逐层剖面（合并区间）** — **首个出问题的 token = out[6]**（证据 `first_cos_mismatch.token_idx=20`；此前 prompt/out 均 ≈1，画 prompt[0] 没用）。
 
-| 层区间（model.layers） | 余弦 / 状态 |
+包内**没有** out[6] 的完整逐层余弦数组 → **不画合并区间假表**。证据锚点：
+
+| 锚点 | 值 |
 | --- | --- |
-| L0–L36 | ≈1 |
+| 角色 | out[6]（window token_idx=20） |
+| 该 token 最差格 | 0.9–0.99（`min_cos`≈0.9678 @ `layer_73`） |
+| 同 token 另锚 | `layer_72` 上 cos≈0.971 |
 
-注：证据 `clean_model_tok0_cos` 仅存前 12 层抽样且均为 ≈1；首 token 全层最差仍 ≥0.99（L13）→ 合并为 L0–L36 ≈1。
+注：分歧很晚且幅度不大；完整逐层需服务器重跑。禁止用 token0 的 ≈1 剖面冒充首坏。
 
 **对 2**（`req_id`=`cmpl-ab0f42815521a8cd-0-a8f36148`；对比窗 **20** token，其中 prompt **14**）。
 
@@ -122,13 +126,7 @@ Rejection 与 residual resample 共用 RNG、无独立 salt（对照修复 [asce
 | 18 | out[4] | ≈1（最差 layer_63） |
 | 19 | out[5] | ≈1（最差 layer_69） |
 
-**表2 · 首 token 逐层剖面（合并区间）** — 首 token = **prompt[0] / window token0**（与证据 `token_idx=0` 一致）。
-
-| 层区间（model.layers） | 余弦 / 状态 |
-| --- | --- |
-| L0–L36 | ≈1 |
-
-注：证据 `clean_model_tok0_cos` 仅存前 12 层抽样且均为 ≈1；首 token 全层最差仍 ≥0.99（L13）→ 合并为 L0–L36 ≈1。
+**表2 · 首个出问题的 token 的逐层剖面** — **无问题 token，跳过**（本对对比窗全程 ≈1；不假装「首坏」。与对 1 结论不一致）。
 
 ### 推断
 

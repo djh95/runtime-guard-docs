@@ -102,13 +102,17 @@ MLA prefill RoPE pad 错位。细节见 [evidence/规格说明.md](./evidence/�
 | 37 | out[23] | 0.8–0.9（最差 layer_28） |
 | 38 | out[24] | 0.8–0.9（最差 layer_28） |
 
-**表2 · 首 token 逐层剖面（合并区间）** — 首 token = **prompt[0] / window token0**（与证据 `token_idx=0` 一致）。
+**表2 · 首个出问题的 token 的逐层剖面（合并区间）** — **首个出问题的 token = prompt[1]**（证据 `first_cos_mismatch.token_idx=1`；prompt[0] 仍 ≈1，画它没用）。
 
-| 层区间（model.layers） | 余弦 / 状态 |
+包内**没有** prompt[1] 的完整逐层余弦数组（仅有 `clean_model_tok0_cos` 给干净的 token0）→ **不画合并区间假表**。证据锚点：
+
+| 锚点 | 值 |
 | --- | --- |
-| L0–L26 | ≈1 |
+| 角色 | prompt[1]（window token_idx=1） |
+| 该 token 最差格 | 0.1–0.3（`min_cos`≈0.243 @ `model.layers.16`） |
+| 同 token 另锚 | `layer_27` 上 cos≈0.960 |
 
-注：证据 `clean_model_tok0_cos` 仅存前 12 层抽样且均为 ≈1；首 token 全层最差仍 ≥0.99（L6）→ 合并为 L0–L26 ≈1。
+注：完整逐层合并需服务器 `verified_kv/S11/` 重跑该 token 的 layerwise；禁止用 token0 的 ≈1 剖面冒充首坏。
 
 ### 推断
 

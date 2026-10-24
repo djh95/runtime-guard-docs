@@ -81,7 +81,7 @@ embedding 权重 ×100。细节见 [evidence/规格说明.md](./evidence/规格�
 | 16 | out[2] | <0.1（最差 L21） |
 | 17 | out[3] | <0.1（最差 L21） |
 
-**表2 · 首 token 逐层剖面（合并区间）** — 首 token = **prompt[0] / window token0**（与证据 `token_idx=0` 一致）。
+**表2 · 首个出问题的 token 的逐层剖面（合并区间）** — **首个出问题的 token = prompt[0]**（证据 `first_cos_mismatch.token_idx=0`）。
 
 | 层区间（model.layers） | 余弦 / 状态 |
 | --- | --- |
@@ -94,7 +94,7 @@ embedding 权重 ×100。细节见 [evidence/规格说明.md](./evidence/规格�
 | L9–L10 | 0.3–0.6 |
 | L11 | <0.1 |
 
-注：逐层余弦抽样止于 L11（包内 `clean_model_tok0_cos` 最多 12 层）；模型共 36 层。首 token 全层最差锚点：L20 = -0.2952（<0.1）。
+注：逐层余弦抽样止于 L11（包内 `clean_model_tok0_cos` 最多 12 层）；模型共 36 层。该 token 全层最差锚点：L20 = -0.2952（<0.1）。
 
 ### 推断
 

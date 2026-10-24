@@ -78,13 +78,9 @@ top-k / top-p 打在 −logits（bottom nucleus）。细节见 [evidence/规格�
 | 12 | prompt[12] | ≈1（最差 layer_42） |
 | 13 | prompt[13] | ≈1（最差 layer_36） |
 
-**表2 · 首 token 逐层剖面（合并区间）** — 首 token = **prompt[0] / window token0**（与证据 `token_idx=0` 一致）。
+**表2 · 首个出问题的 token 的逐层剖面** — **无问题 token，跳过**（本短窗 prompt 对账全程 ≈1 → 排除 KV；不假装「首坏」）。
 
-| 层区间（model.layers） | 余弦 / 状态 |
-| --- | --- |
-| L0–L35 | ≈1 |
-
-注：证据 `clean_model_tok0_cos` 仅存前 12 层抽样且均为 ≈1；首 token 全层最差仍 ≥0.99（L0）→ 合并为 L0–L35 ≈1。
+一行说明：代表对窗内全程 ≈1（弱窗：主要对上 prompt）。
 
 ### 推断
 
