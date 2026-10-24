@@ -25,7 +25,7 @@ W8A8 反量化 / scale 崩溃族。细节见 [evidence/规格说明.md](./eviden
 
 ## 3 · Guard 结果
 
-**乱码漏检。** **74 / 48 / 0**。异常 KV 靠手动 dump（≥2 对）。结案：**KV 不一致→定界**——有效槽从 prompt 开头、模型第 0 层起就是全零；没有可算的相似度格（见事实）。
+**乱码漏检。** **74 / 48 / 0**（武装的是 `logits_finite`，`detect_by` 空；**没有** `token_repeat` 报告）。异常 KV **不是** on_trigger：layers 跑完见 48 条 identical 乱码且 0 报告后，另开 `S07-pr19285-…` 用 **`manual_dump`（`incident_type=manual_trigger`）** 水位递增抓了 **2** 个请求（wave 2 / wave 50），再 force-feed 干净树做对照。结案：**KV 不一致→定界**——有效槽从 prompt 开头、模型第 0 层起就是全零；没有可算的相似度格（见事实）。
 
 ## 4 · 复现技巧
 
