@@ -46,6 +46,8 @@
 
 **一个案例只留最终钉点**一套数字 / 样本 / report。
 
+**只钉一轮（硬）：** 对外包内三层 / samples / reports / KV compare / 表1·表2 / 结案·事实必须来自**同一 verified 跑批波次**。禁止混用更早残留目录或其他 `req_id` 的数改结案或补表；重跑则**整包替换** evidence 并重写事实/结案。多组同波：结论一致对外只留一组；不一致如实写（如一对分/一对干净），禁止揉成假同向。Skills **v5.20.9**。
+
 **对外脱敏：** keep-set 归档（含 `跑批结果.json` / 规格实测尾）**禁止**写入内网 IP / 实验室主机名；机器角色用 `builder 机` / `skills 机`（与既有 hygiene 一致）。
 
 定界写作纪律、KV 时机推演、案例禁写句 → [investigation skill](../06_agent_skills/investigation/SKILL.md)。细问序走 [02 §5 十问](../02_problem_localization/README.md#5-kv-定界十问检查单有-buggyref-时按序)；PD 单边对照见同页 Step 0.5。

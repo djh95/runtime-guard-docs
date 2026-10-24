@@ -160,13 +160,14 @@ python "$SCRIPTS/compare_per_layer.py" \
 
 ## 有效对账前提（踩坑硬纪律）
 
+0. **只钉一轮** — 写入对外包的 `kv_compare` / `kv_v516_numeric_first` / 表1·表2 必须与该包三层·reports·结案同一 verified 波次。禁止用另一目录残留 `.pt`/JSON（不同 `req_id` 或不同 `keep-set-retest` vs `keepset-kv-compare`）补表或改结案。重跑则整包替换 evidence，旧产物删除或标明 superseded。  
 1. **同一次异常请求** — buggy report、buggy dump、ref dump、`kv_compare` 必须对齐同一 `req_id`/wave。禁止拿「有 dump 的旧跑」配「新 detect 钉点」。**detect=0 也不授权**混用历史 dump。  
 2. **先有有效异常** — 目标形态已复现；dump 覆盖足够 output（勿把 **弱窗** 如输出只有 1 个 token / 非异常 completion 当有效异常 KV）。未满足 → 停，交 investigation 写 **复现未抓到** / 未做有效对账。  
 3. **硬顺序：shape/掩未用 → 有效槽数值先报 → 再余弦/表/十问** — 见上节；history feed 对比跨度用「prompt 长度 + 输出长度 − 1」；勿把 block 尾部未用 0 槽算进相似度。  
 4. **全格数值问题 / 仅末位假分歧 ≠ 层定位** — 有效槽全非有限、或表1 无有效余弦、或 **只有最后一个 output** 分歧时，**先落笔数值问题** / 再查 feed 跨度 / 空槽；**禁止**写成「首坏 token0 @ layer_L」。有效槽 Inf/NaN / zero_norm 仍是可归档事实（非「复现未抓到」）。  
 5. **标杆未炸** — `logits_finite` 路径下 ref 必须未触发该 detector；炸过的 dump 不可当标杆。  
 6. **跨环境标杆先对齐** — 必现案确认他环境是否正常；分环境抓 dump 前核对权重 MD5 + 代码 commit/overlay；不一致先对齐。  
-7. **多组验证** — 同一 overlay 至少两组独立异常请求，结论同向再归档③/④。  
+7. **多组验证** — **同波** overlay 至少两组独立异常请求；结论同向 → 对外只归档一组；不同向 → 如实写，禁止揉成假同向。  
 8. **空 `prompt_token_ids`** — 勿字符串重 tokenize。优先树含 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285)（prompt 预缓存不门禁 sample hooks）再抓；否则同 prompt **re-curl** 抓服务端 ids，与异常 `output_token_ids` 合并后再 force-feed。  
 9. **短 output** — 只削弱层定位余弦；**不**等于跳过有限性/未用槽检查。
 
@@ -177,7 +178,8 @@ python "$SCRIPTS/compare_per_layer.py" \
 - 输出 runtime_config JSON；用 msprobe **冒充** KV 对比源  
 - **`logits_finite` 后跳过本 skill** 直接 msprobe  
 - 用弱 dump / 全 NaN cos / **history 下按 prompt+输出全长** 的末位假分歧写层定位  
-- 把未用槽「有限非 0」与「Inf/NaN」混写成同等严重；忽略有效槽 Inf；混用不同 run  
+- 把未用槽「有限非 0」与「Inf/NaN」混写成同等严重；忽略有效槽 Inf；混用不同 run / **不同波次目录**  
+- 用另一波 `req_id` 的表/数组覆盖本轮结案；重跑后保留双套互相矛盾的 evidence  
 - 跳过 shape / 未用槽掩码；**跳过有效槽数值扫描就先写余弦或层表**；必现+detect=0 时拒绝 `manual_dump`、硬写成「复现未抓到」；按整 block 容量（含未用槽）算余弦  
 - 用本地 tokenize 字符串冒充服务端 `prompt_token_ids`；用已炸请求当标杆  
 - 跨环境时**未**核对权重 MD5 / 代码 commit 就把他环境 dump 当干净标杆
