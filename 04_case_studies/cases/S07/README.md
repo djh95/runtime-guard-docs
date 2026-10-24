@@ -34,7 +34,7 @@ W8A8 反量化 / scale 崩溃族。细节见 [evidence/规格说明.md](./eviden
 | Overlay | `07_quant_scale_collapse.patch` |
 | 模型 | Qwen3-8B-W8A8 |
 | detector | `logits_finite`（本窗预期打不中） |
-| 抓 dump | 手动 dump 水位递增 + #19285 |
+| 抓 dump | **`manual_dump`**（非 on_trigger）水位递增；合入 #19285；本包 2 份 `report/manual_trigger` |
 
 ## 5 · 定界分析
 
