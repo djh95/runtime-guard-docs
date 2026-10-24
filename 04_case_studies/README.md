@@ -2,7 +2,7 @@
 
 定位流程以 [02 问题定位](../02_problem_localization/README.md) 为准。
 
-这里放的是**对外保留的 15 个典型案例**（keep-set）：每个案例自己一套材料。
+这里放的是**对外 keep-set**（精简后按**分析结论类型各留一例**；深度标杆 A/B 另造补齐）：每个案例自己一套材料。已移出包见 [`_retired/`](./_retired/)。
 
 少数稳定缩写见 [短词汇表](./词汇表.md)（keep-set / overlay / 三层率 / 清洁标杆 / Guard pin / force-feed）。其余在正文用白话写清即可。
 
@@ -89,31 +89,22 @@
 | **复现技巧** | 「怎么跑才对齐本包结论」；构造纪律写在规格/根因，不进复现技巧。 |
 | **Guard pin** | 钉死的 Guard 提交（常见 G2 + `f2aefd068…`），保证案例间数字可比。 |
 
-## 对外保留的 15 个典型案例
+## 对外 keep-set（一类一例 · 2026-10-24）
 
-> **2026-10-23：** keep-set **15 包均已回填**（基线曾清空于 `381af71`）。下表数字摘自各包 `evidence/三层计数.json`；结案为四档用语。禁止混用旧跑。
+> 按**分析结论类型**各留一例；数字摘自各包 `evidence/三层计数.json`。禁止混用旧跑 / 其他波次。已移出见 [`_retired/`](./_retired/)。深度金标 A/B 现行 **0**，靠新造补齐。
 
-| ID | 包 | 结案 | 检测 | 根因（构造） | 现象 | 检测器（名字） | 触发 / 判坏 / 报告数 |
-|----|-----|------|------|--------------|------|--------|------------------------------|
-| S01 | [cases/S01/](./cases/S01/) | KV 一致→排除 KV（dense） | 检出 | 新 KV block 未置零 | 部分数字复读（非目标 hybrid/量化形态） | `token_repeat` | 82 / 16 / 48 |
-| S06 | [cases/S06/](./cases/S06/) | KV 不一致→定界 | 检出 | MoE 路由 bias | token 重复 | `token_repeat` | 52 / 25 / 46 |
-| S07 | [cases/S07/](./cases/S07/) | KV 不一致→定界（有效槽全零） | 乱码漏检 | W8A8 scale 崩溃 | 跨请求内容相同的乱码×48 | 期望抓非有限 logits→0 报告；手动抓 KV | 74 / 48 / 0 |
-| S10p | [cases/S10p/](./cases/S10p/) | KV 一致→排除 KV | 检出 | FullAttn 回收块未清零 | token 重复 / 垃圾 | `token_repeat` | 64 / 17 / 64 |
-| S11 | [cases/S11/](./cases/S11/) | KV 不一致→定界 | 检出 | MLA RoPE pad | token 重复 | `token_repeat` | 108 / 27 / 48 |
-| S22 | [cases/S22/](./cases/S22/) | KV 不一致→定界（一对分叉 / 一对干净） | 检出 | Spec resample 无独立 salt | 投机接受率异常（无乱码文本） | `spec_acceptance` | 116 / 0 / 48 |
-| S23 | [cases/S23/](./cases/S23/) | KV 不一致→定界 | 检出 | 一层 `o_proj` 权重置零 | 部分数字复读 | `token_repeat` | 2 / 16 / 48 |
-| S25 | [cases/S25/](./cases/S25/) | KV 一致→排除 KV | 检出 | RoPE 后半维丢失 | `1.1.1…` 数字复读 | `token_repeat` | 462 / 15 / 48 |
-| S26 | [cases/S26/](./cases/S26/) | KV 一致→排除 KV | 检出 | RMSNorm fp32 错乘 | `1.1.1…` 数字复读 | `token_repeat` | 470 / 14 / 48 |
-| S33 | [cases/S33/](./cases/S33/) | KV 一致→排除 KV | 检出 | softcap 缺 `*cap` rescale | 数字 / token 复读 | `token_repeat` | 102 / 15 / 48 |
-| S43 | [cases/S43/](./cases/S43/) | KV 不一致→定界 | 检出 | embedding ×100 | 输出几乎只剩换行/空白 | `token_repeat` | 16 / 40 / 48 |
-| S45 | [cases/S45/](./cases/S45/) | KV 一致→排除 KV（只对上 prompt 短窗） | 乱码漏检 | top-k 打在 −logits | 乱码/空 completion（相同串×16） | 两种检测都 0 报告；手动抓 KV | 16 / 16 / 0 |
-| S47 | [cases/S47/](./cases/S47/) | KV 不一致→定界 | 检出 | Attn 前 K/V 对调 | 乱码/复读（37 条内容相同；自动判坏计数=0） | `token_repeat` | 30 / 0 / 48 |
-| S48 | [cases/S48/](./cases/S48/) | KV 不一致→定界（有限性；不定层） | 检出 | residual 极性取反 | 全请求 `!!!!…` | `logits_finite` | 44 / 48 / 48 |
-| S50 | [cases/S50/](./cases/S50/) | KV 不一致→定界（L3 cos / L6 NaN） | 检出 | SwiGLU gate/up 对调 | 全请求 `!!!!…` | `logits_finite` | 58 / 48 / 48 |
+| ID | 类型代表 | 包 | 结案 | 检测 | 根因（构造） | 现象 | 检测器 | 触发 / 判坏 / 报告 |
+|----|----------|-----|------|------|--------------|------|--------|-------------------|
+| S06 | tok0 全脏无恢复 | [cases/S06/](./cases/S06/) | KV 不一致→定界 | 检出 | MoE 路由 bias | token 重复 | `token_repeat` | 52 / 25 / 46 |
+| S07 | 漏检 + manual_dump + 全零 | [cases/S07/](./cases/S07/) | KV 不一致→定界（有效槽全零） | 乱码漏检 | W8A8 scale 崩溃 | 跨请求相同乱码×48 | 期望非有限 logits→0；手动抓 KV | 74 / 48 / 0 |
+| S11 | 首坏略晚（prompt[1]） | [cases/S11/](./cases/S11/) | KV 不一致→定界 | 检出 | MLA RoPE pad | token 重复 | `token_repeat` | 108 / 27 / 48 |
+| S22 | 晚 out / 一对分 | [cases/S22/](./cases/S22/) | KV 不一致→定界（一对分叉 / 一对干净） | 检出 | Spec resample 无独立 salt | 投机接受率异常 | `spec_acceptance` | 116 / 0 / 48 |
+| S25 | 排除 KV | [cases/S25/](./cases/S25/) | KV 一致→排除 KV | 检出 | RoPE 后半维丢失 | `1.1.1…` 数字复读 | `token_repeat` | 462 / 15 / 48 |
+| S48 | logits_finite / 全 NaN | [cases/S48/](./cases/S48/) | KV 不一致→定界（有限性；不定层） | 检出 | residual 极性取反 | 全请求 `!!!!…` | `logits_finite` | 44 / 48 / 48 |
 
-脚注：S25/S26 钉点 dump 均临时合入 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) 以取得非空 `prompt_token_ids`；KV 对比跨度 prompt 长度 + 输出长度 − 1（各两组 match）。原始 `.pt` 留服务器 `verified_kv/`（未入库）。
+脚注：S25 钉点 dump 曾临时合入 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) 以取得非空 `prompt_token_ids`；KV 对比跨度 prompt 长度 + 输出长度 − 1。原始 `.pt` 应留服务器耐久 `verified_kv/`（未入库；须落 home，勿只放容器路径）。
 
-`S10′` 目录名是 **`S10p`**。相关 Skills 见 [06](../06_agent_skills/)（**v5.17**，见 `SKILLS_METADATA.md`）。
+相关 Skills 见 [06](../06_agent_skills/)（**v5.20.9**，见 `SKILLS_METADATA.md`）。
 
 ## 样本字段
 
