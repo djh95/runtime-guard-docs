@@ -1,6 +1,6 @@
 {
   "case": "S11",
-  "host": "192.168.13.160/rg-test-160",
+  "host": "builder 机",
   "cards": "4,5",
   "model": "/mnt/weight/DeepSeek-V2-Lite",
   "guard_pin": "G2 f2aefd068 + #19285 for dump",

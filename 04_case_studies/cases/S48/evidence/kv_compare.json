@@ -77,7 +77,7 @@
       "buggy_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S48-pr19285-20261023T103909/dump/logits_finite/cmpl-848bd82c5c4916d7-0-994caee4/wave_4/dp0_tp0_pp0_cp0",
       "ref_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S48/ref_recap/cmpl-848bd82c5c4916d7-0-994caee4/wave_2/dp0_tp0_pp0_cp0",
       "cos_layer_claim": false,
-      "note": "dump 窗 o=1 → history n_tokens=p+o-1；不定层（数值问题，无有效余弦）"
+      "note": "dump 窗输出只有1个token → history n_tokens=prompt长度+输出长度-1；不定层（数值问题，无有效余弦）"
     },
     {
       "req_id": "cmpl-8948d9142419bbd1-0-bc2bbc9b",
@@ -139,13 +139,13 @@
       "buggy_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/runs/S48-pr19285-20261023T103909/dump/logits_finite/cmpl-8948d9142419bbd1-0-bc2bbc9b/wave_2/dp0_tp0_pp0_cp0",
       "ref_rank": "/workspace/runtime-guard/verify-docs/keep-set-retest-20261022/verified_kv/S48/ref_recap/cmpl-8948d9142419bbd1-0-bc2bbc9b/wave_3/dp0_tp0_pp0_cp0",
       "cos_layer_claim": false,
-      "note": "dump 窗 o=1 → history n_tokens=p+o-1；不定层（数值问题，无有效余弦）"
+      "note": "dump 窗输出只有1个token → history n_tokens=prompt长度+输出长度-1；不定层（数值问题，无有效余弦）"
     }
   ],
   "summary": {
     "buggy_used": "all NaN (no Inf) on used slots",
     "buggy_unused": "NaN present (severe)",
     "ref": "used finite + unused all-zero; logits_finite did not fire",
-    "window": "o=1 at dump → short history; no layer localization"
+    "window": "输出只有1个token（dump 时）→ short history; no layer localization"
   }
 }

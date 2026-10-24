@@ -1,6 +1,6 @@
 {
   "case": "S07",
-  "host": "192.168.13.160/rg-test-160",
+  "host": "builder 机",
   "cards": "4,5",
   "model": "/mnt/weight/Qwen3-8B-W8A8",
   "guard_pin": "G2 f2aefd068 + #19285 for dump",

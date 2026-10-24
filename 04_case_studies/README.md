@@ -46,6 +46,8 @@
 
 **一个案例只留最终钉点**一套数字 / 样本 / report。
 
+**对外脱敏：** keep-set 归档（含 `跑批结果.json` / 规格实测尾）**禁止**写入内网 IP / 实验室主机名；机器角色用 `builder 机` / `skills 机`（与既有 hygiene 一致）。
+
 定界写作纪律、KV 时机推演、案例禁写句 → [investigation skill](../06_agent_skills/investigation/SKILL.md)。细问序走 [02 §5 十问](../02_problem_localization/README.md#5-kv-定界十问检查单有-buggyref-时按序)；PD 单边对照见同页 Step 0.5。
 
 ### 必选 / 条件
@@ -96,7 +98,7 @@
 | S07 | [cases/S07/](./cases/S07/) | KV 不一致→定界（有效槽全零） | 乱码漏检 | W8A8 scale 崩溃 | 跨请求内容相同的乱码×48 | 期望抓非有限 logits→0 报告；手动抓 KV | 74 / 48 / 0 |
 | S10p | [cases/S10p/](./cases/S10p/) | KV 一致→排除 KV | 检出 | FullAttn 回收块未清零 | token 重复 / 垃圾 | `token_repeat` | 64 / 17 / 64 |
 | S11 | [cases/S11/](./cases/S11/) | KV 不一致→定界 | 检出 | MLA RoPE pad | token 重复 | `token_repeat` | 108 / 27 / 48 |
-| S22 | [cases/S22/](./cases/S22/) | KV 不一致→定界（一对分 / 一对 clean） | 检出 | Spec resample 无独立 salt | 投机接受率异常（无乱码文本） | `spec_acceptance` | 116 / 0 / 48 |
+| S22 | [cases/S22/](./cases/S22/) | KV 不一致→定界（一对分叉 / 一对干净） | 检出 | Spec resample 无独立 salt | 投机接受率异常（无乱码文本） | `spec_acceptance` | 116 / 0 / 48 |
 | S23 | [cases/S23/](./cases/S23/) | KV 不一致→定界 | 检出 | 一层 `o_proj` 权重置零 | 部分数字复读 | `token_repeat` | 2 / 16 / 48 |
 | S25 | [cases/S25/](./cases/S25/) | KV 一致→排除 KV | 检出 | RoPE 后半维丢失 | `1.1.1…` 数字复读 | `token_repeat` | 462 / 15 / 48 |
 | S26 | [cases/S26/](./cases/S26/) | KV 一致→排除 KV | 检出 | RMSNorm fp32 错乘 | `1.1.1…` 数字复读 | `token_repeat` | 470 / 14 / 48 |

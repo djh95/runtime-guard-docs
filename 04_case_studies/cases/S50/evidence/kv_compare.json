@@ -9,7 +9,7 @@
   "n_match": 0,
   "n_mismatch_finite": 2,
   "cos_thresh": 0.99,
-  "history_n_tokens": "p+o-1=14",
+  "history_n_tokens": "prompt长度+输出长度-1=14",
   "dump_naming": {
     "model_layers": "model.layers.0..35.self_attn.attn (primary for Qwen3-8B)",
     "layer_star": "layer_36..71 parallel dumps; all used slots NaN from token 0"
@@ -112,7 +112,7 @@
     "buggy_model_layers": "L0–L5 finite (cos cliff L3→L5); L6–L35 used slots NaN",
     "buggy_layer_star": "layer_36..71 used slots all NaN from token 0",
     "ref": "used finite + unused all-zero; logits_finite did not fire",
-    "window": "o=1 at dump → history n_tokens=14; localization from prompt token0",
+    "window": "输出只有1个token（dump 时）→ history n_tokens=14; localization from prompt token0",
     "tier": "KV不一致→定界（现含层事实，非伪 NaN-sort）"
   }
 }

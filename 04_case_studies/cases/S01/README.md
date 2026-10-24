@@ -12,7 +12,7 @@
 | Detector | `token_repeat`（抓「同一 token 反复出现」） |
 | Origin | 见规格 |
 | Guard pin | G2 `f2aefd068`；抓 dump 时临时合入 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285)（让 prompt token 列表非空） |
-| 模型 | Qwen3-8B dense · TP2 · CARD=4,5 · `192.168.13.160` / `rg-test-160` |
+| 模型 | Qwen3-8B dense · TP2 · CARD=4,5 |
 | Run | `keep-set-retest-20261022` · `S01-layers-20261023T125812` |
 
 ## 1 · 现象

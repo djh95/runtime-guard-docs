@@ -13,7 +13,7 @@
 | Detector | 期望 `logits_finite` → **未命中**（仍有异常 KV） |
 | Origin | 见规格 |
 | Guard pin | G2 `f2aefd068` + 抓 dump 时临时合入 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) |
-| 模型 | Qwen3-8B-W8A8 · TP2 · CARD=4,5 · `192.168.13.160` / `rg-test-160` |
+| 模型 | Qwen3-8B-W8A8 · TP2 · CARD=4,5 |
 | 观测跑 | `S07-layers-20261023T123413`（三层 **74/48/0**） |
 | 异常 KV 跑 | `S07-pr19285-20261023T124136`（**`manual_dump`** ×2） |
 | 标杆跑 | `S07-ref-recap-20261023T124403` |

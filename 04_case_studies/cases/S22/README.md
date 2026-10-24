@@ -1,4 +1,4 @@
-# S22 · Spec resample 无 SALT（KV 不一致→定界 · 一对分/一对 clean）
+# S22 · Spec resample 无 SALT（KV 不一致→定界 · 一对分叉 / 一对干净）
 
 公开案例包。G2 pin 上 residual resample 与 rejection 共用随机源、缺少独立 salt；overlay **只打触发日志**（忠于原逻辑，不写 NaN、不填假 token）。检测靠「投机接受率」异常；**输出未必是乱码**。
 
@@ -12,7 +12,7 @@
 | Detector | 主看 `spec_acceptance`（投机接受率）；兼开 `token_repeat` |
 | Origin | `ascend-only`（+ cousin vLLM#61161）；见规格 |
 | Guard pin | G2 `f2aefd068` + 抓 dump 时临时合入 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) |
-| 模型 | Qwen3-8B + eagle3 草稿 · TP2 · CARD=4,5 · `192.168.13.160` / `rg-test-160` |
+| 模型 | Qwen3-8B + eagle3 草稿 · TP2 · CARD=4,5 |
 | Run | `keep-set-retest-20261022` · `S22-layers-20261023T145540` |
 
 ## 1 · 现象
@@ -135,7 +135,7 @@ Rejection 与 residual resample 共用 RNG、无独立 salt（对照修复 [asce
 
 ### 结论
 
-- 结案档：**KV 不一致→定界**（检出；一对分、一对 clean）。
+- 结案档：**KV 不一致→定界**（检出；一对分叉 / 一对干净）。
 
 ## 6 · 证据文件
 

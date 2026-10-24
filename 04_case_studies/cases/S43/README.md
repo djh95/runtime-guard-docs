@@ -39,7 +39,7 @@ embedding 权重 ×100。细节见 [evidence/规格说明.md](./evidence/规格�
 
 ### 事实
 
-- **清洁标杆（≥2 组）：** 干净服务重放对照；shape 一致；标杆未用槽归零。history **`p + o − 1 = 18`**（约 prompt=14、生成较短）。
+- **清洁标杆（≥2 组）：** 干净服务重放对照；shape 一致；标杆未用槽归零。history 按「prompt 长度 + 输出长度 − 1」≈ **18**（约 prompt=14、生成较短）。
 - **两对同向：** 无数值问题；余弦可算，且两对同一套层叙事。
 - **余弦：** prompt 第 1 个 token 起，`model.layers.0–1` 仍≈1；自 **`model.layers.2`** 首次明显偏离（余弦≈0.55）；同 token 最差约 −0.30 落在 `model.layers.20`。
 - **dump 双名：** 另有 `layer_36…` 一套名字；`layer_36` = `model.layers.0`（`layer_(36+i)` ↔ `model.layers.i`）。全名排序的「首次余弦」可能先写到 `layer_36`，与「模型第 2 层首越阈」是同一对账的不同命名视图。

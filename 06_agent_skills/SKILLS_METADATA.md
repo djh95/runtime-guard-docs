@@ -1,6 +1,6 @@
 # Runtime-Guard Skills Metadata
 
-版本：v5.20.6  
+版本：v5.20.7  
 Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `analysis` · `ref-kv-dump` · **`msprobe-dump`** · **`build-anomaly-env`** · **`apply-mrv1-patch`** · **`apply-v030-mrv2-patch`**
 
 ## Changelog（摘要）
@@ -9,7 +9,8 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 
 离线脚本入口：本仓 [`scripts/`](./scripts/)。
 
-- **v5.20.6（现行）** — skills 深文口语化：FAIL+GAP→乱码漏检；soft-inv→反向构造；identical-mode→跨请求输出完全相同；有限垃圾→logits 有限的乱码；sweep→巡检；`o=1`→输出只有 1 个 token；塌缩→输出塌成…。  
+- **v5.20.7（现行）** — 对外 keep-set 归档禁写内网 IP / 实验室主机名（`host`→`builder 机`/`skills 机`）；`investigation` 一句纪律。  
+- **v5.20.6** — skills 深文口语化：FAIL+GAP→乱码漏检；soft-inv→反向构造；identical-mode→跨请求输出完全相同；有限垃圾→logits 有限的乱码；sweep→巡检；`o=1`→输出只有 1 个 token；塌缩→输出塌成…。  
 - **v5.20.5** — 审计补齐：规格复现方式/反向构造原地白话；06 入口去掉裸 origin-faithful/GAP。  
 - **v5.20.4** — **短词汇表**：只保留 keep-set / overlay / 三层率 / 清洁标杆·ref / Guard pin / force-feed；其余在出现处白话，勿堆词典。  
 - **v5.20.3** — 曾扩词汇表（已由 v5.20.4 收束）。  

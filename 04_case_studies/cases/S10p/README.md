@@ -12,7 +12,7 @@
 | Detector | `token_repeat` |
 | Origin | 见规格 |
 | Guard pin | G2 `f2aefd068` + 抓 dump 时临时合入 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) |
-| 模型 | Qwen3-8B · TP2 · CARD=4,5 · util=0.35 · max-num-seqs=128 · `192.168.13.160` / `rg-test-160` |
+| 模型 | Qwen3-8B · TP2 · CARD=4,5 · util=0.35 · max-num-seqs=128 |
 | Run | `keep-set-retest-20261022` · `S10p-layers-20261023T121734` |
 
 ## 1 · 现象

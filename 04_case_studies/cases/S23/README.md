@@ -12,7 +12,7 @@
 | Detector | `token_repeat`（重复阈值=8） |
 | Origin | `both`（构造型权重故障） |
 | Guard pin | G2 `f2aefd068` + 抓 dump 时临时合入 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) |
-| 模型 | Qwen3-8B · TP2 · CARD=4,5 · `192.168.13.160` / `rg-test-160` |
+| 模型 | Qwen3-8B · TP2 · CARD=4,5 |
 | Run | 英文河名短句 ×48；`keep-set-retest-20261022` |
 
 ## 1 · 现象
