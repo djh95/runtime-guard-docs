@@ -146,7 +146,7 @@ keep-set 案例的 **headline 结案**只用下面四档；**不要**再用 PASS
 
 ### KV 对账表（案例写作约定）
 
-有 **buggy KV + 清洁标杆 KV** 且已写入 `evidence/kv_compare.json` / `kv_v516_numeric_first.json` 时，在 README「### 事实」**之后**、「### 推断」**之前**补两张表（白话；数字只来自证据）：
+对账顺序（与 skills **v5.18** 一致）：先 shape/掩未用槽 → **有效槽数值问题先写入事实** → 再余弦与下表。有 **buggy KV + 清洁标杆 KV** 且已写入 `evidence/kv_compare.json` / `kv_v516_numeric_first.json` 时，在 README「### 事实」**之后**、「### 推断」**之前**补两张表（白话；数字只来自证据）：
 
 1. **表1 · 每 token 最差格** — 行=对比窗内每个 token（标 prompt/out 角色与序号）；格内取该 token **差距最大的层**（最差余弦）。若该 token 触发 v5.16 **数值问题**（NaN/Inf/zero_norm 等）→ 写 **数值异常**，**不要**再填余弦。
 2. **表2 · 首 token 逐层剖面（合并区间）** — 首 token = 证据里进入逐层对比的第一个（通常 window `token_idx=0` / 首个 prompt token，文中写明）。按层列出余弦或数值异常，并把连续相同/相近桶合并成区间（如 `L0–L5` → `≈1`）。
