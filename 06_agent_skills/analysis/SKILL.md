@@ -85,10 +85,13 @@ python "$SCRIPTS/verify_request_kv.py" \
 python "$SCRIPTS/verify_request_kv.py" --report <report.json> --kv-dir <wave_N>/<rank_tag>
 ```
 
-`--kv-dir` 语义是 **rank 目录**（直接含 `.pt`）。明确输出 **PASS / FAIL**（及失败原因）。  
-`PASS` 才允许进入 `runtime-guard-ref-kv-dump`。
+`--kv-dir` 语义是 **rank 目录**（直接含 `.pt`）。明确输出 **PASS / FAIL**（及失败原因）。
 
-`dump_attempted=true` 但本地无 `.pt` → FAIL（路径/配额/`on_trigger`），不是「KV 正常」。
+**PASS / FAIL 白话：** 只表示「这份异常 dump 是否找得到、读得开、和 report 对得上」——够不够继续去抓清洁标杆。  
+**不是**案例结案四档里的「KV 一致 / 不一致」。`PASS` ≠ 结案档 ③/④；`FAIL` ≠「结案失败」，而是先修 dump 路径、配额 `auto_max_times`（N）、或 `on_trigger` 是否含 `"dump_kv"`。  
+`PASS` 才允许进入 `runtime-guard-ref-kv-dump`。无标杆时，PASS 后仍可先对异常侧做有效槽数值问题检查。
+
+`dump_attempted=true` 但本地无 `.pt` → FAIL（路径 / 配额 N / `on_trigger`），不是「KV 正常」。
 
 ### Step 4 — 抽查单个 `.pt`（按需）
 

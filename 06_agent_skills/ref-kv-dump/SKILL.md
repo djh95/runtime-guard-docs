@@ -16,7 +16,8 @@ description: >-
 
 **force-feed：** 按报告里的 token id 原样喂给干净服务（禁止再 tokenize 字符串）。
 
-**硬门闩：** 已有 `verify_request_kv` **PASS**（本轮先跑 `runtime-guard-analysis`，或用户出示 PASS 证据）。无 PASS → 停止，勿抓 ref。  
+**硬门闩：** 已有 `verify_request_kv` **PASS**（本轮先跑 `runtime-guard-analysis`，或用户出示 PASS 证据）。  
+PASS = 脚本确认异常 dump **可读齐全**，可以继续抓清洁标杆；**不是**结案「KV 一致」。无 PASS → 停止抓 ref，先修路径 / 配额 N / `on_trigger`（含 `"dump_kv"`）。  
 勿在本 skill 重复实现 verify。勿输出 `runtime_config`（起服/arm dump 配置来自 `config-recommender` 或用户已有 live JSON）。
 
 契约：[SKILLS_METADATA.md](../SKILLS_METADATA.md) · 定界：[02 §5](../../02_problem_localization/README.md)  

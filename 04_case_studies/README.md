@@ -106,7 +106,7 @@
 
 脚注：S25 钉点 dump 曾临时合入 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) 以取得非空 `prompt_token_ids`；KV 对比跨度 prompt 长度 + 输出长度 − 1。原始 `.pt` 应留服务器耐久 `verified_kv/`（未入库；须落 home，勿只放容器路径）。
 
-相关 Skills 见 [06](../06_agent_skills/)（**v5.20.10**，见 `SKILLS_METADATA.md`）。
+相关 Skills 见 [06](../06_agent_skills/)（**v5.20.11**，见 `SKILLS_METADATA.md`）。
 
 ## 样本字段
 

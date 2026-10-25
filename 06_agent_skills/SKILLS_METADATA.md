@@ -1,6 +1,6 @@
 # Runtime-Guard Skills Metadata
 
-版本：v5.20.10  
+版本：v5.20.11  
 Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `analysis` · `ref-kv-dump` · **`msprobe-dump`** · **`build-anomaly-env`** · **`apply-mrv1-patch`** · **`apply-v030-mrv2-patch`**
 
 ## Changelog（摘要）
@@ -9,7 +9,8 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 
 离线脚本入口：本仓 [`scripts/`](./scripts/)。
 
-- **v5.20.10（现行）** — **有效/未用槽分写 + 表1 须带首坏后 out：** dump 整 block；对比窗 history=`n_prompt+n_output−1`。抓后先扫**有效槽**数值问题（0 / 有限非零 / NaN·Inf·zero_norm）；**另记未用槽**（多数为 0，偶见有限非零残留，亦可有 NaN/Inf）——**禁止**写「未用一定填 0」。余弦前掩未用。表1 有首坏时**必须**展示后续若干 out（可合并区间），不可整段省略。落点：`ref-kv-dump` / `investigation` / `04` / `scripts/README`。  
+- **v5.20.11（现行）** — ① **`02` 纠错**：删掉「`logits_finite` 命中就不做 KV、改走 msprobe」旧句；现行仍是 **先 KV（数值问题→余弦），msprobe 殿后**；短输出只削弱层定位、不跳过 KV。② **无标杆也可/应做**单侧有效槽数值问题（未用槽分写）。③ **`verify_request_kv` PASS/FAIL** 白话：只表示异常 dump 是否可读齐全、可否继续抓标杆；**≠** 结案四档；FAIL→修路径/配额 N/`on_trigger`。④ `02` Step 1 给出排障用 report+dump+`save_sensitive_info:true` 具体配置骨架。落点：`02` · `investigation` · `analysis` · `ref-kv-dump` · `06 README` · 本文件。  
+- **v5.20.10** — **有效/未用槽分写 + 表1 须带首坏后 out：** dump 整 block；对比窗 history=`n_prompt+n_output−1`。抓后先扫**有效槽**数值问题（0 / 有限非零 / NaN·Inf·zero_norm）；**另记未用槽**（多数为 0，偶见有限非零残留，亦可有 NaN/Inf）——**禁止**写「未用一定填 0」。余弦前掩未用。表1 有首坏时**必须**展示后续若干 out（可合并区间），不可整段省略。落点：`ref-kv-dump` / `investigation` / `04` / `scripts/README`。  
 - **v5.20.9** — **对外包只钉一轮**：三层/samples/reports/KV/表1·表2/结案须同一 verified 波次；禁混残留目录或其他 `req_id`；重跑整包替换；多组同波，一致只留一组、不一致如实写。落点：`investigation` / `ref-kv-dump`。  
 - **v5.20.8** — dump/compare **立刻**落盘 v5.16 逐 token/逐层（`kv_v516_numeric_first`）并写表1/表2；**合并区间可选**，合并不了画全层；禁止「无合并→只写锚点」。落点：`ref-kv-dump` / `investigation` / `04`。  
 - **v5.20.7** — 对外 keep-set 归档禁写内网 IP / 实验室主机名（`host`→`builder 机`/`skills 机`）；`investigation` 一句纪律。  
@@ -45,7 +46,7 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 
 1. **编排 vs 原子**：`investigation` 只串联与定界交付；底层工序在原子 skill。  
 2. **在线 vs 离线**：配置类 skill 不做磁盘解析；`analysis` / `ref-kv-dump` 不输出 runtime_config JSON。  
-3. **ref 门闩**：`ref-kv-dump` 前必须已有 `verify_request_kv` PASS（本轮跑 `analysis`，或用户出示 PASS 证据）；禁止跳过校验。  
+3. **ref 门闩**：`ref-kv-dump` 前必须已有 `verify_request_kv` PASS（本轮跑 `analysis`，或用户出示 PASS 证据；PASS=异常 dump 可读齐全，≠结案档）；禁止跳过校验。  
 4. **配置唯一源**：正式阈值 / 配额 / `on_trigger` / cooldown **只**来自 `config-recommender`；`detector-sweep` 仅极简筛查模板。  
 5. **委派可复述**：编排侧可粘贴下游产出的配置，**禁止自创**阈值与配额。
 

@@ -105,7 +105,7 @@ python -m vllm.entrypoints.openai.api_server \
 ```text
 logits_finite 命中
   → 必现？→ dump_kv + 清洁标杆（标杆未炸）
-  → ref-kv：有效槽有限数/Inf/NaN · 未用槽是 0 / 有限非零 / 非有限 ·（有限时）余弦
+  → ref-kv：有效槽有限数或数值问题(Inf/NaN/全零) · 未用槽是 0 / 有限非零 / 非有限 ·（干净格）余弦
   → 仍需算子首坏时 → 本 skill（eager + statistics，殿后）
   → 交付：首坏算子（或「未在 dump.json 见非有限统计」+ 路径）
 ```

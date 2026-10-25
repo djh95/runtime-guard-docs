@@ -27,11 +27,13 @@
                 │
                 └─(+ dump_kv)──► 本请求 KV block 快照 .pt
                                       │
+                    （单侧也可先检「数值问题」：有效/未用分写；不必先有标杆）
+                                      │
                     ┌─────────────────┴─────────────────┐
                     │ 有清洁标杆 + 同 token force-feed*  │
                     ▼                                   ▼
               buggy vs ref 首分歧              仅有报告/单侧 dump
-              → 阶段/token/层 定界              → 类与现场，难到层
+              → 阶段/token/层 定界              → 类 + 现场 + 单侧数值结论
 ```
 
 | 模块 | 作用 |
@@ -39,6 +41,7 @@
 | Detector | 检测异常包括：`token_repeat`（复读/卡词）、`logits_finite`（采样前 NaN/Inf）、`spec_acceptance`（Spec 接受率/长度异常）等，写成可检索 report 事件 |
 | Report | 结构化现场（类型、req、token 窗口等） |
 | `dump_kv` | 落 **本请求** 相关 KV block（last-PP×TP）；不是全 cache、不是 op 级 dump |
+| 单侧数值检查 | **无标杆也可做**：对异常 dump 的有效槽查数值问题（全零 / 有限非零 / NaN·Inf·范数零）；未用槽另记（见 skills v5.20.10+） |
 | 离线对比（有标杆时） | 首坏 token / 首坏层级 **定界**；不自动指出是哪行代码 / 哪个算子 bug |
 
 **一句话：** Guard 是 **观测 + 抓现场 +（有条件时）定界** 工具，不是自动根因定位器。
@@ -54,9 +57,9 @@
 | 现象 | 典型入口 | 说明 |
 |------|----------|------|
 | 输出复读 / 局部卡词 | `token_repeat` | 最轻；适合先开 |
-| 采样前 NaN/Inf、突然乱码伴数值炸 | `logits_finite` | 给「数值是否已坏」的强信号；**命中后仍先 `dump_kv`**（有效槽有限/Inf；未用槽分级：有限非 0≈卫生，Inf/NaN≈可影响结果）；skill **`msprobe-dump`** 殿后（statistics · eager · 禁图） |
+| 采样前 NaN/Inf、突然乱码伴数值炸 | `logits_finite` | 给「数值是否已坏」的强信号；**命中后仍要做 KV**：先 `dump_kv`，再对有效槽查数值问题（全零 / 有限非零 / NaN·Inf·范数零），未用槽另记（0 / 有限非零≈卫生，NaN·Inf≈可影响结果）。生成很短时，**层定位会变弱**，但**不因此跳过 KV**。算子级探针 skill **`msprobe-dump`** 放在 KV 之后（statistics · eager · 禁图） |
 | Spec 接受率/长度异常 | `spec_acceptance` | 需 MTP/Eagle 等 speculative |
-| 怀疑 KV / PD 传写出问题 | `dump_kv` +（有标杆时）对比 | 适用于有限异常 / `token_repeat` 等；detector 给坐标，定界靠对比 |
+| 怀疑 KV / PD 传写出问题 | `dump_kv` +（有标杆时）对比 | 适用于有限异常 / `token_repeat` 等；detector 给坐标，定界靠对比；**无标杆时仍可先做单侧数值问题检查** |
 | **偶发、难复现** | 热更 + report/dump | 命中即抓，不必先有稳定复现脚本 |
 
 ### 2.2 不适合（直接换工具）
@@ -76,10 +79,10 @@
 
 一线常见卡点：问题 **已验证必现**，却 **没有清洁对照环境**（无法起一份「确认正确」的同模型同拓扑服务，或无法 force-feed 同一 token 序列）。
 
-无标杆时仍可：开 detector 确认异常类、落 report、可选单侧 `dump_kv` 供事后对比、用报告 token ids 作以后标杆输入。  
-无标杆时不能：做 buggy vs ref 的 KV 首分歧，或可靠回答「从哪一层开始坏」。单侧 `.pt` 不能单独证明是写坏还是算坏。
+无标杆时仍可：开 detector 确认异常类、落 report、抓单侧 `dump_kv`，并对该异常 dump **先做有效槽「数值问题」检查**（全零 / 有限非零 / NaN·Inf·范数零；未用槽另记，口径同 skills v5.20.10+）——**不必等清洁标杆**。报告里的 token ids 留给以后 force-feed。  
+无标杆时不能：做 buggy vs ref 的 KV 首分歧，或可靠回答「从哪一层开始坏」。单侧 `.pt` 不能单独证明是写坏还是算坏；但「有效槽已出现数值问题」本身是可交付的事实。
 
-**结论：** 无标杆时，Guard 的交付停在 **「问题类 + 可归档现场」**；这是合格的 **初步定界**，不是根因定位。标杆就绪后再走 §4 Step 6–8。
+**结论：** 无标杆时，Guard 的交付停在 **「问题类 + 可归档现场 +（若有 dump）单侧数值结论」**；这是合格的 **初步定界**，不是根因定位。标杆就绪后再走 §4 Step 5–6。
 
 ---
 
@@ -99,14 +102,16 @@
 ## 4. 推荐流程（初步定界）
 
 ```text
-症状 triage →（看似必现则先验复现）→ 启 Guard → 冒烟(report±dump) → 压测抓命中
-  → 对账 → [有标杆] force-feed 抓 ref → 首分歧 → §5 十问
-         → [无标杆] 停在「类 + 现场」，记入案例待补标杆
+症状 triage →（看似必现则先验复现）→ 启 Guard（开 report+dump）→ 冒烟 → 压测抓命中
+  → 脚本检查异常 dump 是否可读、齐全
+  → 单侧先检有效槽「数值问题」（无标杆也可）
+  → [有标杆] force-feed 抓清洁对照 → buggy vs ref 对账 → §5 十问
+  → [无标杆] 停在「类 + 现场 + 单侧数值结论」，待补标杆
 ```
 
 ### Step 0 — Triage
 
-按 §2 判断是否适合；不适合则明确停。若业务侧声称「必现 / 一请求就坏」，先做下面 **§4.0**，再按 §2.3 走无标杆停点或继续开 Guard。
+按 §2 判断是否适合；不适合则明确停。若业务侧声称「必现 / 一请求就坏」，先做下面 **Step 0.5**，再按 §2.3 走无标杆停点或继续开 Guard。
 
 ### Step 0.5 — 看似必现：先验证再定论
 
@@ -123,21 +128,63 @@
 
 ### Step 1 — 启服与配置
 
-见 [01_enable_and_start/README.md](../01_enable_and_start/README.md)。排障期建议 `runtime_config_hot_reload=true` + 绝对路径。
+启服细节见 [01_enable_and_start/README.md](../01_enable_and_start/README.md)。排障期建议：
+
+1. 启动参数开热更，路径用**绝对路径**（容器/多进程下工作目录常变）：
+   - `runtime_config_hot_reload=true`
+   - `runtime_config_path` / `runtime_report_dir` / `runtime_dump_dir` 指到持久目录  
+2. live JSON（或启动时 `runtime_config` 覆盖）里**同时开报告与 dump**，并打开要用的检测器；**务必** `save_sensitive_info: true`（否则没有 token ids，后续无法按原序列抓清洁对照）。
+
+**排障推荐配置示例**（字段名与本项目 Guard runtime JSON 一致；阈值可按现场再调，此处给可直接套用的骨架）：
+
+```jsonc
+{
+  "dump": {
+    // N = 命中后自动 dump 的次数上限；按磁盘粗估：
+    // N ≈ 磁盘剩余×0.7 / 单次请求 KV 快照大小，再与「预计要抓几份」取小
+    "auto_max_times": 3,
+    "auto_cooldown_seconds": 300,
+    "manual_dump": false
+  },
+  "report": {
+    "max_per_req": 1,
+    "save_sensitive_info": true
+  },
+  "detector": {
+    "token_repeat": {
+      "enabled": true,
+      "on_trigger": ["report", "dump_kv"]
+    },
+    "logits_finite": {
+      "enabled": true,
+      "on_trigger": ["report", "dump_kv"]
+    }
+    // 有 MTP/Eagle 等 speculative 时再开：
+    // "spec_acceptance": { "enabled": true, "on_trigger": ["report", "dump_kv"] }
+  }
+}
+```
+
+说明：
+
+- `on_trigger` 含 `"report"` + `"dump_kv"`：检测命中时既写报告，又落本请求 KV。  
+- 若只想先确认「能不能写出报告」，可临时把 `auto_max_times` 设为 `0`、且 `on_trigger` 只留 `"report"`；通路通了再改回上表开 dump。  
+- 检测漏检但问题已必现时，可改用 `dump.manual_dump = N`（**目标总次数**，不是剩余次数）手动抓异常 KV；`auto_max_times>0` 与正在生效的 `manual_dump` **不要同时开**。  
+- 阈值细节（window 等）见 [03_detectors](../03_detectors/README.md) / skill `config-recommender`；排障开局先保证 **开检测 + 开 dump + 留 token ids**。
 
 ### Step 2 — Dump 管线冒烟（再压测）
 
-1. 先 `auto_max_times: 0`，只 `report`，确认 JSON 写出。  
-2. 再开 `dump_kv` + 合理 `auto_max_times`（按磁盘空间粗估：`auto_max_times ≈ 磁盘剩余空间×0.7 / per_req_size`，其中 `per_req_size` 为单请求 KV 快照预估大小）。  
+1. 先确认 report JSON 能写出（可先只 `"report"`、`auto_max_times: 0`）。  
+2. 再按 Step 1 打开 `dump_kv` 与合理的 `auto_max_times`（N）。  
 3. 确认 last-PP 各 `tp*` 的 `.pt` 齐全。
 
 ### Step 3 — 压测抓真命中
 
 - 有多份 report / sample 时：**优先查看看起来就错误的**（乱码 / 异常样本）。  
-- `report.save_sensitive_info: true` 才能把 token ids 留给后续 force-feed。  
+- 确认报告里已有 `prompt_token_ids` / `output_token_ids`（依赖 Step 1 的 `save_sensitive_info: true`）。  
 - 误报目录及时清理腾盘。
 
-### Step 4 — 对账（本仓离线脚本）
+### Step 4 — 检查异常 dump，并先做单侧数值问题
 
 离线脚本在本仓 [06_agent_skills/scripts/](../06_agent_skills/scripts/)（与 [06 Agent Skills](../06_agent_skills/README.md) 同入口）：
 
@@ -148,13 +195,23 @@ python "$SCRIPTS/summarize_reports.py" --report-dir {REPORT}
 python "$SCRIPTS/verify_request_kv.py" --report ... --kv-dir {KV_RANK_DIR}
 ```
 
-`verify_request_kv` **PASS**（脚本验 dump，非案例结案档）再抓标杆；**FAIL** 先修路径 / 配额 / `on_trigger`。
+**`verify_request_kv` 是什么：** 用脚本核对「这份异常请求的 KV dump 是否找得到、读得开、和 report 对得上（路径 / 分片大致齐全）」。  
+它输出的 **PASS / FAIL 只表示 dump 文件是否够用来继续抓清洁对照**，**不是**案例结案四档里的「KV 一致 / 不一致」。
 
-### Step 5 — 有标杆：同 token 序列抓 ref
+| 脚本结果 | 含义 | 下一步 |
+|----------|------|--------|
+| **PASS** | 异常侧 dump 可读、完整到足以继续 | 可先做单侧数值问题；再去抓清洁标杆做对比 |
+| **FAIL** | dump 不够用 | **先修抓取**，不是「结案失败」：检查 dump 目录路径是否指对、`auto_max_times`（配额 N）是否够、`on_trigger` 是否含 `"dump_kv"`、各 `tp*` 分片是否齐 |
+
+**单侧数值问题（无标杆也要做）：** dump 通过后，对异常侧有效槽先扫一遍——全零 / 有限非零 / NaN·Inf·范数零；未用槽另记（多数为 0，偶见有限非零；亦可有 NaN/Inf）。有数值问题就先写进事实；**不必等清洁标杆**。脚本与口径见 [ref-kv-dump](../06_agent_skills/ref-kv-dump/SKILL.md) / [scripts/README](../06_agent_skills/scripts/README.md)。
+
+### Step 5 — 有标杆：同 token 序列抓 ref，再做 KV 对账
 
 - 同模型、同拓扑、**同 MODE**（勿用 eager↔graph 当对照）。  
 - 用 report 的 `prompt_token_ids` + `output_token_ids` **force-feed**（token-id API），禁止字符串重 tokenize。  
-- Guard KV 对比只用 native `dump_kv`（不要 msprobe / 临时自造 dumper **冒充** KV 对比源）。`logits_finite` 已命中时 **不做** KV 对账，改走 msprobe 算子 I/O。
+- Guard KV 对比只用 native `dump_kv`（不要把 msprobe / 临时自造 dumper **当成** KV 对比源）。  
+- **`logits_finite` 命中后仍做 KV 对账**（先数值问题，再在干净格上算余弦）。生成很短时层定位可能变弱，但**不因此跳过 KV**。需要查「哪个算子先坏」时，再在 KV 之后开 **`msprobe-dump`**（殿后）。  
+- 清洁标杆侧不应再亮 `logits_finite`（炸过的 dump 不能当标杆）。
 
 ### Step 6 — 首分歧与十问检查单
 
@@ -164,13 +221,13 @@ python "$SCRIPTS/verify_request_kv.py" --report ... --kv-dir {KV_RANK_DIR}
 
 ### 无标杆时的停点
 
-完成 Step 3（+ 可选单侧 dump）→ 标杆记「无」→ 转开发或等对照环境。不要伪造 ref。
+完成 Step 3–4（含单侧数值问题）→ 标杆记「无」→ 转开发或等对照环境。不要伪造 ref。
 
 ---
 
 ## 5. KV 定界十问检查单（有 buggy+ref 时按序）
 
-**前置：** `verify_request_kv` 脚本验 dump 通过；已有 buggy / ref dump。按序答下表，只填 **检查 outcome**。（此处 PASS 指脚本验，不是案例结案四档。）
+**前置：** 异常侧 dump 已通过 `verify_request_kv`（脚本确认 dump 可读齐全，**不是**结案档「KV 一致」）；并且已有 buggy + 清洁对照 dump。按序答下表，只填 **检查 outcome**。
 
 | 问 | 检查什么（判断 outcome） |
 |----|--------------------------|

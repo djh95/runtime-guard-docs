@@ -2,7 +2,7 @@
 
 面向 Cursor / Agent：按现象启用 detectors、抓现场、离线对账、有标杆时做 KV 定界。
 
-> **权威：** 本目录 `runtime-guard-docs/06_agent_skills/`（含 [SKILLS_METADATA.md](./SKILLS_METADATA.md) **v5.20.10**）。  
+> **权威：** 本目录 `runtime-guard-docs/06_agent_skills/`（含 [SKILLS_METADATA.md](./SKILLS_METADATA.md) **v5.20.11**）。  
 > **离线脚本：** [scripts/](./scripts/)（本仓）。  
 > 产品实现：`vllm_ascend/observability/runtime_guard/`（[#16849](https://github.com/vllm-project/vllm-ascend/pull/16849) + [#18644](https://github.com/vllm-project/vllm-ascend/pull/18644)）。  
 > 人读流程仍以 [02 问题定位](../02_problem_localization/README.md) 为准；skill 负责可执行编排。  
@@ -33,7 +33,7 @@
 | `apply-v030-mrv2-patch` | 运维 · 接线 | **v0.30 × MRV2** Guard → [`05_v030_backport`](../05_v030_backport/) |
 
 **隔离：** 在线配置 skill 不做读盘；离线 skill 不输出 `runtime_config`。  
-**门闩：** `ref-kv-dump` 前必须 `verify_request_kv` PASS。  
+**门闩：** `ref-kv-dump` 前须 `verify_request_kv` PASS（脚本确认异常 dump 可读齐全，**不是**结案「KV 一致」）。  
 原子 skill 可独立调用；勿从原子 skill 反调 investigation。
 
 ## 脚本怎么跑（本仓）
@@ -51,10 +51,10 @@ python "$SCRIPTS/summarize_reports.py" --help
 `prepare_ref_inputs` / `request_from_report` / `locate_first_divergence` / `compare_kv_similarity` /  
 `compare_per_layer` / `stitch_kv`。
 
-Anomaly 对外对照：本仓 `04_case_studies/cases/Sxx/evidence/`。契约见 [SKILLS_METADATA.md](./SKILLS_METADATA.md)（**v5.20.10**）。构造纪律见 [`build-anomaly-env`](./build-anomaly-env/SKILL.md)。用户面短缩写见 [04 · 词汇表](../04_case_studies/词汇表.md)。  
+Anomaly 对外对照：本仓 `04_case_studies/cases/Sxx/evidence/`。契约见 [SKILLS_METADATA.md](./SKILLS_METADATA.md)（**v5.20.11**）。构造纪律见 [`build-anomaly-env`](./build-anomaly-env/SKILL.md)。用户面短缩写见 [04 · 词汇表](../04_case_studies/词汇表.md)。  
 Keep-set 结案四档 + **只钉一轮** / 钉点同跑 / 有效异常 KV / 数值问题禁伪定位：见 [`investigation`](./investigation/SKILL.md)（证据完整性）与 [`ref-kv-dump`](./ref-kv-dump/SKILL.md)。  
-KV：必现+detect=0 可用 **`manual_dump`**；硬顺序 ① shape/掩未用 → ② 有效槽数值**子类型**先报 → ③ 余弦+表+**【事实总结】（白话扩写）**；未用槽**分级**：见 [`ref-kv-dump`](./ref-kv-dump/SKILL.md)。事实段写法见 investigation「事实写作」。  
-**`logits_finite` 命中 → 仍先 [`ref-kv-dump`](./ref-kv-dump/SKILL.md)**（有限性 + 未用槽分级）；**[`msprobe-dump`](./msprobe-dump/SKILL.md) 殿后**（statistics · eager · 禁图）：见 [`investigation`](./investigation/SKILL.md)。
+KV：必现+detect=0 可用 **`manual_dump`**；硬顺序 ① shape/掩未用 → ② 有效槽数值**子类型**先报 → ③ 余弦+表+**【事实总结】（白话扩写）**；未用槽**分级**：见 [`ref-kv-dump`](./ref-kv-dump/SKILL.md)。事实段写法见 investigation「事实写作」。无标杆时也可先做单侧有效槽数值问题。  
+**`logits_finite` 命中 → 仍先 [`ref-kv-dump`](./ref-kv-dump/SKILL.md)**（数值问题 + 未用槽分级 + 可算时余弦；短输出不跳过 KV）；**[`msprobe-dump`](./msprobe-dump/SKILL.md) 殿后**（statistics · eager · 禁图）：见 [`investigation`](./investigation/SKILL.md)。
 
 ## 与产品对齐的硬事实（2026-10）
 
@@ -66,7 +66,7 @@ KV：必现+detect=0 可用 **`manual_dump`**；硬顺序 ① shape/掩未用 �
 | 热更 | 启动参数 `runtime_config_hot_reload=true`（**不是** JSON 里的 `reload_interval_seconds`） |
 | 停检 | `report.max_per_req`（**不是** `stop_after_alert`） |
 | Dump（Guard KV） | 对比源仅 native `dump_kv`（勿用 msprobe 冒充 KV） |
-| `logits_finite` 后 | **仍先 KV**（有效槽为有限数或 Inf；未用槽有限非 0≈卫生，Inf/NaN≈可影响结果）→ **`msprobe-dump` 殿后** |
+| `logits_finite` 后 | **仍先 KV**（有效槽：有限数 **或** 数值问题 Inf/NaN/全零…；未用槽有限非 0≈卫生，Inf/NaN≈可影响结果）→ **`msprobe-dump` 殿后** |
 | 默认全关 | **全关旁路**（static idle：detector/dump/热更全关；代码侧 `needs_sample_phase_hooks()` 为假时跳过 sample 壳） |
 | `releases/v0.30.0` MRV2 backport | 见 [05_v030](../05_v030_backport/README.md)（skill `apply-v030-mrv2-patch`；`v0.30-rg.3` SOURCE `#18450` @ `96046a3f0`，**含** #18644 对齐） |
 | 多 release MRV1 backport | 见 [05_mrv1](../05_mrv1_backport/README.md)（skill `apply-mrv1-patch`）；含 v0.30 MRV1，与 05_v030 互斥 |
