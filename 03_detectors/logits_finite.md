@@ -25,24 +25,24 @@
 
 ## 算法要点
 
-1. 在 **grammar 之前** 的 pre-sample 路径对 logits 做 device `isfinite` → all-finite gate。  
-2. **默认 `item_sync=false`：** 非阻塞 D2H gate，在 after-sample 的 deferred 路径再 `.item()`；期间 grammar 等可能改写 logits（如 bitmask → `-inf`）。gate 用的 `row_finite` 仍基于预计算；命中时的 `finite_kind` 可能看到改写后数值。  
-3. **`item_sync=true`：** pre-sample 阻塞 `.item()` 并解析 kind，与 grammar 前一致，但每步引入额外 NPU‑CPU（D2H）设备同步开销。  
-4. 命中 → 解析坏行 / kind / req；enqueue；after-sample drain。
+1. 在 **grammar 之前** 的预采样路径上，对 logits 做设备侧「是否全有限」检查。  
+2. **默认 `item_sync=false`：** 先发起异步检查，不阻塞采样；**采样结束后再取结果**。此间 grammar 等可能改写 logits（例如 bitmask 写成 `-inf`），所以报告里的坏值类型（`finite_kind`）有时是改写后的样子；是否「曾经非有限」仍以预计算的行标志为准。  
+3. **`item_sync=true`：** 预采样阶段就阻塞取回结果并解析坏值类型，与 grammar 前一致，但每步多一次 NPU→CPU 同步，更贵。  
+4. **命中之后：** 解析是哪一行、哪类坏值、属于哪个请求；先入队，采样结束后统一处理出报告。
 
 ## 主要参数
 
 | 字段 | 默认 | 含义 |
 |------|------|------|
 | `enabled` | `false` | 总开关 |
-| `item_sync` | `false` | `true` = 同步 gate（更准 kind，更贵） |
+| `item_sync` | `false` | `true` = 同步取结果（坏值类型更准，更贵） |
 | `on_trigger` | 含 `report` | 可加 `dump_kv` |
 
 ## 阶段与接线
 
-- **Stage：** `before_sample`（compute_logits wrap 内）  
-- Deferred / drain：after-sample  
-- 归因依赖 `query_start_loc`；短/错位 qsl 时做边界保护，避免 IndexError，无法归属则不瞎报。
+- **Stage：** `before_sample`（包在 compute_logits 里）  
+- 入队后的统一处理在 after-sample  
+- 定位坏行属于哪个请求，靠 `query_start_loc`（查询序列起点；短写 qsl）。batch 偏短或错位时先做边界检查；对不上就**宁可不报**，避免 IndexError 或瞎猜 `req_id`。
 
 ## 误报 / 漏报提示
 

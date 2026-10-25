@@ -2,7 +2,7 @@
 
 跟踪 **Runtime Guard** 相关上游 PR 与各 release / patch 线对应关系。
 
-**规则（拇指法则）：**  
+**维护规则：**  
 **main 新增一个 PR → 其他 release/patch 分支新增对应 commit**（或独立 backport PR）。
 
 本目录的 **MRV1 五档**是 **release-only**（不开 / 不更新 main 上的 V1 接线；main 将去 V1）。main 列填 **N/A（release-only）**。

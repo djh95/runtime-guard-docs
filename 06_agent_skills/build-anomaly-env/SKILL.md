@@ -43,7 +43,7 @@ description: >-
 
 - **同逻辑**：overlay 复现的是原 bug 的触发谓词 / 错误路径，不是「看起来像坏输出」。
 - **禁止：** `nan`/`inf` 强写 logits/KV；`fill_` / 重复 token 填输出；改计算以**发明**症状的合成放大器。
-- **仅放大剂跑通 ≠ PASS。**
+- **只靠人为放大故障让 detector 报警，不算复现成功。**
 
 ### 2. 故障只走 overlay
 
@@ -117,7 +117,7 @@ detector 漏检 → 记乱码漏检/缺口，**禁止**用放大器硬凑 detect
 
 ---
 
-## 工作流（密）
+## 工作流（步骤密集，按序执行）
 
 1. **挖** PR（vLLM / vllm-ascend；含较旧修复）→ 定 type / Origin → 易抬率优先。  
 2. **白盒** 触发谓词 → 列 allowed/forbidden knobs → 写 overlay（同逻辑 + 开火日志）。  
@@ -129,7 +129,7 @@ detector 漏检 → 记乱码漏检/缺口，**禁止**用放大器硬凑 detect
 
 ## Pin / 模型（偏好）
 
-- Guard pin：G2（A+#18644）类钉点，场景间可比。  
+- Guard pin：建议各场景固定同一代码基线（G2，含 #18644），结果才可互比。  
 - 模型优先已跑通：DeepSeek-V2-Lite、Qwen3-8B、Qwen3.8-27B。  
 - PD：优先同机 1P1D；无跨机 HCCN 路径时勿硬上。
 

@@ -1,7 +1,7 @@
 # Guard + runtime_config — UML 2 十四图
 
 **Scope:** Runtime Guard（detect / report / dump）+ `runtime_config`（control plane）。  
-**Sources:** 本仓 [01 如何启动](../01_enable_and_start/README.md)、上游 `runtime_guard` / `runtime_config` 源码与产品文档；符号清单见库存 `guard-uml-inventory-20261021`。  
+**Sources:** 本仓 [01 如何启动](../01_enable_and_start/README.md)、上游 `runtime_guard` / `runtime_config` 源码与产品文档；符号清单见 `guard-uml-inventory-20261021`。  
 **Wiring:** 主产品树仅 **MRV2**（`worker/v2/model_runner.py`）；**MRV1** 经本仓 [05_mrv1_backport](../05_mrv1_backport/README.md) 离线 patch（与 [05_v030](../05_v030_backport/README.md) MRV2 勿叠打）。
 
 Mermaid 表达不了的类型（Profile / Timing / Communication 部分）用 **PlantUML-style / ASCII** 标注。
@@ -213,7 +213,7 @@ flowchart TB
 
 ## 6. Package 包图
 
-与库存建议的五包划分一致。
+与清单建议的五包划分一致。
 
 ```mermaid
 flowchart LR

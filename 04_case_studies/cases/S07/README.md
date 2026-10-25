@@ -1,7 +1,6 @@
 # S07 · W8A8 量化 scale 崩溃（KV 不一致→定界 · 乱码漏检）
 
-公开案例包。**异常必现**（48 次请求彼此相同的乱码），但专抓「非有限 logits」的检测 **0 份报告**——这是**乱码漏检**，**不是**「没出异常 / 没抓到 KV」。  
-因为 detector 没响、走不了 on_trigger，所以对**已经乱码的异常请求**用 **`manual_dump`** 抓了异常侧 KV，再在干净树上抓**清洁标杆**对比；有效槽全零 → **KV 不一致→定界**。
+公开案例包。48 个请求全部同样乱码（已验证必现），但专抓「非有限 logits」的检测 **0 份报告**——属**乱码漏检**（不是没出异常，也不是没抓到 KV）。检测没响、走不了 on_trigger，于是对已乱码的请求用 **`manual_dump`** 抓异常侧 KV，再在干净树上抓清洁标杆对比；有效槽全零 → **KV 不一致→定界**。
 
 ## 归档钉点
 
@@ -20,8 +19,7 @@
 
 ## 1 · 现象
 
-本轮 **48** 次请求：**必现**跨请求内容相同的乱码（precision identical×48；见 [evidence/samples/](./evidence/samples/)）。  
-**detect=0**：没有 `logits_finite` / `token_repeat` 报告文件——只说明**漏检**，**不**表示「没有异常、也没有异常 KV」。
+本轮 **48** 次请求全部出现跨请求相同的乱码（见 [evidence/samples/](./evidence/samples/)）。**detect=0**：没有 `logits_finite` / `token_repeat` 报告文件，只说明漏检（KV 仍靠下面的 manual_dump 抓到）。
 
 ## 2 · 案例背景 / 构造
 
@@ -44,7 +42,7 @@ W8A8 反量化 / scale 崩溃族。细节见 [evidence/规格说明.md](./eviden
 | Overlay | `07_quant_scale_collapse.patch` |
 | 模型 | Qwen3-8B-W8A8 |
 | detector | `logits_finite`（本窗预期打不中） |
-| 抓 dump | **`manual_dump`**（非 on_trigger）水位递增；合入 #19285；本包 2 份 `report/manual_trigger` |
+| 抓 dump | 用 **`manual_dump`**（不是检测器触发）；每次把抓取水位调高再抓（本包 wave 2 与 50）；合入 #19285；2 份 `report/manual_trigger` |
 
 ## 5 · 定界分析
 
@@ -69,7 +67,7 @@ W8A8 反量化 / scale 崩溃族。细节见 [evidence/规格说明.md](./eviden
 数据来自 `evidence/kv_v516_numeric_first.json`。两对同向；展示代表对。
 
 **代表对**（`req_id`=`cmpl-8e065448ae678178-0-9dfa8816`；对比窗 **14** token，其中 prompt **14**）。  
-注：抓 dump 时 **输出只有 1 个 token** → history=`n_prompt+n_output−1` 止于 prompt；**本包对比窗无后续 out**（非表1 省略）。
+注：抓 dump 时 **输出只有 1 个 token** → 对比长度按「prompt 长 + 输出长 − 1」，窗口只覆盖 prompt；本包对比窗无后续 out——不是表1 漏抄。
 
 **表1 · 每 token 最差格**（该 token 上差距最大的层；有数值问题则整格写清子类型）
 

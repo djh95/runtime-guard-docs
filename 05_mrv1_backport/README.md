@@ -22,10 +22,10 @@
 
 > **只打 CHANGELOG / `BASE.md` 上的 BASE。** `patches/` 相对 docs BASE 生成；open MRV1 PR tip（尤其 **v0.26** / **v0.30**）可能已漂移——**不要**先 checkout PR tip 再打本仓 patch。合 tip 用对应 PR；离线复现用 BASE + `apply_patch.sh`。
 
-## 接线包 ≠ anomaly pin
+## 本包只做功能适配，不含故障注入
 
 - 本包 = **Guard 控制面 + MRV1 接线**（对照源：`feat/runtime-guard-config-v1` @ `9343c9859` + 各 release BASE 适配）。
-- **不含** anomaly overlay；**不含** main G2 / `#18644` 鲁棒全集（与 `05_v030` 一致：接线包与 anomaly pin `f2aefd068…` 分开）。
+- **不含** anomaly overlay；**不含** main G2 / `#18644` 全部健壮性修复（与 `05_v030` 一致：适配补丁包与故障注入包 `f2aefd068…` 分开维护）。
 
 ## 第一期已适配（5 档）
 
@@ -52,7 +52,7 @@ bash /path/to/runtime-guard-docs/05_mrv1_backport/apply_patch.sh \
 # bash .../apply_patch.sh "$(pwd)"
 ```
 
-冲突时脚本停住——反馈 `git status`，勿 `--reject` 当生产用。
+冲突时脚本停住——反馈 `git status`，勿 `--reject` 用于生产。
 
 ## 相关
 

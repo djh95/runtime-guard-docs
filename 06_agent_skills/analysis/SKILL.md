@@ -118,7 +118,7 @@ python "$SCRIPTS/inspect_kv_dump.py" --path ./runtime/report/kv_cache/<type>/<re
 - **弱 dump 标明：** output 极短（如输出只有 1 个 token）、或 completion 非目标异常形态 → 在摘要写「弱窗 / 非有效异常 KV」；**不要**据此宣称可进 ref 定界。  
 - **空 prompt ids：** 摘要如实写空；勿从字符串补造 ids（交 investigation re-curl）。  
 - **交给 ref 前：** 抽查层 `shape`；提醒 history feed 对比用 **`n_prompt+n_output-1`**（整 block 尾部 0 槽不算）；对账硬顺序见 `ref-kv-dump` v5.18：shape/掩未用 → **有效槽数值先报** → 再余弦。  
-- **勿把 NaN cos 当层定位：** 旧摘要若出现 `first_mismatch_idx=0 @ layer_*` 且 `min_cos` 全 NaN，那是排序伪影；交付时**先写**「有效槽数值问题 / 全非有限」，勿升格为层名。  
+- **勿把 NaN cos 当层定位：** 旧摘要若出现 `first_mismatch_idx=0 @ layer_*` 且 `min_cos` 全 NaN，多半是排序把 NaN 排到最前造成的假象；交付时**先写**「有效槽数值问题 / 全非有限」，别当真实层定位。  
 - **空 prompt ids：** 摘要如实写空；注明需 #19285 树重抓或 re-curl，勿 tokenize 补造。  
 - **PASS/FAIL 仅 verify 门闩** — keep-set 案例总评用结案四档（见 `investigation`），本 skill 的 PASS/FAIL 不升格为整案结案。
 

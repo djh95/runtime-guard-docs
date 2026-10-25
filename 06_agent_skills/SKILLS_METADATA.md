@@ -1,6 +1,6 @@
 # Runtime-Guard Skills Metadata
 
-版本：v5.20.11  
+版本：v5.20.12  
 Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `analysis` · `ref-kv-dump` · **`msprobe-dump`** · **`build-anomaly-env`** · **`apply-mrv1-patch`** · **`apply-v030-mrv2-patch`**
 
 ## Changelog（摘要）
@@ -9,7 +9,13 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 
 离线脚本入口：本仓 [`scripts/`](./scripts/)。
 
-- **v5.20.11（现行）** — ① **`02` 纠错**：删掉「`logits_finite` 命中就不做 KV、改走 msprobe」旧句；现行仍是 **先 KV（数值问题→余弦），msprobe 殿后**；短输出只削弱层定位、不跳过 KV。② **无标杆也可/应做**单侧有效槽数值问题（未用槽分写）。③ **`verify_request_kv` PASS/FAIL** 白话：只表示异常 dump 是否可读齐全、可否继续抓标杆；**≠** 结案四档；FAIL→修路径/配额 N/`on_trigger`。④ `02` Step 1 给出排障用 report+dump+`save_sensitive_info:true` 具体配置骨架。落点：`02` · `investigation` · `analysis` · `ref-kv-dump` · `06 README` · 本文件。  
+- **v5.20.12（现行）** — 可读性：修「无数问题」歧义、`工作流（密）`标题；词汇表扩到约 15 个跨页词；入口/KEEP 案例/06 README 白话；05 直译词批量替换。落点：`04` · `06 README` · 本文件 · KEEP · `05_*`。  
+- **v5.20.11** — `02` 纠错与配置骨架：  
+  - 删掉「`logits_finite` 命中就不做 KV、改走 msprobe」旧句；仍是**先 KV（数值问题→余弦），msprobe 放最后做**；短输出只削弱层定位。  
+  - 无标杆也可/应做单侧有效槽数值问题（未用槽分写）。  
+  - `verify_request_kv` PASS/FAIL 白话：只表示异常 dump 是否可读齐全；≠结案四档；FAIL→修路径/配额 N/`on_trigger`。  
+  - `02` Step 1：排障用 report+dump+`save_sensitive_info:true` 配置骨架。  
+  落点：`02` · `investigation` · `analysis` · `ref-kv-dump` · `06 README`。  
 - **v5.20.10** — **有效/未用槽分写 + 表1 须带首坏后 out：** dump 整 block；对比窗 history=`n_prompt+n_output−1`。抓后先扫**有效槽**数值问题（0 / 有限非零 / NaN·Inf·zero_norm）；**另记未用槽**（多数为 0，偶见有限非零残留，亦可有 NaN/Inf）——**禁止**写「未用一定填 0」。余弦前掩未用。表1 有首坏时**必须**展示后续若干 out（可合并区间），不可整段省略。落点：`ref-kv-dump` / `investigation` / `04` / `scripts/README`。  
 - **v5.20.9** — **对外包只钉一轮**：三层/samples/reports/KV/表1·表2/结案须同一 verified 波次；禁混残留目录或其他 `req_id`；重跑整包替换；多组同波，一致只留一组、不一致如实写。落点：`investigation` / `ref-kv-dump`。  
 - **v5.20.8** — dump/compare **立刻**落盘 v5.16 逐 token/逐层（`kv_v516_numeric_first`）并写表1/表2；**合并区间可选**，合并不了画全层；禁止「无合并→只写锚点」。落点：`ref-kv-dump` / `investigation` / `04`。  
@@ -86,7 +92,7 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 
 - 自创 runtime_config 阈值 / dump 配额 / cooldown / `on_trigger`（须来自巡检（detector-sweep）或 recommender 产出）  
 - 自行实现离线解析或 force-feed / 对比脚本流程（委派 analysis / ref）  
-- 仅凭 Guard KV / 坏输出 **跳承诺**算子/内核/提交（msprobe `dump.json` 首非有限统计可写算子名，仍勿升格成上游 commit）  
+- 不要只凭 Guard KV / 坏输出就承诺定位到某个算子、内核或提交（msprobe `dump.json` 首非有限统计可写算子名，仍勿进一步断言成上游 commit）  
 - 混用不同 run；用弱 dump / 数值问题或无有效余弦伪写层定位；用 PASS/FAIL/GAP 当案例 headline 结案  
 - `logits_finite` 后跳过 KV 直开 msprobe；必现+detect=0 却拒绝 manual_dump；把未用槽有限非 0 与 Inf/NaN 混成同等严重  
 - 跨环境未核权重 MD5 / 代码 commit 就当干净标杆

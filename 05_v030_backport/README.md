@@ -13,12 +13,12 @@
 
 ## Patch 从哪来？（重要）
 
-**推荐：从 release cherry-pick PR 导出，不要从 main 白名单硬抠。**
+**推荐：从 release cherry-pick PR 导出，不要从 main 白名单手工摘取。**
 
 | 方式 | 说明 |
 |------|------|
 | **当前采用** | https://github.com/vllm-project/vllm-ascend/pull/18450 相对其 BASE 的完整 `git diff`（含功能 cherry-pick + hot-shell / #18644 对齐 commit） |
-| **不推荐** | `main` tip × 路径白名单 → `v0.30.0rc1`（易夹带 main 语境，与 CI 消解结果不一致） |
+| **不推荐** | `main` tip × 路径白名单 → `v0.30.0rc1`（易夹带 main 语境，与 CI 已解决冲突的结果不一致） |
 
 维护者一键重导：
 
@@ -58,7 +58,7 @@ bash /path/to/runtime-guard-docs/05_v030_backport/apply_patch.sh "$(pwd)"
 # 4. 安装 / 重建镜像后，按 01 启动 Guard
 ```
 
-冲突时脚本会停住——把 `git status` 与冲突文件反馈维护者，**不要强行 --reject 后当生产用**。
+冲突时脚本会停住——把 `git status` 与冲突文件反馈维护者，**不要强行 --reject 后用于生产**。
 
 ## 对应功能（摘要）
 

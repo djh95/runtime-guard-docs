@@ -35,7 +35,7 @@
 |----|-----|
 | **包版本** | `mrv1-rg.1` |
 | **Guard SOURCE** | `9343c9859`（`feat/runtime-guard-config-v1` tip：V1 restore + 控制面） |
-| **适配方式** | 每档 BASE 干净树上复制 `runtime_config` / `runtime_guard`，再外科接线 `model_runner_v1.py` + `worker.py` + `ascend_config` / `logger`；**不**改 `worker/v2/model_runner.py` |
+| **适配方式** | 每档 BASE 干净树上复制 `runtime_config` / `runtime_guard`，再最小化改动 `model_runner_v1.py` + `worker.py` + `ascend_config` / `logger`；**不**改 `worker/v2/model_runner.py` |
 | **明确不含** | anomaly overlay；main `#18644` / G2 pin `f2aefd068…` |
 
 ### 各 release BASE
