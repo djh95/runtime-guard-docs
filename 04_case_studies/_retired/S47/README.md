@@ -44,6 +44,7 @@ Attn 前 K/V 对调。细节见 [evidence/规格说明.md](./evidence/规格说�
 - **dump 双名：** 全名排序下首次余弦也可能写在 `layer_36`（= `model.layers.0`），与上表模型层叙事一致。
 - **未用槽：** 异常侧有限非 0（**卫生**）；标杆未用全 0。
 - **三层旁注：** precision 计数可能为 0，但 samples 里仍有多条内容相同的垃圾（本包记 identical×37）——以 samples 为准。
+- **有效槽 / 未用槽：** 有效与未用须分写（见 skills v5.20.10）。本包 `kv_finite_unused.json`：异常侧未用可有有限非零残留；标杆未用可为全 0。**勿写「未用一定填 0」。**
 - 证据：`evidence/kv_*.json`；`verified_kv/S47/`（**.pt 未入库**）。
 
 

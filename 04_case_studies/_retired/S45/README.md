@@ -45,6 +45,7 @@ top-k / top-p 打在 −logits（bottom nucleus）。细节见 [evidence/规格�
 - **两对同向：** 数值问题格 **0**；余弦全程干净（prompt 第 1 个 token 最差仍≈1.0）。
 - **未用槽：** 一对异常侧有限非 0（**卫生**）；标杆未用多为 0。
 - **对账结果（本短窗）：** 对比窗内余弦全程干净；无首处分叉。
+- **有效槽 / 未用槽：** 有效与未用须分写（见 skills v5.20.10）。本包 `kv_finite_unused.json`：异常侧未用可有有限非零残留；标杆未用可为全 0。**勿写「未用一定填 0」。**
 - 证据：`evidence/kv_*.json`；`verified_kv/S45/`（**.pt 未入库**）。
 
 
@@ -60,6 +61,9 @@ top-k / top-p 打在 −logits（bottom nucleus）。细节见 [evidence/规格�
 **代表对**（`req_id`=`cmpl-a8b62fdc53007004-0-84d80d11`；对比窗 **14** token，其中 prompt **14**）。
 
 **表1 · 每 token 最差格**（该 token 上差距最大的层；有数值问题则整格写清子类型）
+
+注：对比窗 `n_used=n_prompt`（history 止于 prompt / 输出仅 1 token）→ **本包对比窗无后续 out**（非省略）。
+
 
 | token 序号 | 角色 | 该 token 最差格 |
 | --- | --- | --- |

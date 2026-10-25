@@ -1,6 +1,6 @@
 # Runtime-Guard Skills Metadata
 
-版本：v5.20.9  
+版本：v5.20.10  
 Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `analysis` · `ref-kv-dump` · **`msprobe-dump`** · **`build-anomaly-env`** · **`apply-mrv1-patch`** · **`apply-v030-mrv2-patch`**
 
 ## Changelog（摘要）
@@ -9,7 +9,8 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 
 离线脚本入口：本仓 [`scripts/`](./scripts/)。
 
-- **v5.20.9（现行）** — **对外包只钉一轮**：三层/samples/reports/KV/表1·表2/结案须同一 verified 波次；禁混残留目录或其他 `req_id`；重跑整包替换；多组同波，一致只留一组、不一致如实写。落点：`investigation` / `ref-kv-dump`。  
+- **v5.20.10（现行）** — **有效/未用槽分写 + 表1 须带首坏后 out：** dump 整 block；对比窗 history=`n_prompt+n_output−1`。抓后先扫**有效槽**数值问题（0 / 有限非零 / NaN·Inf·zero_norm）；**另记未用槽**（多数为 0，偶见有限非零残留，亦可有 NaN/Inf）——**禁止**写「未用一定填 0」。余弦前掩未用。表1 有首坏时**必须**展示后续若干 out（可合并区间），不可整段省略。落点：`ref-kv-dump` / `investigation` / `04` / `scripts/README`。  
+- **v5.20.9** — **对外包只钉一轮**：三层/samples/reports/KV/表1·表2/结案须同一 verified 波次；禁混残留目录或其他 `req_id`；重跑整包替换；多组同波，一致只留一组、不一致如实写。落点：`investigation` / `ref-kv-dump`。  
 - **v5.20.8** — dump/compare **立刻**落盘 v5.16 逐 token/逐层（`kv_v516_numeric_first`）并写表1/表2；**合并区间可选**，合并不了画全层；禁止「无合并→只写锚点」。落点：`ref-kv-dump` / `investigation` / `04`。  
 - **v5.20.7** — 对外 keep-set 归档禁写内网 IP / 实验室主机名（`host`→`builder 机`/`skills 机`）；`investigation` 一句纪律。  
 - **v5.20.6** — skills 深文口语化：FAIL+GAP→乱码漏检；soft-inv→反向构造；identical-mode→跨请求输出完全相同；有限垃圾→logits 有限的乱码；sweep→巡检；`o=1`→输出只有 1 个 token；塌缩→输出塌成…。  

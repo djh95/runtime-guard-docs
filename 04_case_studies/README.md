@@ -46,7 +46,7 @@
 
 **一个案例只留最终钉点**一套数字 / 样本 / report。
 
-**只钉一轮（硬）：** 对外包内三层 / samples / reports / KV compare / 表1·表2 / 结案·事实必须来自**同一 verified 跑批波次**。禁止混用更早残留目录或其他 `req_id` 的数改结案或补表；重跑则**整包替换** evidence 并重写事实/结案。多组同波：结论一致对外只留一组；不一致如实写（如一对分/一对干净），禁止揉成假同向。Skills **v5.20.9**。
+**只钉一轮（硬）：** 对外包内三层 / samples / reports / KV compare / 表1·表2 / 结案·事实必须来自**同一 verified 跑批波次**。禁止混用更早残留目录或其他 `req_id` 的数改结案或补表；重跑则**整包替换** evidence 并重写事实/结案。多组同波：结论一致对外只留一组；不一致如实写（如一对分/一对干净），禁止揉成假同向。Skills **v5.20.10**。
 
 **对外脱敏：** keep-set 归档（含 `跑批结果.json` / 规格实测尾）**禁止**写入内网 IP / 实验室主机名；机器角色用 `builder 机` / `skills 机`（与既有 hygiene 一致）。
 
@@ -106,7 +106,7 @@
 
 脚注：S25 钉点 dump 曾临时合入 [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) 以取得非空 `prompt_token_ids`；KV 对比跨度 prompt 长度 + 输出长度 − 1。原始 `.pt` 应留服务器耐久 `verified_kv/`（未入库；须落 home，勿只放容器路径）。
 
-相关 Skills 见 [06](../06_agent_skills/)（**v5.20.9**，见 `SKILLS_METADATA.md`）。
+相关 Skills 见 [06](../06_agent_skills/)（**v5.20.10**，见 `SKILLS_METADATA.md`）。
 
 ## 样本字段
 
@@ -134,9 +134,9 @@
 
 ### KV 对账表（案例写作约定）
 
-对账顺序（与 skills **v5.20.2** 一致）：先 shape/掩未用槽 → **有效槽数值问题先写入事实（带子类型、白话）** → 再余弦与下表。必现但 detect=0 时可用 `manual_dump` 抓 KV。有 **buggy KV + 清洁标杆 KV** 且已写入 `evidence/kv_compare.json` / `kv_v516_numeric_first.json` 时，在 README「### 事实」**之后**、「### 推断」**之前**补两张表（白话；数字只来自证据）：
+对账顺序（与 skills **v5.20.10** 一致）：先 shape/掩未用槽 → **有效槽与未用槽分写**（有效：数值问题子类型优先；未用：0 / 有限非零 / NaN·Inf——**勿写「未用一定填 0」**）→ 再余弦与下表。必现但 detect=0 时可用 `manual_dump` 抓 KV。有 **buggy KV + 清洁标杆 KV** 且已写入 `evidence/kv_compare.json` / `kv_v516_numeric_first.json` 时，在 README「### 事实」**之后**、「### 推断」**之前**补两张表（白话；数字只来自证据）：
 
-1. **表1 · 每 token 最差格** — 行=对比窗内每个 token（标 prompt/out 角色与序号）；格内取该 token **差距最大的层**（最差余弦）。若该 token 触发 v5.16 **数值问题** → 写清子类型（如 **`数值问题:全零(zero_norm)` / `数值问题:NaN` / `数值问题:Inf`**），**不要**只写「数值异常」、**不要**再填余弦。
+1. **表1 · 每 token 最差格** — 行=对比窗内 token（标 prompt/out 角色与序号）；格内取该 token **差距最大的层**（最差余弦）或数值问题子类型。格式统一：`token 序号 | 角色 | bucket/min_cos 或 数值问题:…（注）`。若该 token 触发 v5.16 **数值问题** → 写清子类型（如 **`数值问题:全零(zero_norm)` / `数值问题:NaN` / `数值问题:Inf`**），**不要**只写「数值异常」、**不要**再填余弦。**有首坏时必须展示其后若干 out**（可合并区间或抽样）；仅当对比窗本身无后续 out（如 history 止于 prompt）才注明「本包对比窗无后续 out」。禁止「见表面 2」类笔误——写 **表2**。
 2. **表2 · 首个出问题的 token 的逐层剖面** — **不是**「对比窗第一个 token / window token0」的固定图。  
    - **目标 token** = 窗内**第一个已出现 KV 问题**的 token：有效槽 **数值问题**，或该 token 最差余弦已明显不对（低于阈值，如 &lt;0.99）。文中写清角色（如 `prompt[1]` / `out[6]`）。  
    - 若 **prompt[0] 即首坏**：表2 画它的逐层剖面，并标明「首个出问题的 token = prompt[0]」。  

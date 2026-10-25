@@ -52,6 +52,7 @@
   - **余弦（只在仍有限的「干净格」上算）：** 同 token 上首次低于 0.99 约在第 **3** 层（余弦≈0.989）；第 5 层最差可到约 −0.02；第 0–2 层仍≈1。
 - **dump 双名：** 目录里两套各 36 个名字——`layer_36…71` 与 `model.layers.0…35…`。对应 `layer_(36+i)` ↔ `model.layers.i`，故 **`layer_36` = 模型第 0 层**，不是「第 36 层」。若按全名排序，`layer_*` 从 token0 起 used 槽全 NaN，会先报到 `layer_36`；层叙事以 `model.layers` 表为准。
 - **未用槽：** 异常侧亦有 NaN（严重）；标杆未用槽全 0。
+- **有效槽 / 未用槽：** 有效与未用须分写（见 skills v5.20.10）。本包 `kv_finite_unused.json`：异常侧有效槽 NaN + 未用槽亦非有限（严重）；标杆有效有限、未用全 0。**勿写「未用一定填 0」。**
 - 证据：`evidence/kv_compare.json`、`kv_v516_numeric_first.json`；`verified_kv/S50/`（**.pt 未入库**）。
 
 
@@ -65,6 +66,9 @@
 **代表对**（`req_id`=`cmpl-80dfca0aa2091acb-0-ac611d71`；对比窗 **14** token，其中 prompt **14**）。
 
 **表1 · 每 token 最差格**
+
+注：对比窗 `n_used=n_prompt`（history 止于 prompt / 输出仅 1 token）→ **本包对比窗无后续 out**（非省略）。
+
 
 | token 序号 | 角色 | 该 token 最差格 |
 | --- | --- | --- |

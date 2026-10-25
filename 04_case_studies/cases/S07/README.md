@@ -55,6 +55,7 @@ W8A8 反量化 / scale 崩溃族。细节见 [evidence/规格说明.md](./eviden
 - **两对同向：** 两对异常↔标杆的数值结论相同。
 - **有效槽 / 「格」：** 有效槽 = 本请求真正用到的 KV 位置；「格」= 某一个 token × 某一层。本窗从 prompt 第 1 个 token 起，异常侧有效槽就是数值问题。
 - **数值问题（定界依据）：** 有效槽有限但 **整段范数 = 0**（**全是 0**）→ `数值问题:全零(zero_norm)`；优先用它定界，不再算余弦。
+- **有效槽 / 未用槽：** 有效槽 = 上述 zero_norm（定界主证据）。未用槽本窗证据为全 0、无非有限（`kv_finite_unused.json`）——**仍勿对外写死「未用一定填 0」**（他案可有有限非零残留）。
 - **为何不算余弦：** 有效槽已全零，**余弦格数 = 0**——不是「没抓到 / 漏算」，是数值问题挡住了。
 - **dump 双名：** 同目录并存 `model.layers.0…35` 与 `layer_36…71`（`layer_(36+i)`↔`model.layers.i`）。全名排序先碰到 `layer_36`；同一事实在 **`model.layers.0`**。两对皆 prompt token0 起即 `zero_norm`。
 - 证据：`evidence/kv_compare.json`、`kv_v516_numeric_first.json`、`kv_finite_unused.json`、`evidence/reports/`。
@@ -67,7 +68,8 @@ W8A8 反量化 / scale 崩溃族。细节见 [evidence/规格说明.md](./eviden
 
 数据来自 `evidence/kv_v516_numeric_first.json`。两对同向；展示代表对。
 
-**代表对**（`req_id`=`cmpl-8e065448ae678178-0-9dfa8816`；对比窗 **14** token，其中 prompt **14**）。
+**代表对**（`req_id`=`cmpl-8e065448ae678178-0-9dfa8816`；对比窗 **14** token，其中 prompt **14**）。  
+注：抓 dump 时 **输出只有 1 个 token** → history=`n_prompt+n_output−1` 止于 prompt；**本包对比窗无后续 out**（非表1 省略）。
 
 **表1 · 每 token 最差格**（该 token 上差距最大的层；有数值问题则整格写清子类型）
 

@@ -98,25 +98,33 @@ python "$SCRIPTS/request_from_report.py" \
 
 抓标杆：同 token force-feed；`logits_finite` 路径下标杆**未**炸。
 
-## 对比硬顺序（抓完 dump 必须按此做；v5.16+ / v5.19）
+## 对比硬顺序（抓完 dump 必须按此做；v5.16+ / v5.20.10）
 
 Dump 布局是 **整 block 保存**：`[n_blocks, block_size, H, D]`（`block_ids` 顺序）。  
-block 内**未写入的 token 槽**（未用槽）常为 0；对比窗只取有效 token（history 默认 **prompt 长度 + 输出长度 − 1**）。
+对比窗只取**有效槽**（history 默认 **`n_prompt + n_output − 1`**）。窗后槽 = **未用槽**（须掩掉再算余弦）。
 
-**未用槽分级（必区分；属步骤 1 的 mask/附注，不是余弦主结论）：**
+**有效槽 vs 未用槽（必须分写；v5.20.10）：**
+
+| 区 | 先查什么 | 怎么写 |
+|----|----------|--------|
+| **有效槽（used）** | 数值问题：全零 / zero_norm / NaN / Inf；否则有限非零再比余弦 | 定界主证据；先报完再进表1/表2 |
+| **未用槽（unused）** | 精确全 0 / **有限非零残留** / NaN·Inf | 附注卫生或严重污染；**禁止**写「未用一定填 0」（实机多数为 0，偶见有限非零） |
+
+**未用槽分级（属步骤 1 的 mask/附注，不是余弦主结论）：**
 
 | 未用槽状态 | 含义 | 对结果 |
 |------------|------|--------|
-| 全 0 | 正常 | — |
-| **有限非 0** | 脏写/未清（卫生问题） | **一般不致坏结果**；记附注，**勿**单凭此断定输出由此坏 |
+| 全 0 / **多数为 0** | 常见正常 | — |
+| **有限非 0** | 脏写/未清（卫生） | **一般不致坏结果**；**必须记一笔**，勿单凭此断定输出由此坏 |
 | **Inf / NaN** | 数值污染进未用区 | **可影响结果**（严重） |
 
 ### 硬步骤（禁止跳步、禁止先写余弦再回头补数值）
 
-1. **形状 + 掩掉未用槽** — buggy vs ref 各层 `shape` 一致（含 `n_blocks` / `block_size` / heads）；不一致 → **停**，查 TP stitch / 错目录 / 不同 MODE，**勿算 cos**。对齐 feed 跨度（history=`n_prompt+n_output-1`；或 `--written-only`）；**禁止**按 `n_blocks*block_size` 全容量比。未用槽按上表分级记账（`unused_nonzero_finite` / `unused_nonfinite`）。  
-2. **有效槽（used / 有效 KV）数值扫描 — 必须先报（带子类型）** — 对对比窗内每个有效 (token, layer) 先扫 **全零 / 零范数（zero_norm）/ 溢出 Inf·NaN** 等。有问题 → 标 **数值问题:\<子类型\>**（如 `zero_norm`、`NaN`、`Inf`），在事实/摘要/`kv_compare` 里 **先写清楚**（含能确定的 token/层范围）。**勿只写「数值异常」而不写子类型（证据能区分时）。此步未写完，禁止进入余弦与层表。** 有效槽已非有限或全数值问题 → 可归「不一致」类信号，**不定层**（禁止 NaN cos 伪层名）；仍须把数值事实归档。  
+1. **形状 + 掩掉未用槽** — buggy vs ref 各层 `shape` 一致（含 `n_blocks` / `block_size` / heads）；不一致 → **停**，查 TP stitch / 错目录 / 不同 MODE，**勿算 cos**。对齐 feed 跨度（history=`n_prompt+n_output-1`；或 `--written-only`）；**禁止**按 `n_blocks*block_size` 全容量比。未用槽按上表分级记账（`unused_nonzero_finite` / `unused_nonfinite`）——有有限非零也要写，勿默认「全 0」。  
+2. **有效槽（used）数值扫描 — 必须先报（带子类型）** — 对对比窗内每个有效 (token, layer) 先扫 **全零 / 零范数（zero_norm）/ 溢出 Inf·NaN** 等。有问题 → 标 **数值问题:\<子类型\>**（如 `zero_norm`、`NaN`、`Inf`），在事实/摘要/`kv_compare` 里 **先写清楚**（含能确定的 token/层范围）。**勿只写「数值异常」而不写子类型（证据能区分时）。此步未写完，禁止进入余弦与层表。** 有效槽已非有限或全数值问题 → 可归「不一致」类信号，**不定层**（禁止 NaN cos 伪层名）；仍须把数值事实归档。  
 3. **仅对干净格再余弦 → 立刻导出逐 token/逐层 → 表 → 十问** — 相似度只在**无数值问题**的格上算。  
    **抓完 dump / 跑完 compare 后必须立刻**写出 `kv_v516_numeric_first.json`（或等价：`per_token` + 首坏 token 的**全层** `layers[]`），并填 keep-set **表1（每 token 最差格）/ 表2（首坏 token 逐层剖面）**（见 [04](../../04_case_studies/README.md)；表2 **不是** window token0 默认图）。  
+   **表1 硬规矩（v5.20.10）：** 有首坏 / 问题 token 时，**必须**再展示其后若干 **out**（可合并如 `out[6]–out[24] 多为 0.6–0.8`，或抽样）；**禁止**停在首坏一行把后续 out 整段省略。仅当对比窗本身止于该 token（如 `n_output=1` → history 仅 prompt）才可写「本包对比窗无后续 out」。  
    **合并区间可选**；合并不了就画全层。**禁止**只留窗摘要 / `first_mismatch` 锚点就结案。有数值问题的格/token 写清子类型，**不编余弦**。然后交 investigation **【事实总结】+ 十问**（[02 §5](../../02_problem_localization/README.md#5-kv-定界十问检查单有-buggyref-时按序)）。交给编排的对比摘要须够 investigation 写成**白话事实**——细则见 investigation「事实写作」。
 
 脚本（步骤 2→3 已强制先查数值问题；调用前仍须按上序解读与落笔；**compare 后立即落盘 JSON + 表**）：

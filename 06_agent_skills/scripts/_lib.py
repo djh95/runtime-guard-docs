@@ -427,7 +427,8 @@ def _last_written_slot(tensor: Any) -> int:
 def _compare_slots(t: Any, r: Any, max_tokens: int | None, written_only: bool) -> int | None:
     """Token slots to compare on 4-D [n_blocks, block_size, H, D] tensors.
 
-    Unwritten paged-KV slots are zero on both sides; with a short wave only a
+    Unwritten (unused) paged-KV slots are *often* zero but may hold finite
+    nonzero leftovers; never assume they are all-zero. With a short wave only a
     handful of slots carry signal, so a full-block cosine is dominated by the
     few written slots and amplifies bf16 TP noise. Explicit ``max_tokens``
     wins; ``written_only`` auto-slices to the last nonzero slot (either side).

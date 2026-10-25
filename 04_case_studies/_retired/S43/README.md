@@ -44,6 +44,7 @@ embedding 权重 ×100。细节见 [evidence/规格说明.md](./evidence/规格�
 - **余弦：** prompt 第 1 个 token 起，`model.layers.0–1` 仍≈1；自 **`model.layers.2`** 首次明显偏离（余弦≈0.55）；同 token 最差约 −0.30 落在 `model.layers.20`。
 - **dump 双名：** 另有 `layer_36…` 一套名字；`layer_36` = `model.layers.0`（`layer_(36+i)` ↔ `model.layers.i`）。全名排序的「首次余弦」可能先写到 `layer_36`，与「模型第 2 层首越阈」是同一对账的不同命名视图。
 - **未用槽：** 异常侧有限非 0（**卫生**）。
+- **有效槽 / 未用槽：** 有效与未用须分写（见 skills v5.20.10）。本包 `kv_finite_unused.json`：异常侧未用可有有限非零残留；标杆未用可为全 0。**勿写「未用一定填 0」。**
 - 证据：`evidence/kv_*.json`；`verified_kv/S43/`（**.pt 未入库**）。
 
 
