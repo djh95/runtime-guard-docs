@@ -26,8 +26,8 @@ README.md                          ← 本页（总目录）
 02_problem_localization/          ← ② 问题定位分析（能力边界 + 流程）
 03_detectors/                      ← ③ 检测算法（分文件）
 04_case_studies/                   ← ④ 典型案例 ~15×cases/Sxx/ + 索引 + 短词汇表
-05_mrv1_backport/                  ← ⑤ 支持 MRV1（多 release 接线）
-05_v030_backport/                  ← ⑤ 支持 0.30 MRV2（仅 V2）
+05_mrv1_backport/                  ← ⑤ 支持 MRV1（多 release 适配补丁）
+05_v030_backport/                  ← ⑤ 支持 0.30 MRV2（仅 V2 适配补丁）
 06_agent_skills/                   ← ⑥ Skills 权威
 07_architecture/                   ← ⑦ 架构 UML（Guard + runtime_config 十四图）
 ```
