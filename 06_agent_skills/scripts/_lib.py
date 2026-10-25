@@ -825,7 +825,7 @@ def format_kv_similarity_tables(
     n_layers = len(analysis.layers)
     lines.append("=" * 78)
     lines.append(
-        f"TABLE 1  逐 token: 先数值门闩再 min-over-{n_layers}-layers cos "
+        f"TABLE 1  逐 token: 先查数值问题再 min-over-{n_layers}-layers cos "
         f"(阈值 {analysis.cos_thresh:.2f})"
     )
     lines.append(f"         buggy={buggy_dir} ref={ref_dir}")

@@ -119,7 +119,7 @@ block 内**未写入的 token 槽**（未用槽）常为 0；对比窗只取有�
    **抓完 dump / 跑完 compare 后必须立刻**写出 `kv_v516_numeric_first.json`（或等价：`per_token` + 首坏 token 的**全层** `layers[]`），并填 keep-set **表1（每 token 最差格）/ 表2（首坏 token 逐层剖面）**（见 [04](../../04_case_studies/README.md)；表2 **不是** window token0 默认图）。  
    **合并区间可选**；合并不了就画全层。**禁止**只留窗摘要 / `first_mismatch` 锚点就结案。有数值问题的格/token 写清子类型，**不编余弦**。然后交 investigation **【事实总结】+ 十问**（[02 §5](../../02_problem_localization/README.md#5-kv-定界十问检查单有-buggyref-时按序)）。交给编排的对比摘要须够 investigation 写成**白话事实**——细则见 investigation「事实写作」。
 
-脚本（步骤 2→3 已强制数值门闩；调用前仍须按上序解读与落笔；**compare 后立即落盘 JSON + 表**）：
+脚本（步骤 2→3 已强制先查数值问题；调用前仍须按上序解读与落笔；**compare 后立即落盘 JSON + 表**）：
 
 ```bash
 python "$SCRIPTS/compare_kv_similarity.py" \

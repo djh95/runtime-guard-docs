@@ -42,7 +42,7 @@
 ### 事实
 
 - **清洁标杆（≥2 组）：** 同波 clean-ref；shape 一致（`[1,128,4,128]`）。
-- **两对同向：** 均无数值门闩；首坏均在 **prompt[5]**（cos≈−1）；prompt[6…] 最差格回到≈1。
+- **两对同向：** 均无数值问题；首坏均在 **prompt[5]**（cos≈−1）；prompt[6…] 最差格回到≈1。
 - **out[0]：** `model.layers.0`… 早层余弦 **≈0.80**（两对一致）；与金标「从第一层起≈0.8」对齐。非 attn 杂层名上的最差格可能更低——定界以 `model.layers.*` 为准。
 - **仅 PD：** 本钉点 = overlay 武装的 PD **类**时序；清洁无 overlay 为对照。真 1P1D / Mooncake 未在本包拓扑验证。
 - 证据：`evidence/S60.full_tables.json`（**.pt** 在 builder 机耐久 `verified_kv/S60/`）。
