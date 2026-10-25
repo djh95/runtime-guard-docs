@@ -66,7 +66,7 @@ KV：必现+detect=0 可用 **`manual_dump`**；硬顺序 ① shape/掩未用 �
 | 热更 | 启动参数 `runtime_config_hot_reload=true`（**不是** JSON 里的 `reload_interval_seconds`） |
 | 停检 | `report.max_per_req`（**不是** `stop_after_alert`） |
 | Dump（Guard KV） | 对比源仅 native `dump_kv`（勿用 msprobe 冒充 KV） |
-| `logits_finite` 后 | **仍先 KV**（有效槽有限/Inf；未用槽有限非 0≈卫生，Inf/NaN≈可影响结果）→ **`msprobe-dump` 殿后** |
+| `logits_finite` 后 | **仍先 KV**（有效槽为有限数或 Inf；未用槽有限非 0≈卫生，Inf/NaN≈可影响结果）→ **`msprobe-dump` 殿后** |
 | 默认全关 | **全关旁路**（static idle：detector/dump/热更全关；代码侧 `needs_sample_phase_hooks()` 为假时跳过 sample 壳） |
 | `releases/v0.30.0` MRV2 backport | 见 [05_v030](../05_v030_backport/README.md)（skill `apply-v030-mrv2-patch`；`v0.30-rg.3` SOURCE `#18450` @ `96046a3f0`，**含** #18644 对齐） |
 | 多 release MRV1 backport | 见 [05_mrv1](../05_mrv1_backport/README.md)（skill `apply-mrv1-patch`）；含 v0.30 MRV1，与 05_v030 互斥 |

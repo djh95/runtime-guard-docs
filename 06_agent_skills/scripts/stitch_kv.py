@@ -218,7 +218,7 @@ def main(argv: list[str] | None = None) -> int:
         "--max-tokens",
         type=int,
         default=None,
-        help="compare only the first N token slots (block dim); unwritten paged slots are zero on both sides",
+        help="compare only the first N token slots (block dim); unused slots are often zero but may hold finite leftovers",
     )
     p.add_argument(
         "--written-only",

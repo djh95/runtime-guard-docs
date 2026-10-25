@@ -58,7 +58,7 @@ description: >-
 | 权重 / 拓扑 / 传输栈错 | 先修配置 |
 
 **适合：** `token_repeat` / `logits_finite` / `spec_acceptance`（MTP）。  
-- **`logits_finite` 命中** → 仍委派 [`ref-kv-dump`](../ref-kv-dump/SKILL.md)：有效槽有限性 + 未用槽分级（有限非 0 vs Inf/NaN）+（可算时）余弦；**禁止**因 NaN cos 跳过 KV 或写成「复现未抓到」。KV 分流后再视需要委派 [`msprobe-dump`](../msprobe-dump/SKILL.md)（statistics · eager · **殿后**）。  
+- **`logits_finite` 命中** → 仍委派 [`ref-kv-dump`](../ref-kv-dump/SKILL.md)：有效槽先查数值问题 + 未用槽分级（0 / 有限非 0 / Inf·NaN）+（可算时）余弦；**禁止**因 NaN cos 跳过 KV 或写成「复现未抓到」。KV 分流后再视需要委派 [`msprobe-dump`](../msprobe-dump/SKILL.md)（statistics · eager · **殿后**）。  
 - **`token_repeat` / 有限异常且疑 KV** → 同：`dump_kv` + 标杆。  
 **勿启用未合入：** `output_substring` / `token_logprob` / `slot_*` / `kv_state`。  
 **看似必现：** 先按手册 [02 §4 Step 0.5](../../02_problem_localization/README.md) 做连测 / 换输入（勿只靠 `max_tokens=1`）/ 消融 / PD 单 P·单 D；未验证勿在交付里写「必现」。**并向使用者确认：其他环境是否正常。** 若存在「异常环境 + 正常环境」，可委派 [`ref-kv-dump`](../ref-kv-dump/SKILL.md) **分环境**抓 buggy/ref；对比前必须核对**权重 MD5（或等价）**与**代码 commit（及关键 patch/overlay）一致**——不一致则不能当干净标杆，先对齐。  
@@ -313,7 +313,7 @@ logits 有限的乱码 / identical-across-requests：**不要**宣称「未复�
 |----|------|
 | **未复现** | 目标异常形态未出现（通顺输出 ≠ 目标乱码；有 trigger 也不够） |
 | **复现未抓到** | 异常已现/应现，但**无有效异常 KV** 可对账（含 `logits_finite`：有 report 却未落/未保留可检 dump） |
-| **KV 一致→排除 KV** | 有效对账且匹配（有效槽有限且余弦匹配；未用槽有限非 0 可附注卫生问题，**不**单凭此否决「排除」） |
+| **KV 一致→排除 KV** | 有效对账且匹配（有效槽无数值问题且余弦匹配；未用槽有限非 0 可附注卫生问题，**不**单凭此否决「排除」） |
 | **KV 不一致→定界** | 有效对账且不匹配 → 按十问写事实摘要；**有效槽 Inf/NaN** 或 **未用槽 Inf/NaN** 为严重数值信号（勿用 NaN cos 伪层名）；未用槽仅有限非 0 → 记脏写，通常不单独定「结果由此坏」 |
 
 **`logits_finite`：** 与 `token_repeat` 一样进 KV 路径；检测写「检出」；结案按上表③/④（或确无 dump 才②）。**msprobe 不是结案档替代**，是 KV 后的可选算子探针。

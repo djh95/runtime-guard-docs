@@ -42,7 +42,7 @@ MLA prefill RoPE pad 错位。细节见 [evidence/规格说明.md](./evidence/�
 
 - **清洁标杆（≥2 组）：** 干净服务重放对照；**2 组**；shape 一致（MLA 窗 `[1,128,1,64]`）。对比窗较长：约 `n_prompt=14`，生成较多，prompt 长度 + 输出长度 − 1≈39。
 - **两对同向：** 无数值问题；都在 **prompt 第 2 个 token** 上出现余弦分歧。
-- **有效槽 / 未用槽：** 有效槽有限。未用槽：异常侧有**有限非零残留**（`kv_finite_unused.json`）；勿写「未用一定填 0」。表1 已列首坏后至 out[24]。
+- **有效槽 / 未用槽：** 有效槽无 NaN/Inf。未用槽：异常侧有**有限非零残留**（`kv_finite_unused.json`）；勿写「未用一定填 0」。表1 已列首坏后至 out[24]。
 - **余弦：** 首次明显不一致在 dump 名 `layer_27`（余弦≈0.96）；同 token 上最差约 0.24，落在 `model.layers.16`。prompt 第 1 个 token 的模型层仍接近 1.0。
 - **dump 双名：** 与同系列 MLA 案相同——`layer_27` 是模型第 0 层的并行文件名（`layer_(27+i)` ↔ `model.layers.i`），不要读成「第 27 层根因」。
 - 证据：`evidence/kv_*.json`（**.pt 未入库**；本轮张量在验证机耐久 `verified_kv/S11/`，由表2 全层可复核）。
@@ -133,6 +133,7 @@ MLA prefill RoPE pad 错位。细节见 [evidence/规格说明.md](./evidence/�
 
 ### 推断
 
+- **首分歧 token = prompt[1]**（表1；prompt[0] 仍≈1）；同 token 最差约在 **`model.layers.16`**（≈0.24），dump 全名首次偏离见 `layer_27`（双名，非「第 27 层根因」）。
 - 有效槽相似度已分 → 定界到本窗首分歧位置；**不定界到 RoPE 源码行**。
 
 ### 结论
