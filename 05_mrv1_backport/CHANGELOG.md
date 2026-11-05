@@ -25,6 +25,19 @@
 - `v0.26` / `v0.30`：**PR tip ≠ BASE patch 字节**（tip 上 `model_runner_v1` / `worker` 已漂移）；离线仍打 BASE；合入 tip 请用对应 PR。  
 - v0.30 MRV1 `#19341` 与 MRV2 `#18450` **互斥**。
 
+### 已知限制（2026-11-04 外部评审补充，尚未随包修复）
+
+外部评审（2026-10-28，钉 `45bc260`）+ 本仓静态核验：**五档同源补丁，全部受影响**。
+
+- **RG01（P1，阻断启服）**：控制面构造时无条件 `from vllm_ascend.logger import apply_ascend_log_level`，但本包只给 `logger.py` 带入 `init_logger_ascend`，五档 BASE 均无该符号 → API 初始化即 `ImportError`，**检测器全关也无法启服**。修复：从 SOURCE `9343c9859` 补入真实 `apply_ascend_log_level` 及依赖闭包（MRV2 `v0.30-rg.3` 已含，可对照移植）；冒烟标准须从 `git apply --check` 升级为真实 `RuntimeConfig` 初始化。
+- **RG02（P1，统计口径）**：`accepted_token_nums_fn` 读 `input_batch.num_accepted_tokens_cpu`，该值晚一拍发布，spec_acceptance 报告的接受计数对应**前一步**采样（外部评审 9360 步报告中 8424 个可比位置全部对应前一步）。取数修正需在目标 NPU 回归后合入；此前解读 spec 告警须注意窗口错拍。
+- **RG03（P2）**：本包明确不含 main `#18644`，`spec_acceptance.check_all` 无 `None` 保护（短 batch 边界保护已含）；`03_detectors/spec_acceptance.md` 的「None 安全跳过」承诺按 main 口径书写，与本包实现不符。计数为 `None` 时经 soft-fail 抛 `TypeError`，仅跳过本波 spec 检测（服务不崩）。
+- **RG04（P2）**：异步报告富化 `_enrich_detail_with_block_meta` 用保存的 `req_idx` 读**当前** `input_batch` 行，不校验行身份；请求结束 / batch 重排后报告 `block_ids` 元数据可能归属错误请求（KV dump 路径另有 finished/reaped 保护）。修复前，报告 `block_ids` 仅供人工参考。
+
+维护更新（2026-11-04，脚本随仓修复，不产生新包版本）：
+
+- `apply_patch.sh`：默认校验 HEAD==CHANGELOG 表列 BASE 且要求干净树，错误基线默认拒绝；三方合并改为 `--3way` 显式选择，`--force-base` 跳过校验。原「打印 BASE 说明但不强制 + 严格失败自动 `--3way`」行为废弃（RG06）。
+
 ---
 
 ## mrv1-rg.1 — 2026-10-21

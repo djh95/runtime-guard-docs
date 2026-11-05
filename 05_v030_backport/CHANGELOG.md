@@ -47,7 +47,13 @@ git diff 6d25ba2b3..96046a3f0
 ### 已知限制
 
 - Analysis 离线包不在此 patch 内。  
-- 若你的树不是 `6d25ba2b3`（例如更早的 `v0.30.0rc1`），可能有冲突，需维护者按该 BASE 重导或手工解决冲突。
+- 若你的树不是 `6d25ba2b3`（例如更早的 `v0.30.0rc1`），可能有冲突，需维护者按该 BASE 重导或手工解决冲突（2026-11-04 起 `apply_patch.sh` 对此默认拒绝，`--force-base` / `--3way` 显式选择）。
+
+### 已知限制（2026-11-04 外部评审核验补充）
+
+- **RG04（P2）**：本包与 MRV1 同源携带 `_enrich_detail_with_block_meta` 异步富化路径（以保存的 `req_idx` 读当前 batch 行、不校验行身份）；请求结束 / batch 重排后，报告 `block_ids` 元数据可能归属错误请求（KV dump 路径另有 finished/reaped 保护）。修复前，报告 `block_ids` 仅供人工参考。
+- 核验备注：外部评审 RG01（缺 `apply_ascend_log_level`）/ RG03（缺 `None` 保护）仅影响 **MRV1** 包；本包已含模块级 `apply_ascend_log_level` 与 `accepted_token_nums is None` 保护。MRV2 接受统计走 `postprocess_sampled` stash 路径（包内无 `num_accepted_tokens_cpu` 读点），MRV1 的一拍错位结论（RG02）不直接迁移，但 MRV2 也未经同等审计。
+- `generate_patch_bundle.sh`（2026-11-04 修复，RG05）：改为临时文件生成、成功后原子替换，空 diff / git 失败 / 中断不再删除已有制品。
 
 ---
 

@@ -96,7 +96,11 @@ git rev-parse --verify "${BASE}^{commit}" >/dev/null
 git rev-parse --verify "${SOURCE}^{commit}" >/dev/null
 
 mkdir -p "${OUT_DIR}"
-find "${OUT_DIR}" -maxdepth 1 -name '*.patch' -delete
+# RG05: build into a temp file and swap in only on success, so an empty diff,
+# a git failure, or an interrupt never deletes the previous known-good bundle.
+rm -f "${OUT_DIR}"/.bundle-*.tmp
+TMP_PATCH="$(mktemp "${OUT_DIR}/.bundle-XXXXXX.tmp")"
+trap 'rm -f "${TMP_PATCH}"' EXIT
 
 STAMP="$(date -u +%Y%m%d)"
 BASE_SHORT="$(git rev-parse --short "${BASE}^{commit}")"
@@ -105,13 +109,18 @@ OUT_PATCH="${OUT_DIR}/0001-runtime-guard-from-pr18450-${BASE_SHORT}-to-${SRC_SHO
 
 echo "Diff ${BASE}..${SOURCE} (full PR range, no whitelist) -> ${OUT_PATCH}"
 # Full range: PR is already conflict-resolved against releases/v0.30.0.
-git diff "${BASE}^{commit}" "${SOURCE}^{commit}" > "${OUT_PATCH}"
+git diff "${BASE}^{commit}" "${SOURCE}^{commit}" > "${TMP_PATCH}"
 
-if [[ ! -s "${OUT_PATCH}" ]]; then
-  echo "Empty diff — check refs." >&2
-  rm -f "${OUT_PATCH}"
+if [[ ! -s "${TMP_PATCH}" ]]; then
+  echo "Empty diff — check refs. Existing patches under ${OUT_DIR} kept." >&2
   exit 1
 fi
+
+# Success: replace the previously shipped bundle only now.
+find "${OUT_DIR}" -maxdepth 1 -name '*.patch' -delete
+mv -f "${TMP_PATCH}" "${OUT_PATCH}"
+chmod 644 "${OUT_PATCH}"
+trap - EXIT
 
 LINES="$(wc -l < "${OUT_PATCH}" | tr -d ' ')"
 echo "Wrote ${OUT_PATCH} (${LINES} lines)"
