@@ -7,7 +7,7 @@
 ## 维护备注（2026-11-17）
 
 - MRV2 离线包已升到 **`v0.30-rg.5`**：BASE `9746cad23`（`releases/v0.30.0` tip），SOURCE `#18450` @ `6689dbf3f`（含已合入 `#19285` + open `#21346`/`#21375`）。
-- 本目录 **MRV1** 五档离线包仍钉各自 BASE；`v0.30.0` MRV1 `#19341` **需 rebase** 到 `9746cad23`，且尚未 backport `#19285`/`#21346`/`#21375`（见 [PR_COMMIT_MAP](./PR_COMMIT_MAP.md) TBD）。
+- 本目录 **MRV1** 五档离线包仍钉各自 BASE；`#19337`/`#19338`/`#19341` 已于 2026-11-17 rebase 到各自 release tip；离线 patch **未**重导；尚未 backport `#19285`/`#21346`/`#21375`（见 [PR_COMMIT_MAP](./PR_COMMIT_MAP.md) TBD）。
 - `v0.30.0` MRV1 离线 BASE 仍为 `6d25ba2b3`（与旧 `v0.30-rg.3` 同 BASE）；与现行 MRV2 包 **BASE 已分叉**——勿混用文档里的 checkout SHA。
 
 ## mrv1-rg.2 — 2026-10-21
