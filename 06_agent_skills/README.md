@@ -2,7 +2,7 @@
 
 面向 Cursor / Agent：按现象启用 detectors、抓现场、离线对账、有标杆时做 KV 定界。
 
-> **权威：** 本目录 `runtime-guard-docs/06_agent_skills/`（含 [SKILLS_METADATA.md](./SKILLS_METADATA.md) **v5.20.12**）。  
+> **权威：** 本目录 `runtime-guard-docs/06_agent_skills/`（含 [SKILLS_METADATA.md](./SKILLS_METADATA.md) **v5.20.13**）。  
 > **离线脚本：** [scripts/](./scripts/)（本仓）。  
 > 产品实现：`vllm_ascend/observability/runtime_guard/`（[#16849](https://github.com/vllm-project/vllm-ascend/pull/16849) + [#18644](https://github.com/vllm-project/vllm-ascend/pull/18644)）。  
 > 人读流程仍以 [02 问题定位](../02_problem_localization/README.md) 为准；skill 负责可执行编排。  
@@ -34,6 +34,7 @@
 
 **隔离：** 在线配置 skill 不做读盘；离线 skill 不输出 `runtime_config`。  
 **门闩：** `ref-kv-dump` 前须 `verify_request_kv` PASS（脚本确认异常 dump 可读齐全，**不是**结案「KV 一致」）。  
+**备份 / 回退：** 分析问题前备份当前状态，包括环境、代码、启动脚本等等，再开始打patch 等后续操作。保证分析结束后能回退，原始状态。分析完确认是否需要回滚到原始状态（见 [`investigation`](./investigation/SKILL.md)；`apply-*` / `build-anomaly-env` 同守）。  
 原子 skill 可独立调用；勿从原子 skill 反调 investigation。
 
 ## 脚本怎么跑（本仓）
@@ -51,7 +52,7 @@ python "$SCRIPTS/summarize_reports.py" --help
 `prepare_ref_inputs` / `request_from_report` / `locate_first_divergence` / `compare_kv_similarity` /  
 `compare_per_layer` / `stitch_kv`。
 
-Anomaly 对外对照：本仓 `04_case_studies/cases/Sxx/evidence/`。契约见 [SKILLS_METADATA.md](./SKILLS_METADATA.md)（**v5.20.12**）。构造纪律见 [`build-anomaly-env`](./build-anomaly-env/SKILL.md)。用户面短词汇表见 [04 · 词汇表](../04_case_studies/词汇表.md)。  
+Anomaly 对外对照：本仓 `04_case_studies/cases/Sxx/evidence/`。契约见 [SKILLS_METADATA.md](./SKILLS_METADATA.md)（**v5.20.13**）。构造纪律见 [`build-anomaly-env`](./build-anomaly-env/SKILL.md)。用户面短词汇表见 [04 · 词汇表](../04_case_studies/词汇表.md)。  
 结案分四档；整包证据必须同一轮跑批、同一次请求（见词汇表「钉点同跑」）；细节见 [`investigation`](./investigation/SKILL.md) 与 [`ref-kv-dump`](./ref-kv-dump/SKILL.md)。  
 KV：问题必现但检测器没报告时可用 **`manual_dump`**。对比三步：先核对形状并屏蔽未用槽 → 再先报有效槽数值问题（写清子类型）→ 最后算相似度并填表、写**【事实总结】**。无标杆时也可先做单侧有效槽数值问题。  
 **`logits_finite` 命中 → 仍先 [`ref-kv-dump`](./ref-kv-dump/SKILL.md)**（数值问题 + 未用槽分级 + 可算时余弦；短输出不跳过 KV）；**[`msprobe-dump`](./msprobe-dump/SKILL.md) 放最后做**（statistics · eager · 禁用 graph）：见 [`investigation`](./investigation/SKILL.md)。

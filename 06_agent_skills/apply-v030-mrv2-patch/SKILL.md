@@ -4,6 +4,8 @@ description: >-
   Apply Runtime Guard MRV2 wiring from runtime-guard-docs/05_v030_backport
   onto a clean releases/v0.30.0 BASE (v0.30-rg.*). Wiring only (no anomaly
   overlay). For MRV1 on v0.30 or older releases use apply-mrv1-patch.
+  Backup env/code/start scripts before apply; after work, confirm whether to
+  roll back to the original state.
 ---
 
 # apply-v030-mrv2-patch（支持 0.30 MRV2）
@@ -25,6 +27,7 @@ description: >-
 
 ## Steps
 
+0. **备份（门闩）** — 分析问题前备份当前状态，包括环境、代码、启动脚本等等，再开始打patch 等后续操作。保证分析结束后能回退，原始状态。分析完确认是否需要回滚到原始状态。优先隔离 worktree；记录备份路径。未备份禁止 `apply_patch.sh`。  
 1. 读 CHANGELOG，checkout **BASE**（现行 `v0.30-rg.3` → `6d25ba2b3`；SOURCE `#18450` @ `96046a3f0`，含 #18644）。  
 2. 确认未叠打 `05_mrv1_backport/v0.30.0`。  
 3. 执行：
@@ -35,6 +38,7 @@ bash /path/to/runtime-guard-docs/05_v030_backport/apply_patch.sh \
 ```
 
 4. 重建 / 安装后按 [01](../../01_enable_and_start/README.md) 启 Guard（**MRV2**）。  
-5. 记录 `git rev-parse HEAD` 与包版本（CHANGELOG）。
+5. 记录 `git rev-parse HEAD` 与包版本（CHANGELOG）。  
+6. **收尾** — 向使用者确认是否回滚到备份原始状态；默认不自动回滚。
 
 冲突 → 停，回报 `git status`。

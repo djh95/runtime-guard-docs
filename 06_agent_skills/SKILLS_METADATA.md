@@ -1,6 +1,6 @@
 # Runtime-Guard Skills Metadata
 
-版本：v5.20.12  
+版本：v5.20.13  
 Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `analysis` · `ref-kv-dump` · **`msprobe-dump`** · **`build-anomaly-env`** · **`apply-mrv1-patch`** · **`apply-v030-mrv2-patch`**
 
 ## Changelog（摘要）
@@ -9,7 +9,8 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 
 离线脚本入口：本仓 [`scripts/`](./scripts/)。
 
-- **v5.20.12（现行）** — 可读性：修「无数问题」歧义、`工作流（密）`标题；词汇表扩到约 15 个跨页词；入口/KEEP 案例/06 README 白话；05 直译词批量替换。落点：`04` · `06 README` · 本文件 · KEEP · `05_*`。  
+- **v5.20.13（现行）** — **分析前备份 / 分析后确认回滚**：分析问题前备份当前状态，包括环境、代码、启动脚本等等，再开始打patch 等后续操作。保证分析结束后能回退，原始状态。分析完确认是否需要回滚到原始状态。落点：`investigation`（主门闩）· `apply-mrv1-patch` · `apply-v030-mrv2-patch` · `build-anomaly-env` · `06 README` · 本文件。  
+- **v5.20.12** — 可读性：修「无数问题」歧义、`工作流（密）`标题；词汇表扩到约 15 个跨页词；入口/KEEP 案例/06 README 白话；05 直译词批量替换。落点：`04` · `06 README` · 本文件 · KEEP · `05_*`。  
 - **v5.20.11** — `02` 纠错与配置骨架：  
   - 删掉「`logits_finite` 命中就不做 KV、改走 msprobe」旧句；仍是**先 KV（数值问题→余弦），msprobe 放最后做**；短输出只削弱层定位。  
   - 无标杆也可/应做单侧有效槽数值问题（未用槽分写）。  
@@ -54,7 +55,8 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 2. **在线 vs 离线**：配置类 skill 不做磁盘解析；`analysis` / `ref-kv-dump` 不输出 runtime_config JSON。  
 3. **ref 门闩**：`ref-kv-dump` 前必须已有 `verify_request_kv` PASS（本轮跑 `analysis`，或用户出示 PASS 证据；PASS=异常 dump 可读齐全，≠结案档）；禁止跳过校验。  
 4. **配置唯一源**：正式阈值 / 配额 / `on_trigger` / cooldown **只**来自 `config-recommender`；`detector-sweep` 仅极简筛查模板。  
-5. **委派可复述**：编排侧可粘贴下游产出的配置，**禁止自创**阈值与配额。
+5. **委派可复述**：编排侧可粘贴下游产出的配置，**禁止自创**阈值与配额。  
+6. **备份 / 回退**：分析问题前备份当前状态，包括环境、代码、启动脚本等等，再开始打patch 等后续操作。保证分析结束后能回退，原始状态。分析完确认是否需要回滚到原始状态（默认不自动回滚）。
 
 ## 名称与类型
 
@@ -81,10 +83,12 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 **can_do**
 
 - Triage（手册 02）：Hang/OOM/启动 crash 等 → 终止并说明原因  
+- **分析前备份**环境/代码/启动脚本等，保证可回退原始状态；再委派打 patch / overlay 等  
 - 收集开场输入：现象、版本、拓扑、能否压测、有无清洁标杆、本地 report/dump 路径、谁起服；**必现时问他环境是否正常**  
 - 委派：未定类 → 巡检（detector-sweep）；定类 → recommender；已有产物 → analysis；verify=PASS 且可标杆 → ref-kv-dump；**`logits_finite` 亦先 ref-kv**（有限性 + 未用槽分级），再视需要 **msprobe-dump（殿后）**  
 - 跨环境标杆：异常环境+正常环境时可分环境抓 dump；须权重 MD5 + 代码 commit/overlay 一致  
 - 汇总下游结果，输出 **【事实总结】**（**白话扩写**；数值问题子类型先报 + 表1/表2 要点 + 四档结案依据）再填十问 **【定界】**；或（殿后）msprobe 首坏算子摘要  
+- **分析完确认是否需要回滚到原始状态**（默认不自动回滚）  
 - 必现+detect=0：**允许 `manual_dump`** 抓异常 KV+标杆（S07/S45），勿因 0 报告跳过 KV  
 - keep-set **结案四档** + 证据完整性（钉点同跑 / 有效异常 KV / 数值问题禁伪定位 / 未用槽分级 / 无证据留空）
 
@@ -95,10 +99,11 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 - 不要只凭 Guard KV / 坏输出就承诺定位到某个算子、内核或提交（msprobe `dump.json` 首非有限统计可写算子名，仍勿进一步断言成上游 commit）  
 - 混用不同 run；用弱 dump / 数值问题或无有效余弦伪写层定位；用 PASS/FAIL/GAP 当案例 headline 结案  
 - `logits_finite` 后跳过 KV 直开 msprobe；必现+detect=0 却拒绝 manual_dump；把未用槽有限非 0 与 Inf/NaN 混成同等严重  
-- 跨环境未核权重 MD5 / 代码 commit 就当干净标杆
+- 跨环境未核权重 MD5 / 代码 commit 就当干净标杆  
+- **未备份**就开始打 patch / overlay / 改启服脚本；分析结束**不问确认**就自动回滚或丢弃备份
 
-**逻辑输入：** symptom, version, topology, can_pressure_test, has_clean_ref_env, local_artifact_path?  
-**逻辑输出：** triage_result, delegated 摘要, **facts_summary**, delimitation_template, conclusion, next_step
+**逻辑输入：** symptom, version, topology, can_pressure_test, has_clean_ref_env, local_artifact_path?, backup_path?  
+**逻辑输出：** triage_result, delegated 摘要, **facts_summary**, delimitation_template, conclusion, next_step, rollback_decision?
 
 **依赖：** 可调用原子 skill（含 `msprobe-dump`）；无上游。
 
@@ -229,6 +234,7 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 
 **can_do**
 
+- **分析前备份**环境/代码/启动脚本；保证可回退；收尾确认是否回滚  
 - 按真实修复 PR 挖 typed 候选；写 overlay-only 故障（测试仓 `tests/build-anomaly-env/`）  
 - 列 allowed/forbidden knobs；用合法 knobs 抬 trigger/precision；记 original vs tuned rate  
 - 强制三层分计 + bug 路径开火日志；打包 SPEC / overlay / 上游 PR / 样本 / 三层  
@@ -237,6 +243,7 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 
 **forbidden**
 
+- **未备份**就叠 overlay / 改启服脚本；不问确认就自动回滚  
 - NaN 强写 / token fill / 伪造症状放大器；改 canonical 当场景  
 - 以 GSM8K/golden 当成功；用 反向构造 刷分顶替 HARD  
 - 在本 skill 展开十问定界（→ `investigation` / `ref-kv-dump`）  
@@ -259,6 +266,7 @@ Skill 列表：`investigation` · `detector-sweep` · `config-recommender` · `a
 | 新增已合入 detector | `config-recommender` + `detector-sweep` |
 | report JSON schema | `analysis`（+ 必要时 recommender 字段说明） |
 | anomaly 构造纪律 / origin-faithful | `build-anomaly-env` |
+| 分析前备份 / 分析后确认回滚 | `investigation`（主）+ `apply-*` + `build-anomaly-env` |
 | 仅文档措辞、代码参数不变 | 只改手册，skill 可不改 |
 
 脚本 CLI 变更 → 同步本目录（权威）→ 内部仓 `analysis/skill/` 镜像（见 06 README 同步命令）。

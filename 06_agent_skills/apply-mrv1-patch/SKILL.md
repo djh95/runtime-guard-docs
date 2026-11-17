@@ -4,7 +4,8 @@ description: >-
   Apply Runtime Guard MRV1 wiring from runtime-guard-docs/05_mrv1_backport
   onto a clean vllm-ascend BASE for one of: v0.23.0, v0.26.0rc1, v0.27.1rc1,
   v0.28.0rc1, v0.30.0. Wiring only (no anomaly overlay). For v0.30 MRV2 use
-  apply-v030-mrv2-patch instead.
+  apply-v030-mrv2-patch instead. Backup env/code/start scripts before apply;
+  after work, confirm whether to roll back to the original state.
 ---
 
 # apply-mrv1-patch（支持 MRV1）
@@ -28,6 +29,7 @@ description: >-
 
 ## Steps
 
+0. **备份（门闩）** — 分析问题前备份当前状态，包括环境、代码、启动脚本等等，再开始打patch 等后续操作。保证分析结束后能回退，原始状态。分析完确认是否需要回滚到原始状态。优先隔离 worktree；记录备份路径。未备份禁止 `apply_patch.sh`。  
 1. 读 CHANGELOG / `<release>/BASE.md`，checkout **BASE**（`v0.28.0rc1` → tag `v0.28.0.rc1`；`v0.30.0` → `6d25ba2b3`）。  
 2. 确认未叠打 `05_v030`（尤其 v0.30）。  
 3. 执行：
@@ -39,6 +41,7 @@ bash /path/to/runtime-guard-docs/05_mrv1_backport/apply_patch.sh \
 ```
 
 4. 重建 / 安装后按 [01](../../01_enable_and_start/README.md) 启 Guard（**MRV1**）。  
-5. 记录 `git rev-parse HEAD` 与所用 `--release`。
+5. 记录 `git rev-parse HEAD` 与所用 `--release`。  
+6. **收尾** — 向使用者确认是否回滚到备份原始状态；默认不自动回滚。
 
 冲突 → 停，回报 `git status`；勿 `--reject` 当生产。

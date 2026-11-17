@@ -8,6 +8,8 @@ description: >-
   Native dump_kv for Guard KV path; after capture: shape/mask → used-slot
   numeric subtypes first → cosine/tables/十问; end with plain-Chinese 【事实总结】.
   必现+detect=0 may manual_dump (S07/S45). logits_finite still KV; msprobe last.
+  Before analysis: backup env/code/start scripts so the tree can roll back; after
+  analysis, confirm with the user whether to restore the original state.
 ---
 
 # runtime_guard investigation（编排总控）
@@ -31,8 +33,19 @@ description: >-
 
 **分流（`logits_finite` 也先 KV）：** 采样前 NaN/Inf 命中后 **仍** 走 `dump_kv` +（有标杆时）对比，并遵守上序；**禁止**写成「logits 已命中就不做 KV、改走 msprobe」。无标杆时也须先对异常 dump 做有效槽数值问题。有效槽全非有限 / 无有效余弦 → **不定层**（短输出同样削弱层定位），但「有效槽已数值问题」本身必须先归档。**msprobe 殿后**（全程挂钩、开销大，不能检出后再开）。
 
+## 环境备份 / 回退（分析前门闩）
+
+分析问题前备份当前状态，包括环境、代码、启动脚本等等，再开始打patch 等后续操作。保证分析结束后能回退，原始状态。分析完确认是否需要回滚到原始状态。
+
+**执行要点（未备份禁止改树 / 打 patch / overlay / 改启动脚本）：**
+
+1. **备份范围**：代码树 pin（`git rev-parse HEAD` + dirty 清单，优先 `git bundle` / 隔离 worktree）、Python/容器环境标识、启服与复现脚本（`{START}` / `{REPRO}`）、live `runtime_config` 路径与副本、已有 report/`kv_cache` 路径说明。  
+2. **改动方式**：优先隔离 worktree / 副本目录；勿在唯一生产树上硬叠不可逆改动。  
+3. **收尾必问**：交付【事实总结】/【定界】后，**显式问使用者**是否回滚到备份点；**默认不自动回滚**；使用者确认后才执行回退，并记录备份路径与是否已回滚。
+
 ## 开场必问
 
+0. **备份是否完成？** 环境 / 代码 pin / 启动与复现脚本等已落盘且可回退（见上「环境备份 / 回退」）；未完成则先备份，再进入 triage / 打 patch  
 1. **运行环境**：容器 / 路径 / `{MODE}` / `{MODEL}` / `{TOPO}` / 卡号  
 2. **启动脚本** `{START}` · **请求脚本** `{REPRO}`  
 3. **谁跑服务**（确认前不要擅自起服）  
@@ -336,7 +349,8 @@ logits 有限的乱码 / identical-across-requests：**不要**宣称「未复�
 7. **KV 对比硬顺序（v5.20.10）** — ① shape + 掩未用槽（prompt 长度 + 输出长度 − 1；未用多数为 0、偶见有限非零，**勿写一定填 0**）→ ② **有效槽数值扫描并先报**（全零/Inf·NaN/zero_norm → **数值问题**）→ ③ 干净格余弦 + 表1/表2 + 十问。表1 有首坏须带后续 out。勿按全容量或错跨度算 cos；**禁止**未报数值就先写余弦层名。  
 8. **压测时限** — 单场景最长约 **1h**；超时未复现 → **未复现**（附 knobs/负载），勿空耗或放大器硬凑。  
 9. **`logits_finite` → 仍先 KV，msprobe 殿后** — 先判必现（并问他环境是否正常）；抓 buggy+清洁/跨环境标杆（标杆未炸；跨环境须权重 MD5 + 代码 commit 一致）。对账仍走硬顺序 ①→②→③。**禁止**把数值问题/NaN cos 写成层定界；**禁止**因 logits 命中就跳过 KV。需要算子首坏时再开 [`msprobe-dump`](../msprobe-dump/SKILL.md)（`task=statistics`，**`--enforce-eager`**，禁图；全程挂钩、开销大）。  
-10. **跨环境标杆** — 必现且存在正常环境时可用；**禁止**在权重/代码未对齐时把他环境 dump 当 ref（细则 `ref-kv-dump`）。
+10. **跨环境标杆** — 必现且存在正常环境时可用；**禁止**在权重/代码未对齐时把他环境 dump 当 ref（细则 `ref-kv-dump`）。  
+11. **分析前备份 / 分析后确认回滚** — 分析问题前备份当前状态，包括环境、代码、启动脚本等等，再开始打patch 等后续操作。保证分析结束后能回退，原始状态。分析完确认是否需要回滚到原始状态。未备份禁止打 patch / overlay / 改启服脚本；收尾须显式确认，默认不自动回滚。
 
 ### KV/余弦时机方法示例（示意数字，非某包实测）
 
@@ -364,6 +378,7 @@ logits 有限的乱码 / identical-across-requests：**不要**宣称「未复�
 3. 表1/表2 要点（表2=首坏 token 合并区间或「无问题跳过」/锚点；数值问题子类型）；若有 dump 双名 / 输出只有 1 个 token / 两对同向须各用一句白话点明
 4. 结案四档 + 依据（③排除 / ④定界 / ②复现未抓到 / ①未复现）；dump 方式=on_trigger|manual_dump；清洁标杆如何取得
 5. 证据路径（report / buggy dump / ref dump / kv_compare）
+6. 备份路径 + **是否回滚到原始状态**（须向使用者确认；默认不自动回滚）
 
 【定界】KV=<异常|正常|未知(无标杆)>; 阶段=<prefill|decode|未知>;
 首坏token=<i/role|未知>; 首坏层=<L|未知|不定层(数值问题)>;
@@ -388,7 +403,8 @@ S45：勿用伪造 NaN/填 token / 靠调参/伪造症状刷检出 刷成 PASS�
 - 用 PASS/FAIL/GAP 当 keep-set 案例 headline 结案  
 - 未清 `kv_cache` 就开新抓；跳过 shape、把 block 未用 0 槽算进相似度  
 - 跨环境未核权重 MD5 / 代码 commit 就当干净标杆  
-- history feed 下按 prompt+输出全长比出的**仅末 token**分歧写成③/④或层定位；tokenize 补造 prompt ids
+- history feed 下按 prompt+输出全长比出的**仅末 token**分歧写成③/④或层定位；tokenize 补造 prompt ids  
+- **未备份**环境/代码/启动脚本就开始打 patch、叠 overlay 或改启服脚本；分析结束**不问确认**就自动回滚或丢弃备份
 
 ## Related
 
