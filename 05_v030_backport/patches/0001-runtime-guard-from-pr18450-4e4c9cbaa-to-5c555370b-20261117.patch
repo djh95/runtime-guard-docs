@@ -1,8 +1,8 @@
 diff --git a/docs/source/user_guide/configuration/additional_config.md b/docs/source/user_guide/configuration/additional_config.md
-index 404dbebb5..e185f607d 100644
+index 02d8aab4f..cbb4dff80 100644
 --- a/docs/source/user_guide/configuration/additional_config.md
 +++ b/docs/source/user_guide/configuration/additional_config.md
-@@ -54,6 +54,11 @@ The following table lists additional configuration options available in vLLM Asc
+@@ -43,6 +43,11 @@ The following table lists additional configuration options available in vLLM Asc
  | `eplb_config`                       | dict | `{}`    | Runner-specific EPLB extensions. See [Expert Parallelism Load Balancer](../feature_guide/expert_parallelism_load_balancer.md). |
  | `scheduler_config`                  | dict | `{}`    | Configuration options for Ascend scheduler extensions, including balance scheduling, recompute scheduling, DyntraLB, ShortRequestFirst, and dynamic chunked pipeline parallel. |
  | `refresh`                           | bool | `false` | Whether to refresh global Ascend configuration content. This is usually used by rlhf or ut/e2e test case. |
@@ -14,7 +14,7 @@ index 404dbebb5..e185f607d 100644
  | `dump_config`                       | dict | `None`  | Inline msprobe dump configuration. vLLM-Ascend will materialize it to a temporary JSON file and pass that file to the debugger. |
  | `dump_config_path`                  | str  | `None`  | Configuration file path for msprobe dump (compatible legacy option).                                      |
  | `enable_shared_expert_dp`           | bool | `False` | Replicate shared-expert weights across TP ranks and run the shared expert with data parallelism. This option is independent of upstream MoE sequence parallelism; either feature or both can be enabled. It improves performance but consumes more memory. |
-@@ -83,6 +88,35 @@ The following table lists additional configuration options available in vLLM Asc
+@@ -72,6 +77,35 @@ The following table lists additional configuration options available in vLLM Asc
  
  The details of each configuration option are as follows:
  
@@ -219,7 +219,7 @@ index 000000000..dc45f7561
 +- Design / ops (analysis branch): `docs/source/developer_guide/Design_Documents/runtime_guard_{design,ops}.md`
 diff --git a/docs/source/user_guide/feature_guide/runtime_guard.md b/docs/source/user_guide/feature_guide/runtime_guard.md
 new file mode 100644
-index 000000000..1df6882b7
+index 000000000..ab451faf1
 --- /dev/null
 +++ b/docs/source/user_guide/feature_guide/runtime_guard.md
 @@ -0,0 +1,129 @@
@@ -286,7 +286,7 @@ index 000000000..1df6882b7
 +
 +```text
 +RuntimeGuardProcessor.bind(runner)
-+  → sync_for_step()        # config + wave + manual triggers
++  → begin_wave()        # config + wave + manual triggers
 +  → detector hooks         # before/after sample (and after spec)
 +  → ActionExecutor         # report | dump_kv (async queue)
 +```
@@ -325,7 +325,7 @@ index 000000000..1df6882b7
 +| Action | Effect |
 +|--------|--------|
 +| `report` | Write JSON incident report (+ metric counter) |
-+| `dump_kv` | D2H paged KV for the request. **Last PP × all TP** (not other PP stages): TP0 records dump jobs this step and writes `request_info.json` (report-like metadata); the next wave-head claims the list (TP bus / merged due-bus), then each last-PP TP rank (including TP0) does local D2H in `end_of_wave_sync`. Same arm wave: each `req_id` at most once (`queue_kv_dump` dedupes by `(wave, req_id)`; duplicate enqueue logs INFO). Files: `{dump_root}/{type}/{req_id}/wave_<N>/request_info.json` and `{dump_root}/{type}/{req_id}/wave_<N>/dp*_tp*_pp*_cp*/*.pt` |
++| `dump_kv` | D2H paged KV for the request. **Last PP × all TP** (not other PP stages): TP0 records dump jobs this step and writes `request_info.json` (report-like metadata); the next wave-head delivers the list on the merged due-bus dump lane (`config_due` may be false when hot-reload is off; `tp_size<=1` stashes locally with no TP collective), then each last-PP TP rank (including TP0) does local D2H in `end_of_wave`. Same arm wave: each `req_id` at most once (`queue_kv_dump` dedupes by `(wave, req_id)`; duplicate enqueue logs INFO). Files: `{dump_root}/{type}/{req_id}/wave_<N>/request_info.json` and `{dump_root}/{type}/{req_id}/wave_<N>/dp*_tp*_pp*_cp*/*.pt` |
 +
 +Default `on_trigger` is `["report"]`. Per-detector overrides:
 +
@@ -344,7 +344,7 @@ index 000000000..1df6882b7
 +- **No additional-config / defaults**: bind-only path; intended to be noise-free.
 +- **Hot-reload only** (`runtime_config_hot_reload=true`, all detectors off, dump off): on last-PP TP, the TP0 due-broadcast runs on the bus worker so the inference thread can overlap it with forward (C2); end-of-wave rate-limits a warning if the collective was not hidden. Other processes poll the config file.
 +- **Detectors on**: cost depends on enabled checks (light: `token_repeat`; heavier: `logits_finite` — default async gate overlaps sample; `item_sync: true` pays sync `.item()` each step).
-+- **dump_kv on hit**: detector arms queue for the **next** wave-head dump lane, then D2H at that wave's `end_of_wave_sync` (after bus drain / prepare). Manual dump D2H's locally at end-of-wave (no dump-job bcast). Idle/broadcast steps submit a cheap due-vector broadcast at wave-head; per-lane `broadcast_object` runs only when that lane is due. Finish-wave hits set `request_finished_at_dump` on the artifacts.
++- **dump_kv on hit**: detector arms queue for the **next** wave-head dump lane, then D2H at that wave's `end_of_wave` (after bus drain / prepare). Manual dump D2H's locally at end-of-wave (no dump-job bcast). Idle/broadcast steps submit a cheap due-vector broadcast at wave-head; per-lane `broadcast_object` runs only when that lane is due. Finish-wave hits set `request_finished_at_dump` on the artifacts.
 +
 +Throughput A/B (with vs without Runtime Guard) should be measured on Ascend hardware; it is not gated by default CI.
 +
@@ -374,7 +374,7 @@ index 98183711e..f5930eb7f 100644
  ## Release Notes
  
 diff --git a/docs/source/user_guide/support_matrix/supported_features.md b/docs/source/user_guide/support_matrix/supported_features.md
-index 44c79822d..7770ebe18 100644
+index 82cc886d0..1d0f251d7 100644
 --- a/docs/source/user_guide/support_matrix/supported_features.md
 +++ b/docs/source/user_guide/support_matrix/supported_features.md
 @@ -28,6 +28,7 @@ You can check the [support status of vLLM V1 Engine][v1_user_guide]. Below is th
@@ -384,8 +384,8 @@ index 44c79822d..7770ebe18 100644
 +| Runtime Guard                 | 🔵 Experimental  | Detect / report / dump_kv; see [Runtime Guard][runtime_guard].          |
  | Context Parallel              | 🟢 Functional    | Functional, see detailed note: [Context Parallel][context_parallel]     |
  | KVPP                          | 🔵 Experimental  | Non-hybrid MLA/SFA models in eager mode; see [KVPP][kvpp] for supported combinations. |
- 
-@@ -47,6 +48,7 @@ You can check the [support status of vLLM V1 Engine][v1_user_guide]. Below is th
+ | Fine-grained TP               | 🔵 Experimental  | Functional, see detailed note: [Fine-grained TP Doc][finegrained_tp] |
+@@ -50,6 +51,7 @@ You can check the [support status of vLLM V1 Engine][v1_user_guide]. Below is th
  [1P1D]: https://github.com/vllm-project/vllm-ascend/pull/950
  [context_parallel]: https://docs.vllm.ai/projects/ascend/en/latest/user_guide/feature_guide/context_parallel.html
  [sleep_mode]: https://docs.vllm.ai/projects/ascend/en/latest/user_guide/feature_guide/sleep_mode.html
@@ -394,10 +394,10 @@ index 44c79822d..7770ebe18 100644
  [pipeline_parallel]: ../feature_guide/pipeline_parallel.md
  [kvpp]: ../feature_guide/kvpp.md
 diff --git a/mkdocs.yml b/mkdocs.yml
-index bd08a33f5..a816abcf0 100644
+index ed68b347d..afb3212b1 100644
 --- a/mkdocs.yml
 +++ b/mkdocs.yml
-@@ -280,6 +280,7 @@ nav:
+@@ -285,6 +285,7 @@ nav:
          - user_guide/configuration/index.md
          - user_guide/configuration/env_vars.md
          - user_guide/configuration/additional_config.md
@@ -405,7 +405,7 @@ index bd08a33f5..a816abcf0 100644
          - user_guide/configuration/encoder_cache_manager.md
      - Feature Guide:
          - user_guide/feature_guide/index.md
-@@ -288,6 +289,7 @@ nav:
+@@ -293,6 +294,7 @@ nav:
          - user_guide/feature_guide/Ai_QoS_introduction_en.md
          - user_guide/feature_guide/quantization.md
          - user_guide/feature_guide/sleep_mode.md
@@ -489,10 +489,10 @@ index 000000000..3d9943181
 +    assert tr["ignore_token_ids"] == []
 diff --git a/tests/ut/runtime_config/test_dist.py b/tests/ut/runtime_config/test_dist.py
 new file mode 100644
-index 000000000..5e5098269
+index 000000000..bf9fc75b5
 --- /dev/null
 +++ b/tests/ut/runtime_config/test_dist.py
-@@ -0,0 +1,220 @@
+@@ -0,0 +1,210 @@
 +#
 +# Copyright (c) 2025 Huawei Technologies Co., Ltd. All Rights Reserved.
 +#
@@ -519,10 +519,8 @@ index 000000000..5e5098269
 +
 +import vllm_ascend.observability.runtime_config.dist as dist
 +from vllm_ascend.observability.runtime_config.dist import (
++    broadcast_due_bits_from_src,
 +    broadcast_when_due,
-+    sync_due_bits,
-+    sync_due_bits_from_src,
-+    sync_task_bus,
 +)
 +
 +# ---- sync group ----
@@ -588,16 +586,6 @@ index 000000000..5e5098269
 +# ---- task bus ----
 +
 +
-+def test_sync_due_bits_none_group_returns_local():
-+    assert sync_due_bits(None, [False, True, False]) == [False, True, False]
-+    assert sync_due_bits(None, []) == []
-+
-+
-+def test_sync_due_bits_world_size_one():
-+    group = SimpleNamespace(world_size=1)
-+    assert sync_due_bits(group, [True, False]) == [True, False]
-+
-+
 +def test_broadcast_when_due_false_is_noop():
 +    assert broadcast_when_due(None, due=False, payload={"x": 1}) is None
 +
@@ -605,11 +593,6 @@ index 000000000..5e5098269
 +def test_broadcast_when_due_single_process_uses_payload():
 +    assert broadcast_when_due(None, due=True, payload={"x": 1}) == {"x": 1}
 +    assert broadcast_when_due(None, due=True, build_payload=lambda: {"y": 2}) == {"y": 2}
-+
-+
-+def test_sync_task_bus_idle():
-+    assert sync_task_bus(None, due_local=False, payload={"a": 1}) is None
-+    assert sync_task_bus(None, due_local=True, payload={"a": 1}) == {"a": 1}
 +
 +
 +def _patch_dist(monkeypatch, fake_broadcast):
@@ -635,7 +618,7 @@ index 000000000..5e5098269
 +        dist._group_rank(group, src=0)
 +
 +
-+def test_sync_due_bits_from_src_source_packs_without_rank_in_group(monkeypatch):
++def test_broadcast_due_bits_from_src_source_packs_without_rank_in_group(monkeypatch):
 +    """Missing rank_in_group still lets the source pack when is_first_rank."""
 +    seen = {}
 +
@@ -644,23 +627,23 @@ index 000000000..5e5098269
 +
 +    _patch_dist(monkeypatch, fake_broadcast)
 +    group = SimpleNamespace(world_size=2, is_first_rank=True, cpu_group=object())
-+    out = sync_due_bits_from_src(group, [True, False], wave_idx=3)
++    out = broadcast_due_bits_from_src(group, [True, False], wave_idx=3)
 +    assert out == [True, False]
 +    assert seen["payload"][0] == 3.0
 +    assert seen["payload"][1:] == [1.0, 0.0]
 +
 +
-+def test_sync_due_bits_from_src_none_group_returns_local():
-+    assert sync_due_bits_from_src(None, [False, True]) == [False, True]
-+    assert sync_due_bits_from_src(None, [], wave_idx=3) == []
++def test_broadcast_due_bits_from_src_none_group_returns_local():
++    assert broadcast_due_bits_from_src(None, [False, True]) == [False, True]
++    assert broadcast_due_bits_from_src(None, [], wave_idx=3) == []
 +
 +
-+def test_sync_due_bits_from_src_world_size_one():
++def test_broadcast_due_bits_from_src_world_size_one():
 +    group = SimpleNamespace(world_size=1)
-+    assert sync_due_bits_from_src(group, [True, False], wave_idx=7) == [True, False]
++    assert broadcast_due_bits_from_src(group, [True, False], wave_idx=7) == [True, False]
 +
 +
-+def test_sync_due_bits_from_src_source_packs_payload(monkeypatch):
++def test_broadcast_due_bits_from_src_source_packs_payload(monkeypatch):
 +    seen = {}
 +
 +    def fake_broadcast(tensor, src=0, group=None):
@@ -669,14 +652,14 @@ index 000000000..5e5098269
 +
 +    _patch_dist(monkeypatch, fake_broadcast)
 +    group = SimpleNamespace(world_size=2, rank_in_group=0, cpu_group=object())
-+    out = sync_due_bits_from_src(group, [True, False], wave_idx=(1 << 24) + 5)
++    out = broadcast_due_bits_from_src(group, [True, False], wave_idx=(1 << 24) + 5)
 +    assert out == [True, False]
 +    assert seen["src"] == 7
 +    assert seen["payload"][0] == 5.0  # wave_idx compared modulo 2**24
 +    assert seen["payload"][1:] == [1.0, 0.0]
 +
 +
-+def test_sync_due_bits_from_src_receiver_applies_source_bits(monkeypatch):
++def test_broadcast_due_bits_from_src_receiver_applies_source_bits(monkeypatch):
 +    def fake_broadcast(tensor, src=0, group=None):
 +        tensor[0] = 9.0
 +        tensor[1] = 0.0
@@ -684,35 +667,42 @@ index 000000000..5e5098269
 +
 +    _patch_dist(monkeypatch, fake_broadcast)
 +    group = SimpleNamespace(world_size=2, rank_in_group=1, cpu_group=object())
-+    assert sync_due_bits_from_src(group, [False, False], wave_idx=9) == [False, True]
++    assert broadcast_due_bits_from_src(group, [False, False], wave_idx=9) == [False, True]
 +
 +
-+def test_sync_due_bits_from_src_wave_mismatch_raises(monkeypatch):
++def test_broadcast_due_bits_from_src_wave_mismatch_raises(monkeypatch):
 +    def fake_broadcast(tensor, src=0, group=None):
 +        tensor[0] = 8.0  # source is one wave behind
 +
 +    _patch_dist(monkeypatch, fake_broadcast)
 +    group = SimpleNamespace(world_size=2, rank_in_group=1, cpu_group=object())
 +    with pytest.raises(RuntimeError, match="misalignment"):
-+        sync_due_bits_from_src(group, [False, False], wave_idx=9)
++        broadcast_due_bits_from_src(group, [False, False], wave_idx=9)
 +
 +
-+def test_sync_due_bits_from_src_wraparound_matches(monkeypatch):
++def test_broadcast_due_bits_from_src_wraparound_matches(monkeypatch):
 +    def fake_broadcast(tensor, src=0, group=None):
 +        tensor[0] = 5.0
 +
 +    _patch_dist(monkeypatch, fake_broadcast)
 +    group = SimpleNamespace(world_size=2, rank_in_group=1, cpu_group=object())
-+    assert sync_due_bits_from_src(group, [False, False], wave_idx=(1 << 24) + 5) == [
++    assert broadcast_due_bits_from_src(group, [False, False], wave_idx=(1 << 24) + 5) == [
 +        False,
 +        False,
 +    ]
 +
 +
-+def test_sync_due_bits_from_src_unset_wave_skips_assert(monkeypatch):
++def test_broadcast_due_bits_from_src_unset_wave_skips_assert(monkeypatch):
 +    _patch_dist(monkeypatch, lambda t, src=0, group=None: None)
 +    group = SimpleNamespace(world_size=2, rank_in_group=1, cpu_group=object())
-+    assert sync_due_bits_from_src(group, [True, False]) == [False, False]
++    assert broadcast_due_bits_from_src(group, [True, False]) == [False, False]
++
++
++def test_broadcast_due_bits_from_src_requires_cpu_group():
++    """No device_group/HCCL fallback — missing cpu_group fails closed."""
++    group = SimpleNamespace(world_size=2, rank_in_group=0, device_group=object())
++    with pytest.raises(RuntimeError, match="requires group.cpu_group"):
++        broadcast_due_bits_from_src(group, [False, True], wave_idx=1)
 diff --git a/tests/ut/runtime_config/test_from_additional.py b/tests/ut/runtime_config/test_from_additional.py
 new file mode 100644
 index 000000000..ed7d335cc
@@ -813,10 +803,10 @@ index 000000000..ed7d335cc
 +        )
 diff --git a/tests/ut/runtime_config/test_runtime_config_core.py b/tests/ut/runtime_config/test_runtime_config_core.py
 new file mode 100644
-index 000000000..7eed328bd
+index 000000000..12a95e3c1
 --- /dev/null
 +++ b/tests/ut/runtime_config/test_runtime_config_core.py
-@@ -0,0 +1,540 @@
+@@ -0,0 +1,555 @@
 +#
 +# Copyright (c) 2025 Huawei Technologies Co., Ltd. All Rights Reserved.
 +#
@@ -861,7 +851,7 @@ index 000000000..7eed328bd
 +    )
 +    assert cfg.hot_reload_enabled is False
 +    assert cfg.dump_enabled() is False
-+    assert cfg.dump_max_times() == 0
++    assert cfg.auto_dump_max_times() == 0
 +    assert cfg.detectors_enabled_in(cfg._data) is False
 +
 +
@@ -947,7 +937,7 @@ index 000000000..7eed328bd
 +    _write(cfg_path, {"dump": {"auto_max_times": 3, "manual_dump": False}})
 +    time.sleep(0.01)
 +    cfg.reload(force=True)
-+    assert cfg.dump_max_times() == 3
++    assert cfg.auto_dump_max_times() == 3
 +    assert cfg.dump_enabled() is True
 +
 +
@@ -1176,23 +1166,23 @@ index 000000000..7eed328bd
 +    assert cfg.reload(force=True) is True
 +    assert cfg.manual_dump_target() == 3
 +    assert cfg.manual_dumps_done() == 0
-+    assert cfg.manual_trigger_count() == 3
++    assert cfg.manual_dump_remaining() == 3
 +
-+    assert cfg.consume_manual_trigger() is True
++    assert cfg.consume_manual_dump() is True
 +    assert cfg.manual_dumps_done() == 1
-+    assert cfg.manual_trigger_count() == 2
++    assert cfg.manual_dump_remaining() == 2
 +    assert json.loads(cfg_path.read_text(encoding="utf-8"))["dump"]["manual_dump"] == 3
 +
-+    assert cfg.consume_manual_trigger() is True
++    assert cfg.consume_manual_dump() is True
 +    assert cfg.manual_dumps_done() == 2
-+    assert cfg.manual_trigger_count() == 1
++    assert cfg.manual_dump_remaining() == 1
 +    assert json.loads(cfg_path.read_text(encoding="utf-8"))["dump"]["manual_dump"] == 3
 +
-+    assert cfg.consume_manual_trigger() is True
++    assert cfg.consume_manual_dump() is True
 +    assert cfg.manual_dumps_done() == 3
-+    assert cfg.manual_trigger_count() == 0
++    assert cfg.manual_dump_remaining() == 0
 +    assert json.loads(cfg_path.read_text(encoding="utf-8"))["dump"]["manual_dump"] == 3
-+    assert cfg.consume_manual_trigger() is False
++    assert cfg.consume_manual_dump() is False
 +
 +
 +def test_manual_dump_skip_when_target_leq_done(tmp_path: Path):
@@ -1207,25 +1197,25 @@ index 000000000..7eed328bd
 +    )
 +    _write(cfg_path, {"dump": {"manual_dump": 1, "auto_max_times": 0}})
 +    assert cfg.reload(force=True) is True
-+    assert cfg.consume_manual_trigger() is True
++    assert cfg.consume_manual_dump() is True
 +    assert cfg.manual_dumps_done() == 1
-+    assert cfg.manual_trigger_count() == 0
++    assert cfg.manual_dump_remaining() == 0
 +
 +    # Same or lower target: skip.
 +    _write(cfg_path, {"dump": {"manual_dump": 1, "auto_max_times": 0}})
 +    assert cfg.reload(force=True) is True
-+    assert cfg.manual_trigger_count() == 0
-+    assert cfg.consume_manual_trigger() is False
++    assert cfg.manual_dump_remaining() == 0
++    assert cfg.consume_manual_dump() is False
 +
 +    _write(cfg_path, {"dump": {"manual_dump": 0, "auto_max_times": 0}})
 +    assert cfg.reload(force=True) is True
-+    assert cfg.manual_trigger_count() == 0
++    assert cfg.manual_dump_remaining() == 0
 +
 +    # Bump above done → one more dump.
 +    _write(cfg_path, {"dump": {"manual_dump": 2, "auto_max_times": 0}})
 +    assert cfg.reload(force=True) is True
-+    assert cfg.manual_trigger_count() == 1
-+    assert cfg.consume_manual_trigger() is True
++    assert cfg.manual_dump_remaining() == 1
++    assert cfg.consume_manual_dump() is True
 +    assert cfg.manual_dumps_done() == 2
 +    assert json.loads(cfg_path.read_text(encoding="utf-8"))["dump"]["manual_dump"] == 2
 +
@@ -1241,16 +1231,16 @@ index 000000000..7eed328bd
 +    )
 +    _write(cfg_path, {"dump": {"manual_dump": 3, "auto_max_times": 0}})
 +    assert cfg.reload(force=True) is True
-+    assert cfg.consume_manual_trigger() is True
++    assert cfg.consume_manual_dump() is True
 +    assert cfg.manual_dumps_done() == 1
-+    assert cfg.manual_trigger_count() == 2
++    assert cfg.manual_dump_remaining() == 2
 +
 +    # Hand-edit raises target; done stays — remaining grows.
 +    _write(cfg_path, {"dump": {"manual_dump": 5, "auto_max_times": 0}})
 +    assert cfg.reload(force=True) is True
 +    assert cfg.manual_dumps_done() == 1
 +    assert cfg.manual_dump_target() == 5
-+    assert cfg.manual_trigger_count() == 4
++    assert cfg.manual_dump_remaining() == 4
 +
 +
 +def test_bootstrap_overwrite_wipes_prestart_manual_dump_then_hot_reload_rearms(
@@ -1263,13 +1253,13 @@ index 000000000..7eed328bd
 +    cfg = RuntimeConfig(
 +        config_path=cfg_path,
 +        report_dir=tmp_path / "report",
-+        ensure_file=False,  # production: persist deferred to ensure_persisted
++        ensure_file=False,  # production: persist deferred to persist_bootstrap_config
 +        hot_reload=True,
 +    )
 +    # Bootstrap ignores the pre-start file → default false.
 +    assert cfg.manual_dump_target() == 0
-+    assert cfg.manual_trigger_count() == 0
-+    assert cfg.ensure_persisted() is True
++    assert cfg.manual_dump_remaining() == 0
++    assert cfg.persist_bootstrap_config() is True
 +    on_disk = json.loads(cfg_path.read_text(encoding="utf-8"))
 +    assert on_disk["dump"]["manual_dump"] is False
 +
@@ -1277,8 +1267,8 @@ index 000000000..7eed328bd
 +    _write(cfg_path, {"dump": {"manual_dump": 1, "auto_max_times": 0}})
 +    assert cfg.reload(force=True) is True
 +    assert cfg.manual_dump_target() == 1
-+    assert cfg.manual_trigger_count() == 1
-+    assert cfg.consume_manual_trigger() is True
++    assert cfg.manual_dump_remaining() == 1
++    assert cfg.consume_manual_dump() is True
 +    assert cfg.manual_dumps_done() == 1
 +    assert json.loads(cfg_path.read_text(encoding="utf-8"))["dump"]["manual_dump"] == 1
 +
@@ -1286,6 +1276,10 @@ index 000000000..7eed328bd
 +def test_same_mtime_content_change_reloads_via_digest(tmp_path: Path):
 +    """Bug #11: same-second equal-size edits must reload via content digest."""
 +    import os
++
++    from vllm_ascend.observability.runtime_guard.detector.token_repeat import (
++        TokenRepeatDetector,
++    )
 +
 +    cfg_path = tmp_path / "runtime_config.json"
 +    _write(cfg_path, {})
@@ -1301,11 +1295,22 @@ index 000000000..7eed328bd
 +    assert cfg.detector_get("token_repeat", "window") == 10
 +    pinned = cfg._mtime
 +    assert pinned is not None
++    version_before = float(cfg.config_version)
++    det = TokenRepeatDetector(runtime_config=cfg, runner=None)
++    assert det.enabled is False
++    assert det._window == 10
++    applied = det._applied_config_version
 +
 +    _write(cfg_path, {"detector": {"token_repeat": {"enabled": False, "window": 33}}})
 +    os.utime(cfg_path, (pinned, pinned))
 +    assert cfg.reload(force=False) is True
 +    assert cfg.detector_get("token_repeat", "window") == 33
++    # Revision must advance even when file mtime is unchanged.
++    assert float(cfg.config_version) > version_before
++    assert cfg._mtime == pinned
++    det.refresh_from_config()
++    assert det._window == 33
++    assert det._applied_config_version != applied
 +
 +
 +def test_touch_same_content_skips_reload(tmp_path: Path):
@@ -1359,7 +1364,7 @@ index 000000000..7eed328bd
 +    assert loads_jsonc(raw) == {"msg": 'say "hi"'}
 diff --git a/tests/ut/runtime_guard/TEST_MATRIX.md b/tests/ut/runtime_guard/TEST_MATRIX.md
 new file mode 100644
-index 000000000..ad17f7c7a
+index 000000000..3e1fa9b45
 --- /dev/null
 +++ b/tests/ut/runtime_guard/TEST_MATRIX.md
 @@ -0,0 +1,118 @@
@@ -1423,7 +1428,7 @@ index 000000000..ad17f7c7a
 +| **A3** Soft-fail bad JSON | **Yes** | `tests/ut/runtime_config/test_runtime_config_core.py` |
 +| Hot-path gate / idle sync correctness | **Yes** | `test_hot_path_overhead.py` (no wall-clock) |
 +| Guard decorator wiring (v1/v2 step sync, v2 sample-phase hooks, worker idle sync, inference-mode inner placement) | **Yes** | `test_hooks.py` |
-+| Merged due-bus async (`DueBitsBusWorker`: TP0 `sync_due_bits_from_src` submit@wave-head, drain@end-of-wave, depth-1, rate-limited warn-if-wait, bounded shutdown drain, submit-fail/timeout refund, `wave_idx` misalignment) | **Yes** | `test_bus_worker.py`; `test_dist.py` (`sync_due_bits_from_src`); V18f/g + V28d in `test_review_regressions.py` |
++| Merged due-bus async (`DueBitsBusWorker`: TP0 `broadcast_due_bits_from_src` on **cpu_group**/Gloo submit@wave-head, drain@end-of-wave, depth-1, rate-limited warn-if-wait, bounded shutdown drain, submit-fail/timeout refund, `wave_idx` misalignment, no HCCL fallback) | **Yes** | `test_bus_worker.py`; `test_dist.py` (`broadcast_due_bits_from_src`, requires `cpu_group`); V18f/g + V28d in `test_review_regressions.py` |
 +| Live NPU TPS / wall-clock microbench | **No** | Out of this product tree (manual Ascend runs) |
 +
 +CI proves **functional isolation** and detector/report/dump contracts.  
@@ -1454,7 +1459,7 @@ index 000000000..ad17f7c7a
 +| V18f | — | Merged bus idle | Submit+drain: one TP0 due `broadcast`, zero `broadcast_object` (`DueBitsBusWorker`) |
 +| V18g | — | Merged bus both due | Submit+drain: due `broadcast` + config bcast + dump bcast; dump stashed deferred |
 +| V28d | — | Merged bus collective fail | Submit+drain: due-bcast/payload error refunds handed-off dump jobs; no apply |
-+| — | — | Due-broadcast `wave_idx` | Receiver mismatch → `RuntimeError` (misalignment); wraparound mod 2^24 matches (`test_dist.py`) |
++| — | — | Due-broadcast `wave_idx` / cpu_group | Receiver mismatch → `RuntimeError`; wraparound mod 2^24 matches; missing `cpu_group` raises (`test_dist.py`) |
 +| V21* | — | default-path merge | Missing JSON keys fall back to `_DEFAULTS` |
 +| V23* | — | dump_root / ReportWriter dump_dir | JSON / startup seed / provider |
 +| V25* | — | rank gate TP0-only | last PP + TP0 detect; leftover exec_scope / detector_placement ignored |
@@ -1491,10 +1496,10 @@ index 000000000..889dea085
 +"""Co-located runtime_guard unit tests."""
 diff --git a/tests/ut/runtime_guard/_helpers.py b/tests/ut/runtime_guard/_helpers.py
 new file mode 100644
-index 000000000..e94591cbb
+index 000000000..64b22c2d7
 --- /dev/null
 +++ b/tests/ut/runtime_guard/_helpers.py
-@@ -0,0 +1,123 @@
+@@ -0,0 +1,124 @@
 +#
 +# Copyright (c) 2025 Huawei Technologies Co., Ltd. All Rights Reserved.
 +#
@@ -1561,7 +1566,7 @@ index 000000000..e94591cbb
 +    # Default MagicMock.is_fully_off() is truthy — force False so hook
 +    # shells still run unless a test opts into the fully-off fast path.
 +    p.runtime_config.is_fully_off.return_value = False
-+    p.end_of_wave_sync = MagicMock()  # type: ignore[method-assign]
++    p.end_of_wave = MagicMock()  # type: ignore[method-assign]
 +    return p
 +
 +
@@ -1604,6 +1609,7 @@ index 000000000..e94591cbb
 +    proc._pending_merged_bus_dump_jobs = []
 +    proc._pending_merged_bus_can_dump = False
 +    proc._pending_merged_bus_is_first = False
++    proc._pending_prev_needs_sample_hooks = None
 +    if not hasattr(proc, "_bus_wave_seq"):
 +        proc._bus_wave_seq = 0
 +    if not hasattr(proc, "_merged_bus_warn_ts"):
@@ -1620,7 +1626,7 @@ index 000000000..e94591cbb
 +    return worker
 diff --git a/tests/ut/runtime_guard/test_action_executor.py b/tests/ut/runtime_guard/test_action_executor.py
 new file mode 100644
-index 000000000..e26c24c38
+index 000000000..a517aabe8
 --- /dev/null
 +++ b/tests/ut/runtime_guard/test_action_executor.py
 @@ -0,0 +1,178 @@
@@ -1727,7 +1733,7 @@ index 000000000..e26c24c38
 +
 +def test_handle_returns_early_when_detection_gated():
 +    ex = _bare_executor()
-+    ex.can_run_detection = MagicMock(return_value=False)
++    ex.is_action_leader = MagicMock(return_value=False)
 +    ex.resolve_actions = MagicMock()
 +    ex.handle(
 +        Incident(incident_type="token_repeat", req_id="r1"),
@@ -1739,7 +1745,7 @@ index 000000000..e26c24c38
 +
 +def test_handle_write_report_false_strips_report_action():
 +    ex = _bare_executor()
-+    ex.can_run_detection = MagicMock(return_value=True)
++    ex.is_action_leader = MagicMock(return_value=True)
 +    prepared: list[str] = []
 +
 +    def _get_action(name: str):
@@ -1771,7 +1777,7 @@ index 000000000..e26c24c38
 +
 +def test_handle_manual_trigger_injects_dump_kv_all_requests():
 +    ex = _bare_executor()
-+    ex.can_run_detection = MagicMock(return_value=True)
++    ex.is_action_leader = MagicMock(return_value=True)
 +    rc = ex._runtime_config
 +    rc.detector_section.return_value = {"on_trigger": ["report"]}
 +    captured: list[dict] = []
@@ -1804,10 +1810,10 @@ index 000000000..e26c24c38
 +    assert overrides["dump_kv"]["scope"] == "all_requests"
 diff --git a/tests/ut/runtime_guard/test_bus_worker.py b/tests/ut/runtime_guard/test_bus_worker.py
 new file mode 100644
-index 000000000..d90b690c6
+index 000000000..54ba146b2
 --- /dev/null
 +++ b/tests/ut/runtime_guard/test_bus_worker.py
-@@ -0,0 +1,363 @@
+@@ -0,0 +1,537 @@
 +#
 +# Copyright (c) 2025 Huawei Technologies Co., Ltd. All Rights Reserved.
 +#
@@ -1859,7 +1865,7 @@ index 000000000..d90b690c6
 +        group = SimpleNamespace(world_size=2, is_first_rank=True, rank_in_group=0)
 +        with (
 +            patch(
-+                "vllm_ascend.observability.runtime_config.dist.sync_due_bits_from_src",
++                "vllm_ascend.observability.runtime_config.dist.broadcast_due_bits_from_src",
 +                side_effect=_fake_sync,
 +            ),
 +            patch(
@@ -1902,7 +1908,7 @@ index 000000000..d90b690c6
 +        group = SimpleNamespace(world_size=2, is_first_rank=True)
 +        with (
 +            patch(
-+                "vllm_ascend.observability.runtime_config.dist.sync_due_bits_from_src",
++                "vllm_ascend.observability.runtime_config.dist.broadcast_due_bits_from_src",
 +                side_effect=_fake_sync,
 +            ),
 +            patch(
@@ -1951,6 +1957,7 @@ index 000000000..d90b690c6
 +        _pending_merged_bus_dump_jobs=[],
 +        _pending_merged_bus_can_dump=False,
 +        _pending_merged_bus_is_first=False,
++        _pending_prev_needs_sample_hooks=None,
 +        _bus_wave_seq=0,
 +        _merged_bus_warn_ts=0.0,
 +        _refund_dropped_dump_arms=MagicMock(),
@@ -2012,11 +2019,13 @@ index 000000000..d90b690c6
 +        _kv_dump_jobs=[],
 +        _deferred_kv_dump_jobs=[],
 +        _apply_config_cascade=MagicMock(),
++        needs_sample_phase_hooks=lambda: False,
 +        _bus_worker=worker,
 +        _merged_bus_inflight=False,
 +        _pending_merged_bus_dump_jobs=[],
 +        _pending_merged_bus_can_dump=False,
 +        _pending_merged_bus_is_first=False,
++        _pending_prev_needs_sample_hooks=None,
 +        _bus_wave_seq=0,
 +        _merged_bus_warn_ts=0.0,
 +        _refund_dropped_dump_arms=MagicMock(),
@@ -2044,7 +2053,7 @@ index 000000000..d90b690c6
 +                return_value=False,
 +            ),
 +            patch(
-+                "vllm_ascend.observability.runtime_config.dist.sync_due_bits_from_src",
++                "vllm_ascend.observability.runtime_config.dist.broadcast_due_bits_from_src",
 +                side_effect=_slow_sync,
 +            ),
 +            patch(
@@ -2084,6 +2093,7 @@ index 000000000..d90b690c6
 +        _kv_dump_jobs=[job],
 +        _deferred_kv_dump_jobs=[],
 +        _apply_config_cascade=MagicMock(),
++        needs_sample_phase_hooks=lambda: False,
 +        _refund_dropped_dump_arms=lambda jobs: refunded.append(list(jobs)),
 +        _drop_pending_dump_jobs=MagicMock(),
 +    )
@@ -2098,7 +2108,7 @@ index 000000000..d90b690c6
 +                return_value=True,
 +            ),
 +            patch(
-+                "vllm_ascend.observability.runtime_config.dist.sync_due_bits_from_src",
++                "vllm_ascend.observability.runtime_config.dist.broadcast_due_bits_from_src",
 +                return_value=[False, False],
 +            ),
 +            patch(
@@ -2132,6 +2142,7 @@ index 000000000..d90b690c6
 +        _kv_dump_jobs=[job],
 +        _deferred_kv_dump_jobs=[],
 +        _apply_config_cascade=MagicMock(),
++        needs_sample_phase_hooks=lambda: False,
 +        _refund_dropped_dump_arms=lambda jobs: refunded.append(list(jobs)),
 +        _drop_pending_dump_jobs=MagicMock(),
 +    )
@@ -2150,7 +2161,7 @@ index 000000000..d90b690c6
 +                return_value=True,
 +            ),
 +            patch(
-+                "vllm_ascend.observability.runtime_config.dist.sync_due_bits_from_src",
++                "vllm_ascend.observability.runtime_config.dist.broadcast_due_bits_from_src",
 +                side_effect=_stuck_sync,
 +            ),
 +            patch(
@@ -2171,12 +2182,181 @@ index 000000000..d90b690c6
 +    finally:
 +        gate.set()
 +        worker.stop()
++
++
++def test_tp0_drain_uses_pre_reload_hooks_for_soft_purge():
++    """TP0 bus-worker reload must not make drain see already-False hooks.
++
++    Leader ``build_config_sync_payload`` applies JSON on the bus thread before
++    end-of-wave drain. Capture ``needs_sample_phase_hooks`` at submit so a
++    True→False disable still soft-purges, then a later re-enable starts clean.
++    """
++    from vllm_ascend.observability.runtime_guard.bus_worker import DueBitsBusWorker
++    from vllm_ascend.observability.runtime_guard.state import RequestGuardStore
++
++    RequestGuardStore.reset_for_tests()
++    try:
++        store = RequestGuardStore.get()
++        store.get_or_create("r1")
++        store.set_prompt_token_ids("r1", [1, 2, 3])
++        store.append_output_ids("r1", [9, 9])
++
++        hooks_on = True
++
++        def _hooks() -> bool:
++            return hooks_on
++
++        def _build_payload():
++            # Simulate TP0 reload flipping gates before drain.
++            nonlocal hooks_on
++            hooks_on = False
++            return ({"version": 2.0, "data": {"detector": {}}}, True)
++
++        cfg = MagicMock()
++        cfg.hot_reload_enabled = True
++        cfg.config_due_local.return_value = True
++        cfg.build_config_sync_payload.side_effect = _build_payload
++        cfg.apply_config_sync_payload.return_value = True
++        cfg.report_save_sensitive_info.return_value = False
++        cfg.report_max_prompt_token_ids.return_value = 0
++        cfg.report_max_output_token_ids.return_value = 0
++        cfg.report_decode_token_ids.return_value = False
++        cfg.report_max_per_req.return_value = 0
++        cfg.apply_ascend_log_level = MagicMock()
++
++        worker = DueBitsBusWorker(name="ut-bus-tp0-purge")
++        worker.start()
++        proc = SimpleNamespace(
++            runner=SimpleNamespace(),
++            runtime_config=cfg,
++            detectors=MagicMock(),
++            action_executor=MagicMock(),
++            report_writer=MagicMock(),
++            wave_tracker=MagicMock(),
++            _kv_dump_jobs=[],
++            _deferred_kv_dump_jobs=[],
++            needs_sample_phase_hooks=_hooks,
++            _bus_worker=worker,
++            _merged_bus_inflight=False,
++            _pending_merged_bus_dump_jobs=[],
++            _pending_merged_bus_can_dump=False,
++            _pending_merged_bus_is_first=False,
++            _pending_prev_needs_sample_hooks=None,
++            _bus_wave_seq=0,
++            _merged_bus_warn_ts=0.0,
++            _refund_dropped_dump_arms=MagicMock(),
++            _drop_pending_dump_jobs=MagicMock(),
++        )
++        proc._apply_config_cascade = RuntimeGuardBusMixin._apply_config_cascade.__get__(proc)
++        proc._purge_guard_state_after_detectors_off = (
++            RuntimeGuardBusMixin._purge_guard_state_after_detectors_off.__get__(proc)
++        )
++        proc._prepare_merged_bus_locals = RuntimeGuardBusMixin._prepare_merged_bus_locals.__get__(proc)
++        proc._wave_head_merged_bus = RuntimeGuardBusMixin._wave_head_merged_bus.__get__(proc)
++        proc._drain_merged_bus = RuntimeGuardBusMixin._drain_merged_bus.__get__(proc)
++        proc._apply_merged_bus_result = RuntimeGuardBusMixin._apply_merged_bus_result.__get__(proc)
++
++        group = MagicMock()
++        group.world_size = 2
++        group.is_first_rank = True
++        group.rank_in_group = 0
++        group.cpu_group = object()
++        group.broadcast_object = MagicMock(side_effect=lambda obj, src=0: obj)
++
++        try:
++            with (
++                patch(
++                    "vllm_ascend.observability.runtime_guard.processor_bus.should_dump_kv_on_rank",
++                    return_value=False,
++                ),
++                patch("torch.distributed.broadcast"),
++                patch("torch.distributed.get_process_group_ranks", return_value=[0, 1]),
++            ):
++                assert proc._wave_head_merged_bus(group) is False
++                assert proc._pending_prev_needs_sample_hooks is True
++                deadline = time.time() + 2.0
++                while time.time() < deadline and not worker.poll_ready():
++                    time.sleep(0.01)
++                # Gates already False (TP0 reload), but snapshot keeps soft-purge.
++                assert hooks_on is False
++                assert proc._drain_merged_bus(warn_if_pending=False) is True
++
++            st = store.get_state("r1")
++            assert st is not None
++            assert st.prompt_token_ids == [1, 2, 3]
++            assert st.output_token_ids == []
++            proc.detectors.disable_all.assert_called_once()
++
++            # Re-enable: cumulative IO starts from empty suffix (mid-enable contract).
++            hooks_on = True
++            store.append_output_ids("r1", [42])
++            st2 = store.get_state("r1")
++            assert st2 is not None
++            assert st2.prompt_token_ids == [1, 2, 3]
++            assert st2.output_token_ids == [42]
++        finally:
++            worker.stop()
++    finally:
++        RequestGuardStore.reset_for_tests()
++
++
++def test_run_sample_phase_drains_bus_before_sample_fn():
++    """Sample entry must drain TP Gloo bus before connector post_forward/SFA.
++
++    Wave-head submit overlaps forward; draining at ``run_sample_phase`` entry
++    keeps that overlap while preventing bus broadcast from crossing
++    ``all_gather_object`` inside ``sample_fn`` / ``get_finished``.
++    """
++    from vllm_ascend.observability.runtime_guard.processor import (
++        RuntimeGuardProcessor,
++        SamplePhaseResult,
++    )
++
++    order: list[str] = []
++    p = object.__new__(RuntimeGuardProcessor)
++    p.runtime_config = MagicMock()
++    p.runtime_config.is_fully_off.return_value = False
++    p.detectors = MagicMock()
++    p.wave_tracker = MagicMock()
++    p.runner = MagicMock()
++    p._last_input_batch = None
++    p._merged_bus_inflight = True
++
++    def _drain(*, warn_if_pending: bool = False, timeout: float | None = None):
++        order.append("drain")
++        p._merged_bus_inflight = False
++        return True
++
++    def sample_fn():
++        order.append("sample")
++        assert p._merged_bus_inflight is False
++        return SamplePhaseResult(
++            scheduler_output=None,
++            input_batch=None,
++            model_runner_output=None,
++            sampler_output=SimpleNamespace(sampled_token_ids=[1]),
++            valid_sampled_token_ids=[1],
++            req_ids_output_copy=["r1"],
++            finished_req_ids=None,
++        )
++
++    p._drain_merged_bus = _drain  # type: ignore[method-assign]
++    p._drain_merged_bus_before_sample_tp_gloo = (  # type: ignore[method-assign]
++        RuntimeGuardBusMixin._drain_merged_bus_before_sample_tp_gloo.__get__(p)
++    )
++    p.mark_finished = MagicMock()
++    p.needs_sample_phase_hooks = lambda: False  # type: ignore[method-assign]
++    p.end_of_wave = MagicMock()  # type: ignore[method-assign]
++
++    p.run_sample_phase(sample_fn=sample_fn, speculative_config=None, use_async=False)
++    assert order == ["drain", "sample"]
++    p.end_of_wave.assert_called_once()
 diff --git a/tests/ut/runtime_guard/test_detectors_and_kv.py b/tests/ut/runtime_guard/test_detectors_and_kv.py
 new file mode 100644
-index 000000000..00b5019ad
+index 000000000..cc9dd6814
 --- /dev/null
 +++ b/tests/ut/runtime_guard/test_detectors_and_kv.py
-@@ -0,0 +1,715 @@
+@@ -0,0 +1,707 @@
 +#
 +# Copyright (c) 2025 Huawei Technologies Co., Ltd. All Rights Reserved.
 +#
@@ -2304,24 +2484,18 @@ index 000000000..00b5019ad
 +
 +    det = TokenRepeatDetector(runtime_config=cfg, runner=SimpleNamespace(tp_rank=0))
 +    det.refresh_from_config()
-+    io = RequestIoSnapshotManager.get()
 +
 +    miss: list = []
 +    for tid in range(10, 20):
-+        # Simulate a new engine wave so same-wave append dedupe does not
-+        # swallow consecutive single-token steps.
-+        io.clear_wave_cache()
 +        miss = det.check_all([[tid]], req_ids=["uniq"])
 +    assert miss == []
 +
 +    RequestGuardStore.reset_for_tests()
 +    RequestIoSnapshotManager.reset_for_tests()
 +    det.clear_finished("uniq")
-+    io = RequestIoSnapshotManager.get()
 +    # Same token repeatedly → high repeat_sum after warmup.
 +    hit: list = []
 +    for _ in range(12):
-+        io.clear_wave_cache()
 +        alerts = det.check_all([[7]], req_ids=["rep"])
 +        if alerts:
 +            hit = alerts
@@ -2332,24 +2506,22 @@ index 000000000..00b5019ad
 +    assert hit[0].is_ill is True
 +
 +    # Already alerted: further repeats do not re-emit.
-+    io.clear_wave_cache()
 +    assert det.check_all([[7]], req_ids=["rep"]) == []
 +
 +    RequestGuardStore.reset_for_tests()
 +    RequestIoSnapshotManager.reset_for_tests()
 +    tr["enabled"] = False
++    cfg._version = float(cfg.config_version) + 1e-6
 +    det.refresh_from_config()
-+    io = RequestIoSnapshotManager.get()
 +    for _ in range(20):
-+        io.clear_wave_cache()
 +        assert det.check_all([[7]], req_ids=["off"]) == []
 +
 +
-+def test_w1_1_r04_same_wave_double_fold_keeps_seen_eq_oc(tmp_path: Path):
-+    """W1-1/R-04: same-wave duplicate after-sample must not inflate content_tokens_seen.
++def test_w1_1_r04_second_append_is_kept_and_seen_follows_store(tmp_path: Path):
++    """A second append of the same row is another token.
 +
-+    Store append dedupes identical chunks; folding must follow Store only so
-+    ``content_tokens_seen`` stays aligned with ``output_token_count``.
++    MR v2 writes each step once. Folding follows Store, so
++    ``content_tokens_seen`` stays equal to ``output_token_count``.
 +    """
 +    from vllm_ascend.observability.runtime_config.config import RuntimeConfig
 +
@@ -2390,7 +2562,7 @@ index 000000000..00b5019ad
 +    oc = len(st.output_token_ids)
 +    seen = det._states[rid].content_tokens_seen
 +    snap = io.snapshot(None, rid, None, include_token_ids=False, use_cache=False)
-+    assert oc == 10
++    assert oc == 15
 +    assert seen == oc
 +    assert snap.output_token_count == oc
 +
@@ -2424,14 +2596,14 @@ index 000000000..00b5019ad
 +        skip_req_ids=None,
 +    )
 +    mgr.run_after_sample_cpu(snap)
-+    # Same-wave duplicate: Store skips append; CPU job must not double-fold.
++    # A second append is kept. The CPU path folds Store only, so seen matches.
 +    io.append_batch([rid], [[7]])
 +    mgr.run_after_sample_cpu(snap)
 +
 +    st = RequestGuardStore.get().get_state(rid)
 +    assert st is not None
-+    assert len(st.output_token_ids) == 1
-+    assert mgr.get("token_repeat")._states[rid].content_tokens_seen == 1  # type: ignore[attr-defined]
++    assert len(st.output_token_ids) == 2
++    assert mgr.get("token_repeat")._states[rid].content_tokens_seen == 2  # type: ignore[attr-defined]
 +
 +
 +def test_slice_blocks_selects_requested_and_empty():
@@ -2894,7 +3066,7 @@ index 000000000..00b5019ad
 +    assert block_ids_for_request(runner, "r0") == [7, 8]
 diff --git a/tests/ut/runtime_guard/test_hooks.py b/tests/ut/runtime_guard/test_hooks.py
 new file mode 100644
-index 000000000..a2ecdb07c
+index 000000000..f60fe62b7
 --- /dev/null
 +++ b/tests/ut/runtime_guard/test_hooks.py
 @@ -0,0 +1,332 @@
@@ -2988,9 +3160,9 @@ index 000000000..a2ecdb07c
 +    # Inner placement: the wave sync executes inside the inference-mode context.
 +    assert runner.seen_inference_mode is True
 +    assert getattr(runner, _PENDING_SO_ATTR) is so
-+    guard.sync_for_step.assert_called_once_with(scheduler_output=so, allow_manual_dump=True)
++    guard.begin_wave.assert_called_once_with(scheduler_output=so, has_scheduled_tokens=True)
 +    # No-sample step (execute_model_state stays None) flushes end-of-wave.
-+    guard.end_of_wave_sync.assert_called_once_with(allow_manual_dump=False)
++    guard.end_of_wave.assert_called_once_with(has_scheduled_tokens=False)
 +
 +
 +def test_step_idle_scheduler_never_arms():
@@ -2999,7 +3171,7 @@ index 000000000..a2ecdb07c
 +    so = _scheduler_output(total=0)
 +
 +    runner.execute_model(so)
-+    guard.sync_for_step.assert_called_once_with(scheduler_output=so, allow_manual_dump=False)
++    guard.begin_wave.assert_called_once_with(scheduler_output=so, has_scheduled_tokens=False)
 +
 +
 +def test_step_skips_flush_when_sample_phase_will_run():
@@ -3008,7 +3180,7 @@ index 000000000..a2ecdb07c
 +    runner.execute_model_state = object()  # sample_tokens will pop it
 +
 +    runner.execute_model(_scheduler_output())
-+    guard.end_of_wave_sync.assert_not_called()
++    guard.end_of_wave.assert_not_called()
 +
 +
 +def test_step_flushes_dummy_wave_even_with_state():
@@ -3017,7 +3189,7 @@ index 000000000..a2ecdb07c
 +    runner.execute_model_state = object()  # dummy waves never reach sample_tokens
 +
 +    runner.execute_model(_scheduler_output(), dummy_run=True)
-+    guard.end_of_wave_sync.assert_called_once_with(allow_manual_dump=False)
++    guard.end_of_wave.assert_called_once_with(has_scheduled_tokens=False)
 +
 +
 +def test_step_reads_positional_dummy_run():
@@ -3027,7 +3199,7 @@ index 000000000..a2ecdb07c
 +
 +    # MRV2 signature: (scheduler_output, intermediate_tensors, dummy_run, ...)
 +    runner.execute_model(_scheduler_output(), None, True)
-+    guard.end_of_wave_sync.assert_called_once_with(allow_manual_dump=False)
++    guard.end_of_wave.assert_called_once_with(has_scheduled_tokens=False)
 +
 +
 +def test_step_flushes_on_body_exception():
@@ -3036,7 +3208,7 @@ index 000000000..a2ecdb07c
 +
 +    with pytest.raises(RuntimeError):
 +        runner.execute_model(_scheduler_output())
-+    guard.end_of_wave_sync.assert_called_once_with(allow_manual_dump=False)
++    guard.end_of_wave.assert_called_once_with(has_scheduled_tokens=False)
 +
 +
 +def test_step_guardless_keeps_bare_path():
@@ -3078,13 +3250,13 @@ index 000000000..a2ecdb07c
 +    assert worker.execute_dummy_batch() == "done"
 +    assert worker.body_ran
 +    # Dummy waves never burn manual_dump and carry no scheduler_output.
-+    guard.sync_for_step.assert_called_once_with(allow_manual_dump=False)
++    guard.begin_wave.assert_called_once_with(has_scheduled_tokens=False)
 +
 +
 +def test_idle_step_propagates_sync_failure():
 +    """Idle sync is a lockstep gate — do not soft-fail (matches busy path)."""
 +    guard = _active_guard()
-+    guard.sync_for_step.side_effect = RuntimeError("boom")
++    guard.begin_wave.side_effect = RuntimeError("boom")
 +    worker = _IdleWorker(SimpleNamespace(runtime_guard=guard))
 +
 +    with pytest.raises(RuntimeError, match="boom"):
@@ -3107,7 +3279,7 @@ index 000000000..a2ecdb07c
 +    assert len(fns) == 1
 +    assert _decorator_names(fns[0]) == ["runtime_guard_idle_step"]
 +    # The lockstep sync itself lives in the hook, not in the worker body.
-+    assert "rg.sync_for_step" not in src
++    assert "rg.begin_wave" not in src
 +
 +
 +class _SampleRunner:
@@ -3146,8 +3318,8 @@ index 000000000..a2ecdb07c
 +
 +    assert runner.execute_model(_scheduler_output()) == "output"
 +    assert runner.body_ran
-+    guard.sync_for_step.assert_not_called()
-+    guard.end_of_wave_sync.assert_not_called()
++    guard.begin_wave.assert_not_called()
++    guard.end_of_wave.assert_not_called()
 +
 +
 +def test_idle_step_fully_off_skips_sync():
@@ -3156,7 +3328,7 @@ index 000000000..a2ecdb07c
 +    worker = _IdleWorker(SimpleNamespace(runtime_guard=guard))
 +
 +    assert worker.execute_dummy_batch() == "done"
-+    guard.sync_for_step.assert_not_called()
++    guard.begin_wave.assert_not_called()
 +
 +
 +def test_sample_tokens_orchestrates_guard_around_body():
@@ -3232,10 +3404,10 @@ index 000000000..a2ecdb07c
 +    assert get_postprocess_sampled(runner) == ([[7]], [1])
 diff --git a/tests/ut/runtime_guard/test_hot_path_overhead.py b/tests/ut/runtime_guard/test_hot_path_overhead.py
 new file mode 100644
-index 000000000..dc101e228
+index 000000000..ac3adf7bf
 --- /dev/null
 +++ b/tests/ut/runtime_guard/test_hot_path_overhead.py
-@@ -0,0 +1,374 @@
+@@ -0,0 +1,550 @@
 +#
 +# Copyright (c) 2025 Huawei Technologies Co., Ltd. All Rights Reserved.
 +#
@@ -3300,7 +3472,7 @@ index 000000000..dc101e228
 +        self.kv_reader = MagicMock()
 +        self.quota = MagicMock()
 +        self.wave_tracker = MagicMock()
-+        # Fields that end_of_wave_sync / drain read directly (no getattr defense).
++        # Fields that end_of_wave / drain read directly (no getattr defense).
 +        self._bus_worker = MagicMock()
 +        self._bus_worker.started = True
 +        self._bus_worker.poll_ready.return_value = True
@@ -3380,7 +3552,7 @@ index 000000000..dc101e228
 +
 +
 +def test_dump_only_still_end_of_wave_on_sample(tmp_path: Path):
-+    """dump_only (detectors off, dump on) ≠ fully off — sample still flushes eow."""
++    """Detectors off and dump on ≠ fully off — sample still flushes eow."""
 +    cfg = _cfg(tmp_path, reload=0.0)
 +    cfg._data["dump"]["auto_max_times"] = 1
 +    cfg._invalidate_hot_path_gates()
@@ -3388,16 +3560,16 @@ index 000000000..dc101e228
 +    assert cfg.needs_sample_phase_hooks() is False
 +    assert cfg.dump_enabled() is True
 +    with (
-+        patch.object(RuntimeGuardProcessor, "refresh_config"),
-+        patch.object(RuntimeGuardProcessor, "end_of_wave_sync") as eow,
-+        patch.object(RuntimeGuardProcessor, "_claim_dump_jobs_to_deferred_via_tp"),
++        patch.object(RuntimeGuardProcessor, "wave_head_sync"),
++        patch.object(RuntimeGuardProcessor, "end_of_wave") as eow,
++        patch.object(RuntimeGuardProcessor, "_stash_local_dump_jobs_to_deferred"),
 +        patch(
 +            "vllm_ascend.observability.runtime_guard.processor.get_pp_group",
 +            side_effect=Exception("no pp"),
 +        ),
 +    ):
 +        proc = _bind(cfg)
-+        proc.sync_for_step(allow_manual_dump=True, scheduler_output=None)
++        proc.begin_wave(has_scheduled_tokens=True, scheduler_output=None)
 +        eow.assert_not_called()
 +
 +        def sample_fn():
@@ -3416,7 +3588,7 @@ index 000000000..dc101e228
 +            speculative_config=None,
 +            use_async=False,
 +        )
-+        eow.assert_called_once_with(allow_manual_dump=True)
++        eow.assert_called_once_with(has_scheduled_tokens=True)
 +    RuntimeGuardProcessor.reset_for_tests()
 +
 +
@@ -3449,8 +3621,12 @@ index 000000000..dc101e228
 +    RuntimeGuardProcessor.reset_for_tests()
 +
 +
-+def test_sync_for_step_dump_only_claims(tmp_path: Path):
-+    """dump_only (detectors off, dump on): advance + claim; not fully off."""
++def test_begin_wave_dump_only_uses_wave_head(tmp_path: Path):
++    """Detectors off and dump on: wave-head bus via refresh; not fully off.
++
++    Hot-reload off still delivers dump jobs through refresh → merged due bus
++    (or local stash when tp<=1). Detector-only skips the collective.
++    """
 +    cfg = _cfg(tmp_path, reload=0.0)
 +    cfg._data["dump"]["auto_max_times"] = 1
 +    cfg._invalidate_hot_path_gates()
@@ -3458,46 +3634,143 @@ index 000000000..dc101e228
 +    assert cfg.needs_sample_phase_hooks() is False
 +    assert cfg.is_fully_off() is False
 +    with (
-+        patch.object(RuntimeGuardProcessor, "refresh_config") as refresh,
-+        patch.object(RuntimeGuardProcessor, "_claim_dump_jobs_to_deferred_via_tp") as claim,
++        patch.object(RuntimeGuardProcessor, "wave_head_sync") as refresh,
++        patch.object(RuntimeGuardProcessor, "_stash_local_dump_jobs_to_deferred") as stash,
 +        patch(
 +            "vllm_ascend.observability.runtime_guard.processor.get_pp_group",
 +            side_effect=Exception("no pp"),
 +        ),
 +    ):
 +        proc = _bind(cfg)
-+        proc.sync_for_step(allow_manual_dump=True, scheduler_output=None)
-+        proc.wave_tracker.advance.assert_called_once_with(allow_manual_dump=True)
-+        refresh.assert_not_called()
-+        claim.assert_called_once()
++        proc.begin_wave(has_scheduled_tokens=True, scheduler_output=None)
++        proc.wave_tracker.advance.assert_called_once_with(has_scheduled_tokens=True)
++        refresh.assert_called_once()
++        # stash lives inside refresh/wave_head; refresh is mocked so stash stays idle.
++        stash.assert_not_called()
 +    RuntimeGuardProcessor.reset_for_tests()
 +
 +
-+def test_sync_for_step_refreshes_when_reload_on_without_detectors(tmp_path: Path):
++def test_begin_wave_detector_only_skips_empty_bus(tmp_path: Path):
++    """Detector on, hot-reload/dump off: keep hooks path, skip empty collective.
++
++    Both bus lanes are disabled, so ``wave_head_sync`` would only pay an empty
++    due-broadcast. Prompt cache / finish / reap must still run for detect.
++    """
++    from vllm_ascend.observability.runtime_guard.state import RequestGuardStore
++
++    cfg = _cfg(tmp_path, reload=0.0)
++    cfg._data["detector"]["token_repeat"]["enabled"] = True
++    cfg._invalidate_hot_path_gates()
++    assert cfg.needs_sample_phase_hooks() is True
++    assert cfg.dump_enabled() is False
++    assert cfg.hot_reload_enabled is False
++    assert cfg.is_fully_off() is False
++
++    so = SimpleNamespace(
++        scheduled_new_reqs=[
++            SimpleNamespace(req_id="det-only", prompt_token_ids=[1, 2, 3]),
++        ],
++        finished_req_ids=None,
++        total_num_scheduled_tokens=3,
++    )
++    RequestGuardStore.reset_for_tests()
++    try:
++        with (
++            patch.object(RuntimeGuardProcessor, "wave_head_sync") as refresh,
++            patch.object(RuntimeGuardProcessor, "_drop_pending_dump_jobs") as drop,
++            patch.object(RuntimeGuardProcessor, "_reap_finished_requests") as reap,
++            patch(
++                "vllm_ascend.observability.runtime_guard.processor.get_pp_group",
++                side_effect=Exception("no pp"),
++            ),
++        ):
++            proc = _bind(cfg)
++            proc._kv_dump_jobs = []
++            proc.begin_wave(has_scheduled_tokens=True, scheduler_output=so)
++            refresh.assert_not_called()
++            drop.assert_not_called()
++            reap.assert_called_once()
++        st = RequestGuardStore.get().get_state("det-only")
++        assert st is not None
++        assert st.prompt_token_ids == [1, 2, 3]
++    finally:
++        RequestGuardStore.reset_for_tests()
++        RuntimeGuardProcessor.reset_for_tests()
++
++
++def test_begin_wave_refreshes_when_reload_on_without_detectors(tmp_path: Path):
 +    """Hot-reload on (never fully off): refresh even with detectors off."""
 +    cfg = _cfg(tmp_path, reload=5.0)
 +    cfg._last_reload_ts = time.time()
 +    cfg._initial_broadcast_done = True
 +    with (
-+        patch.object(RuntimeGuardProcessor, "refresh_config") as refresh,
++        patch.object(RuntimeGuardProcessor, "wave_head_sync") as refresh,
 +        patch(
 +            "vllm_ascend.observability.runtime_guard.processor.get_pp_group",
 +            side_effect=Exception("no pp"),
 +        ),
 +    ):
 +        proc = _bind(cfg)
-+        proc.sync_for_step(allow_manual_dump=True, scheduler_output=None)
-+        proc.wave_tracker.advance.assert_called_once_with(allow_manual_dump=True)
++        proc.begin_wave(has_scheduled_tokens=True, scheduler_output=None)
++        proc.wave_tracker.advance.assert_called_once_with(has_scheduled_tokens=True)
 +        refresh.assert_called_once()
 +    RuntimeGuardProcessor.reset_for_tests()
 +
 +
-+def test_sync_for_step_marks_finished_on_empty_batch(tmp_path: Path):
++def test_begin_wave_caches_prompt_while_hooks_off_under_hot_reload(tmp_path: Path):
++    """Prefill ``scheduled_new_reqs`` must be cached before detectors turn on.
++
++    Hot-reload can leave ``needs_sample_phase_hooks`` false on the only wave
++    that carries new requests; bus enables detectors at end-of-wave, after
++    which n_new=0. Skipping Bug #9 cache until hooks are on left reports with
++    empty ``prompt_token_ids`` (S06 empty-prompt timeline).
++    """
++    from vllm_ascend.observability.runtime_guard.state import RequestGuardStore
++
++    cfg = _cfg(tmp_path, reload=5.0)
++    cfg._last_reload_ts = time.time()
++    cfg._initial_broadcast_done = True
++    assert cfg.needs_sample_phase_hooks() is False
++    assert cfg.hot_reload_enabled is True
++
++    so = SimpleNamespace(
++        scheduled_new_reqs=[
++            SimpleNamespace(req_id="s06-req", prompt_token_ids=[11, 22, 33]),
++        ],
++        finished_req_ids=None,
++        total_num_scheduled_tokens=3,
++    )
++    RequestGuardStore.reset_for_tests()
++    try:
++        with (
++            patch.object(RuntimeGuardProcessor, "wave_head_sync"),
++            patch.object(RuntimeGuardProcessor, "mark_finished") as mark,
++            patch.object(RuntimeGuardProcessor, "_reap_finished_requests") as reap,
++            patch(
++                "vllm_ascend.observability.runtime_guard.processor.get_pp_group",
++                side_effect=Exception("no pp"),
++            ),
++        ):
++            proc = _bind(cfg)
++            proc.begin_wave(has_scheduled_tokens=True, scheduler_output=so)
++            # Busy wave: finish is stamped in run_sample_phase, not here.
++            # Reap still runs so prompts cached on earlier waves can be cleared.
++            mark.assert_not_called()
++            reap.assert_called_once()
++        st = RequestGuardStore.get().get_state("s06-req")
++        assert st is not None
++        assert st.prompt_token_ids == [11, 22, 33]
++    finally:
++        RequestGuardStore.reset_for_tests()
++        RuntimeGuardProcessor.reset_for_tests()
++
++
++def test_begin_wave_marks_finished_on_empty_batch(tmp_path: Path):
 +    """Final-request-before-idle: empty batch still marks+reaps finished reqs.
 +
 +    Async scheduling returns EMPTY_MODEL_RUNNER_OUTPUT for the trailing empty
 +    batch, so ``run_sample_phase`` (and its ``mark_finished`` hook) never fires.
-+    ``sync_for_step`` must mark ``scheduler_output.finished_req_ids`` itself so
++    ``begin_wave`` must mark ``scheduler_output.finished_req_ids`` itself so
 +    reap still runs for the last request.
 +    """
 +    cfg = _cfg(tmp_path, reload=0.0)
@@ -3523,7 +3796,7 @@ index 000000000..dc101e228
 +    )
 +
 +    with (
-+        patch.object(RuntimeGuardProcessor, "refresh_config"),
++        patch.object(RuntimeGuardProcessor, "wave_head_sync"),
 +        patch.object(RuntimeGuardProcessor, "mark_finished", _mark),
 +        patch.object(RuntimeGuardProcessor, "_reap_finished_requests", _reap),
 +        patch(
@@ -3532,35 +3805,70 @@ index 000000000..dc101e228
 +        ),
 +    ):
 +        proc = _bind(cfg)
-+        proc.sync_for_step(allow_manual_dump=True, scheduler_output=so_empty)
++        proc.begin_wave(has_scheduled_tokens=True, scheduler_output=so_empty)
 +        mark_calls = [c for c in calls if c[0] == "mark"]
 +        assert mark_calls, "mark_finished must fire on the empty final batch"
 +        # bound method: _mark(self, finished_req_ids) → args[1] is the id set.
 +        assert mark_calls[0][1][1] == {"r_final"}
 +        calls.clear()
-+        proc.sync_for_step(allow_manual_dump=True, scheduler_output=so_busy)
++        proc.begin_wave(has_scheduled_tokens=True, scheduler_output=so_busy)
 +        assert not [c for c in calls if c[0] == "mark"]
 +    RuntimeGuardProcessor.reset_for_tests()
 +
 +
-+def test_refresh_config_skips_clear_wave_cache_when_idle(tmp_path: Path):
++def test_begin_wave_reaps_while_hooks_off_under_hot_reload(tmp_path: Path):
++    """Prompts cached before detectors turn on must still be reaped."""
++    cfg = _cfg(tmp_path, reload=5.0)
++    cfg._last_reload_ts = time.time()
++    cfg._initial_broadcast_done = True
++    assert cfg.needs_sample_phase_hooks() is False
++
++    calls: list[str] = []
++    so_empty = SimpleNamespace(
++        scheduled_new_reqs=None,
++        finished_req_ids={"r_final"},
++        total_num_scheduled_tokens=0,
++    )
++
++    def _mark(*_a, **_k):
++        calls.append("mark")
++
++    def _reap(*_a, **_k):
++        calls.append("reap")
++
++    with (
++        patch.object(RuntimeGuardProcessor, "wave_head_sync"),
++        patch.object(RuntimeGuardProcessor, "mark_finished", _mark),
++        patch.object(RuntimeGuardProcessor, "_reap_finished_requests", _reap),
++        patch(
++            "vllm_ascend.observability.runtime_guard.processor.get_pp_group",
++            side_effect=Exception("no pp"),
++        ),
++    ):
++        proc = _bind(cfg)
++        proc.begin_wave(has_scheduled_tokens=False, scheduler_output=so_empty)
++    assert calls == ["mark", "reap"]
++    RuntimeGuardProcessor.reset_for_tests()
++
++
++def test_wave_head_sync_skips_clear_wave_cache_when_idle(tmp_path: Path):
 +    cfg = _cfg(tmp_path, reload=0.0)
 +    with patch("vllm_ascend.observability.runtime_guard.processor.RequestIoSnapshotManager") as io_mgr:
 +        io = MagicMock()
 +        io_mgr.get.return_value = io
 +        proc = _bind(cfg)
-+        proc.refresh_config()
++        proc.wave_head_sync()
 +        io.clear_wave_cache.assert_not_called()
 +
 +        cfg._data["detector"]["token_repeat"]["enabled"] = True
 +        cfg._invalidate_hot_path_gates()
-+        proc.refresh_config()
++        proc.wave_head_sync()
 +        io.clear_wave_cache.assert_called_once()
 +    RuntimeGuardProcessor.reset_for_tests()
 +
 +
 +def test_run_sample_phase_idle_skips_hooks(tmp_path: Path):
-+    """A-path: detectors/block-meta off → sample_fn only."""
++    """Detectors off: sample + finish stamp, no wave record or after-sample."""
 +    cfg = _cfg(tmp_path, reload=0.0)
 +    proc = _bind(cfg)
 +    calls: list[str] = []
@@ -3586,28 +3894,68 @@ index 000000000..dc101e228
 +        speculative_config=None,
 +        use_async=False,
 +    )
-+    assert calls == ["sample"]
++    assert calls == ["sample", "mark"]
 +    RuntimeGuardProcessor.reset_for_tests()
 +
 +
-+def test_sync_due_bits_all_reduce_even_when_not_due():
-+    """Due-vector AR always runs; due=false pays only the cheap all_reduce."""
-+    from vllm_ascend.observability.runtime_config.dist import sync_due_bits
++def test_run_sample_phase_marks_finished_before_eow_when_hooks_off(tmp_path: Path):
++    """Hot-reload with detectors off must stamp finish before manual-dump eow.
++
++    Reap stays on the next begin_wave so this wave's report can still read
++    the prompt cache.
++    """
++    cfg = _cfg(tmp_path, reload=5.0)
++    cfg._last_reload_ts = time.time()
++    cfg._initial_broadcast_done = True
++    assert cfg.needs_sample_phase_hooks() is False
++    order: list[str] = []
++
++    def sample_fn():
++        order.append("sample")
++        return SamplePhaseResult(
++            scheduler_output=None,
++            input_batch=None,
++            model_runner_output=None,
++            sampler_output=MagicMock(),
++            valid_sampled_token_ids=[1],
++            req_ids_output_copy=["r1"],
++            finished_req_ids=["r1"],
++        )
++
++    proc = _bind(cfg)
++    proc.mark_finished = lambda ids: order.append(f"mark:{list(ids)}")  # type: ignore[method-assign]
++    proc.end_of_wave = lambda **k: order.append("eow")  # type: ignore[method-assign]
++    proc._reap_finished_requests = lambda: order.append("reap")  # type: ignore[method-assign]
++    proc.run_sample_phase(
++        sample_fn=sample_fn,
++        speculative_config=None,
++        use_async=False,
++    )
++    assert order == ["sample", "mark:['r1']", "eow"]
++    RuntimeGuardProcessor.reset_for_tests()
++
++
++def test_broadcast_due_bits_from_src_broadcast_even_when_not_due():
++    """Merged due-bus always pays the source broadcast (idle bits included)."""
++    from vllm_ascend.observability.runtime_config.dist import broadcast_due_bits_from_src
 +
 +    group = MagicMock()
 +    group.world_size = 2
++    group.rank_in_group = 0
 +    group.cpu_group = object()
-+    group.device_group = object()  # distinct from cpu_group → CPU tensor path
-+    with patch("torch.distributed.all_reduce") as ar:
-+        assert sync_due_bits(group, [False, False]) == [False, False]
-+        ar.assert_called_once()
++    with (
++        patch("torch.distributed.broadcast") as bcast,
++        patch("torch.distributed.get_process_group_ranks", return_value=[0, 1]),
++    ):
++        assert broadcast_due_bits_from_src(group, [False, False], wave_idx=1) == [False, False]
++        bcast.assert_called_once()
 +
 +
-+def test_refresh_config_skips_detector_apply_when_unchanged(tmp_path: Path):
++def test_wave_head_sync_skips_detector_apply_when_unchanged(tmp_path: Path):
 +    cfg = _cfg(tmp_path, reload=0.05)
 +    with patch.object(cfg, "sync_runtime_config", return_value=False):
 +        proc = _bind(cfg)
-+        proc.refresh_config()
++        proc.wave_head_sync()
 +    proc.detectors.apply_runtime_config.assert_not_called()
 +    RuntimeGuardProcessor.reset_for_tests()
 diff --git a/tests/ut/runtime_guard/test_io.py b/tests/ut/runtime_guard/test_io.py
@@ -3683,7 +4031,7 @@ index 000000000..3c337a603
 +        RequestIoSnapshotManager.reset_for_tests()
 diff --git a/tests/ut/runtime_guard/test_manual_dump_detail.py b/tests/ut/runtime_guard/test_manual_dump_detail.py
 new file mode 100644
-index 000000000..14d18db0c
+index 000000000..9b777125c
 --- /dev/null
 +++ b/tests/ut/runtime_guard/test_manual_dump_detail.py
 @@ -0,0 +1,99 @@
@@ -3725,7 +4073,7 @@ index 000000000..14d18db0c
 +        self._done = done
 +        self.consume_calls = 0
 +
-+    def manual_trigger_count(self) -> int:
++    def manual_dump_remaining(self) -> int:
 +        return max(0, self._target - self._done)
 +
 +    def manual_dumps_done(self) -> int:
@@ -3734,13 +4082,13 @@ index 000000000..14d18db0c
 +    def manual_dump_target(self) -> int:
 +        return self._target
 +
-+    def manual_trigger_continuous(self) -> bool:
++    def manual_dump_continuous(self) -> bool:
 +        return False
 +
 +    def dump_enabled(self) -> bool:
 +        return True
 +
-+    def consume_manual_trigger(self) -> bool:
++    def consume_manual_dump(self) -> bool:
 +        self.consume_calls += 1
 +        if self._done >= self._target:
 +            return False
@@ -3769,7 +4117,7 @@ index 000000000..14d18db0c
 +            return_value=True,
 +        ),
 +    ):
-+        p._maybe_fire_manual_local(allow_manual_dump=True)
++        p._maybe_fire_manual_local(has_scheduled_tokens=True)
 +
 +    assert cfg.consume_calls == 1
 +    assert cfg.manual_dumps_done() == 2
@@ -4033,10 +4381,10 @@ index 000000000..487fec7ca
 +        assert is_action_leader_rank(runner) is False
 diff --git a/tests/ut/runtime_guard/test_review_regressions.py b/tests/ut/runtime_guard/test_review_regressions.py
 new file mode 100644
-index 000000000..2b56ac82f
+index 000000000..e1ad5f188
 --- /dev/null
 +++ b/tests/ut/runtime_guard/test_review_regressions.py
-@@ -0,0 +1,2411 @@
+@@ -0,0 +1,2499 @@
 +#
 +# Copyright (c) 2025 Huawei Technologies Co., Ltd. All Rights Reserved.
 +#
@@ -4245,7 +4593,7 @@ index 000000000..2b56ac82f
 +
 +def test_v8a_wave_tracker_discard():
 +    wt = WaveTracker()
-+    wt.advance(allow_manual_dump=True)
++    wt.advance(has_scheduled_tokens=True)
 +    wt.record_sample_waves(["r1"])
 +    assert wt.take_sample_wave("r1") == 1
 +    wt.record_sample_waves(["r1"])
@@ -4257,9 +4605,9 @@ index 000000000..2b56ac82f
 +def test_v8a3_wave_tracker_fifo_under_async_lag():
 +    """W1-3: later record must not erase an untaken earlier stamp."""
 +    wt = WaveTracker()
-+    wt.advance(allow_manual_dump=True)
++    wt.advance(has_scheduled_tokens=True)
 +    wt.record_sample_waves(["r1"])  # wave 1
-+    wt.advance(allow_manual_dump=True)
++    wt.advance(has_scheduled_tokens=True)
 +    wt.record_sample_waves(["r1"])  # wave 2 (must queue, not overwrite)
 +    assert wt.take_sample_wave("r1") == 1
 +    assert wt.take_sample_wave("r1") == 2
@@ -4269,7 +4617,7 @@ index 000000000..2b56ac82f
 +
 +def test_v8a2_wave_tracker_lock_record_take_concurrent():
 +    wt = WaveTracker()
-+    wt.advance(allow_manual_dump=True)
++    wt.advance(has_scheduled_tokens=True)
 +    errs: list[BaseException] = []
 +
 +    def _record() -> None:
@@ -4298,7 +4646,7 @@ index 000000000..2b56ac82f
 +def test_v8b_reap_discards_wave_stamps():
 +    p = _bare_processor()
 +    wt = WaveTracker()
-+    wt.advance(allow_manual_dump=True)
++    wt.advance(has_scheduled_tokens=True)
 +    wt.record_sample_waves(["r1", "r2"])
 +    p.wave_tracker = wt
 +    p.runtime_config = MagicMock()
@@ -4318,7 +4666,7 @@ index 000000000..2b56ac82f
 +
 +    p = _bare_processor()
 +    wt = WaveTracker()
-+    wt.advance(allow_manual_dump=True)
++    wt.advance(has_scheduled_tokens=True)
 +    p.wave_tracker = wt
 +    p.runner = SimpleNamespace(tp_rank=1)
 +    p.needs_sample_phase_hooks = lambda: True  # type: ignore[method-assign]
@@ -4720,8 +5068,8 @@ index 000000000..2b56ac82f
 +
 +def _quota_rc(max_times: int, cooldown: float) -> SimpleNamespace:
 +    return SimpleNamespace(
-+        dump_max_times=lambda: max_times,
-+        dump_cooldown_seconds=lambda: cooldown,
++        auto_dump_max_times=lambda: max_times,
++        auto_dump_cooldown_seconds=lambda: cooldown,
 +    )
 +
 +
@@ -5147,8 +5495,8 @@ index 000000000..2b56ac82f
 +    assert list(shard.glob("*.pt"))
 +
 +
-+def test_v18e_file_mode_claim_skips_tp_bus_when_dump_inactive():
-+    """dump_enabled=False: all ranks skip TP due-AR (lockstep via shared gate)."""
++def test_v18e_local_stash_drops_when_dump_inactive():
++    """dump_enabled=False: local stash drops pending jobs (no TP collective)."""
 +    from vllm_ascend.observability.runtime_guard.processor import RuntimeGuardProcessor
 +
 +    proc = _bare_processor()
@@ -5157,60 +5505,37 @@ index 000000000..2b56ac82f
 +    proc._kv_dump_jobs = [{"req_id": "stray", "consume_quota": False}]
 +    proc._deferred_kv_dump_jobs = []
 +    proc.quota = MagicMock()
-+    tp = MagicMock()
-+    tp.world_size = 2
-+    tp.rank_in_group = 0
-+    with (
-+        patch(
-+            "vllm_ascend.observability.runtime_guard.processor_dump.should_dump_kv_on_rank",
-+            return_value=True,
-+        ),
-+        patch(
-+            "vllm_ascend.observability.runtime_guard.processor_dump.get_tp_group",
-+            return_value=tp,
-+        ),
-+        patch(
-+            "vllm_ascend.observability.runtime_guard.processor_dump.sync_task_bus",
-+        ) as bus,
-+        patch("torch.distributed.all_reduce") as ar,
++    with patch(
++        "vllm_ascend.observability.runtime_guard.processor_dump.should_dump_kv_on_rank",
++        return_value=True,
 +    ):
-+        RuntimeGuardProcessor._claim_dump_jobs_to_deferred_via_tp(proc)
-+    bus.assert_not_called()
-+    ar.assert_not_called()
++        RuntimeGuardProcessor._stash_local_dump_jobs_to_deferred(proc)
 +    assert proc._kv_dump_jobs == []
 +    assert proc._deferred_kv_dump_jobs == []
 +
 +
-+def test_v18e2_file_mode_claim_empty_still_joins_due_ar_when_dump_on():
-+    """dump_enabled=True + empty queue: still due-AR (non-TP0 cannot see TP0 jobs)."""
++def test_v18e2_local_stash_moves_jobs_when_dump_on():
++    """dump_enabled=True: local stash moves jobs into deferred with no collective."""
 +    from vllm_ascend.observability.runtime_guard.processor import RuntimeGuardProcessor
 +
++    job = {"req_id": "r1", "consume_quota": False}
 +    proc = SimpleNamespace(
 +        runner=SimpleNamespace(),
 +        runtime_config=SimpleNamespace(dump_enabled=lambda: True),
-+        _kv_dump_jobs=[],
++        _kv_dump_jobs=[job],
 +        _deferred_kv_dump_jobs=[],
 +    )
-+    tp = MagicMock()
-+    tp.world_size = 2
-+    tp.rank_in_group = 0
-+    tp.cpu_group = object()
-+    tp.broadcast_object = MagicMock()
 +    with (
 +        patch(
 +            "vllm_ascend.observability.runtime_guard.processor_dump.should_dump_kv_on_rank",
 +            return_value=True,
 +        ),
-+        patch(
-+            "vllm_ascend.observability.runtime_guard.processor_dump.get_tp_group",
-+            return_value=tp,
-+        ),
 +        patch("torch.distributed.all_reduce") as ar,
 +    ):
-+        RuntimeGuardProcessor._claim_dump_jobs_to_deferred_via_tp(proc)
-+    ar.assert_called_once()
-+    tp.broadcast_object.assert_not_called()
-+    assert proc._deferred_kv_dump_jobs == []
++        RuntimeGuardProcessor._stash_local_dump_jobs_to_deferred(proc)
++    ar.assert_not_called()
++    assert proc._kv_dump_jobs == []
++    assert proc._deferred_kv_dump_jobs == [job]
 +
 +
 +def test_v18h_apply_config_payload_bumps_follower_reload_ts(tmp_path: Path):
@@ -5235,6 +5560,31 @@ index 000000000..2b56ac82f
 +    assert changed is False
 +    assert cfg._last_reload_ts >= before
 +    assert cfg.config_due_local() is False
++
++
++def test_v18e_wave_head_uses_merged_bus_when_hot_reload_off():
++    """last-PP TP>1 uses merged due bus even with hot-reload off (config_due stays false)."""
++    from vllm_ascend.observability.runtime_guard.processor_bus import RuntimeGuardBusMixin
++
++    cfg = MagicMock()
++    cfg.hot_reload_enabled = False
++    group = MagicMock()
++    group.world_size = 2
++    proc = SimpleNamespace(
++        runtime_config=cfg,
++        _wave_head_merged_bus=MagicMock(return_value=False),
++        _stash_local_dump_jobs_to_deferred=MagicMock(),
++        _apply_config_cascade=MagicMock(),
++        needs_sample_phase_hooks=lambda: False,
++    )
++    with patch(
++        "vllm_ascend.observability.runtime_guard.processor_bus._runtime_config_sync_group_or_none",
++        return_value=group,
++    ):
++        assert RuntimeGuardBusMixin._wave_head_task_bus(proc) is False
++    proc._wave_head_merged_bus.assert_called_once_with(group)
++    proc._stash_local_dump_jobs_to_deferred.assert_not_called()
++    cfg.sync_runtime_config.assert_not_called()
 +
 +
 +def test_v18f_merged_bus_idle_one_bcast_zero_obj():
@@ -5348,7 +5698,7 @@ index 000000000..2b56ac82f
 +
 +
 +class _ConsumeRecorder:
-+    """runtime_config stand-in recording consume_manual_trigger calls."""
++    """runtime_config stand-in recording consume_manual_dump calls."""
 +
 +    def __init__(self, remaining: int = 2) -> None:
 +        self.remaining = remaining
@@ -5356,7 +5706,7 @@ index 000000000..2b56ac82f
 +        self.target = remaining
 +        self.consume_calls = 0
 +
-+    def consume_manual_trigger(self) -> bool:
++    def consume_manual_dump(self) -> bool:
 +        self.consume_calls += 1
 +        if self.remaining > 0:
 +            self.remaining -= 1
@@ -5364,7 +5714,7 @@ index 000000000..2b56ac82f
 +            return True
 +        return False
 +
-+    def manual_trigger_count(self) -> int:
++    def manual_dump_remaining(self) -> int:
 +        return self.remaining
 +
 +    def manual_dumps_done(self) -> int:
@@ -5373,7 +5723,7 @@ index 000000000..2b56ac82f
 +    def manual_dump_target(self) -> int:
 +        return self.target
 +
-+    def manual_trigger_continuous(self) -> bool:
++    def manual_dump_continuous(self) -> bool:
 +        return False
 +
 +    def dump_root(self):
@@ -5487,7 +5837,7 @@ index 000000000..2b56ac82f
 +        "vllm_ascend.observability.runtime_guard.dump.block_ids_for_request",
 +        lambda _runner, req_id, req_idx=None, **kw: [0] if req_id == "r1" else [1],
 +    )
-+    DumpKvAction().run(ctx)  # arm only; D2H is end_of_wave_sync at sample end
++    DumpKvAction().run(ctx)  # arm only; D2H is end_of_wave at sample end
 +    assert rc.consume_calls == 0  # consume moved to _handle_manual_trigger
 +    assert ctx.runner.runtime_guard.queue_kv_dump.call_count == 2
 +    queued = [c.args[0]["req_id"] for c in ctx.runner.runtime_guard.queue_kv_dump.call_args_list]
@@ -5741,7 +6091,7 @@ index 000000000..2b56ac82f
 +
 +    rc = cfg.RuntimeConfig(config_path=None)
 +    assert rc.detector_get("token_repeat", "enabled", True) is False
-+    assert rc.ensure_persisted() is True
++    assert rc.persist_bootstrap_config() is True
 +    on_disk = json.loads(cfg_file.read_text(encoding="utf-8"))
 +    assert on_disk["detector"]["token_repeat"]["enabled"] is False
 +    assert rc.detector_get("token_repeat", "window", 0) == int(cfg._DEFAULTS["detector"]["token_repeat"]["window"])
@@ -5760,7 +6110,7 @@ index 000000000..2b56ac82f
 +def test_v21c_pre_bootstrap_file_ignored_on_reload(tmp_path: Path):
 +    """A JSON written before this process's bootstrap must not leak in via the
 +    first hot-reload (the race where the background reloader reads the stale
-+    file before ``ensure_persisted`` overwrites it)."""
++    file before ``persist_bootstrap_config`` overwrites it)."""
 +    import vllm_ascend.observability.runtime_config.config as cfg
 +
 +    cfg_file = tmp_path / "runtime_config.json"
@@ -5772,7 +6122,7 @@ index 000000000..2b56ac82f
 +    rc = cfg.RuntimeConfig(
 +        config_path=str(cfg_file),
 +        report_dir=tmp_path / "report",
-+        ensure_file=False,  # production: persist deferred to ensure_persisted
++        ensure_file=False,  # production: persist deferred to persist_bootstrap_config
 +        hot_reload=True,
 +    )
 +    # Bootstrap ignores the stale file: detector stays at its default (off).
@@ -5782,7 +6132,7 @@ index 000000000..2b56ac82f
 +    assert rc.detector_get("token_repeat", "enabled", True) is False
 +
 +    # Writer persists the effective startup config (defaults), overwriting stale.
-+    assert rc.ensure_persisted() is True
++    assert rc.persist_bootstrap_config() is True
 +    on_disk = json.loads(cfg_file.read_text(encoding="utf-8"))
 +    assert on_disk["detector"]["token_repeat"]["enabled"] is False
 +
@@ -6139,7 +6489,7 @@ index 000000000..2b56ac82f
 +# discards pending jobs without a D2H must give the unit back (once per arm).
 +
 +
-+def _claim_drop_processor(*, dump_enabled: bool, tp_rank: int, jobs: list) -> RuntimeGuardProcessor:
++def _stash_drop_processor(*, dump_enabled: bool, tp_rank: int, jobs: list) -> RuntimeGuardProcessor:
 +    p = _bare_processor()
 +    p.runner = SimpleNamespace()
 +    p.runtime_config = MagicMock()
@@ -6157,7 +6507,7 @@ index 000000000..2b56ac82f
 +    monkeypatch.setattr(processor_dump, "should_dump_kv_on_rank", lambda: True)
 +    monkeypatch.setattr(processor_dump, "runner_tp_rank", lambda _r: 0)
 +
-+    p = _claim_drop_processor(
++    p = _stash_drop_processor(
 +        dump_enabled=False,
 +        tp_rank=0,
 +        jobs=[
@@ -6166,7 +6516,7 @@ index 000000000..2b56ac82f
 +            {"req_id": "r3", "consume_quota": False, "arm_id": "arm-2", "wave": 3},
 +        ],
 +    )
-+    RuntimeGuardProcessor._claim_dump_jobs_to_deferred_via_tp(p)
++    RuntimeGuardProcessor._stash_local_dump_jobs_to_deferred(p)
 +    # One arm = one try_consume → exactly one refund (not per job, not for free jobs).
 +    p.quota.refund.assert_called_once_with(consume_quota=True)
 +    assert p._kv_dump_jobs == []
@@ -6180,42 +6530,29 @@ index 000000000..2b56ac82f
 +    monkeypatch.setattr(processor_dump, "should_dump_kv_on_rank", lambda: True)
 +    monkeypatch.setattr(processor_dump, "runner_tp_rank", lambda _r: 1)
 +
-+    p = _claim_drop_processor(
++    p = _stash_drop_processor(
 +        dump_enabled=False,
 +        tp_rank=1,
 +        jobs=[{"req_id": "r1", "consume_quota": True, "arm_id": "arm-1"}],
 +    )
-+    RuntimeGuardProcessor._claim_dump_jobs_to_deferred_via_tp(p)
++    RuntimeGuardProcessor._stash_local_dump_jobs_to_deferred(p)
 +    p.quota.refund.assert_not_called()
 +    assert p._kv_dump_jobs == []
 +
 +
-+def test_v28c_claim_bus_failure_refunds_and_raises(monkeypatch):
++def test_v28c_local_stash_when_dump_on_keeps_jobs(monkeypatch):
++    """tp<=1 fallback: dump on moves jobs to deferred (no TP collective to fail)."""
 +    from vllm_ascend.observability.runtime_guard import processor_dump
 +
 +    monkeypatch.setattr(processor_dump, "should_dump_kv_on_rank", lambda: True)
 +    monkeypatch.setattr(processor_dump, "runner_tp_rank", lambda _r: 0)
-+    monkeypatch.setattr(
-+        processor_dump,
-+        "get_tp_group",
-+        lambda: SimpleNamespace(world_size=2, rank_in_group=0),
-+    )
-+    monkeypatch.setattr(
-+        processor_dump,
-+        "sync_task_bus",
-+        MagicMock(side_effect=RuntimeError("hccl down")),
-+    )
 +
-+    p = _claim_drop_processor(
-+        dump_enabled=True,
-+        tp_rank=0,
-+        jobs=[{"req_id": "r1", "consume_quota": True, "arm_id": "arm-1"}],
-+    )
-+    with pytest.raises(RuntimeError, match="hccl down"):
-+        RuntimeGuardProcessor._claim_dump_jobs_to_deferred_via_tp(p)
-+    p.quota.refund.assert_called_once_with(consume_quota=True)
++    job = {"req_id": "r1", "consume_quota": True, "arm_id": "arm-1"}
++    p = _stash_drop_processor(dump_enabled=True, tp_rank=0, jobs=[job])
++    RuntimeGuardProcessor._stash_local_dump_jobs_to_deferred(p)
++    p.quota.refund.assert_not_called()
 +    assert p._kv_dump_jobs == []
-+    assert p._deferred_kv_dump_jobs == []
++    assert p._deferred_kv_dump_jobs == [job]
 +
 +
 +def test_v28d_merged_bus_collective_failure_refunds_handed_off_jobs():
@@ -6236,6 +6573,8 @@ index 000000000..2b56ac82f
 +        _apply_config_cascade=MagicMock(),
 +        _refund_dropped_dump_arms=lambda jobs: refunded.append(list(jobs)),
 +        _drop_pending_dump_jobs=MagicMock(),
++        # Snapshot before submit (soft-purge True→False path).
++        needs_sample_phase_hooks=lambda: False,
 +    )
 +    group = SimpleNamespace(world_size=2, cpu_group=object(), is_first_rank=True, rank_in_group=0)
 +    worker = attach_bus_worker(proc, name="ut-v28d")
@@ -6246,7 +6585,7 @@ index 000000000..2b56ac82f
 +                return_value=True,
 +            ),
 +            patch(
-+                "vllm_ascend.observability.runtime_config.dist.sync_due_bits_from_src",
++                "vllm_ascend.observability.runtime_config.dist.broadcast_due_bits_from_src",
 +                side_effect=RuntimeError("bus down"),
 +            ),
 +        ):
@@ -6264,8 +6603,8 @@ index 000000000..2b56ac82f
 +        worker.stop()
 +
 +
-+def test_v28e_dump_only_dump_off_drops_pending(monkeypatch):
-+    """dump_only path with dump inactive refunds unclaimed arms (not fully off)."""
++def test_v28e_dump_inactive_skip_wave_head_drops_pending(monkeypatch):
++    """skip_wave_head_bus (dump off) refunds unclaimed arms."""
 +    from vllm_ascend.observability.runtime_guard import processor_dump
 +
 +    monkeypatch.setattr(processor_dump, "runner_tp_rank", lambda _r: 0)
@@ -6274,7 +6613,7 @@ index 000000000..2b56ac82f
 +    p.runner = SimpleNamespace()
 +    p.wave_tracker = MagicMock()
 +    p.runtime_config = MagicMock()
-+    # Sync enters dump_only branch (detectors off, hot-reload off).
++    # Sync enters skip_wave_head_bus (no detectors, no manual, no dump, hot-reload off).
 +    p.runtime_config.manual_trigger.return_value = False
 +    p.runtime_config.needs_sample_phase_hooks.return_value = False
 +    p.runtime_config.hot_reload_enabled = False
@@ -6282,16 +6621,16 @@ index 000000000..2b56ac82f
 +    p.quota = MagicMock()
 +    p._kv_dump_jobs = [{"req_id": "r1", "consume_quota": True, "arm_id": "arm-1"}]
 +    p._deferred_kv_dump_jobs = []
-+    p._end_of_wave_sync_if_no_sample = MagicMock()
++    p._end_of_wave_if_no_sample = MagicMock()
 +
-+    RuntimeGuardProcessor.sync_for_step(p, allow_manual_dump=True)
-+    p.wave_tracker.advance.assert_called_once_with(allow_manual_dump=True)
++    RuntimeGuardProcessor.begin_wave(p, has_scheduled_tokens=True)
++    p.wave_tracker.advance.assert_called_once_with(has_scheduled_tokens=True)
 +    p.quota.refund.assert_called_once_with(consume_quota=True)
 +    assert p._kv_dump_jobs == []
 +
 +
 +def test_v28f_non_last_pp_skips_wave_sync_and_end_of_wave(monkeypatch):
-+    """Early PP: sync_for_step / end_of_wave_sync return at the entrance gate."""
++    """Early PP: begin_wave / end_of_wave return at the entrance gate."""
 +    from vllm_ascend.observability.runtime_guard import processor as processor_mod
 +    from vllm_ascend.observability.runtime_guard import processor_dump
 +
@@ -6301,17 +6640,17 @@ index 000000000..2b56ac82f
 +    p = _bare_processor()
 +    p.wave_tracker = MagicMock()
 +    p.runtime_config = MagicMock()
-+    p.refresh_config = MagicMock()  # type: ignore[method-assign]
++    p.wave_head_sync = MagicMock()  # type: ignore[method-assign]
 +    p._drain_merged_bus = MagicMock()  # type: ignore[method-assign]
 +    p._maybe_fire_manual_local = MagicMock()  # type: ignore[method-assign]
-+    # Restore real end_of_wave_sync (bare_processor stubs it).
-+    p.end_of_wave_sync = RuntimeGuardProcessor.end_of_wave_sync.__get__(p)  # type: ignore[method-assign]
++    # Restore real end_of_wave (bare_processor stubs it).
++    p.end_of_wave = RuntimeGuardProcessor.end_of_wave.__get__(p)  # type: ignore[method-assign]
 +
-+    RuntimeGuardProcessor.sync_for_step(p, allow_manual_dump=True)
++    RuntimeGuardProcessor.begin_wave(p, has_scheduled_tokens=True)
 +    p.wave_tracker.advance.assert_not_called()
-+    p.refresh_config.assert_not_called()
++    p.wave_head_sync.assert_not_called()
 +
-+    RuntimeGuardProcessor.end_of_wave_sync(p, allow_manual_dump=True)
++    RuntimeGuardProcessor.end_of_wave(p, has_scheduled_tokens=True)
 +    p._drain_merged_bus.assert_not_called()
 +    p._maybe_fire_manual_local.assert_not_called()
 +
@@ -6368,8 +6707,8 @@ index 000000000..2b56ac82f
 +# ------------------------------------------------- V30 (purge on all detectors off)
 +
 +
-+def test_v30_cascade_purges_store_when_all_detectors_disabled():
-+    """Hot-reload True→False on needs_sample_phase_hooks clears Store; keeps deferred dumps."""
++def test_v30_cascade_soft_purges_outputs_keeps_prompts_when_all_detectors_disabled():
++    """All-detectors-off clears outputs/waves; keeps Store rows + prompts + deferred dumps."""
 +    from vllm_ascend.observability.runtime_guard.processor_bus import RuntimeGuardBusMixin
 +    from vllm_ascend.observability.runtime_guard.state import RequestGuardStore, WaveTracker
 +
@@ -6377,11 +6716,13 @@ index 000000000..2b56ac82f
 +    try:
 +        store = RequestGuardStore.get()
 +        store.get_or_create("r1")
++        store.set_prompt_token_ids("r1", [10, 20, 30])
 +        store.append_output_ids("r1", [1, 2])
 +        store.mark_finished(["r2"], wave=1)
++        store.set_prompt_token_ids("r2", [7, 8])
 +
 +        wt = WaveTracker()
-+        wt.advance(allow_manual_dump=True)
++        wt.advance(has_scheduled_tokens=True)
 +        wt.record_sample_waves(["r1", "r2"])
 +
 +        p = _bare_processor()
@@ -6407,12 +6748,19 @@ index 000000000..2b56ac82f
 +        ):
 +            RuntimeGuardBusMixin._apply_config_cascade(p, prev_needs_sample_hooks=True)
 +
-+        assert store.list_req_ids() == []
++        assert sorted(store.list_req_ids()) == ["r1", "r2"]
++        st1 = store.get_state("r1")
++        assert st1 is not None
++        assert st1.prompt_token_ids == [10, 20, 30]
++        assert st1.output_token_ids == []
++        st2 = store.get_state("r2")
++        assert st2 is not None
++        assert st2.prompt_token_ids == [7, 8]
 +        assert wt._sample_waves == {}
 +        assert p._kv_dump_jobs == []
 +        assert p._deferred_kv_dump_jobs == [{"req_id": "kept", "arm_id": "a0"}]
 +        p.quota.refund.assert_called_once_with(consume_quota=True)
-+        p.detectors.clear_finished.assert_any_call("r1")
++        p.detectors.disable_all.assert_called_once()
 +    finally:
 +        RequestGuardStore.reset_for_tests()
 +
@@ -6425,6 +6773,7 @@ index 000000000..2b56ac82f
 +    try:
 +        store = RequestGuardStore.get()
 +        store.get_or_create("r1")
++        store.append_output_ids("r1", [9])
 +
 +        p = _bare_processor()
 +        p.wave_tracker = MagicMock()
@@ -6444,10 +6793,97 @@ index 000000000..2b56ac82f
 +        RuntimeGuardBusMixin._apply_config_cascade(p, prev_needs_sample_hooks=True)
 +
 +        assert store.list_req_ids() == ["r1"]
++        assert store.get_state("r1").output_token_ids == [9]  # type: ignore[union-attr]
 +        assert p._kv_dump_jobs == [{"req_id": "r1"}]
 +        p.wave_tracker.discard_many.assert_not_called()
++        p.detectors.disable_all.assert_not_called()
 +    finally:
 +        RequestGuardStore.reset_for_tests()
++
++
++def test_v30c_partial_disable_clears_detector_private_state_not_store():
++    """Turning off one detector calls on_disabled; shared Store IO stays."""
++    from vllm_ascend.observability.runtime_guard.detector.token_repeat import (
++        TokenRepeatDetector,
++        TokenRepeatState,
++    )
++    from vllm_ascend.observability.runtime_guard.state import RequestGuardStore
++
++    RequestGuardStore.reset_for_tests()
++    try:
++        store = RequestGuardStore.get()
++        store.get_or_create("r1")
++        store.set_prompt_token_ids("r1", [1, 2])
++        store.append_output_ids("r1", [3, 4])
++
++        cfg = MagicMock()
++        cfg.config_version = 1.0
++        cfg.detector_section.return_value = {
++            "enabled": False,
++            "window": 8,
++            "repeat_sum_threshold": 4,
++            "min_tokens": 0,
++            "consecutive_hits": 1,
++            "ignore_token_ids": [],
++        }
++        det = TokenRepeatDetector(runtime_config=cfg, runner=None)
++        det._enabled = True
++        det._states["r1"] = TokenRepeatState()
++        det._consumed_len["r1"] = 2
++        det._alerted.add("r1")
++
++        # Simulate a control/hot-reload bump so refresh re-applies the section.
++        cfg.config_version = 2.0
++        det.refresh_from_config()
++
++        assert det.enabled is False
++        assert det._states == {}
++        assert det._consumed_len == {}
++        assert det._alerted == set()
++        st = store.get_state("r1")
++        assert st is not None
++        assert st.prompt_token_ids == [1, 2]
++        assert st.output_token_ids == [3, 4]
++    finally:
++        RequestGuardStore.reset_for_tests()
++
++
++def test_v30d_refresh_skips_unchanged_config_version():
++    """Per-step refresh is a no-op until RuntimeConfig.config_version moves."""
++    from vllm_ascend.observability.runtime_guard.detector.token_repeat import (
++        TokenRepeatDetector,
++    )
++
++    cfg = MagicMock()
++    cfg.config_version = 1.0
++    cfg.detector_section.return_value = {
++        "enabled": True,
++        "window": 8,
++        "repeat_sum_threshold": 4,
++        "min_tokens": 0,
++        "consecutive_hits": 1,
++        "ignore_token_ids": [],
++    }
++    det = TokenRepeatDetector(runtime_config=cfg, runner=None)
++    assert det._applied_config_version == 1.0
++    assert det.enabled is True
++
++    with patch.object(det, "_apply_detector_section") as apply:
++        det.refresh_from_config()
++        apply.assert_not_called()
++
++    cfg.config_version = 2.0
++    cfg.detector_section.return_value = {
++        "enabled": False,
++        "window": 8,
++        "repeat_sum_threshold": 4,
++        "min_tokens": 0,
++        "consecutive_hits": 1,
++        "ignore_token_ids": [],
++    }
++    det.refresh_from_config()
++    assert det.enabled is False
++    assert det._applied_config_version == 2.0
 diff --git a/tests/ut/runtime_guard/test_unified_wiring.py b/tests/ut/runtime_guard/test_unified_wiring.py
 new file mode 100644
 index 000000000..4f8162fe1
@@ -6774,7 +7210,7 @@ index 000000000..4f8162fe1
 +    assert snap.output_token_count == 2
 diff --git a/tests/ut/runtime_guard/test_wave_and_actions.py b/tests/ut/runtime_guard/test_wave_and_actions.py
 new file mode 100644
-index 000000000..ba5427333
+index 000000000..21eeb17cb
 --- /dev/null
 +++ b/tests/ut/runtime_guard/test_wave_and_actions.py
 @@ -0,0 +1,128 @@
@@ -6804,16 +7240,16 @@ index 000000000..ba5427333
 +
 +
 +class _Cfg:
-+    def dump_max_times(self):
++    def auto_dump_max_times(self):
 +        return 2
 +
-+    def dump_cooldown_seconds(self):
++    def auto_dump_cooldown_seconds(self):
 +        return 0
 +
 +
 +def test_wave_tracker_sample_stamp():
 +    wt = WaveTracker()
-+    wt.advance(allow_manual_dump=True)
++    wt.advance(has_scheduled_tokens=True)
 +    wt.record_sample_waves(["a", "b"])
 +    assert wt.take_sample_wave("a") == 1
 +    assert wt.take_sample_wave("a") is None
@@ -6907,10 +7343,10 @@ index 000000000..ba5427333
 +    finally:
 +        q.stop()
 diff --git a/tests/ut/worker/test_model_runner_v2.py b/tests/ut/worker/test_model_runner_v2.py
-index 32db22940..c8ffff956 100644
+index dd1344776..c9b725f9e 100644
 --- a/tests/ut/worker/test_model_runner_v2.py
 +++ b/tests/ut/worker/test_model_runner_v2.py
-@@ -625,6 +625,10 @@ def test_init_without_spec_pp():
+@@ -1036,6 +1036,10 @@ def test_init_without_spec_pp():
          patch("torch.npu.Event", return_value="event"),
          patch("torch.npu.Stream", return_value="stream"),
          patch("torch.empty", return_value=torch.zeros(2, dtype=torch.int32)),
@@ -6921,7 +7357,7 @@ index 32db22940..c8ffff956 100644
      ):
          runner = NPUModelRunner(vllm_config, torch.device("cpu"))
      assert runner.eplb == "eplb"
-@@ -675,6 +679,10 @@ def test_init_spec_pp_full_graph_and_speculator():
+@@ -1086,6 +1090,10 @@ def test_init_spec_pp_full_graph_and_speculator():
          patch("torch.npu.Stream", return_value="stream"),
          patch("torch.npu.Event", return_value="event"),
          patch("torch.empty", return_value=torch.zeros(2, dtype=torch.int32)),
@@ -6933,10 +7369,10 @@ index 32db22940..c8ffff956 100644
              "vllm_ascend.worker.v2.model_runner.breakable_cudagraph.is_breakable_cudagraph_enabled",
              return_value=True,
 diff --git a/vllm_ascend/ascend_config.py b/vllm_ascend/ascend_config.py
-index 84ea8f175..f015f1cbc 100644
+index 4bb9e8a2d..37d14162c 100644
 --- a/vllm_ascend/ascend_config.py
 +++ b/vllm_ascend/ascend_config.py
-@@ -589,6 +589,10 @@ class AscendConfig:
+@@ -599,6 +599,10 @@ class AscendConfig:
          default_factory=lambda: os.path.join(os.path.expanduser("~"), "ascend", "log", "vllm_ascend")
      )
      dump_config_path: str | None = None
@@ -6947,7 +7383,7 @@ index 84ea8f175..f015f1cbc 100644
      mc2_comm_alg: Literal["", "fullmesh", "hierarchy", "fullmesh_v2"] = ""
  
      # ---- A-family (envs fallback): default = envs module value, before-validator injects ----
-@@ -1810,6 +1814,15 @@ def init_ascend_config(vllm_config: VllmConfig) -> AscendConfig:
+@@ -1843,6 +1847,15 @@ def init_ascend_config(vllm_config: VllmConfig) -> AscendConfig:
      # pre-step; the resolved path is passed as the dump_config_path field.
      dump_config_path = AscendConfig._resolve_dump_config_path(additional_config)
  
@@ -6963,7 +7399,7 @@ index 84ea8f175..f015f1cbc 100644
      # Keys that must NOT flow from additional_config into AscendConfig.
      # These are stripped so that only user-configurable keys reach pydantic,
      # where extra="forbid" can reject unknown options.
-@@ -1836,6 +1849,7 @@ def init_ascend_config(vllm_config: VllmConfig) -> AscendConfig:
+@@ -1869,6 +1882,7 @@ def init_ascend_config(vllm_config: VllmConfig) -> AscendConfig:
          # replaced with the validated dump_config_path field below.
          "dump_config",
          "dump_config_path",
@@ -6971,7 +7407,7 @@ index 84ea8f175..f015f1cbc 100644
          # pure-derived fields (derive_and_validate computes them; user input would residualize)
          # enable_sparse_li_c4 is selected by attention_config.indexer_kv_dtype
          # and the model's sparse-attention support,not additional config.
-@@ -1877,6 +1891,9 @@ def init_ascend_config(vllm_config: VllmConfig) -> AscendConfig:
+@@ -1910,6 +1924,9 @@ def init_ascend_config(vllm_config: VllmConfig) -> AscendConfig:
          sparse_kv_offload_config=sparse_kv,
          kvpp_config=kvpp_config,
          dump_config_path=dump_config_path,
@@ -7378,10 +7814,10 @@ index 000000000..8eae3aea4
 +MANUAL_TRIGGER_SECTION_KEYS: frozenset[str] = frozenset(_DETECTOR_ACTION_KEYS)
 diff --git a/vllm_ascend/observability/runtime_config/config.py b/vllm_ascend/observability/runtime_config/config.py
 new file mode 100644
-index 000000000..9c4d6f42c
+index 000000000..6457c95fd
 --- /dev/null
 +++ b/vllm_ascend/observability/runtime_config/config.py
-@@ -0,0 +1,1349 @@
+@@ -0,0 +1,1379 @@
 +#
 +# Copyright (c) 2025 Huawei Technologies Co., Ltd. All Rights Reserved.
 +#
@@ -7402,7 +7838,7 @@ index 000000000..9c4d6f42c
 +Design (multi-DP safe — avoid full-world / cross-PP collectives):
 +
 +1. **One writer / monitor per EngineCore (per DP replica)**
-+   Materializes JSON via ``ensure_persisted`` at bind (overwrite).
++   Materializes JSON via ``persist_bootstrap_config`` at bind (overwrite).
 +   ``dump.manual_dump`` is a read-only watermark — never rewritten by consume.
 +   Prefer ``inner_dp_world`` first rank; else TP0∧PP0 when ``dp_size>1``; else
 +   global world rank0 / ``RANK==0``.
@@ -7410,7 +7846,7 @@ index 000000000..9c4d6f42c
 +2. **Fixed sync transport** (no JSON ``sync_mode`` knob)
 +   - last-PP × ``tp_size>1``: wave-head submits TP0-sourced due
 +     ``broadcast([wave_idx, config_due, dump_due])`` on ``DueBitsBusWorker``
-+     (``sync_due_bits_from_src``); end-of-wave drains / applies.
++     (``broadcast_due_bits_from_src``); end-of-wave drains / applies.
 +   - everyone else (non-last PP, API, ``tp_size<=1``): **local file poll**.
 +
 +3. **Cross-DP config is not synchronized**
@@ -7418,7 +7854,7 @@ index 000000000..9c4d6f42c
 +   replica can see). Do **not** use full EP ``world_size`` for hot-reload.
 +
 +Production: ``AscendConfig`` uses ``ensure_file=False``; worker
-+:meth:`RuntimeConfig.ensure_persisted` materializes JSON on the writer.
++:meth:`RuntimeConfig.persist_bootstrap_config` materializes JSON on the writer.
 +
 +Payload helpers (JSONC load, deep-merge, validate) live in this module.
 +Defaults stay in ``_defaults`` (detector-cycle leaf); distributed roles /
@@ -7885,6 +8321,8 @@ index 000000000..9c4d6f42c
 +        # Bug #11 / S8: same-second edits need a content fingerprint. File size
 +        # alone is insufficient (e.g. window 10→33, true→false keep st_size).
 +        self._content_digest: str | None = None
++        # Monotonic apply revision (not file mtime). Same-second NFS edits keep
++        # mtime stable; detectors cache this via ``config_version``.
 +        self._version: float = 0.0
 +        self._last_reload_ts = 0.0
 +        self._initial_broadcast_done = False
@@ -7908,7 +8346,7 @@ index 000000000..9c4d6f42c
 +
 +        # In-memory merge always. ``ensure_file=True`` persists immediately (tests /
 +        # rare callers). Production AscendConfig uses False; worker leader calls
-+        # :meth:`ensure_persisted` once from ``RuntimeGuardProcessor``.
++        # :meth:`persist_bootstrap_config` once from ``RuntimeGuardProcessor``.
 +        self._bootstrap(persist=ensure_file)
 +        logger.info(
 +            "[runtime_config] path=%s explicit_path=%s report_dir=%s hot_reload=%s persisted=%s",
@@ -8017,7 +8455,7 @@ index 000000000..9c4d6f42c
 +                    mtime = self.config_path.stat().st_mtime
 +                self._apply_loaded(
 +                    merged,
-+                    version=mtime,
++                    file_mtime=mtime,
 +                    content_digest=self._digest_path(self.config_path),
 +                    announce=False,
 +                )
@@ -8045,9 +8483,11 @@ index 000000000..9c4d6f42c
 +                try:
 +                    mtime = self.config_path.stat().st_mtime
 +                    self._mtime = mtime
-+                    self._version = float(mtime)
 +                except OSError:
-+                    self._version = 0.0
++                    self._mtime = None
++                # Seed revision so detector caches have a stable baseline; do
++                # not alias revision to mtime (same-second edits must still bump).
++                self._version = 1.0
 +                # Mark the pre-bootstrap file as already-reflected so reload()
 +                # does not re-apply it before the writer overwrites it with the
 +                # effective startup config (otherwise a stale hand-edit leaks in
@@ -8065,7 +8505,7 @@ index 000000000..9c4d6f42c
 +            self._warn_interaction_quirks()
 +        self._last_reload_ts = time.time()
 +
-+    def ensure_persisted(self) -> bool:
++    def persist_bootstrap_config(self) -> bool:
 +        """Materialize bootstrap defaults to disk once (worker leader / single-process).
 +
 +        Safe to call from every worker: non-leaders no-op; leaders act at most once
@@ -8078,7 +8518,7 @@ index 000000000..9c4d6f42c
 +            return True
 +        if not _is_json_writer():
 +            logger.debug(
-+                "[runtime_config] ensure_persisted skip (non-leader) path=%s",
++                "[runtime_config] persist_bootstrap_config skip (non-leader) path=%s",
 +                self.config_path,
 +            )
 +            return False
@@ -8088,7 +8528,9 @@ index 000000000..9c4d6f42c
 +                mtime = self.config_path.stat().st_mtime
 +            self._mtime = mtime
 +            self._content_digest = None  # bootstrap; set on first reload/save
-+            self._version = float(mtime)
++            # Keep the in-memory apply revision; only refresh file mtime.
++            if self._version <= 0.0:
++                self._version = 1.0
 +            self._bootstrap_persisted = True
 +            logger.info(
 +                "[runtime_config] worker leader persisted path=%s explicit_path=%s (overwrote)",
@@ -8098,7 +8540,7 @@ index 000000000..9c4d6f42c
 +            return True
 +        except Exception as exc:
 +            logger.warning(
-+                "[runtime_config] ensure_persisted failed path=%s error=%s",
++                "[runtime_config] persist_bootstrap_config failed path=%s error=%s",
 +                self.config_path,
 +                exc,
 +            )
@@ -8110,6 +8552,17 @@ index 000000000..9c4d6f42c
 +    def hot_reload_enabled(self) -> bool:
 +        """True when startup ``runtime_config_hot_reload`` is enabled."""
 +        return self._reload_interval > 0
++
++    @property
++    def config_version(self) -> float:
++        """Monotonic apply revision (independent of file mtime).
++
++        Detectors cache this in :meth:`~ConfigBackedDetector.refresh_from_config`
++        so per-step ``_precheck`` can skip re-applying an unchanged section.
++        Hot-reload / broadcast apply advances it whenever leaf content changes,
++        including same-second NFS edits that keep ``st_mtime`` stable.
++        """
++        return float(self._version)
 +
 +    @property
 +    def reload_interval_seconds(self) -> float:
@@ -8161,7 +8614,7 @@ index 000000000..9c4d6f42c
 +            "dump_enabled": dump_on,
 +            "needs_cumulative_io": needs_io,
 +            "needs_sample_phase_hooks": needs_sample,
-+            "manual_trigger_count": remaining,
++            "manual_dump_remaining": remaining,
 +        }
 +        self._hot_path_gates = cached
 +        return cached
@@ -8185,10 +8638,10 @@ index 000000000..9c4d6f42c
 +        return bool(self._hot_path_gates_cached()["needs_cumulative_io"])
 +
 +    def needs_sample_phase_hooks(self) -> bool:
-+        """True when post-sample runtime_guard hooks must run (not a pure sample fast-path).
++        """True when at least one auto detector is enabled.
 +
-+        Covers detectors and finish-output logging.
-+        Dump-only / hot-reload-only does not need the sample-phase hook chain.
++        Sample-phase hooks follow detectors only. Dump and hot-reload do not
++        set this flag.
 +        """
 +        return bool(self._hot_path_gates_cached()["needs_sample_phase_hooks"])
 +
@@ -8196,8 +8649,8 @@ index 000000000..9c4d6f42c
 +        """True when observability is fully off (default-off cold path).
 +
 +        Requires: hot-reload off, no detectors, no dump, no manual trigger.
-+        Distinct from dump-only (detectors off but dump still active) — that
-+        path still runs wave advance / claim / end-of-wave.
++        Distinct from detectors off with dump still configured — that path
++        still runs wave advance / claim / end-of-wave.
 +
 +        When True, hooks skip sync/sample shells entirely. Enabling any axis
 +        needs restart if hot-reload is off; with hot-reload on this is always
@@ -8209,7 +8662,7 @@ index 000000000..9c4d6f42c
 +        return (
 +            not gates["needs_sample_phase_hooks"]
 +            and not gates["dump_enabled"]
-+            and int(gates["manual_trigger_count"]) <= 0
++            and int(gates["manual_dump_remaining"]) <= 0
 +        )
 +
 +    # Detector section order comes from ``detector_catalog``.
@@ -8238,7 +8691,7 @@ index 000000000..9c4d6f42c
 +                names.append(_DISPLAY.get(section, section))
 +        dump_on = self.dump_enabled()
 +        auto_on = self.auto_dump_on()
-+        max_times = self.dump_max_times()
++        max_times = self.auto_dump_max_times()
 +        if names and dump_on and auto_on:
 +            mode = "detect+auto_dump"
 +        elif names and dump_on:
@@ -8271,13 +8724,15 @@ index 000000000..9c4d6f42c
 +                _process_role_tag(),
 +            )
 +
-+    def dump_max_times(self) -> int:
++    def auto_dump_max_times(self) -> int:
++        """``dump.auto_max_times``. Manual watermark does not use this quota."""
 +        return int(self.dump.get("auto_max_times", 0))
 +
-+    def dump_cooldown_seconds(self) -> int:
++    def auto_dump_cooldown_seconds(self) -> int:
++        """``dump.auto_cooldown_seconds`` between auto-dump arms."""
 +        return int(self.dump.get("auto_cooldown_seconds", 300))
 +
-+    def manual_trigger_continuous(self) -> bool:
++    def manual_dump_continuous(self) -> bool:
 +        """True when ``dump.manual_dump`` is bool ``true`` (always-on dump)."""
 +        return self.dump.get("manual_dump", False) is True
 +
@@ -8289,20 +8744,20 @@ index 000000000..9c4d6f42c
 +        """How many watermark manual dumps this process has completed."""
 +        return int(self._manual_dumps_done)
 +
-+    def manual_trigger_count(self) -> int:
++    def manual_dump_remaining(self) -> int:
 +        """Remaining catch-up dumps: ``max(0, target - done)``; continuous → 1.
 +
 +        Int ``N`` is a watermark: fire while ``done < N``. Disk value is never
 +        mutated by the process — raise ``N`` (e.g. 1→2) for another dump.
 +        If the value on disk is ≤ ``done``, skip. Requires hot-reload.
 +        """
-+        return int(self._hot_path_gates_cached()["manual_trigger_count"])
++        return int(self._hot_path_gates_cached()["manual_dump_remaining"])
 +
-+    def manual_trigger(self) -> bool:
++    def manual_dump_armed(self) -> bool:
 +        """True when manual dump is armed (continuous or ``target > done``)."""
-+        return self.manual_trigger_count() > 0
++        return self.manual_dump_remaining() > 0
 +
-+    def consume_manual_trigger(self) -> bool:
++    def consume_manual_dump(self) -> bool:
 +        """Record one completed manual dump wave; return True if armed.
 +
 +        - ``true`` (bool): continuous — always armed; do not bump watermark;
@@ -8312,9 +8767,9 @@ index 000000000..9c4d6f42c
 +
 +        Multi-DP sharing one file: each replica tracks its own ``done``.
 +        """
-+        if self.manual_trigger_continuous():
++        if self.manual_dump_continuous():
 +            logger.debug(
-+                "[runtime_config] manual_trigger continuous (true); watermark unused %s",
++                "[runtime_config] manual_dump continuous (true); watermark unused %s",
 +                _process_role_tag(),
 +            )
 +            return True
@@ -8467,7 +8922,7 @@ index 000000000..9c4d6f42c
 +                time.sleep(interval)
 +                # AscendConfig may start this thread before Worker sets RANK /
 +                # world group; stop as soon as we are clearly a Worker so we
-+                # do not dual-reload alongside sync_for_step broadcast.
++                # do not dual-reload alongside begin_wave broadcast.
 +                if _is_distributed_worker_process():
 +                    _bg_reload_paths.discard(path_key)
 +                    logger.info(
@@ -8485,7 +8940,7 @@ index 000000000..9c4d6f42c
 +                    # Content diffs are logged inside ``_apply_loaded``.
 +                    if self._maybe_reload_local():
 +                        self.apply_ascend_log_level()
-+                        if self.manual_trigger():
++                        if self.manual_dump_armed():
 +                            logger.info(
 +                                "[runtime_config] dump.manual_dump=true seen on "
 +                                "non-worker reload — dump arms only on worker "
@@ -8665,7 +9120,7 @@ index 000000000..9c4d6f42c
 +            merged = _deep_merge(_DEFAULTS, loaded)
 +            return self._apply_loaded(
 +                merged,
-+                version=mtime,
++                file_mtime=mtime,
 +                content_digest=digest,
 +            )
 +        except Exception as exc:
@@ -8676,17 +9131,28 @@ index 000000000..9c4d6f42c
 +        self,
 +        merged: dict[str, Any],
 +        *,
-+        version: float,
++        version: float | None = None,
++        file_mtime: float | None = None,
 +        content_digest: str | None = None,
 +        announce: bool = True,
 +    ) -> bool:
++        """Apply merged config; advance ``config_version`` on content change.
++
++        ``file_mtime`` updates the local poll stamp only. ``version`` adopts a
++        leader broadcast revision; otherwise a local content change bumps the
++        monotonic revision so same-mtime NFS edits still refresh detectors.
++        """
 +        merged = _normalize_config_sections(merged)
 +        validate_runtime_config(merged)
 +        changes = _leaf_changes(self._data, merged)
 +        self._data = merged
 +        self._invalidate_hot_path_gates()
-+        self._mtime = version
-+        self._version = version
++        if file_mtime is not None:
++            self._mtime = file_mtime
++        if version is not None:
++            self._version = float(version)
++        elif changes:
++            self._version = float(self._version) + 1.0
 +        if content_digest is not None:
 +            self._content_digest = content_digest
 +        if announce and changes:
@@ -8700,7 +9166,7 @@ index 000000000..9c4d6f42c
 +                self.interaction_mode_summary(),
 +            )
 +            self._warn_interaction_quirks()
-+            if self.manual_trigger() and self.dump_enabled():
++            if self.manual_dump_armed() and self.dump_enabled():
 +                logger.info(
 +                    "[runtime_config] dump.manual_dump active — next worker execute_model will consume and arm dump %s",
 +                    _process_role_tag(),
@@ -8811,10 +9277,10 @@ index 000000000..4cdccc8c0
 +        validate_detector_section(schema, sec)
 diff --git a/vllm_ascend/observability/runtime_config/dist.py b/vllm_ascend/observability/runtime_config/dist.py
 new file mode 100644
-index 000000000..36d936814
+index 000000000..bae64dcfd
 --- /dev/null
 +++ b/vllm_ascend/observability/runtime_config/dist.py
-@@ -0,0 +1,392 @@
+@@ -0,0 +1,336 @@
 +#
 +# Copyright (c) 2025 Huawei Technologies Co., Ltd.
 +#
@@ -8842,8 +9308,7 @@ index 000000000..36d936814
 +Task-bus pattern (last-PP TP broadcast **wave-head**):
 +
 +1. **One** source-owned ``broadcast([wave_idx, due_0, due_1, …])`` from TP0 —
-+   ask which lanes have work (``sync_due_bits_from_src``; the symmetric
-+   ``all_reduce`` variant stays for the single-lane path)
++   ask which lanes have work (``broadcast_due_bits_from_src``)
 +2. For each due lane → its own ``broadcast_object`` (config and dump stay
 +   separate)
 +
@@ -9061,62 +9526,36 @@ index 000000000..36d936814
 +        ) from None
 +
 +
-+def _cpu_gate(group: Any) -> Any | None:
++def _require_cpu_group(group: Any) -> Any:
++    """Return ``group.cpu_group`` for due-bit collectives (Gloo / CPU tensors).
++
++    vLLM ``GroupCoordinator`` always builds ``cpu_group``. There is no
++    ``device_group`` / HCCL fallback — NPU would contend with forward.
++    """
 +    gate = getattr(group, "cpu_group", None)
 +    if gate is None:
-+        gate = getattr(group, "device_group", None)
++        raise RuntimeError(
++            "[runtime_config] due-bit collective requires group.cpu_group (Gloo/CPU); device_group/HCCL is not used"
++        )
 +    return gate
 +
 +
-+def sync_due_bits(group: Any, due_locals: Sequence[bool]) -> list[bool]:
-+    """Agree on a due bit-vector via ``all_reduce(MAX)``.
-+
-+    All ranks in ``group`` must call with the same vector length. When ``group``
-+    is missing or world_size<=1, returns the local bits unchanged.
-+    """
-+    bits = [bool(x) for x in due_locals]
-+    if not bits:
-+        return []
-+    if group is None or int(getattr(group, "world_size", 1) or 1) <= 1:
-+        return bits
-+
-+    import torch
-+
-+    gate = _cpu_gate(group)
-+    if gate is None:
-+        return bits
-+
-+    # HCCL device_group only accepts NPU tensors; Gloo cpu_group accepts CPU.
-+    device = "npu" if gate == getattr(group, "device_group", None) else "cpu"
-+    due_t = torch.tensor(
-+        [1.0 if b else 0.0 for b in bits],
-+        dtype=torch.float32,
-+        device=device,
-+    )
-+    torch.distributed.all_reduce(
-+        due_t,
-+        op=torch.distributed.ReduceOp.MAX,
-+        group=gate,
-+    )
-+    return [float(due_t[i].item()) >= 0.5 for i in range(len(bits))]
-+
-+
-+def sync_due_bits_from_src(
++def broadcast_due_bits_from_src(
 +    group: Any,
 +    due_locals: Sequence[bool],
 +    *,
 +    wave_idx: int | None = None,
 +) -> list[bool]:
-+    """Agree on a due bit-vector via one ``broadcast`` from rank 0 of ``group``.
++    """Agree on a due bit-vector via one CPU/Gloo ``broadcast`` from rank 0.
 +
-+    Same per-wave merged-bus contract as :func:`sync_due_bits`, but bits are
-+    computed once by ``rank_in_group == 0`` and pushed to peers (dump jobs and
-+    periodic config reload are source-owned). Empirically this removes the
-+    wave-tail drain tax seen with a symmetric ``all_reduce`` under TP CPU
++    Bits are computed once by ``rank_in_group == 0`` and pushed to peers (dump
++    jobs and periodic config reload are source-owned). Empirically this removes
++    the wave-tail drain tax seen with a symmetric ``all_reduce`` under TP CPU
 +    phase drift (C2 hot path); peers must still enter the collective.
 +
 +    ``wave_idx`` rides in the payload and is asserted on receivers so a rank
 +    that skipped a wave fails fast instead of consuming a crossed payload.
++    Requires ``group.cpu_group`` (no HCCL/NPU path).
 +    """
 +    bits = [bool(x) for x in due_locals]
 +    if not bits:
@@ -9126,13 +9565,8 @@ index 000000000..36d936814
 +
 +    import torch
 +
-+    gate = _cpu_gate(group)
-+    if gate is None:
-+        return bits
-+
-+    # HCCL device_group only accepts NPU tensors; Gloo cpu_group accepts CPU.
-+    device = "npu" if gate == getattr(group, "device_group", None) else "cpu"
-+    payload = torch.zeros(len(bits) + 1, dtype=torch.float32, device=device)
++    gate = _require_cpu_group(group)
++    payload = torch.zeros(len(bits) + 1, dtype=torch.float32, device="cpu")
 +    if _group_rank(group, 0) == 0:
 +        payload[0] = float(int(wave_idx) % _WAVE_IDX_MOD) if wave_idx is not None else -1.0
 +        for i, b in enumerate(bits):
@@ -9164,9 +9598,8 @@ index 000000000..36d936814
 +) -> Any | None:
 +    """If ``due``, ``broadcast_object`` from ``src``; else return ``None``.
 +
-+    All ranks must pass the same agreed ``due`` (from
-+    :func:`sync_due_bits_from_src` on the merged bus, or :func:`sync_due_bits`
-+    on the single-lane path).
++    All ranks must pass the same agreed ``due`` from
++    :func:`broadcast_due_bits_from_src`.
 +    """
 +    if not due:
 +        return None
@@ -9184,29 +9617,6 @@ index 000000000..36d936814
 +    # Do not swallow broadcast failures: peers that already entered the
 +    # collective would hang if this rank returned early.
 +    return group.broadcast_object(src_obj, src=src)
-+
-+
-+def sync_task_bus(
-+    group: Any,
-+    *,
-+    due_local: bool,
-+    payload: Any = None,
-+    build_payload: Callable[[], Any] | None = None,
-+    src: int = 0,
-+) -> Any | None:
-+    """Single-lane bus: one due bit → optional one broadcast.
-+
-+    Used when only dump (or only config) participates — e.g. PP>1 file mode
-+    dump drain on the last-PP TP group.
-+    """
-+    due = sync_due_bits(group, [due_local])[0]
-+    return broadcast_when_due(
-+        group,
-+        due=due,
-+        payload=payload,
-+        build_payload=build_payload,
-+        src=src,
-+    )
 diff --git a/vllm_ascend/observability/runtime_config/schema.py b/vllm_ascend/observability/runtime_config/schema.py
 new file mode 100644
 index 000000000..d19b13d04
@@ -9381,7 +9791,7 @@ index 000000000..cadfd722f
 +__all__ = ["ActionExecutor", "ActionQueue"]
 diff --git a/vllm_ascend/observability/runtime_guard/action/actions.py b/vllm_ascend/observability/runtime_guard/action/actions.py
 new file mode 100644
-index 000000000..b687e9c8d
+index 000000000..2d78c3754
 --- /dev/null
 +++ b/vllm_ascend/observability/runtime_guard/action/actions.py
 @@ -0,0 +1,661 @@
@@ -9569,7 +9979,7 @@ index 000000000..b687e9c8d
 +            )
 +            return DumpKvPrepared(skip=_dump_skip_kwargs(ctx, reason="no_dump_targets", detail={"scope": scope}))
 +        if all(not bids for _req, bids in targets):
-+            # Manual arm runs in sync_for_step *before* prepare_inputs, so the
++            # Manual arm runs in begin_wave *before* prepare_inputs, so the
 +            # first prefill wave often has req ids but empty block tables.
 +            # Still queue; drain at sample-end flush resolves block_ids. Auto
 +            # paths usually arm after sample with known blocks — keep the hard skip.
@@ -9908,7 +10318,7 @@ index 000000000..b687e9c8d
 +    def stop(self) -> None:
 +        self._queue.stop()
 +
-+    def can_run_detection(self) -> bool:
++    def is_action_leader(self) -> bool:
 +        return should_run_anomaly_check_on_rank(self._runner)
 +
 +    def anomaly_check_skip_reason(self) -> str | None:
@@ -9954,7 +10364,7 @@ index 000000000..b687e9c8d
 +        write_report: bool = True,
 +        inject_manual_dump_kv: bool = True,
 +    ) -> None:
-+        if not self.can_run_detection():
++        if not self.is_action_leader():
 +            return
 +        names, det_cfg = self.resolve_actions(incident.incident_type, override=action_override)
 +        if not write_report:
@@ -10257,7 +10667,7 @@ index 000000000..987641c9a
 +                self._queue.task_done()
 diff --git a/vllm_ascend/observability/runtime_guard/bus_worker.py b/vllm_ascend/observability/runtime_guard/bus_worker.py
 new file mode 100644
-index 000000000..09dcf6bd0
+index 000000000..7922d91f2
 --- /dev/null
 +++ b/vllm_ascend/observability/runtime_guard/bus_worker.py
 @@ -0,0 +1,224 @@
@@ -10278,7 +10688,7 @@ index 000000000..09dcf6bd0
 +
 +"""Background worker for the last-PP TP merged config+dump due bus.
 +
-+C2 hot path (reload on, detectors off) pays ``sync_due_bits_from_src`` every
++C2 hot path (reload on, detectors off) pays ``broadcast_due_bits_from_src`` every
 +step. Running that source broadcast (and rare due-lane broadcasts) on a
 +dedicated daemon
 +thread lets the inference thread overlap the collective with forward:
@@ -10446,11 +10856,11 @@ index 000000000..09dcf6bd0
 +    @staticmethod
 +    def _run_merged_bus(req: MergedBusRequest) -> MergedBusResult:
 +        from vllm_ascend.observability.runtime_config.dist import (
++            broadcast_due_bits_from_src,
 +            broadcast_when_due,
-+            sync_due_bits_from_src,
 +        )
 +
-+        config_due, dump_due = sync_due_bits_from_src(
++        config_due, dump_due = broadcast_due_bits_from_src(
 +            req.sync_group,
 +            [req.config_due_local, req.dump_due_local],
 +            wave_idx=req.wave_idx,
@@ -10552,10 +10962,10 @@ index 000000000..77e7f8925
 +    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 diff --git a/vllm_ascend/observability/runtime_guard/detector/base.py b/vllm_ascend/observability/runtime_guard/detector/base.py
 new file mode 100644
-index 000000000..34a73ac89
+index 000000000..97cc9191e
 --- /dev/null
 +++ b/vllm_ascend/observability/runtime_guard/detector/base.py
-@@ -0,0 +1,128 @@
+@@ -0,0 +1,160 @@
 +#
 +# Copyright (c) 2025 Huawei Technologies Co., Ltd. All Rights Reserved.
 +#
@@ -10623,11 +11033,25 @@ index 000000000..34a73ac89
 +    def clear_finished(self, req_id: str) -> None:
 +        """Drop per-request state when a request finishes."""
 +
++    def on_disabled(self) -> None:
++        """Drop all private per-req state when this detector is turned off.
++
++        Shared Store IO (prompt / output) is not owned here — the processor
++        soft-purges outputs only when *all* detectors go off. Override when
++        the detector keeps windows, history, or deferred queues.
++        """
++
 +    def on_alert_armed(self, alert: Incident) -> None:
 +        """Optional hook after dump arm or detect-only alert handling."""
 +
 +    def _precheck(self) -> bool:
-+        """Refresh thresholds then return whether this detector is enabled."""
++        """Return whether this detector is enabled (refresh if config moved).
++
++        :class:`ConfigBackedDetector` no-ops the refresh when
++        ``RuntimeConfig.config_version`` is unchanged so per-step checks do
++        not re-apply thresholds; curl / hot-reload cascade still force a
++        refresh by bumping the version first.
++        """
 +        self.refresh_from_config()
 +        return self._enabled
 +
@@ -10647,18 +11071,36 @@ index 000000000..34a73ac89
 +    section_key: str = ""
 +    schema: DetectorSchema | None = None
 +
++    def __init__(self, *args: Any, **kwargs: Any) -> None:
++        super().__init__(*args, **kwargs)
++        # None = never applied; skip refresh only after a successful apply.
++        self._applied_config_version: float | None = None
++
 +    def refresh_from_config(self) -> None:
 +        if self._runtime_config is None:
++            return
++        try:
++            version = float(self._runtime_config.config_version)
++        except (TypeError, ValueError, AttributeError):
++            # Tests may pass a bare MagicMock without config_version.
++            version = 0.0
++        if self._applied_config_version is not None and version == self._applied_config_version:
 +            return
 +        if self.section_key:
 +            section = self._runtime_config.detector_section(self.section_key)
 +        else:
 +            section = self._runtime_config.detector
 +        self._apply_detector_section(section)
++        self._applied_config_version = version
 +
-+    def _apply_detector_section(self, section: dict[str, Any]) -> None:
++    def _apply_detector_section(self, section: dict[str, Any] | None) -> None:
++        if not isinstance(section, dict):
++            return
++        was_enabled = bool(self._enabled)
 +        self._enabled = bool(section.get("enabled", self._enabled))
 +        self._apply_detector_values(section.get)
++        if was_enabled and not self._enabled:
++            self.on_disabled()
 +
 +    def _apply_detector_values(self, getter: Callable[[str, Any], Any]) -> None:
 +        raise NotImplementedError(f"{type(self).__name__} must implement _apply_detector_values")
@@ -10686,10 +11128,10 @@ index 000000000..34a73ac89
 +        return iter(self._items)
 diff --git a/vllm_ascend/observability/runtime_guard/detector/logits_finite.py b/vllm_ascend/observability/runtime_guard/detector/logits_finite.py
 new file mode 100644
-index 000000000..8729c97ac
+index 000000000..a4968e1a0
 --- /dev/null
 +++ b/vllm_ascend/observability/runtime_guard/detector/logits_finite.py
-@@ -0,0 +1,454 @@
+@@ -0,0 +1,457 @@
 +#
 +# Copyright (c) 2025 Huawei Technologies Co., Ltd. All Rights Reserved.
 +#
@@ -10836,6 +11278,9 @@ index 000000000..8729c97ac
 +
 +    def clear_finished(self, req_id: str) -> None:
 +        del req_id
++
++    def on_disabled(self) -> None:
++        self._stage_none()
 +
 +    def _stage_none(self) -> None:
 +        """Drop pending alerts / async gates when the detector is disabled."""
@@ -11146,10 +11591,10 @@ index 000000000..8729c97ac
 +    return "non_finite"
 diff --git a/vllm_ascend/observability/runtime_guard/detector/manager.py b/vllm_ascend/observability/runtime_guard/detector/manager.py
 new file mode 100644
-index 000000000..3f5523cb7
+index 000000000..5935b8f62
 --- /dev/null
 +++ b/vllm_ascend/observability/runtime_guard/detector/manager.py
-@@ -0,0 +1,270 @@
+@@ -0,0 +1,272 @@
 +#
 +# Copyright (c) 2025 Huawei Technologies Co., Ltd. All Rights Reserved.
 +# This file is a part of the vllm-ascend project.
@@ -11266,9 +11711,18 @@ index 000000000..3f5523cb7
 +            det.clear_finished(req_id)
 +
 +    def apply_runtime_config(self) -> None:
-+        """All-rank hook after runtime_config JSON sync — refresh detector deps."""
++        """All-rank hook after runtime_config JSON sync — refresh detector deps.
++
++        ``ConfigBackedDetector`` calls :meth:`AnomalyDetector.on_disabled` when
++        a section flips ``enabled`` True→False (private maps only; not Store).
++        """
 +        for det in self._registry:
 +            det.refresh_from_config()
++
++    def disable_all(self) -> None:
++        """Clear every detector's private maps (all-detectors-off soft purge)."""
++        for det in self._registry:
++            det.on_disabled()
 +
 +    # ---- detection gating -------------------------------------------------
 +
@@ -11298,14 +11752,14 @@ index 000000000..3f5523cb7
 +
 +    # ---- stage hooks ------------------------------------------------------
 +
-+    def any_enabled_for_spec(self) -> bool:
++    def spec_acceptance_enabled(self) -> bool:
 +        if self._runtime_config is not None and self._runtime_config.hot_reload_enabled:
 +            # Live flag only; full refresh happens in check_all → _precheck.
 +            return bool(self._runtime_config.detector_get("spec_acceptance", "enabled", False))
 +        return bool(self._spec_det.enabled)
 +
-+    def any_after_sample_cpu_enabled(self) -> bool:
-+        """``token_repeat`` (not logits_finite)."""
++    def token_repeat_enabled(self) -> bool:
++        """``token_repeat`` only. ``logits_finite`` does not use this path."""
 +        if self._runtime_config is not None and self._runtime_config.hot_reload_enabled:
 +            # Live flag only; full refresh happens in check_all → _precheck.
 +            return bool(self._runtime_config.detector_get("token_repeat", "enabled", False))
@@ -11321,8 +11775,7 @@ index 000000000..3f5523cb7
 +
 +        Accepted tokens are recorded once in :meth:`check_after_sample` from
 +        the engine's validated sampled ids. Appending here as well doubled
-+        MTP/Eagle output in reports (same-wave dedupe fails under async
-+        scheduling when ``clear_wave_cache`` runs before ``get_output``).
++        MTP/Eagle output in reports.
 +        """
 +        if self._gated("after_spec"):
 +            return []
@@ -11358,11 +11811,7 @@ index 000000000..3f5523cb7
 +
 +        # CPU snapshot only when there is something left to detect: no reqs,
 +        # CPU detectors off, or every req already stop-detected (max_per_req).
-+        if (
-+            not resolved_ids
-+            or not self.any_after_sample_cpu_enabled()
-+            or all(rid in skip for rid in resolved_ids if rid)
-+        ):
++        if not resolved_ids or not self.token_repeat_enabled() or all(rid in skip for rid in resolved_ids if rid):
 +            return alerts, None
 +
 +        snap = AfterSampleCpuSnapshot(
@@ -11375,11 +11824,9 @@ index 000000000..3f5523cb7
 +    def run_after_sample_cpu(self, snap: AfterSampleCpuSnapshot) -> list[Incident]:
 +        """``token_repeat`` after hot-path Store append.
 +
-+        Reads :class:`RequestGuardStore` only. Do **not** re-fold from a frozen
-+        sampled chunk: same-wave append dedupe can skip a second Store write
-+        while a frozen chunk would still be scored twice (W1-1 / R-04:
-+        ``content_tokens_seen`` > ``output_token_count`` on v2 when after-sample
-+        ran twice with width-1 identical rows).
++        Reads :class:`RequestGuardStore` only. MR v2 appends each step once in
++        :meth:`after_sample_hot_path`. Passing the sampled rows here would
++        append them again.
 +        """
 +        skip = snap.skip_req_ids if snap.skip_req_ids is not None else RequestGuardStore.get().stopped_req_ids()
 +        return self._token_repeat_det.check_all(
@@ -11422,10 +11869,10 @@ index 000000000..3f5523cb7
 +        return []
 diff --git a/vllm_ascend/observability/runtime_guard/detector/spec_acceptance.py b/vllm_ascend/observability/runtime_guard/detector/spec_acceptance.py
 new file mode 100644
-index 000000000..2e7ad2fa5
+index 000000000..131c259be
 --- /dev/null
 +++ b/vllm_ascend/observability/runtime_guard/detector/spec_acceptance.py
-@@ -0,0 +1,370 @@
+@@ -0,0 +1,374 @@
 +#
 +# Copyright (c) 2025 Huawei Technologies Co., Ltd. All Rights Reserved.
 +#
@@ -11543,6 +11990,10 @@ index 000000000..2e7ad2fa5
 +    def clear_finished(self, req_id: str) -> None:
 +        self._history.pop(req_id, None)
 +        self._short_log_ts.pop(req_id, None)
++
++    def on_disabled(self) -> None:
++        self._history.clear()
++        self._short_log_ts.clear()
 +
 +    def check_all(
 +        self,
@@ -11798,10 +12249,10 @@ index 000000000..2e7ad2fa5
 +        )
 diff --git a/vllm_ascend/observability/runtime_guard/detector/token_repeat.py b/vllm_ascend/observability/runtime_guard/detector/token_repeat.py
 new file mode 100644
-index 000000000..9fed07055
+index 000000000..73600e5f2
 --- /dev/null
 +++ b/vllm_ascend/observability/runtime_guard/detector/token_repeat.py
-@@ -0,0 +1,310 @@
+@@ -0,0 +1,314 @@
 +#
 +# Copyright (c) 2025 Huawei Technologies Co., Ltd. All Rights Reserved.
 +# Copyright 2023 The vLLM team.
@@ -11987,6 +12438,11 @@ index 000000000..9fed07055
 +        self._consumed_len.pop(req_id, None)
 +        self._alerted.discard(req_id)
 +
++    def on_disabled(self) -> None:
++        self._states.clear()
++        self._consumed_len.clear()
++        self._alerted.clear()
++
 +    def check_all(
 +        self,
 +        sampled_token_ids: list[list[int]] | None,
@@ -12001,8 +12457,7 @@ index 000000000..9fed07055
 +        unit tests), tokens are appended here first.
 +
 +        Always advances via Store ``cumulative_output_since`` + ``_consumed_len``
-+        so a second call in the same wave cannot re-score ids that append
-+        dedupe skipped (W1-1 / R-04).
++        so a second call does not re-score ids already folded.
 +        """
 +        if not self._precheck():
 +            return []
@@ -12782,7 +13237,7 @@ index 000000000..dc1c9981f
 +        return written
 diff --git a/vllm_ascend/observability/runtime_guard/hooks.py b/vllm_ascend/observability/runtime_guard/hooks.py
 new file mode 100644
-index 000000000..1ed3e095b
+index 000000000..f037eb16f
 --- /dev/null
 +++ b/vllm_ascend/observability/runtime_guard/hooks.py
 @@ -0,0 +1,345 @@
@@ -12845,9 +13300,9 @@ index 000000000..1ed3e095b
 +def runtime_guard_step(execute_model_fn):
 +    """Wave-level runtime_guard sync for ``execute_model`` (v2).
 +
-+    - before the step body: ``sync_for_step`` (config bus, wave arm, reap;
++    - before the step body: ``begin_wave`` (config bus, wave arm, reap;
 +      no-op on non-last PP)
-+    - ``finally``: ``end_of_wave_sync(allow_manual_dump=False)`` on no-sample paths
++    - ``finally``: ``end_of_wave(has_scheduled_tokens=False)`` on no-sample paths
 +      (early return / exception / dummy wave) so last-PP lockstep collectives
 +      can never be skipped.
 +
@@ -12865,14 +13320,14 @@ index 000000000..1ed3e095b
 +            return execute_model_fn(self, scheduler_output, *args, **kwargs)
 +        setattr(self, _SCHEDULER_OUTPUT_ATTR, scheduler_output)
 +        dummy_run = kwargs.get("dummy_run", args[1] if len(args) > 1 else False)
-+        allow_manual_dump = int(getattr(scheduler_output, "total_num_scheduled_tokens", 0) or 0) > 0
-+        guard.sync_for_step(scheduler_output=scheduler_output, allow_manual_dump=allow_manual_dump)
++        has_scheduled_tokens = int(getattr(scheduler_output, "total_num_scheduled_tokens", 0) or 0) > 0
++        guard.begin_wave(scheduler_output=scheduler_output, has_scheduled_tokens=has_scheduled_tokens)
 +        try:
 +            return execute_model_fn(self, scheduler_output, *args, **kwargs)
 +        finally:
 +            # Collectives must stay lockstep — do not soft-fail this gate.
 +            if dummy_run or self.execute_model_state is None:
-+                guard.end_of_wave_sync(allow_manual_dump=False)
++                guard.end_of_wave(has_scheduled_tokens=False)
 +
 +    return wrapper
 +
@@ -12881,7 +13336,7 @@ index 000000000..1ed3e095b
 +    """Worker-level wave sync for idle DP ranks (``execute_dummy_batch``).
 +
 +    Same last-PP lockstep gate as ``runtime_guard_step`` — do not soft-fail
-+    ``sync_for_step`` (busy last-PP TP ranks take the same collectives). Guard
++    ``begin_wave`` (busy last-PP TP ranks take the same collectives). Guard
 +    lives on ``self.model_runner`` when v2 is bound; v1 runners have no guard yet.
 +    """
 +
@@ -12890,7 +13345,7 @@ index 000000000..1ed3e095b
 +        # Worker may still construct unwired v1 runners — skip when unbound.
 +        guard = getattr(self.model_runner, "runtime_guard", None)
 +        if guard is not None and not guard.is_fully_off():
-+            guard.sync_for_step(allow_manual_dump=False)
++            guard.begin_wave(has_scheduled_tokens=False)
 +        return dummy_batch_fn(self, *args, **kwargs)
 +
 +    return wrapper
@@ -12998,7 +13453,7 @@ index 000000000..1ed3e095b
 +    """True when wrapping ``compute_logits`` is useful (detector on + gate open)."""
 +    if not bool(guard.runtime_config.detector_get("logits_finite", "enabled", False)):
 +        return False
-+    return bool(guard.action_executor.can_run_detection())
++    return bool(guard.action_executor.is_action_leader())
 +
 +
 +def check_before_sample_from_batch(
@@ -13133,10 +13588,10 @@ index 000000000..1ed3e095b
 +        return output
 diff --git a/vllm_ascend/observability/runtime_guard/io.py b/vllm_ascend/observability/runtime_guard/io.py
 new file mode 100644
-index 000000000..40ad478c9
+index 000000000..c084155a8
 --- /dev/null
 +++ b/vllm_ascend/observability/runtime_guard/io.py
-@@ -0,0 +1,554 @@
+@@ -0,0 +1,551 @@
 +#
 +# Copyright (c) 2025 Huawei Technologies Co., Ltd. All Rights Reserved.
 +#
@@ -13338,13 +13793,11 @@ index 000000000..40ad478c9
 +        RequestGuardStore.reset_for_tests()
 +
 +    def clear_wave_cache(self) -> None:
-+        """Drop snapshot cache and same-wave append dedupe on Store.
++        """Drop the same-wave snapshot cache.
 +
-+        Called at the start of each ``sync_for_step`` / ``refresh_config`` wave
-+        so content-identical chunks from a later step are not swallowed.
++        Called at the start of each ``begin_wave`` / ``wave_head_sync`` wave.
 +        """
 +        self._cache.clear()
-+        RequestGuardStore.get().clear_wave_append_frontier()
 +
 +    def clear_req_cache(self, req_id: str) -> None:
 +        """Drop wave snapshot cache entries for ``req_id`` (Store on_clear hook)."""
@@ -13365,9 +13818,8 @@ index 000000000..40ad478c9
 +    def append_output(self, req_id: str, token_ids: Any) -> None:
 +        """Normalize accepted ids and append into :class:`RequestGuardStore`.
 +
-+        Drops ``-1`` placeholders. Within one engine wave, duplicate chunks
-+        for the same req are skipped (Store ``last_append_chunk``). Across
-+        waves, identical chunks are kept after :meth:`clear_wave_cache`.
++        Drops ``-1`` placeholders. MR v2 records each step once, in
++        ``after_sample_hot_path``. Fully-off never calls this.
 +        """
 +        if not req_id:
 +            return
@@ -13693,10 +14145,10 @@ index 000000000..40ad478c9
 +    return _prompt_ids_from_scheduler_output(scheduler_output, req_id)
 diff --git a/vllm_ascend/observability/runtime_guard/processor.py b/vllm_ascend/observability/runtime_guard/processor.py
 new file mode 100644
-index 000000000..1e76d0dda
+index 000000000..367df1894
 --- /dev/null
 +++ b/vllm_ascend/observability/runtime_guard/processor.py
-@@ -0,0 +1,750 @@
+@@ -0,0 +1,776 @@
 +#
 +# Copyright (c) 2025 Huawei Technologies Co., Ltd. All Rights Reserved.
 +#
@@ -13837,8 +14289,8 @@ index 000000000..1e76d0dda
 +
 +        self.runner = runner
 +        self.runtime_config = runtime_config
-+        # Leader materializes JSON once. Non-leaders no-op inside ensure_persisted.
-+        runtime_config.ensure_persisted()
++        # Leader materializes JSON once. Non-leaders no-op inside persist_bootstrap_config.
++        runtime_config.persist_bootstrap_config()
 +        # Runtime config is solely ``runtime_config`` (JSON).
 +        self.wave_tracker = WaveTracker()
 +        # B1: reap must wait for the last async output of a finished request;
@@ -13871,6 +14323,7 @@ index 000000000..1e76d0dda
 +        self._pending_merged_bus_dump_jobs: list[dict[str, Any]] = []
 +        self._pending_merged_bus_can_dump = False
 +        self._pending_merged_bus_is_first = False
++        self._pending_prev_needs_sample_hooks: bool | None = None
 +        self._tokenizer: Any | None = None
 +        self._tokenizer_failed = False
 +        self._scheduler_output_for_step: Any | None = None
@@ -13885,7 +14338,7 @@ index 000000000..1e76d0dda
 +        self.detectors = DetectorManager(
 +            runtime_config=runtime_config,
 +            runner=runner,
-+            detection_gate=self.action_executor.can_run_detection,
++            detection_gate=self.action_executor.is_action_leader,
 +            detection_skip_reason=self.action_executor.anomaly_check_skip_reason,
 +        )
 +
@@ -13924,22 +14377,24 @@ index 000000000..1e76d0dda
 +
 +    # ---- step entry (all ranks) --------------------------------------------
 +
-+    def refresh_config(
++    def wave_head_sync(
 +        self,
 +        *,
 +        scheduler_output: Any | None = None,
 +    ) -> bool:
-+        """All-rank runtime_config sync. Must not be skipped on early PP.
++        """Wave-head config+dump bus (merged due bus or local poll/stash).
 +
-+        Manual-dump arming is gated by ``sync_for_step`` /
-+        ``end_of_wave_sync(allow_manual_dump=…)``, not by this method.
++        Not config-only: dump job delivery also rides this path. Async TP>1
++        returns ``False`` immediately; apply/stash happens in ``end_of_wave``.
++        Manual-dump arming is gated by ``begin_wave`` /
++        ``end_of_wave(has_scheduled_tokens=…)``, not by this method.
 +        """
-+        logger.debug("[runtime_guard sync] enter stage=refresh_config")
++        logger.debug("[runtime_guard sync] enter stage=wave_head_sync")
 +        prev_so = self._scheduler_output_for_step
 +        so = scheduler_output if scheduler_output is not None else prev_so
 +        self._scheduler_output_for_step = so
 +        try:
-+            changed = self._refresh_config_body()
++            changed = self._run_wave_head_bus()
 +            # Clear IO wave cache only when something may append this step.
 +            # Runs *after* sync so a hot-reload that turns IO consumers on
 +            # still clears before sample/detect. Idle A (detectors off) skips.
@@ -13949,10 +14404,10 @@ index 000000000..1e76d0dda
 +        finally:
 +            self._scheduler_output_for_step = prev_so
 +
-+    def sync_for_step(
++    def begin_wave(
 +        self,
 +        *,
-+        allow_manual_dump: bool = True,
++        has_scheduled_tokens: bool = True,
 +        scheduler_output: Any | None = None,
 +    ) -> None:
 +        """Lockstep runtime_guard sync for one engine wave (real step or idle dummy).
@@ -13985,52 +14440,64 @@ index 000000000..1e76d0dda
 +            except Exception:
 +                pp = "?"
 +            logger.debug(
-+                "[runtime_guard sync] enter sync_for_step allow_manual_dump=%s dp=%s tp=%s pp=%s",
-+                allow_manual_dump,
++                "[runtime_guard sync] enter begin_wave has_scheduled_tokens=%s dp=%s tp=%s pp=%s",
++                has_scheduled_tokens,
 +                dp,
 +                tp,
 +                pp,
 +            )
 +        self._scheduler_output_for_step = scheduler_output
 +        try:
-+            self.wave_tracker.advance(allow_manual_dump=allow_manual_dump)
++            self.wave_tracker.advance(has_scheduled_tokens=has_scheduled_tokens)
 +            cfg = self.runtime_config
-+            # dump_only: no detectors / manual trigger, hot-reload off; dump may
-+            # still be on (not fully off). No config bus — claim or drop.
-+            dump_only = not cfg.manual_trigger() and not cfg.needs_sample_phase_hooks()
-+            if dump_only and not cfg.hot_reload_enabled:
-+                if cfg.dump_enabled():
-+                    self._claim_dump_jobs_to_deferred_via_tp()
-+                elif self._kv_dump_jobs:
-+                    # Dump inactive: drop with per-arm refund (quota was
-+                    # consumed at arm time; no D2H will happen).
-+                    self._drop_pending_dump_jobs()
-+                self._end_of_wave_sync_if_no_sample(allow_manual_dump=allow_manual_dump)
-+                return
-+            self.refresh_config(scheduler_output=scheduler_output)
-+            if self.needs_sample_phase_hooks():
-+                self._cache_prompt_token_ids_from_scheduler_output(scheduler_output)
-+                finished = getattr(scheduler_output, "finished_req_ids", None)
-+                if finished and int(getattr(scheduler_output, "total_num_scheduled_tokens", 0) or 0) == 0:
-+                    self.mark_finished(finished)
-+                self._reap_finished_requests()
-+            self._end_of_wave_sync_if_no_sample(allow_manual_dump=allow_manual_dump)
++            # Wave-head collectives exist only for config/dump lanes. Detectors
++            # run in sample phase and must not force an empty due-broadcast every
++            # wave when hot-reload and dump are both off. Gates below are shared
++            # config (identical on every TP rank) — never key off local job
++            # queues, which differ across ranks.
++            need_wave_head_bus = (
++                bool(cfg.hot_reload_enabled) or bool(cfg.manual_dump_armed()) or bool(cfg.dump_enabled())
++            )
++            if need_wave_head_bus:
++                self.wave_head_sync(scheduler_output=scheduler_output)
++            elif self._kv_dump_jobs:
++                # Dump inactive: drop with per-arm refund (quota was consumed at
++                # arm time; no D2H will happen).
++                self._drop_pending_dump_jobs()
++            # Prompt cache must not wait for sample-phase hooks / bus lanes.
++            # With hot-reload, the only prefill wave that carries
++            # ``scheduled_new_reqs`` can land while detectors are still off; bus
++            # may enable hooks at end-of-wave, after which n_new=0 forever and
++            # Bug #9 cache never writes (S06 empty prompt). Detector-only also
++            # needs this path without paying an empty merged-bus collective.
++            # Caching here is cheap (new reqs only) and idempotent.
++            self._cache_prompt_token_ids_from_scheduler_output(scheduler_output)
++            # Same gate as the prompt cache, not sample-phase hooks. Hot-reload
++            # can cache prompts while detectors are still off; those entries
++            # must still be marked and reaped or they leak until process exit.
++            # A busy wave's finish is marked in ``run_sample_phase``; this only
++            # covers the trailing empty batch, which never reaches sample.
++            finished = getattr(scheduler_output, "finished_req_ids", None)
++            if finished and int(getattr(scheduler_output, "total_num_scheduled_tokens", 0) or 0) == 0:
++                self.mark_finished(finished)
++            self._reap_finished_requests()
++            self._end_of_wave_if_no_sample(has_scheduled_tokens=has_scheduled_tokens)
 +        finally:
 +            self._scheduler_output_for_step = None
 +            if debug_on:
 +                logger.debug(
-+                    "[runtime_guard sync] leave sync_for_step allow_manual_dump=%s dp=%s tp=%s pp=%s",
-+                    allow_manual_dump,
++                    "[runtime_guard sync] leave begin_wave has_scheduled_tokens=%s dp=%s tp=%s pp=%s",
++                    has_scheduled_tokens,
 +                    dp,
 +                    tp,
 +                    pp,
 +                )
 +
-+    def _end_of_wave_sync_if_no_sample(self, *, allow_manual_dump: bool) -> None:
++    def _end_of_wave_if_no_sample(self, *, has_scheduled_tokens: bool) -> None:
 +        """Safety-net end-of-wave when this wave will not ``run_sample_phase``."""
-+        if allow_manual_dump:
++        if has_scheduled_tokens:
 +            return
-+        self.end_of_wave_sync(allow_manual_dump=False)
++        self.end_of_wave(has_scheduled_tokens=False)
 +
 +    def _cache_prompt_token_ids_from_scheduler_output(
 +        self,
@@ -14044,6 +14511,10 @@ index 000000000..1e76d0dda
 +        both windows make the snapshot path return zeros or empty. Cache the
 +        ids here on the first prefill wave so later snapshots (crash or
 +        finish) read the real prompt. Idempotent per request.
++
++        Called from ``begin_wave`` even when ``needs_sample_phase_hooks`` is
++        false (hot-reload path): the sole ``scheduled_new_reqs`` wave must not
++        be skipped while detectors are still off.
 +        """
 +        if scheduler_output is None:
 +            return
@@ -14089,9 +14560,9 @@ index 000000000..1e76d0dda
 +        self.wave_tracker.discard_many(reapable)
 +
 +    def should_check_after_spec(self) -> bool:
-+        if not self.action_executor.can_run_detection():
++        if not self.action_executor.is_action_leader():
 +            return False
-+        return self.detectors.any_enabled_for_spec()
++        return self.detectors.spec_acceptance_enabled()
 +
 +    def needs_sample_phase_hooks(self) -> bool:
 +        """True when sample-phase runtime_guard hooks must run (else pure ``sample_fn``)."""
@@ -14164,12 +14635,13 @@ index 000000000..1e76d0dda
 +        so it fires BEFORE grammar bitmask.
 +
 +        Hook sequence (``S1`` golden path):
++            1.5. drain merged bus (TP Gloo) before ``sample_fn`` / connector
 +            2. ``sample_fn()`` returns :class:`SamplePhaseResult`
 +            3. ``mark_finished``
 +            4. ``check_after_spec`` (spec only; ``accepted_token_nums_fn`` for branch)
 +            5. ``record_sample_waves``
 +            6. ``check_after_sample`` (host-ready ids only; see defer note below)
-+            7. ``end_of_wave_sync`` (config+dump gate; after sync auto arm when possible)
++            7. ``end_of_wave`` (deferred D2H + manual; bus drain is usually a no-op)
 +
 +        Native KV capture uses ``dump_kv`` actions only (fully decoupled from
 +        Ascend/msprobe PrecisionDebugger dump).
@@ -14181,22 +14653,28 @@ index 000000000..1e76d0dda
 +        Appending ``AsyncOutput.sampled_token_ids`` (padded numpy) here inflated
 +        cumulative IO and false-triggered ``token_repeat`` (W2-3 / D-11).
 +        """
-+        # Idle fast-path: detectors all off →
-+        # skip soft-fail wrappers and observational hooks entirely.
-+        # Still flush: TP>1 drain collectives must stay lockstep every sample.
++        # Finish any wave-head DueBitsBusWorker collective on the inference
++        # thread *before* ``sample_fn``. ``sample_tokens`` calls
++        # ``kv_connector.post_forward`` → SFA ``get_finished`` →
++        # ``all_gather_object`` on the same TP ``cpu_group``. Draining here
++        # keeps forward overlap, but guarantees a consistent Gloo order so
++        # ranks cannot interleave bus broadcast with connector all_gather.
++        # No-sample waves still drain in ``end_of_wave`` / begin_wave finally.
++        self._drain_merged_bus_before_sample_tp_gloo()
++        # sample and mark_finished are shared. Detectors off still stamps
++        # finish before end-of-wave so a same-wave manual report can read the
++        # prompt cache; reap waits until the next ``begin_wave``.
++        result = sample_fn()
++        # Hook 3: mark_finished
++        self._soft_fail("mark_finished", lambda: self.mark_finished(result.finished_req_ids))
 +        if not self.needs_sample_phase_hooks():
-+            result = sample_fn()
 +            # End-of-wave gate uses collectives — do not soft-fail (desync/hang).
-+            self.end_of_wave_sync(allow_manual_dump=True)
++            self.end_of_wave(has_scheduled_tokens=True)
 +            return result
 +
-+        # Runner's sample work (sample + draft + bookkeeping + output + profiling + eplb)
-+        result = sample_fn()
 +        # Retain wave batch for block_ids after MRV2 clears execute_model_state.
 +        if result.input_batch is not None:
 +            self._last_input_batch = result.input_batch
-+        # Hook 3: mark_finished
-+        self._soft_fail("mark_finished", lambda: self.mark_finished(result.finished_req_ids))
 +        # Hook 4: check_after_spec (spec only). Gate here to skip the
 +        # accepted_token_nums_fn callback when detection is off; soft-fail
 +        # lives inside check_after_spec itself.
@@ -14231,7 +14709,7 @@ index 000000000..1e76d0dda
 +                ),
 +            )
 +        # Hook 7: end-of-wave config+dump gate (collectives — no soft-fail).
-+        self.end_of_wave_sync(allow_manual_dump=True)
++        self.end_of_wave(has_scheduled_tokens=True)
 +        return result
 +
 +    def check_before_sample(
@@ -14449,10 +14927,10 @@ index 000000000..1e76d0dda
 +        )
 diff --git a/vllm_ascend/observability/runtime_guard/processor_bus.py b/vllm_ascend/observability/runtime_guard/processor_bus.py
 new file mode 100644
-index 000000000..b199e1d37
+index 000000000..d9db90971
 --- /dev/null
 +++ b/vllm_ascend/observability/runtime_guard/processor_bus.py
-@@ -0,0 +1,303 @@
+@@ -0,0 +1,343 @@
 +#
 +# Copyright (c) 2025 Huawei Technologies Co., Ltd. All Rights Reserved.
 +#
@@ -14490,10 +14968,11 @@ index 000000000..b199e1d37
 +class RuntimeGuardBusMixin:
 +    """Wave-head config sync + dump-job delivery (broadcast / file / TP).
 +
-+    Broadcast path (last-PP × TP only): submit merged due-broadcast(+due bcasts) to
-+    :class:`DueBitsBusWorker` at wave head; apply results in
-+    :meth:`_drain_merged_bus` at end-of-wave so the collective overlaps
-+    forward. Non-last PP and ``tp_size<=1`` poll JSON locally.
++    last-PP × TP>1 always submits the merged due-broadcast(+due bcasts) to
++    :class:`DueBitsBusWorker` at wave head (``config_due`` is false when
++    hot-reload is off); apply/stash in :meth:`_drain_merged_bus` at
++    end-of-wave so the collective overlaps forward. Non-last PP and
++    ``tp_size<=1`` poll JSON locally and stash dump jobs without a TP bus.
 +    """
 +
 +    # Attributes provided by RuntimeGuardProcessor (mixin composition).
@@ -14510,16 +14989,18 @@ index 000000000..b199e1d37
 +    _pending_merged_bus_dump_jobs: list[dict[str, Any]]
 +    _pending_merged_bus_can_dump: bool
 +    _pending_merged_bus_is_first: bool
++    # Captured at wave-head submit, before TP0 bus-worker reload flips gates.
++    _pending_prev_needs_sample_hooks: bool | None
 +    _bus_wave_seq: int
 +    _merged_bus_warn_ts: float
 +
 +    # Defined on RuntimeGuardDumpMixin / RuntimeGuardProcessor.
-+    _claim_dump_jobs_to_deferred_via_tp: Any
++    _stash_local_dump_jobs_to_deferred: Any
 +    _drop_pending_dump_jobs: Any
 +    _refund_dropped_dump_arms: Any
 +    needs_sample_phase_hooks: Any
 +
-+    def _refresh_config_body(self) -> bool:
++    def _run_wave_head_bus(self) -> bool:
 +        # Wave-head: 1×due-broadcast([config_due, dump_due]) + per-lane bcasts.
 +        # Async path defers apply/stash to end-of-wave (overlap with forward).
 +        # Auto dump jobs from *previous* wave are bcast into deferred D2H;
@@ -14530,9 +15011,11 @@ index 000000000..b199e1d37
 +        """Re-bind dependents after a successful wave-head config apply.
 +
 +        When hot-reload turns all detectors off (``needs_sample_phase_hooks``
-+        True→False), purge RequestGuardStore / wave stamps so finished reqs
-+        are not left unreaped after sync stops calling mark_finished/reap.
-+        Deferred KV dump jobs already claimed for D2H are kept.
++        True→False), soft-purge detect IO: clear outputs, detector private maps,
++        and wave stamps, but keep Store rows and ``prompt_token_ids`` so a
++        mid-request re-enable can still report the prompt. Finished rows stay
++        for the next sync reap. Deferred KV dump jobs already claimed for D2H
++        are kept.
 +        """
 +        self.action_executor.apply_runtime_config()
 +        self.runtime_config.apply_ascend_log_level()
@@ -14546,30 +15029,53 @@ index 000000000..b199e1d37
 +            self._purge_guard_state_after_detectors_off()
 +
 +    def _purge_guard_state_after_detectors_off(self) -> None:
-+        """Drop detect-side per-req state after all detectors are disabled."""
++        """Soft-purge detect-side state after all detectors are disabled.
++
++        Keeps ``prompt_token_ids`` and Store entries. Shared cumulative
++        ``output_token_ids`` are cleared so a later re-enable appends only the
++        suffix (same mid-enable contract as never-on-during-prefill).
++        """
 +        store = RequestGuardStore.get()
-+        ids = store.list_req_ids()
 +        # Unclaimed auto arms will never fire from detectors; refund + drop.
 +        # Jobs already moved to ``_deferred_kv_dump_jobs`` still D2H this wave.
 +        if self._kv_dump_jobs:
 +            self._drop_pending_dump_jobs()
++        ids = store.reset_detect_io_keep_prompts()
++        # Belt-and-suspenders: refresh already called on_disabled for sections
++        # that flipped True→False; clear every detector map in case some were
++        # already off with leftover windows.
++        self.detectors.disable_all()
 +        if ids:
-+            store.clear_many(ids, detectors=self.detectors)
 +            self.wave_tracker.discard_many(ids)
 +        RequestIoSnapshotManager.get().clear_wave_cache()
 +        logger.info(
-+            "[runtime_guard] purged %d req state(s) after all detectors disabled",
++            "[runtime_guard] cleared detect IO for %d req(s) after all detectors disabled (prompts kept)",
 +            len(ids),
 +        )
 +
++    def _drain_merged_bus_before_sample_tp_gloo(self) -> bool:
++        """Drain wave-head bus before sample-phase TP Gloo (SFA ``get_finished``).
++
++        Keeps DueBitsBusWorker overlap with forward, then joins on the
++        inference thread so every last-PP TP rank finishes bus collectives
++        before ``kv_connector.post_forward`` may ``all_gather_object`` on the
++        same ``cpu_group``. No-op when nothing is inflight.
++        """
++        return self._drain_merged_bus(warn_if_pending=True)
++
 +    def _wave_head_task_bus(self) -> bool:
-+        """Wave-head config+dump gate. Returns whether config content changed."""
++        """Wave-head config+dump gate. Returns whether config content changed.
++
++        last-PP × TP>1 always uses the merged due bus so dump job delivery and
++        (optional) config share one due-vector. ``config_due`` is false when
++        hot-reload is off; dump still rides the dump lane. Non-last PP /
++        ``tp_size<=1`` fall back to local file poll + local dump claim.
++        """
 +        cfg = self.runtime_config
-+        # Hot-reload on last-PP TP → merged due bus; else local file poll + TP dump claim.
-+        group = _runtime_config_sync_group_or_none() if cfg.hot_reload_enabled else None
++        group = _runtime_config_sync_group_or_none()
 +        if group is not None and int(getattr(group, "world_size", 1) or 1) > 1:
 +            return self._wave_head_merged_bus(group)
-+        # Non-last-PP / tp_size<=1 / reload off: local config; auto dump via TP claim.
++        # Non-last-PP / tp_size<=1: local config (if reload); dump is local stash.
 +        changed = False
 +        if cfg.hot_reload_enabled:
 +            prev_hooks = bool(self.needs_sample_phase_hooks())
@@ -14583,9 +15089,8 @@ index 000000000..b199e1d37
 +                changed = False
 +            if changed:
 +                self._apply_config_cascade(prev_needs_sample_hooks=prev_hooks)
-+        # Previous-wave auto jobs: claim via TP bus into deferred; D2H at
-+        # end-of-wave (same path as broadcast merged bus).
-+        self._claim_dump_jobs_to_deferred_via_tp()
++        # tp<=1 / no TP group: no dump collective — stash local jobs for eow D2H.
++        self._stash_local_dump_jobs_to_deferred()
 +        logger.debug(
 +            "[runtime_guard sync] leave stage=wave_head_task_bus changed=%s file_or_non_last_pp",
 +            changed,
@@ -14636,6 +15141,9 @@ index 000000000..b199e1d37
 +        self._pending_merged_bus_dump_jobs = list(dump_jobs)
 +        self._pending_merged_bus_can_dump = can_dump
 +        self._pending_merged_bus_is_first = is_first
++        # Snapshot before submit: TP0 ``build_config_sync_payload`` reloads on the
++        # bus worker and can flip ``needs_sample_phase_hooks`` before drain.
++        self._pending_prev_needs_sample_hooks = bool(self.needs_sample_phase_hooks())
 +        self._bus_wave_seq = int(self._bus_wave_seq) + 1
 +        wave_seq = self._bus_wave_seq
 +        try:
@@ -14656,6 +15164,7 @@ index 000000000..b199e1d37
 +            self._pending_merged_bus_dump_jobs = []
 +            self._pending_merged_bus_can_dump = False
 +            self._pending_merged_bus_is_first = False
++            self._pending_prev_needs_sample_hooks = None
 +            raise
 +        self._merged_bus_inflight = True
 +        logger.debug(
@@ -14693,6 +15202,7 @@ index 000000000..b199e1d37
 +            self._pending_merged_bus_dump_jobs = []
 +            self._pending_merged_bus_can_dump = False
 +            self._pending_merged_bus_is_first = False
++            self._pending_prev_needs_sample_hooks = None
 +            self._merged_bus_inflight = False
 +            self._refund_dropped_dump_arms(jobs)
 +            raise
@@ -14701,9 +15211,11 @@ index 000000000..b199e1d37
 +        pending_jobs = list(self._pending_merged_bus_dump_jobs)
 +        can_dump = bool(self._pending_merged_bus_can_dump)
 +        is_first = bool(self._pending_merged_bus_is_first)
++        prev_hooks = self._pending_prev_needs_sample_hooks
 +        self._pending_merged_bus_dump_jobs = []
 +        self._pending_merged_bus_can_dump = False
 +        self._pending_merged_bus_is_first = False
++        self._pending_prev_needs_sample_hooks = None
 +
 +        if result is None:
 +            return False
@@ -14713,6 +15225,7 @@ index 000000000..b199e1d37
 +            pending_dump_jobs=pending_jobs,
 +            can_dump=can_dump,
 +            is_first_rank=is_first,
++            prev_needs_sample_hooks=prev_hooks,
 +        )
 +
 +    def _apply_merged_bus_result(
@@ -14722,6 +15235,7 @@ index 000000000..b199e1d37
 +        pending_dump_jobs: list[dict[str, Any]],
 +        can_dump: bool,
 +        is_first_rank: bool,
++        prev_needs_sample_hooks: bool | None = None,
 +    ) -> bool:
 +        if result.error is not None:
 +            self._refund_dropped_dump_arms(pending_dump_jobs)
@@ -14730,7 +15244,11 @@ index 000000000..b199e1d37
 +        cfg = self.runtime_config
 +        changed = False
 +        if result.config_due and isinstance(result.config_payload, dict):
-+            prev_hooks = bool(self.needs_sample_phase_hooks())
++            # Prefer the wave-head snapshot; fall back only for direct UT calls.
++            if prev_needs_sample_hooks is None:
++                prev_hooks = bool(self.needs_sample_phase_hooks())
++            else:
++                prev_hooks = bool(prev_needs_sample_hooks)
 +            try:
 +                changed = cfg.apply_config_sync_payload(
 +                    result.config_payload,
@@ -14758,10 +15276,10 @@ index 000000000..b199e1d37
 +        return changed
 diff --git a/vllm_ascend/observability/runtime_guard/processor_dump.py b/vllm_ascend/observability/runtime_guard/processor_dump.py
 new file mode 100644
-index 000000000..2c772dcba
+index 000000000..2d6bf6e05
 --- /dev/null
 +++ b/vllm_ascend/observability/runtime_guard/processor_dump.py
-@@ -0,0 +1,342 @@
+@@ -0,0 +1,307 @@
 +#
 +# Copyright (c) 2025 Huawei Technologies Co., Ltd. All Rights Reserved.
 +#
@@ -14777,7 +15295,7 @@ index 000000000..2c772dcba
 +# See the License for the specific language governing permissions and
 +# limitations under the License.
 +
-+"""KV dump queue / claim / D2H orchestration mixin for RuntimeGuardProcessor."""
++"""KV dump queue / local stash / D2H orchestration mixin for RuntimeGuardProcessor."""
 +
 +from __future__ import annotations
 +
@@ -14785,10 +15303,7 @@ index 000000000..2c772dcba
 +from pathlib import Path
 +from typing import Any
 +
-+from vllm.distributed.parallel_state import get_tp_group
-+
 +from vllm_ascend.logger import init_logger_ascend
-+from vllm_ascend.observability.runtime_config.dist import sync_task_bus
 +from vllm_ascend.observability.runtime_guard.dump import (
 +    REQUEST_FINISHED_AT_DUMP_KEY,
 +    KvCacheReader,
@@ -14894,14 +15409,16 @@ index 000000000..2c772dcba
 +        self._kv_dump_jobs.clear()
 +        self._refund_dropped_dump_arms(jobs)
 +
-+    def end_of_wave_sync(self, *, allow_manual_dump: bool = True) -> None:
-+        """End-of-wave: drain async merged bus, then deferred D2H + manual dump.
++    def end_of_wave(self, *, has_scheduled_tokens: bool = True) -> None:
++        """End-of-wave: drain async merged bus (if needed), then deferred D2H.
 +
-+        Async last-PP TP path: wave-head only submitted the due broadcast;
-+        collectives finish here (ideally already done during forward). Sync /
-+        file paths have nothing inflight — drain is a no-op. Non-last PP
-+        returns immediately (same gate as ``sync_for_step``).
-+        ``allow_manual_dump``: False on dummy / no-sample (do not burn manual_dump).
++        Async last-PP TP path: wave-head submitted the due broadcast to overlap
++        forward. Sampled waves usually already drained in
++        :meth:`RuntimeGuardProcessor.run_sample_phase` (before connector
++        ``post_forward`` / SFA TP Gloo). This call is then a no-op for the bus
++        and only runs deferred D2H + manual dump. No-sample / early-return
++        waves still drain here. Non-last PP returns immediately.
++        ``has_scheduled_tokens``: False on dummy / no-sample (do not burn manual_dump).
 +        """
 +        if not should_run_wave_sync_on_rank():
 +            return
@@ -14919,57 +15436,23 @@ index 000000000..2c772dcba
 +        self._deferred_kv_dump_jobs.clear()
 +        if deferred and should_dump_kv_on_rank():
 +            self._run_kv_dumps(deferred)
-+        self._maybe_fire_manual_local(allow_manual_dump=allow_manual_dump)
++        self._maybe_fire_manual_local(has_scheduled_tokens=has_scheduled_tokens)
 +
-+    def _claim_dump_jobs_to_deferred_via_tp(self) -> None:
-+        """File/PP>1: move pending auto jobs through TP bus into deferred D2H.
++    def _stash_local_dump_jobs_to_deferred(self) -> None:
++        """Move local ``_kv_dump_jobs`` into deferred D2H (no TP collective).
 +
-+        When dump is inactive, all dump ranks observe the same
-+        ``dump_enabled()`` gate and skip the TP due-vector all_reduce (stray
-+        local jobs are dropped — refunding their arms: quota was consumed at
-+        arm time). While dump is active, an empty local queue on non-TP0 must
-+        still join the bus — only TP0 enqueues — so an empty due-AR remains
-+        required for lockstep.
++        last-PP × TP>1 delivers jobs on the merged due bus dump lane. This
++        path is only for ``tp_size<=1`` / missing TP group wave-heads: take
++        the local queue and stash it for ``end_of_wave``. When dump is
++        inactive, stray local jobs are dropped with a per-arm refund.
 +        """
-+        if not should_dump_kv_on_rank():
-+            self._drop_pending_dump_jobs()
-+            return
-+        # Shared config gate (identical on every rank after sync): skip TP bus.
-+        if not self.runtime_config.dump_enabled():
++        if not should_dump_kv_on_rank() or not self.runtime_config.dump_enabled():
 +            self._drop_pending_dump_jobs()
 +            return
 +        payload = list(self._kv_dump_jobs)
 +        self._kv_dump_jobs.clear()
-+        try:
-+            tp_group = get_tp_group()
-+        except Exception:
-+            if payload:
-+                self._deferred_kv_dump_jobs.extend(payload)
-+            return
-+        tp_size = int(getattr(tp_group, "world_size", 1) or 1)
-+        if tp_size <= 1:
-+            if payload:
-+                self._deferred_kv_dump_jobs.extend(payload)
-+            return
-+        try:
-+            rank = int(tp_group.rank_in_group)
-+        except Exception:
-+            rank = 0
-+
-+        try:
-+            jobs = sync_task_bus(
-+                tp_group,
-+                due_local=bool(rank == 0 and payload),
-+                payload=payload if rank == 0 else None,
-+                src=0,
-+            )
-+        except Exception:
-+            # Bus failure: payload dropped with no D2H — refund before the
-+            # caller's soft-fail swallows the exception.
-+            self._refund_dropped_dump_arms(payload)
-+            raise
-+        if jobs:
-+            self._deferred_kv_dump_jobs.extend(list(jobs))
++        if payload:
++            self._deferred_kv_dump_jobs.extend(payload)
 +
 +    def _run_kv_dumps(self, jobs: list[dict[str, Any]]) -> None:
 +        reader = self.action_executor._kv_reader
@@ -15106,7 +15589,7 @@ index 000000000..2c772dcba
 +            store.finish_dump_jobs(drained_ids)
 diff --git a/vllm_ascend/observability/runtime_guard/processor_report.py b/vllm_ascend/observability/runtime_guard/processor_report.py
 new file mode 100644
-index 000000000..a0fcebd13
+index 000000000..445745da0
 --- /dev/null
 +++ b/vllm_ascend/observability/runtime_guard/processor_report.py
 @@ -0,0 +1,338 @@
@@ -15167,7 +15650,7 @@ index 000000000..a0fcebd13
 +    # Defined on RuntimeGuardDumpMixin / RuntimeGuardProcessor.
 +    _run_kv_dumps: Any
 +
-+    def _maybe_fire_manual_local(self, *, allow_manual_dump: bool) -> None:
++    def _maybe_fire_manual_local(self, *, has_scheduled_tokens: bool) -> None:
 +        """Fire ``manual_dump`` locally on each last-PP TP (no job bcast).
 +
 +        Config watermark ``N`` (or continuous ``true``) → every dump rank
@@ -15175,12 +15658,12 @@ index 000000000..a0fcebd13
 +        dumps still use the TP dump lane. Each dump rank bumps its own
 +        in-process ``done`` counter; JSON is never rewritten.
 +        """
-+        if not allow_manual_dump:
++        if not has_scheduled_tokens:
 +            return
 +        if not should_dump_kv_on_rank():
 +            return
 +        cfg = self.runtime_config
-+        remaining = cfg.manual_trigger_count()
++        remaining = cfg.manual_dump_remaining()
 +        if remaining <= 0:
 +            return
 +        if not cfg.dump_enabled():
@@ -15199,7 +15682,7 @@ index 000000000..a0fcebd13
 +
 +        wave = self.wave_tracker.current_wave()
 +        arm_id = uuid4().hex
-+        continuous = cfg.manual_trigger_continuous()
++        continuous = cfg.manual_dump_continuous()
 +        # Sequence for this wave (1-based) before consume bumps done.
 +        dump_seq = int(cfg.manual_dumps_done()) + 1 if not continuous else None
 +        target = cfg.manual_dump_target()
@@ -15247,7 +15730,7 @@ index 000000000..a0fcebd13
 +        if jobs:
 +            self._run_kv_dumps(jobs)
 +
-+        if cfg.consume_manual_trigger():
++        if cfg.consume_manual_dump():
 +            logger.info(
 +                "[runtime_guard manual_trigger] manual_dump consumed done=%d target=%d",
 +                cfg.manual_dumps_done(),
@@ -15395,7 +15878,7 @@ index 000000000..a0fcebd13
 +                inject_manual_dump_kv=True,
 +            )
 +
-+        if consume and self.runtime_config.consume_manual_trigger():
++        if consume and self.runtime_config.consume_manual_dump():
 +            logger.info(
 +                "[runtime_guard manual_trigger] manual_dump consumed done=%d target=%d",
 +                self.runtime_config.manual_dumps_done(),
@@ -15450,7 +15933,7 @@ index 000000000..a0fcebd13
 +        return self._get_detector_tokenizer()
 diff --git a/vllm_ascend/observability/runtime_guard/rank_gate.py b/vllm_ascend/observability/runtime_guard/rank_gate.py
 new file mode 100644
-index 000000000..8aa289ecf
+index 000000000..78851e01c
 --- /dev/null
 +++ b/vllm_ascend/observability/runtime_guard/rank_gate.py
 @@ -0,0 +1,165 @@
@@ -15599,7 +16082,7 @@ index 000000000..8aa289ecf
 +
 +
 +def should_run_wave_sync_on_rank() -> bool:
-+    """True when this rank should run ``sync_for_step`` / ``end_of_wave_sync``.
++    """True when this rank should run ``begin_wave`` / ``end_of_wave``.
 +
 +    Config bus + KV dump live on last PP only. Early PP stages already no-op
 +    detect/dump via other gates; skipping the wave entry avoids empty local
@@ -15621,7 +16104,7 @@ index 000000000..8aa289ecf
 +    return anomaly_check_rank_skip_reason(runner) is None
 diff --git a/vllm_ascend/observability/runtime_guard/report.py b/vllm_ascend/observability/runtime_guard/report.py
 new file mode 100644
-index 000000000..d78b14dfe
+index 000000000..00c008819
 --- /dev/null
 +++ b/vllm_ascend/observability/runtime_guard/report.py
 @@ -0,0 +1,558 @@
@@ -16035,7 +16518,7 @@ index 000000000..d78b14dfe
 +        """Write one pretty-printed anomaly JSON file. Returns path or None on failure.
 +
 +        ``dump_attempted`` means ``dump_kv`` was in this incident's action list
-+        (not that D2H already succeeded — dump runs on a later ``sync_for_step``).
++        (not that D2H already succeeded — dump runs on a later ``begin_wave``).
 +        ``dump_arm_wave`` is the real-step wave when the incident was handled;
 +        same-pair rate limiting uses it (64 waves, then doubles) up to
 +        ``max_per_req``.
@@ -16185,10 +16668,10 @@ index 000000000..d78b14dfe
 +            return None
 diff --git a/vllm_ascend/observability/runtime_guard/state.py b/vllm_ascend/observability/runtime_guard/state.py
 new file mode 100644
-index 000000000..fc1a9e4d0
+index 000000000..8ada7c44b
 --- /dev/null
 +++ b/vllm_ascend/observability/runtime_guard/state.py
-@@ -0,0 +1,686 @@
+@@ -0,0 +1,688 @@
 +#
 +# Copyright (c) 2025 Huawei Technologies Co., Ltd. All Rights Reserved.
 +#
@@ -16353,8 +16836,8 @@ index 000000000..fc1a9e4d0
 +        self._wave = 0
 +        self._sample_waves: dict[str, deque[int]] = {}
 +
-+    def advance(self, *, allow_manual_dump: bool = True) -> None:
-+        if not allow_manual_dump:
++    def advance(self, *, has_scheduled_tokens: bool = True) -> None:
++        if not has_scheduled_tokens:
 +            return
 +        with self._lock:
 +            self._wave += 1
@@ -16421,8 +16904,8 @@ index 000000000..fc1a9e4d0
 +        self.sync_from_config()
 +
 +    def sync_from_config(self) -> None:
-+        self._max_times = int(self._runtime_config.dump_max_times())
-+        self._cooldown = float(self._runtime_config.dump_cooldown_seconds())
++        self._max_times = int(self._runtime_config.auto_dump_max_times())
++        self._cooldown = float(self._runtime_config.auto_dump_cooldown_seconds())
 +
 +    @property
 +    def total_count(self) -> int:
@@ -16491,8 +16974,6 @@ index 000000000..fc1a9e4d0
 +    req_id: str
 +    output_token_ids: list[int] = field(default_factory=list)
 +    detection_stopped: bool = False
-+    # Same-wave append dedupe frontier; not sample-wave stamps.
-+    last_append_chunk: tuple[int, ...] | None = None
 +    # Scheduler finished; keep state until reap (last get_output / idle sweep).
 +    finished: bool = False
 +    finish_mark_wave: int | None = None
@@ -16774,13 +17255,26 @@ index 000000000..fc1a9e4d0
 +            if req_id:
 +                self.clear(str(req_id), detectors=detectors)
 +
++    def reset_detect_io_keep_prompts(self) -> list[str]:
++        """Clear cumulative outputs / stop flags; keep Store rows and prompts.
++
++        Used when hot-reload turns all detectors off. Mid-flight re-enable can
++        still report the cached prompt; new samples append as a suffix. Finished
++        rows stay so the next sync wave can reap them.
++        """
++        with self._lock:
++            ids = list(self._by_req)
++            for state in self._by_req.values():
++                state.output_token_ids.clear()
++                state.detection_stopped = False
++            return ids
++
 +    # ---- IO helpers -------------------------------------------------------
 +
 +    def append_output_ids(self, req_id: str, token_ids: list[int]) -> None:
 +        if not req_id or not token_ids:
 +            return
 +        rid = str(req_id)
-+        chunk = tuple(token_ids)
 +        with self._lock:
 +            state = self._by_req.get(rid)
 +            if state is None:
@@ -16793,16 +17287,7 @@ index 000000000..fc1a9e4d0
 +                    self._finished.add(rid)
 +                    self._reaped_set.discard(rid)
 +                self._by_req[rid] = state
-+            if state.last_append_chunk == chunk:
-+                return
 +            state.output_token_ids.extend(token_ids)
-+            state.last_append_chunk = chunk
-+
-+    def clear_wave_append_frontier(self) -> None:
-+        """Reset same-wave dedupe so identical chunks across steps are kept."""
-+        with self._lock:
-+            for state in self._by_req.values():
-+                state.last_append_chunk = None
 +
 +    def new_output_ids_since(self, req_id: str, consumed: int) -> tuple[int, list[int]]:
 +        """Return ``(total_len, ids[consumed:])``, copying only the new tail.
@@ -16917,10 +17402,10 @@ index 093ec9216..b59e39670 100644
      Location: `speculator.AscendEagleSpeculator.init_cudagraph_manager`.
  
 diff --git a/vllm_ascend/worker/v2/model_runner.py b/vllm_ascend/worker/v2/model_runner.py
-index 79f1facdc..c6f54eb5c 100644
+index dad8f81d7..b67683e38 100644
 --- a/vllm_ascend/worker/v2/model_runner.py
 +++ b/vllm_ascend/worker/v2/model_runner.py
-@@ -86,6 +86,11 @@ from vllm_ascend.distributed.kv_transfer.sparse_kv_offload.sparse_kv_offload_man
+@@ -92,6 +92,11 @@ from vllm_ascend.distributed.kv_transfer.sparse_kv_offload.sparse_kv_offload_man
      init_sparse_kv_offload_manager,
  )
  from vllm_ascend.models.deepseek_v41.cache_config import uses_a5_packed_cache
@@ -16931,17 +17416,17 @@ index 79f1facdc..c6f54eb5c 100644
 +from vllm_ascend.observability.runtime_guard.processor import RuntimeGuardProcessor
  from vllm_ascend.ops.rotary_embedding import set_cos_and_sin, update_cos_sin
  from vllm_ascend.utils import (
-     is_deepseek_v41,
-@@ -262,6 +267,8 @@ class NPUModelRunner(GPUModelRunner):
-         set_mc2_mask(vllm_config, self.device)
-         set_potential_max_tokens(vllm_config)
+     is_c8_mxfp_kv_quant,
+@@ -296,6 +301,8 @@ class NPUModelRunner(GPUModelRunner):
+ 
+                 self.debugger = AclGraphDumper(dump_cfg)
  
 +        self.runtime_guard = RuntimeGuardProcessor.bind(self)
 +
      @property
      def pcp_manager_cls(self) -> type[AscendPCPManager]:
          return AscendPCPManager
-@@ -307,6 +314,7 @@ class NPUModelRunner(GPUModelRunner):
+@@ -346,6 +353,7 @@ class NPUModelRunner(GPUModelRunner):
              pcp_manager._sampling_hidden_restored = True
          self.execute_model_state = state
  
@@ -16949,7 +17434,7 @@ index 79f1facdc..c6f54eb5c 100644
      def sample_tokens(self, grammar_output):
          if (
              lmhead_tp_enable()
-@@ -482,7 +490,10 @@ class NPUModelRunner(GPUModelRunner):
+@@ -596,7 +604,10 @@ class NPUModelRunner(GPUModelRunner):
              layer = self.compilation_config.static_forward_context[layer_name]
              layer.impl.bind_copy_sfa_kv_cache(manager, layer_name)
  
@@ -16961,10 +17446,10 @@ index 79f1facdc..c6f54eb5c 100644
          self,
          scheduler_output: SchedulerOutput,
 diff --git a/vllm_ascend/worker/worker.py b/vllm_ascend/worker/worker.py
-index 792ea3c4b..90d179fff 100644
+index 670a0bab9..bc9c6ab98 100644
 --- a/vllm_ascend/worker/worker.py
 +++ b/vllm_ascend/worker/worker.py
-@@ -96,6 +96,7 @@ from vllm_ascend.distributed.kv_transfer.sparse_kv_offload.sparse_kv_offload_man
+@@ -95,6 +95,7 @@ from vllm_ascend.distributed.kv_transfer.sparse_kv_offload.sparse_kv_offload_man
      plan_sparse_kv_offload_memory,
  )
  from vllm_ascend.distributed.parallel_state import init_ascend_model_parallel
@@ -16972,9 +17457,9 @@ index 792ea3c4b..90d179fff 100644
  from vllm_ascend.ops.triton.triton_utils import init_device_properties_triton
  from vllm_ascend.profiler.torch_npu_profiler import TorchNPUProfilerWrapper
  from vllm_ascend.utils import (
-@@ -1269,6 +1270,9 @@ class NPUWorker(WorkerBase):
-     def reset_encoder_cache(self) -> None:
-         self.model_runner.reset_encoder_cache()
+@@ -1275,6 +1276,9 @@ class NPUWorker(WorkerBase):
+     def synchronize_device(self) -> None:
+         torch.npu.synchronize()
  
 +    # Lockstep wave sync for idle DP ranks (never burns manual_dump);
 +    # lives in the runtime_guard hook, see runtime_guard_idle_step.

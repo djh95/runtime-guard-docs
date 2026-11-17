@@ -4,6 +4,12 @@
 
 上游 PR / commit 对照（living）：**[PR_COMMIT_MAP.md](./PR_COMMIT_MAP.md)**。
 
+## 维护备注（2026-11-17）
+
+- MRV2 离线包已升到 **`v0.30-rg.4`**：BASE `4e4c9cbaa`（`releases/v0.30.0` tip），SOURCE `#18450` @ `5c555370b`（含已合入 `#19285` + open `#21346`/`#21375`）。
+- 本目录 **MRV1** 五档离线包仍钉各自 BASE；`v0.30.0` MRV1 `#19341` **需 rebase** 到 `4e4c9cbaa`，且尚未 backport `#19285`/`#21346`/`#21375`（见 [PR_COMMIT_MAP](./PR_COMMIT_MAP.md) TBD）。
+- `v0.30.0` MRV1 离线 BASE 仍为 `6d25ba2b3`（与旧 `v0.30-rg.3` 同 BASE）；与现行 MRV2 包 **BASE 已分叉**——勿混用文档里的 checkout SHA。
+
 ## mrv1-rg.2 — 2026-10-21
 
 ### 版本与来源
@@ -29,7 +35,7 @@
 
 外部评审（2026-10-28，钉 `45bc260`）+ 本仓静态核验：**五档同源补丁，全部受影响**。
 
-- **RG01（P1，阻断启服）**：控制面构造时无条件 `from vllm_ascend.logger import apply_ascend_log_level`，但本包只给 `logger.py` 带入 `init_logger_ascend`，五档 BASE 均无该符号 → API 初始化即 `ImportError`，**检测器全关也无法启服**。修复：从 SOURCE `9343c9859` 补入真实 `apply_ascend_log_level` 及依赖闭包（MRV2 `v0.30-rg.3` 已含，可对照移植）；冒烟标准须从 `git apply --check` 升级为真实 `RuntimeConfig` 初始化。
+- **RG01（P1，阻断启服）**：控制面构造时无条件 `from vllm_ascend.logger import apply_ascend_log_level`，但本包只给 `logger.py` 带入 `init_logger_ascend`，五档 BASE 均无该符号 → API 初始化即 `ImportError`，**检测器全关也无法启服**。修复：从 SOURCE `9343c9859` 补入真实 `apply_ascend_log_level` 及依赖闭包（MRV2 `v0.30-rg.4` 已含，可对照移植）；冒烟标准须从 `git apply --check` 升级为真实 `RuntimeConfig` 初始化。
 - **RG02（P1，统计口径）**：`accepted_token_nums_fn` 读 `input_batch.num_accepted_tokens_cpu`，该值晚一拍发布，spec_acceptance 报告的接受计数对应**前一步**采样（外部评审 9360 步报告中 8424 个可比位置全部对应前一步）。取数修正需在目标 NPU 回归后合入；此前解读 spec 告警须注意窗口错拍。
 - **RG03（P2）**：本包明确不含 main `#18644`，`spec_acceptance.check_all` 无 `None` 保护（短 batch 边界保护已含）；`03_detectors/spec_acceptance.md` 的「None 安全跳过」承诺按 main 口径书写，与本包实现不符。计数为 `None` 时经 soft-fail 抛 `TypeError`，仅跳过本波 spec 检测（服务不崩）。
 - **RG04（P2）**：异步报告富化 `_enrich_detail_with_block_meta` 用保存的 `req_idx` 读**当前** `input_batch` 行，不校验行身份；请求结束 / batch 重排后报告 `block_ids` 元数据可能归属错误请求（KV dump 路径另有 finished/reaped 保护）。修复前，报告 `block_ids` 仅供人工参考。
@@ -59,7 +65,7 @@
 | `v0.26.0rc1` | tag `v0.26.0rc1` | `f2f74a16c3c50a76f4349d807918e83edec1e35c` | `v0.26.0rc1/patches/…` |
 | `v0.27.1rc1` | tag `v0.27.1rc1` | `3b31886237ed65c435e0965b10e8002ff5769766` | `v0.27.1rc1/patches/…` |
 | `v0.28.0rc1` | tag `v0.28.0.rc1` | `96df623103f921df1a4488170d106f36689acb59` | `v0.28.0rc1/patches/…` |
-| `v0.30.0` | `6d25ba2b3`（与 `05_v030` / `v0.30-rg.3` **同一 BASE**） | `6d25ba2b3c123bf963966cd583e985979d7a8a7d` | `v0.30.0/patches/…` |
+| `v0.30.0` | `6d25ba2b3`（与旧 `v0.30-rg.3` 同；**≠** 现行 MRV2 `v0.30-rg.4` BASE `4e4c9cbaa`） | `6d25ba2b3c123bf963966cd583e985979d7a8a7d` | `v0.30.0/patches/…` |
 
 ### 对应功能
 

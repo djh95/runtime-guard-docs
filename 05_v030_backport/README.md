@@ -17,7 +17,7 @@
 
 | 方式 | 说明 |
 |------|------|
-| **当前采用** | https://github.com/vllm-project/vllm-ascend/pull/18450 相对其 BASE 的完整 `git diff`（含功能 cherry-pick + hot-shell / #18644 对齐 commit） |
+| **当前采用** | https://github.com/vllm-project/vllm-ascend/pull/18450 相对其 BASE 的完整 `git diff`（含 #16849/#18644/#19285 + open #21346/#21375） |
 | **不推荐** | `main` tip × 路径白名单 → `v0.30.0rc1`（易夹带 main 语境，与 CI 已解决冲突的结果不一致） |
 
 维护者一键重导：
@@ -26,8 +26,8 @@
 
 ```bash
 export VLLM_ASCEND_GIT=/path/to/vllm-ascend
-# 确保 tip = #18450 head（例 96046a3f0）
-bash generate_patch_bundle.sh --base 6d25ba2b3 --source 96046a3f0
+# 确保 tip = #18450 head（例 5c555370b）
+bash generate_patch_bundle.sh --base 4e4c9cbaa --source 5c555370b
 # 或：bash generate_patch_bundle.sh --from-pr 18450
 # 然后更新 CHANGELOG.md
 ```
@@ -46,10 +46,10 @@ bash generate_patch_bundle.sh --base 6d25ba2b3 --source 96046a3f0
 ## 使用方（一线 / 集成）
 
 ```bash
-# 1. 检出与 CHANGELOG「BASE」一致的干净树（v0.30-rg.3 示例）
+# 1. 检出与 CHANGELOG「BASE」一致的干净树（v0.30-rg.4 示例）
 git clone https://github.com/vllm-project/vllm-ascend.git
 cd vllm-ascend
-git checkout 6d25ba2b3   # 见 CHANGELOG；勿想当然用旧 rc1 除非该包写明
+git checkout 4e4c9cbaa   # 见 CHANGELOG；勿想当然用旧 BASE 除非该包写明
 
 # 2. 确认 patches/ 与 CHANGELOG 版本号一致
 # 3. 应用（把下面路径替换为本仓实际本地存放路径）
@@ -62,17 +62,19 @@ bash /path/to/runtime-guard-docs/05_v030_backport/apply_patch.sh "$(pwd)"
 
 ## 对应功能（摘要）
 
-以 CHANGELOG 最新包为准；**v0.30-rg.3** 含：
+以 CHANGELOG 最新包为准；**v0.30-rg.4** 含：
 
-1. **控制面**：detect / report / `dump_kv`（来自 #16849 cherry-pick）  
-2. **Static idle / fully-off 性能**：默认全关时跳过热路径壳（PR #18450 第二 commit）  
-3. **main #18644 鲁棒对齐**：经同一 tip commit 带入（qsl 边界、空 list、None accepted、`group_rank` 等）
+1. **控制面**：detect / report / `dump_kv`（#16849）  
+2. **Static idle / fully-off 性能** + **#18644** 鲁棒对齐  
+3. **#19285** prompts cache/reap while detectors off  
+4. **#21346** soft-purge / on_disabled / config_version skip（main 仍 open）  
+5. **#21375** merged due bus / CPU·Gloo due-bits（main 仍 open）
 
 ## 能力与限制（打完 patch 后）
 
 - 需要 **MRV2**；拓扑以 `releases/v0.30.0` worker 为准。  
 - Analysis 离线脚本若不在包内，细定界仍要 analysis 工作区（见 [02](../02_problem_localization/README.md)）。  
-- 以 PR tip / CHANGELOG 为准；`v0.30-rg.3` SOURCE = `#18450` @ `96046a3f0`（含 #18644 对齐）。
+- 以 PR tip / CHANGELOG 为准；`v0.30-rg.4` SOURCE = `#18450` @ `5c555370b`（BASE `4e4c9cbaa`；含 #18644 / #19285 / #21346 / #21375）。
 
 ## 相关
 

@@ -50,6 +50,8 @@ README.md                          ← 本页（总目录）
 | additional_config · runtime_guard | https://github.com/vllm-project/vllm-ascend/blob/main/docs/source/user_guide/configuration/additional_config.md#runtime_guard |
 | 功能合入 PR | https://github.com/vllm-project/vllm-ascend/pull/16849 |
 | 性能与鲁棒增强 PR | https://github.com/vllm-project/vllm-ascend/pull/18644 |
+| 晚开检测保留 prompt | https://github.com/vllm-project/vllm-ascend/pull/19285 |
+| v0.30 MRV2 cherry-pick PR | https://github.com/vllm-project/vllm-ascend/pull/18450 |
 | `v0.30.0rc1` 标签（示例；无 `v0.30.0` 正式 tag） | https://github.com/vllm-project/vllm-ascend/releases/tag/v0.30.0rc1 |
 | `releases/v0.30.0` 分支 | https://github.com/vllm-project/vllm-ascend/tree/releases/v0.30.0 |
 
