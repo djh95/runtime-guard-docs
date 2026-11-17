@@ -2,7 +2,48 @@
 
 格式：新版本写在最上方。每条必须写清：**版本号、BASE、SOURCE/PR、怎么得到、含哪些功能**。
 
-## v0.30-rg.4 — 2026-11-17
+## v0.30-rg.5 — 2026-11-17
+
+### 版本与来源
+
+| 项 | 值 |
+|----|-----|
+| **包版本** | `v0.30-rg.5` |
+| **适用基线 BASE** | `9746cad23`（`releases/v0.30.0` tip；相对 rg.4 的 `4e4c9cbaa` 多 1 个 doc cherry-pick） |
+| **SOURCE tip** | `6689dbf3f` |
+| **上游 PR（推荐来源）** | https://github.com/vllm-project/vllm-ascend/pull/18450 |
+| **PR 分支** | `cherry-pick/pr-16849-to-releases-v0.30.0` |
+| **Patch 文件** | `patches/0001-runtime-guard-from-pr18450-9746cad23-to-6689dbf3f-20261117.patch` |
+
+### 怎么得到
+
+```text
+git diff 9746cad23..6689dbf3f
+# 等价：generate_patch_bundle.sh --base 9746cad23 --source 6689dbf3f
+# 或：generate_patch_bundle.sh --from-pr 18450
+```
+
+即 **PR #18450 rebase 到现行 `releases/v0.30.0` tip 后的完整提交区间**。功能内容与 `v0.30-rg.4` 相同（15 commits），仅 BASE/SOURCE SHA 因 release tip 前进而变。
+
+### 对应功能
+
+同 `v0.30-rg.4`：控制面 + `#18644` + `#19285` + open `#21346` / `#21375`。
+
+### 冒烟
+
+在干净 `9746cad23` worktree 上 `git apply --check` 一次通过（2026-11-17）。
+
+### 相对 v0.30-rg.4
+
+| 项 | rg.4 | rg.5 |
+|----|------|------|
+| BASE | `4e4c9cbaa` | `9746cad23` |
+| SOURCE | `5c555370b` | `6689dbf3f`（同 15 commits rebase） |
+| 内容 | #16849/#18644/#19285/#21346/#21375 | 相同（仅 SHA 变） |
+
+---
+
+## v0.30-rg.4 — 2026-11-17（已被 v0.30-rg.5 替换，勿再分发）
 
 ### 版本与来源
 
@@ -68,7 +109,7 @@ git diff 4e4c9cbaa..5c555370b
 
 ---
 
-## v0.30-rg.3 — 2026-10-21（已被 v0.30-rg.4 替换，勿再分发）
+## v0.30-rg.3 — 2026-10-21（已被 v0.30-rg.5 替换，勿再分发）
 
 ### 版本与来源
 
@@ -151,6 +192,6 @@ git diff 6d25ba2b3..96046a3f0
 
 ## 版本号约定
 
-`v0.30-rg.<N>`：面向 `releases/v0.30.0` 发布线（含 rc）/ 未合入 Guard 树的第 N 次 backport 包。适用 BASE 以本文件各版本表为准（当前推荐 `4e4c9cbaa` / `v0.30-rg.4`）。
+`v0.30-rg.<N>`：面向 `releases/v0.30.0` 发布线（含 rc）/ 未合入 Guard 树的第 N 次 backport 包。适用 BASE 以本文件各版本表为准（当前推荐 `9746cad23` / `v0.30-rg.5`）。
 
 必填字段：`BASE`、`SOURCE`/`PR`、`怎么得到`、`对应功能`、冒烟结果。

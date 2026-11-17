@@ -26,8 +26,8 @@
 
 ```bash
 export VLLM_ASCEND_GIT=/path/to/vllm-ascend
-# 确保 tip = #18450 head（例 5c555370b）
-bash generate_patch_bundle.sh --base 4e4c9cbaa --source 5c555370b
+# 确保 tip = #18450 head（例 6689dbf3f）
+bash generate_patch_bundle.sh --base 9746cad23 --source 6689dbf3f
 # 或：bash generate_patch_bundle.sh --from-pr 18450
 # 然后更新 CHANGELOG.md
 ```
@@ -46,10 +46,10 @@ bash generate_patch_bundle.sh --base 4e4c9cbaa --source 5c555370b
 ## 使用方（一线 / 集成）
 
 ```bash
-# 1. 检出与 CHANGELOG「BASE」一致的干净树（v0.30-rg.4 示例）
+# 1. 检出与 CHANGELOG「BASE」一致的干净树（v0.30-rg.5 示例）
 git clone https://github.com/vllm-project/vllm-ascend.git
 cd vllm-ascend
-git checkout 4e4c9cbaa   # 见 CHANGELOG；勿想当然用旧 BASE 除非该包写明
+git checkout 9746cad23   # 见 CHANGELOG；勿想当然用旧 BASE 除非该包写明
 
 # 2. 确认 patches/ 与 CHANGELOG 版本号一致
 # 3. 应用（把下面路径替换为本仓实际本地存放路径）
@@ -62,7 +62,7 @@ bash /path/to/runtime-guard-docs/05_v030_backport/apply_patch.sh "$(pwd)"
 
 ## 对应功能（摘要）
 
-以 CHANGELOG 最新包为准；**v0.30-rg.4** 含：
+以 CHANGELOG 最新包为准；**v0.30-rg.5** 含：
 
 1. **控制面**：detect / report / `dump_kv`（#16849）  
 2. **Static idle / fully-off 性能** + **#18644** 鲁棒对齐  
@@ -74,7 +74,7 @@ bash /path/to/runtime-guard-docs/05_v030_backport/apply_patch.sh "$(pwd)"
 
 - 需要 **MRV2**；拓扑以 `releases/v0.30.0` worker 为准。  
 - Analysis 离线脚本若不在包内，细定界仍要 analysis 工作区（见 [02](../02_problem_localization/README.md)）。  
-- 以 PR tip / CHANGELOG 为准；`v0.30-rg.4` SOURCE = `#18450` @ `5c555370b`（BASE `4e4c9cbaa`；含 #18644 / #19285 / #21346 / #21375）。
+- 以 PR tip / CHANGELOG 为准；`v0.30-rg.5` SOURCE = `#18450` @ `6689dbf3f`（BASE `9746cad23`；含 #18644 / #19285 / #21346 / #21375）。
 
 ## 相关
 

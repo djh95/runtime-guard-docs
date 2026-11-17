@@ -24,7 +24,7 @@
 **当前 tip ≠ 离线 patch 的档（仍钉 BASE 打 patch）：**
 
 - **`v0.26.0rc1`** — PR tip 已 tip-adapt；离线 patch 仍相对 tag BASE `f2f74a16c`。
-- **`v0.30.0`（MRV1）** — PR tip 相对 docs BASE `6d25ba2b3` 有漂移，且相对现行 `releases/v0.30.0` tip `4e4c9cbaa` **需 rebase**；离线 patch 仍钉 `6d25ba2b3`。合 tip 请用 [#19341](https://github.com/vllm-project/vllm-ascend/pull/19341)。MRV2 线见 `#18450` / `v0.30-rg.4`。
+- **`v0.30.0`（MRV1）** — PR tip 相对 docs BASE `6d25ba2b3` 有漂移，且相对现行 `releases/v0.30.0` tip `9746cad23` **需 rebase**；离线 patch 仍钉 `6d25ba2b3`。合 tip 请用 [#19341](https://github.com/vllm-project/vllm-ascend/pull/19341)。MRV2 线见 `#18450` / `v0.30-rg.5`。
 
 `v0.23` / `v0.27` / `v0.28` 离线 patch 已按 PR tip 重导且仍 `--check` 于 docs BASE；`v0.28` tip == docs BASE。详见 [CHANGELOG.md](./CHANGELOG.md) `mrv1-rg.2`。
 
@@ -36,11 +36,11 @@
 
 | Change / feature | main PR | main commit | v0.23 PR/commit | v0.26 PR/commit | v0.27 PR/commit | v0.28 PR/commit | v0.30 MRV1 PR/commit | v0.30 MRV2 (#18450) |
 |------------------|---------|-------------|-----------------|-----------------|-----------------|-----------------|----------------------|---------------------|
-| Runtime Guard control plane (detect / report / `dump_kv`) | [#16849](https://github.com/vllm-project/vllm-ascend/pull/16849) | `83b281c7162d80b99da30ac734b7d95834054af1` | TBD | TBD | TBD | TBD | N/A（MRV1 自带控制面，见下行） | [#18450](https://github.com/vllm-project/vllm-ascend/pull/18450) @ `b5d74a71d`（open；含 `#16849`；BASE `4e4c9cbaa`） |
+| Runtime Guard control plane (detect / report / `dump_kv`) | [#16849](https://github.com/vllm-project/vllm-ascend/pull/16849) | `83b281c7162d80b99da30ac734b7d95834054af1` | TBD | TBD | TBD | TBD | N/A（MRV1 自带控制面，见下行） | [#18450](https://github.com/vllm-project/vllm-ascend/pull/18450) @ `b5d74a71d`（open；含 `#16849`；BASE `9746cad23`） |
 | Hot-path idle bypass + robustness (`#18644`) | [#18644](https://github.com/vllm-project/vllm-ascend/pull/18644) | `3abf581d36eff8637382398635b5f64bc6edb488` | TBD | TBD | TBD | TBD | TBD（未单独 cherry-pick） | [#18450](https://github.com/vllm-project/vllm-ascend/pull/18450) @ `a7beb2e9a`（open；对齐 main `#18644`） |
 | Keep prompt when detectors turn on late (`#19285`) | [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) | `3725f6b36fd18aff3c15bcea6843bbe5133675cf` | TBD | TBD | TBD | TBD | TBD | [#18450](https://github.com/vllm-project/vllm-ascend/pull/18450) @ `0ac331ab8`（open） |
 | Soft-purge / on_disabled / config_version (`#21346`) | [#21346](https://github.com/vllm-project/vllm-ascend/pull/21346)（**open**） | — | TBD | TBD | TBD | TBD | TBD | [#18450](https://github.com/vllm-project/vllm-ascend/pull/18450) @ `eee49f551` tip 段（open） |
-| Merged due bus + CPU/Gloo due-bits (`#21375`) | [#21375](https://github.com/vllm-project/vllm-ascend/pull/21375)（**open**） | — | TBD | TBD | TBD | TBD | TBD | [#18450](https://github.com/vllm-project/vllm-ascend/pull/18450) @ `5c555370b` tip（open） |
+| Merged due bus + CPU/Gloo due-bits (`#21375`) | [#21375](https://github.com/vllm-project/vllm-ascend/pull/21375)（**open**） | — | TBD | TBD | TBD | TBD | TBD | [#18450](https://github.com/vllm-project/vllm-ascend/pull/18450) @ `6689dbf3f` tip（open） |
 | **MRV1 wiring**（`model_runner_v1` + worker idle；release-only） | N/A（release-only；main 无 V1 接线） | N/A | [#19337](https://github.com/vllm-project/vllm-ascend/pull/19337) @ `6a8aac343f0087f2abe50dab7134bc9e6ac8a818`（open） | [#19338](https://github.com/vllm-project/vllm-ascend/pull/19338) @ `2685ed88ec0fcc08a411e2d120e1be0b9656b1a1`（open；tip≠BASE patch） | [#19339](https://github.com/vllm-project/vllm-ascend/pull/19339) @ `f678f4e6d8687fb0f7100edac06f96ed2cecb677`（open） | [#19340](https://github.com/vllm-project/vllm-ascend/pull/19340) @ `7508a0e8b0ba47b1cf139e5f3e94d2ff855d9f4d`（open；tip==BASE） | [#19341](https://github.com/vllm-project/vllm-ascend/pull/19341) @ `8b11f6fa7ebe65dbb5b808590468cd7be8735cdc`（open；tip≠BASE patch；**需 rebase**） | **互斥** — 勿与 MRV1 叠打；见 `#18450` / `05_v030_backport` |
 
 ---
@@ -53,7 +53,7 @@
 | [#18644](https://github.com/vllm-project/vllm-ascend/pull/18644) | `[Observability][BugFix] Optimize hot-path overhead via static idle bypass and fix robustness issues` | `3abf581d36eff8637382398635b5f64bc6edb488` | 2026-10-20 |
 | [#19285](https://github.com/vllm-project/vllm-ascend/pull/19285) | `[BugFix][Observability] Keep prompt when detectors turn on late` | `3725f6b36fd18aff3c15bcea6843bbe5133675cf` | 2026-11-09 |
 
-> 验证：`gh pr list --repo vllm-project/vllm-ascend --state merged --base main --search runtime_guard`。勿把仍 open 的 `#21346` / `#21375` 算进 main 已合入基线（但 v0.30 MRV2 `#18450` / `v0.30-rg.4` 已先行 backport）。
+> 验证：`gh pr list --repo vllm-project/vllm-ascend --state merged --base main --search runtime_guard`。勿把仍 open 的 `#21346` / `#21375` 算进 main 已合入基线（但 v0.30 MRV2 `#18450` / `v0.30-rg.5` 已先行 backport）。
 
 ---
 
@@ -65,7 +65,7 @@
 | `releases/v0.26.0rc` | [#19338](https://github.com/vllm-project/vllm-ascend/pull/19338) | `2685ed88ec0fcc08a411e2d120e1be0b9656b1a1` | `v0.26.0rc1/` | tip-adapted `sample_tokens`；**离线 patch ≠ tip 字节**（仍钉 BASE） |
 | `releases/v0.27.1rc` | [#19339](https://github.com/vllm-project/vllm-ascend/pull/19339) | `f678f4e6d8687fb0f7100edac06f96ed2cecb677` | `v0.27.1rc1/` | 离线 patch 已按 tip 重导且 check 于 BASE |
 | `releases/v0.28.0rc` | [#19340](https://github.com/vllm-project/vllm-ascend/pull/19340) | `7508a0e8b0ba47b1cf139e5f3e94d2ff855d9f4d` | `v0.28.0rc1/` | tip == docs BASE |
-| `releases/v0.30.0` | [#19341](https://github.com/vllm-project/vllm-ascend/pull/19341) | `8b11f6fa7ebe65dbb5b808590468cd7be8735cdc` | `v0.30.0/` | **≠** `#18450`；**需 rebase** 到 release tip `4e4c9cbaa`；离线 patch 仍钉旧 BASE `6d25ba2b3`；**尚未**带 `#19285`/`#21346`/`#21375`；勿改 `worker/v2/` |
+| `releases/v0.30.0` | [#19341](https://github.com/vllm-project/vllm-ascend/pull/19341) | `8b11f6fa7ebe65dbb5b808590468cd7be8735cdc` | `v0.30.0/` | **≠** `#18450`；**需 rebase** 到 release tip `9746cad23`；离线 patch 仍钉旧 BASE `6d25ba2b3`；**尚未**带 `#19285`/`#21346`/`#21375`；勿改 `worker/v2/` |
 
 维护者 fork 分支命名约定见内部备忘（不在对外导航展开）。
 

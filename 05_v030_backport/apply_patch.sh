@@ -2,7 +2,7 @@
 # Apply Runtime Guard backport patches onto a v0.30.x vllm-ascend tree.
 #
 # 2026-11-04 (RG06): enforces the documented BASE by default — target HEAD must
-# be 4e4c9cbaa (see CHANGELOG v0.30-rg.4) and the tree must be clean. Three-way
+# be 9746cad23 (see CHANGELOG v0.30-rg.5) and the tree must be clean. Three-way
 # merge is opt-in via --3way; --force-base skips the checks for expert trees.
 # Usage: apply_patch.sh [--force-base] [--3way] /path/to/vllm-ascend
 set -euo pipefail
@@ -12,7 +12,7 @@ FORCE_BASE=0
 THREE_WAY=0
 HERE="$(cd "$(dirname "$0")" && pwd)"
 PATCH_DIR="${HERE}/patches"
-EXPECTED_BASE="4e4c9cbaa6aa083775b5e30b2643e628037f8c04"
+EXPECTED_BASE="9746cad236e24333c8e515c94bc8273dd55d22b5"
 
 usage() {
   echo "usage: $0 [--force-base] [--3way] /path/to/vllm-ascend-checkout" >&2
@@ -57,7 +57,7 @@ if [[ "${FORCE_BASE}" -eq 1 ]]; then
 else
   if [[ "${HEAD_FULL}" != "${EXPECTED_BASE}" ]]; then
     echo "Refusing: HEAD ${HEAD_FULL:0:10} != documented BASE ${EXPECTED_BASE:0:10} (see 05_v030_backport/CHANGELOG.md)." >&2
-    echo "Checkout 4e4c9cbaa6aa083775b5e30b2643e628037f8c04, or pass --force-base only if this tree is verified compatible." >&2
+    echo "Checkout 9746cad236e24333c8e515c94bc8273dd55d22b5, or pass --force-base only if this tree is verified compatible." >&2
     exit 1
   fi
   if [[ -n "$(git -C "${TARGET}" status --porcelain 2>/dev/null)" ]]; then

@@ -243,7 +243,7 @@ logits 有限的乱码 / identical-across-requests：**不要**宣称「未复�
 
 可**复述**下游给出的 JSON；**禁止**自己编造 window / 阈值 / `auto_max_times` / cooldown / `on_trigger`。
 
-启服与热更细节见手册 01；源码路径须含 `observability/runtime_guard/`（MRV2）。`releases/v0.30.0` / rc 线无 Guard 时先看 [05](../../05_v030_backport/README.md)（BASE 见 CHANGELOG；`v0.30-rg.4` tip 含 #18644/#19285/#21346/#21375）。
+启服与热更细节见手册 01；源码路径须含 `observability/runtime_guard/`（MRV2）。`releases/v0.30.0` / rc 线无 Guard 时先看 [05](../../05_v030_backport/README.md)（BASE 见 CHANGELOG；`v0.30-rg.5` tip 含 #18644/#19285/#21346/#21375）。
 
 ## 压测抓命中（用户页 Step 3 纪律）
 
